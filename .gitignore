@@ -1,5 +1,7 @@
 # Compiled class file
 *.class
+out/*
+output/*
 
 # Log file
 *.log
@@ -22,3 +24,11 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+#others files
+src/convertToTimingNote.js
+src/text-generator.js
+_SongsToTimings.iml
+aubio/*
+.idea/*
+libs/*
