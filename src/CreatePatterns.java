@@ -35,34 +35,34 @@ public class CreatePatterns {
     |---|---|---|---|       |---|---|---|
      */
 
+//    public static Note[] linearSlowPattern(Note[] timings) {
+//        Note[] pattern = new Note[timings.length];
+//
+//        Note[] rightHand = new Note[timings.length / 2];
+//        Note[] leftHand = new Note[timings.length / 2];
+//
+//
+//        for (int i = 1; i < pattern.length; i += 2) {
+//            pattern[i].invertNote();
+//        }
+//
+//        int[] array1 = {1, 2, 3};
+//        int[] array2 = {4, 5, 6, 7};
+//        int[] mergedArray = new int[array1.length + array2.length];
+//        int index = 0;
+//        for (int j : array1) {
+//            mergedArray[index] = j;
+//            index++;
+//        }
+//        for (int j : array2) {
+//            mergedArray[index] = j;
+//            index++;
+//        }
+//
+//        return pattern;
+//    }
+
     public static Note[] linearSlowPattern(Note[] timings) {
-        Note[] pattern = new Note[timings.length];
-
-        Note[] rightHand = new Note[timings.length / 2];
-        Note[] leftHand = new Note[timings.length / 2];
-
-
-        for (int i = 1; i < pattern.length; i += 2) {
-            pattern[i].invertNote();
-        }
-
-        int[] array1 = {1, 2, 3};
-        int[] array2 = {4, 5, 6, 7};
-        int[] mergedArray = new int[array1.length + array2.length];
-        int index = 0;
-        for (int j : array1) {
-            mergedArray[index] = j;
-            index++;
-        }
-        for (int j : array2) {
-            mergedArray[index] = j;
-            index++;
-        }
-
-        return pattern;
-    }
-
-    public static Note[] linearSlowPatternOneHand(Note[] timings) {
         Note[] pattern = new Note[timings.length];
 
         double placement = Math.random() * 100;
