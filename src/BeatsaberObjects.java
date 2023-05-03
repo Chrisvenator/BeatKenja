@@ -1,6 +1,8 @@
 import com.google.gson.Gson;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 public class BeatsaberObjects {
@@ -82,6 +84,22 @@ class BeatSaberMap {
         for (Events e : _events) {
             e.convertFlashLightsToOnLights();
         }
+    }
+
+    //removes all notes of Type "removeType"
+    public void makeOneHanded(int removeType) {
+        List<Note> notes = new ArrayList<>();
+        for (Note n : _notes) {
+            if (n._type != removeType) {
+                notes.add(n);
+            }
+        }
+        Note[] n = new Note[notes.size()];
+        for (int i = 0; i < notes.size(); i++) {
+            n[i] = notes.get(i);
+        }
+
+        this._notes = n;
     }
 }
 
