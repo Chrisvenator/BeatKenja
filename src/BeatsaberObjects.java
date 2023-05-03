@@ -77,6 +77,12 @@ class BeatSaberMap {
             return s + "" + originalJSON.split("}],")[1];
         }
     }
+
+    public void convertAllFlashLightsToOnLights() {
+        for (Events e : _events) {
+            e.convertFlashLightsToOnLights();
+        }
+    }
 }
 
 class Note {
@@ -108,6 +114,13 @@ class Note {
         if (o == null || getClass() != o.getClass()) return false;
         Note note = (Note) o;
         return Float.compare(note._time, _time) == 0 && _lineIndex == note._lineIndex && _lineLayer == note._lineLayer && _type == note._type && _cutDirection == note._cutDirection;
+    }
+
+    public boolean equalPlacement(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Note note = (Note) o;
+        return _lineIndex == note._lineIndex && _lineLayer == note._lineLayer && _type == note._type && _cutDirection == note._cutDirection;
     }
 
     @Override
@@ -216,6 +229,10 @@ class Events {
 //        } else {
 //            return "{\"_time\":" + (int) _time + ",\"_type\":" + _type + ",\"_value\":" + _value + "}";
 //        }
+    }
+
+    public void convertFlashLightsToOnLights() {
+        if (_value == 6) _value = 1;
     }
 }
 

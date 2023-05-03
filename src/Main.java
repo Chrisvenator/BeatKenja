@@ -11,6 +11,9 @@ public class Main {
         //creating a BeatSaberMap Object from the input String
         BeatSaberMap map = new Gson().fromJson(CreateTimings.readFile(inputPath).get(0), BeatSaberMap.class);
 
+        map.convertAllFlashLightsToOnLights();
+        CreateTimings.overwriteFile(outputPath + "NoFlashingLights.txt", map.exportAsMap());
+
 
         //Not executing things that are not needed at the moment
         if (1 == 2) {
