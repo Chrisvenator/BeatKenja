@@ -1,6 +1,21 @@
 import com.google.gson.Gson;
 
 public class Main {
+
+        /*
+    Red: 0
+    Blue: 1
+
+    Layer - Index:          Cut direction:
+    |---|---|---|---|       |---|---|---|
+    |   |   |   |3-2|       | 4 | 0 | 5 |
+    |---|---|---|---|       |---|---|---|
+    |   |   |   |3-1|       | 2 | 8 | 3 |
+    |---|---|---|---|       |---|---|---|
+    |0-0|1-0|2-0|3-0|       | 6 | 1 | 7 |
+    |---|---|---|---|       |---|---|---|
+     */
+
     public static void main(String[] args) {
         //Settings:
         String inputPath = "Input.txt";
@@ -38,10 +53,8 @@ public class Main {
             //If you ONLY want timings and no stacks, etc. , then use "toLinearTimings".
             Note[] linearTimingsNotesFromMap = CreatePatterns.toLinearTimings(map._notes);
             CreateTimings.overwriteFile(outputPath + "linearTimings.txt", new BeatSaberMap(linearTimingsNotesFromMap, map.originalJSON).exportAsMap());
-        }
 
 
-        if (1 == 2) {
             //If you want timings and stacks, etc. , then use "mapToTimingNotesArray" or "mapToTimingNotesList".
             //The only difference is the format which is returned.
             Note[] timingsFromMap = CreatePatterns.mapToTimingNotesArray(map._notes);
@@ -50,6 +63,14 @@ public class Main {
             //Creating a linear map from timings:
             Note[] linearPattern = CreatePatterns.linearSlowPattern(map._notes);
             CreateTimings.overwriteFile(outputPath + "linearMap.txt", new BeatSaberMap(linearPattern, map.originalJSON).exportAsMap());
+
+
+            //removing all notes with the red color:
+            map.makeOneHanded(0);
+            map.makeOneHanded(2); //same with bombs
+
+            //converting flash-lights to on-lights. This may be useful for converting an auto-lighted map
+            map.convertAllFlashLightsToOnLights();
         }
     }
 
