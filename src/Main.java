@@ -51,14 +51,14 @@ public class Main {
             if (1 == 2) map._obstacles = new Obstacle[0];
 
             //If you ONLY want timings and no stacks, etc. , then use "toLinearTimings".
-            Note[] linearTimingsNotesFromMap = CreatePatterns.toLinearTimings(map._notes);
-            CreateTimings.overwriteFile(outputPath + "linearTimings.txt", new BeatSaberMap(linearTimingsNotesFromMap, map.originalJSON).exportAsMap());
+            map.toBlueLeftBottomRowDotTimings();
+            CreateTimings.overwriteFile(outputPath + "linearTimings.txt", map.exportAsMap());
 
 
             //If you want timings and stacks, etc. , then use "mapToTimingNotesArray" or "mapToTimingNotesList".
             //The only difference is the format which is returned.
-            Note[] timingsFromMap = CreatePatterns.mapToTimingNotesArray(map._notes);
-            CreateTimings.overwriteFile(outputPath + "allTimings.txt", new BeatSaberMap(timingsFromMap, map.originalJSON).exportAsMap());
+            map.toTimingNotes();
+            CreateTimings.overwriteFile(outputPath + "TestOutput.txt", map.exportAsMap());
 
             //Creating a linear map from timings:
             Note[] linearPattern = CreatePatterns.linearSlowPattern(map._notes);

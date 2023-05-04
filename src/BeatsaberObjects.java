@@ -101,6 +101,107 @@ class BeatSaberMap {
 
         this._notes = n;
     }
+
+    //This function is only here to make the List in a List into a one dimensional array, so that it is compatible with
+    //the other functions
+    public void toTimingNotes() {
+
+        List<List<Note>> note = mapToTimingNotesAsList(_notes);
+        List<Note> list = new ArrayList<>();
+
+        //traversing every note
+        for (List<Note> l : note) {
+            list.addAll(l);
+        }
+
+        //returning the List as an Array
+        this._notes = list.toArray(new Note[0]);
+    }
+
+    //This function takes all the notes of a map and converts it to a List inside a List in which all the notes are saved
+    //as a dot on the leftmost lane.
+    //If there are more notes on the same beat, then the notes are being converted into stacks
+    //Red Notes are only created if there is a blue and a red note on the same beat. They are saved on the second lane
+    //Note that there can only be a maximum of 6 Notes in one Beat or else the script will not create a 7th note;
+    public static List<List<Note>> mapToTimingNotesAsList(Note[] notes) {
+        //Here is a List, where all grids are being saved.
+        List<List<Note>> timings = new ArrayList<>(List.of(new ArrayList<>(List.of(new Note(notes[0]._time, notes[0]._type == 0 ? 1 : 0, 0, notes[0]._type, 8)))));
+
+        for (Note n : notes) {
+            //the first note must be set manually
+            if (notes[0] == n) continue;
+
+            //retrieving the grid
+            List<Note> grid = timings.get(timings.size() - 1);
+
+            //if grid exists
+            if (grid.get(0)._time == n._time) {
+                int ctBlue = 0;
+                int ctRed = 0;
+                for (Note note : grid) {
+                    if (note._type == 0) ctRed++;
+                    if (note._type == 1) ctBlue++;
+                }
+
+                //It will only create a note, when there are up to 6 notes already saved.
+                //It will create it in the desired lane: Red lane 1; Blue lane 0
+                Note newNote = new Note(n._time, n._type == 0 ? 1 : 0, n._type == 0 ? ctRed : ctBlue, n._type, 8);
+                if (ctBlue < 3 && ctRed < 3) grid.add(newNote);
+            } else {
+                //creating a new grid
+                Note newNote = new Note(n._time, n._type == 0 ? 1 : 0, 0, n._type, 8);
+                timings.add(new ArrayList<>(List.of(newNote)));
+            }
+        }
+
+        //when there is only one red note, the we will be converting this red note into a blue one.
+        // (It makes copying someone else's map way harder)
+        for (List<Note> l : timings) {
+            if (l.size() == 1) {
+                l.get(0)._lineIndex = 0;
+                l.get(0)._type = 1;
+            }
+//            for (Note n : l) { //for debugging purposes
+//                System.out.println("Note:" + n.toString().replaceAll("\n", ""));
+//            }
+//            System.out.println("");
+        }
+        return timings;
+    }
+
+    //This function makes timings from a map.
+    //Every note is converted into a blue dot block on the leftmost lane
+    //WARNING: If there is more than 1 note in the same beat, then all but one are erased (for example stacks)
+    //If you want to keep them, then have a look at "mapToTimingNotesArray" or "mapToTimingNotesList"
+    public void toBlueLeftBottomRowDotTimings() {
+        Note[] timings = new Note[_notes.length];
+        int numberOfNulls = 0;
+
+        //traversing every note
+        for (int i = 0; i < _notes.length; i++) {
+
+            //when the note exists, then DON'T place another one on top of it
+            if (i >= 2 && _notes[i - 1]._time == _notes[i]._time) {
+                numberOfNulls++;
+                continue;
+            }
+
+            //else:
+            timings[i] = new Note(_notes[i]._time);
+        }
+
+        //Since there may be null values, we need to remove them
+        Note[] toReturn = new Note[_notes.length - numberOfNulls];
+        int ct = 0;
+        for (Note n : timings) {
+            if (n != null) {
+                toReturn[ct] = n;
+                ct++;
+            }
+        }
+
+        this._notes = toReturn;
+    }
 }
 
 class Note {
@@ -162,11 +263,7 @@ class Note {
 
     @Override
     public String toString() {
-//        if (_time % 1 != 0) {
         return "{" + "\"_time\":" + _time + ",\"_lineIndex\":" + _lineIndex + ",\"_lineLayer\":" + _lineLayer + ",\"_type\":" + _type + ",\"_cutDirection\":" + _cutDirection + "}\n";
-//        } else {
-//            return "{" + "\"_time\":" + (int) _time + ",\"_lineIndex\":" + _lineIndex + ",\"_lineLayer\":" + _lineLayer + ",\"_type\":" + _type + ",\"_cutDirection\":" + _cutDirection + "}\n";
-//        }
     }
 
     public void invertNote() {
@@ -221,11 +318,7 @@ class Obstacle {
 
     @Override
     public String toString() {
-//        if (_time % 1 == 0) {
         return "{\"_time\":" + _time + ",\"_lineIndex\":" + _lineIndex + ",\"_type\":" + _type + ",\"_duration\":" + _duration + ",\"_width\":" + _width + "}";
-//        } else {
-//            return "{\"_time\":" + (int) _time + ",\"_lineIndex\":" + _lineIndex + ",\"_type\":" + _type + ",\"_duration\":" + _duration + ",\"_width\":" + _width + "}";
-//        }
     }
 }
 
@@ -242,11 +335,7 @@ class Events {
 
     @Override
     public String toString() {
-//        if (_time % 1 == 0) {
         return "{\"_time\":" + _time + ",\"_type\":" + _type + ",\"_value\":" + _value + "}";
-//        } else {
-//            return "{\"_time\":" + (int) _time + ",\"_type\":" + _type + ",\"_value\":" + _value + "}";
-//        }
     }
 
     public void convertFlashLightsToOnLights() {
