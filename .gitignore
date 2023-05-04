@@ -32,3 +32,4 @@ _SongsToTimings.iml
 aubio/*
 .idea/*
 libs/*
+/Input.txt
