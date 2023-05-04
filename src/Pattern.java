@@ -19,14 +19,6 @@ public class Pattern {
         String outputPath = "./output/";
         BeatSaberMap map = new Gson().fromJson(CreateTimings.readFile(inputPath).get(0), BeatSaberMap.class);
 
-        //Example for removing all notes of color red:
-//        map._notes = removeAllOtherTypes(map._notes, 1);
-//        CreateTimings.overwriteFile(outputPath + "removedAllTypeX.txt", map.exportAsMap());
-
-        //Example on how to analyze patterns:
-//        Note[][] result = analyzePatterns(map, 1);
-//        System.out.println(analyzePatternsToString(result));
-//        System.out.println(removeXTimes(result, 4));
 
         Pattern p = new Pattern(map._notes, 1);
 //        System.out.println(p.toString());
