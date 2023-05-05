@@ -8,19 +8,23 @@ import java.util.Map;
 
 public class CreatePatterns {
     public static void main(String[] args) {
-        String filename = "ISeeFireXP.txt";
+        String filename = "templates/Template--ISeeFire.txt";
+        String patternFilename = "templates/Template--ISeeFire.txt";
         String outPath = "";
         String input = CreateTimings.readFile(filename).get(0);
+        String patternInput = CreateTimings.readFile(patternFilename).get(0);
 
         Gson gson = new Gson();
-        BeatSaberMap map = gson.fromJson(input, BeatSaberMap.class);
-        map._events = new Events[0];
+        BeatSaberMap timings = gson.fromJson(input, BeatSaberMap.class);
+        BeatSaberMap patterns = gson.fromJson(patternInput, BeatSaberMap.class);
+        timings._events = new Events[0];
 
+        //create pattern from the map:
+        Pattern p = new Pattern(patterns._notes, 1);
+        timings.toBlueLeftBottomRowDotTimings();
 
-        map.toBlueLeftBottomRowDotTimings();
-//        map.toTimingNotes();
-        Note[] n = linearSlowPattern(map._notes);
-        CreateTimings.overwriteFile(outPath + "TestOutput.txt", new BeatSaberMap(n).exportAsMap());
+        System.out.println(new BeatSaberMap(mapFromPatterns(timings._notes, p, false)).exportAsMap());
+        System.out.println(new BeatSaberMap(linearSlowPattern(timings._notes)).exportAsMap());
     }
 
     /*
@@ -41,7 +45,7 @@ public class CreatePatterns {
     public static Note[] linearSlowPattern(Note[] timings) {
         Note[] pattern = new Note[timings.length];
 
-        //The first 2 notes have to placed manually to ensure they are not on some random position
+        //The first 2 notes have to placed manually to ensure that they are not on some random position
         double placement = Math.random() * 100;
         for (int i = 0; i < 2; i++) {
             if (placement < 20) pattern[i] = new Note(timings[i]._time, 1, 0, 1, 1);
@@ -52,7 +56,7 @@ public class CreatePatterns {
         for (int i = 2; i < timings.length; i++) {
             pattern[i] = nextLinearNote(pattern[i - 2], timings[i]._time);
 
-            if (!validPlacement(pattern, i) && i > 4) {
+            if (!validPlacement(pattern, i, false) && i > 4) {
                 pattern[i] = null;
                 i--;
             }
@@ -62,6 +66,63 @@ public class CreatePatterns {
         }
 
         return pattern;
+    }
+
+    public static Note[] mapFromPatterns(Note[] timings, Pattern p, boolean oneHanded) {
+        Note[] pattern = new Note[timings.length];
+        int j = oneHanded ? 1 : 2;
+
+        double placement = Math.random() * 100;
+        for (int i = 0; i < j; i++) {
+            if (placement < 20) pattern[i] = new Note(timings[i]._time, 1, 0, 1, 1);
+            else if (placement <= 65) pattern[i] = new Note(timings[i]._time, 2, 0, 1, 1);
+            else if (placement > 65) pattern[i] = new Note(timings[i]._time, 3, 0, 1, 1);
+        }
+
+
+        //invalidPlacesInARow is there to prevent an infinite loop.
+        int invalidPlacesInARow = 0;
+        for (int i = 2; i < timings.length; i++) {
+            if (invalidPlacesInARow >= 500) throw new IllegalArgumentException("Infinite Loop while creating patterns");
+
+            Note previous = pattern[i - j];
+            PatternProbability probabilities = p.getProbabilityOf(previous);
+
+            if (probabilities == null || invalidPlacesInARow >= 100) pattern[i] = nextLinearNote(previous, timings[i]._time);
+            else pattern[i] = predictNextNote(probabilities, timings[i]._time);
+
+            if (!validPlacement(pattern, i, oneHanded) && i > 4) {
+                pattern[i] = null;
+                i--;
+                invalidPlacesInARow++;
+
+            } else invalidPlacesInARow = 0;
+        }
+
+        //make every second note red:
+        if (!oneHanded) for (int i = 1; i < pattern.length; i += 2) pattern[i].invertNote();
+
+
+        return pattern;
+    }
+
+    public static Note predictNextNote(PatternProbability pattern, float time) {
+        if (pattern == null || pattern.notes == null) return null;
+
+        float currentProbability = 0;
+        double placement = Math.random() * 100;
+
+        for (int i = 0; i < pattern.probabilities.length; i++) {
+            if (pattern.notes[i] == null || currentProbability > 99) return null;
+            currentProbability += pattern.probabilities[i];
+            if (placement <= currentProbability) {
+                Note n = pattern.notes[i];
+                return new Note(time, n._lineIndex, n._lineLayer, n._type, n._cutDirection);
+            }
+
+        }
+
+        return null;
     }
 
 
@@ -254,6 +315,14 @@ public class CreatePatterns {
         //If I forgot to add a note, it will be displayed here:
         else {
             System.out.println(p.toString().replaceAll("\n", ""));
+            System.err.println("THERE WAS AN UNDETECTED NOTE!");
+            if (p._type != 2 && (p._cutDirection == 1 || p._cutDirection == 6 || p._cutDirection == 2))
+                return new Note(time, 3, 2, 1, 5);
+            else if (p._type != 2 && (p._cutDirection == 7 || p._cutDirection == 3))
+                return new Note(time, 2, 2, 1, 4);
+            else if (p._type != 4 && (p._cutDirection == 0 || p._cutDirection == 5))
+                return new Note(time, 0, 2, 1, 1);
+
             throw new IllegalArgumentException("There is an undetected note!");
         }
     }
@@ -261,12 +330,28 @@ public class CreatePatterns {
 
     //This function checks if the note on position i has a valid placement there
     //read further for more information
-    public static boolean validPlacement(Note[] notes, int i) {
+    public static boolean validPlacement(Note[] notes, int i, boolean oneHanded) {
         if (notes.length <= 2) return true;
         if (i < 4) return true;
+        if (notes[i - 1] == null || notes[i] == null) return false;
+
+        //avoid DDs
+        //for One-Handed only. For two handed replace i-1 with i-2
+
+        int j = 2;
+        if (oneHanded) j = 1;
+
+        if (notes[i - j]._cutDirection == notes[i]._cutDirection
+                || (notes[i - j]._cutDirection == 6 || notes[i - j]._cutDirection == 1 || notes[i - j]._cutDirection == 7) && (notes[i]._cutDirection == 6 || notes[i]._cutDirection == 1 || notes[i]._cutDirection == 7)
+                || (notes[i - j]._cutDirection == 7 || notes[i - j]._cutDirection == 3 || notes[i - j]._cutDirection == 5) && (notes[i]._cutDirection == 7 || notes[i]._cutDirection == 3 || notes[i]._cutDirection == 5)
+                || (notes[i - j]._cutDirection == 4 || notes[i - j]._cutDirection == 0 || notes[i - j]._cutDirection == 5) && (notes[i]._cutDirection == 4 || notes[i]._cutDirection == 0 || notes[i]._cutDirection == 5)
+                || (notes[i - j]._cutDirection == 4 || notes[i - j]._cutDirection == 2 || notes[i - j]._cutDirection == 6) && (notes[i]._cutDirection == 4 || notes[i]._cutDirection == 2 || notes[i]._cutDirection == 6)
+        ) return false;
 
         //Avoiding vision blocks.
         //Only place the note, if the previous note is not placed directly in front of it
+        //If one-handed it true, then we can just skip this step.
+        if (oneHanded) return true;
         return notes[i - 1]._lineIndex != notes[i].getInverted()._lineIndex || notes[i - 1]._lineLayer != notes[i]._lineLayer;
     }
 }
