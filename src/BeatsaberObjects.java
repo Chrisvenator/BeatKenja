@@ -65,7 +65,8 @@ class BeatSaberMap {
                     .replace(" ", "")
                     .replace("\":null\",", ":[],")
                     .replace(", null, ", ", ")
-                    .replace("null", "");
+                    .replace("null", "")
+                    .replaceAll(",,", "");
         } else {
             String s = ("{\"_version\":\"" + _version + "\",\"_notes\":" + Arrays.toString(_notes) + ",\"_obstacles\":" + Arrays.toString(_obstacles) + ",\"_events\":" + Arrays.toString(_events) + ",")
                     .replace("\n", "")
@@ -74,7 +75,8 @@ class BeatSaberMap {
                     .replace(" ", "");
             s = s.replaceAll("\":null,\"", ":\":[],\"")
                     .replace(", null, ", ", ")
-                    .replace("null", "");
+                    .replace("null", "")
+                    .replaceAll(",,", "");
 
             return s + "" + originalJSON.split("}],")[1];
         }
@@ -181,7 +183,7 @@ class BeatSaberMap {
         for (int i = 0; i < _notes.length; i++) {
 
             //when the note exists, then DON'T place another one on top of it
-            if (i >= 2 && _notes[i - 1]._time == _notes[i]._time) {
+            if (i >= 2 && (_notes[i - 1]._time == _notes[i]._time || _notes[i]._time - _notes[i - 1]._time <= (float) 1/8)) {
                 numberOfNulls++;
                 continue;
             }

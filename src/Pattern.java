@@ -45,6 +45,7 @@ public class Pattern {
         for (int k = 1; k < notes.length; k++) {
             Note n = notes[k];
             Note prev = notes[k - 1];
+            if (n == null || n._cutDirection == 8) continue;
 
             //iterating over the 2-dimensional array:
             twoDimArr:
@@ -211,6 +212,8 @@ public class Pattern {
 
     public PatternProbability getProbabilityOf(Note n) {
         for (int i = 0; i < this.patterns.length && this.patterns[i] != null; i++) {
+            if (this.patterns[i] == null) return null;
+            if (this.patterns[i][0] == null) return null;
             if (this.patterns[i][0].equalPlacement(n))
                 return new PatternProbability(this.patterns[i], this.probabilities[i]);
         }
