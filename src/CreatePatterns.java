@@ -8,8 +8,8 @@ import java.util.Map;
 
 public class CreatePatterns {
     public static void main(String[] args) {
-        String filename = "templates/Template--ISeeFire.txt";
-        String patternFilename = "templates/Template--ISeeFire.txt";
+        String filename = "Input.txt";
+        String patternFilename = "PatternTemplates/Template--ISeeFire.txt";
         String outPath = "";
         String input = CreateTimings.readFile(filename).get(0);
         String patternInput = CreateTimings.readFile(patternFilename).get(0);
@@ -24,7 +24,7 @@ public class CreatePatterns {
         timings.toBlueLeftBottomRowDotTimings();
 
         System.out.println(new BeatSaberMap(mapFromPatterns(timings._notes, p, false)).exportAsMap());
-        System.out.println(new BeatSaberMap(linearSlowPattern(timings._notes)).exportAsMap());
+//        System.out.println(new BeatSaberMap(linearSlowPattern(timings._notes)).exportAsMap());
     }
 
     /*
@@ -46,11 +46,8 @@ public class CreatePatterns {
         Note[] pattern = new Note[timings.length];
 
         //The first 2 notes have to placed manually to ensure that they are not on some random position
-        double placement = Math.random() * 100;
         for (int i = 0; i < 2; i++) {
-            if (placement < 20) pattern[i] = new Note(timings[i]._time, 1, 0, 1, 1);
-            else if (placement <= 65) pattern[i] = new Note(timings[i]._time, 2, 0, 1, 1);
-            else if (placement > 65) pattern[i] = new Note(timings[i]._time, 3, 0, 1, 1);
+            pattern[i] = firstNotePlacement(pattern[i]._time);
         }
 
         for (int i = 2; i < timings.length; i++) {
@@ -68,34 +65,66 @@ public class CreatePatterns {
         return pattern;
     }
 
+
     public static Note[] mapFromPatterns(Note[] timings, Pattern p, boolean oneHanded) {
         Note[] pattern = new Note[timings.length];
         int j = oneHanded ? 1 : 2;
 
-        double placement = Math.random() * 100;
         for (int i = 0; i < j; i++) {
-            if (placement < 20) pattern[i] = new Note(timings[i]._time, 1, 0, 1, 1);
-            else if (placement <= 65) pattern[i] = new Note(timings[i]._time, 2, 0, 1, 1);
-            else if (placement > 65) pattern[i] = new Note(timings[i]._time, 3, 0, 1, 1);
+            pattern[i] = firstNotePlacement(timings[i]._time);
         }
 
 
         //invalidPlacesInARow is there to prevent an infinite loop.
         int invalidPlacesInARow = 0;
+        int horizontalsInARow = 0;
+        int firstHorizontalCutDirection = -1;
         for (int i = 2; i < timings.length; i++) {
-            if (invalidPlacesInARow >= 500) throw new IllegalArgumentException("Infinite Loop while creating patterns");
+            boolean inValidPlacement = false;
+
+            //manual error handling:
+            if (i >= 8 && invalidPlacesInARow >= 500) {
+                System.err.println("ERROR at beat: " + timings[i]._time);
+                pattern[i] = new TimingNote(timings[i]._time);
+                invalidPlacesInARow = 0;
+                continue;
+            } else if (invalidPlacesInARow >= 500)
+                throw new IllegalArgumentException("Infinite Loop while creating map! Please try again.");
+            //next note after the error:
+            if (i >= 8 && pattern[i - j]._cutDirection == 8) {
+                pattern[i] = nextNoteAfterTimingNote(pattern, timings[i]._time, i, j);
+                continue;
+            }
 
             Note previous = pattern[i - j];
             PatternProbability probabilities = p.getProbabilityOf(previous);
 
+            //Generate a note according to the template
+            //If there is an infinite loop,then try to place a linear note
             if (probabilities == null || invalidPlacesInARow >= 100) pattern[i] = nextLinearNote(previous, timings[i]._time);
             else pattern[i] = predictNextNote(probabilities, timings[i]._time);
 
-            if (!validPlacement(pattern, i, oneHanded) && i > 4) {
+
+            /*
+            //If there are horizontals
+            if (previous._cutDirection == 2 || previous._cutDirection == 3) {
+                if (firstHorizontalCutDirection == -1) firstHorizontalCutDirection = pattern[i]._cutDirection;
+                horizontalsInARow++;
+            }
+
+            //If the previous note was a horizontal but current isn't
+            if ((previous._cutDirection == 2 || previous._cutDirection == 3) && (pattern[i]._cutDirection != 2 || pattern[i]._cutDirection != 3)) {
+//                pattern[i] = endHorizontalPlacements(pattern[i], firstHorizontalCutDirection, horizontalsInARow);
+                horizontalsInARow = 0;
+            }/**/
+
+
+            //check, if the placement is valid (example: dd)
+            if (!validPlacement(pattern, i, oneHanded)) inValidPlacement = true;
+            if (inValidPlacement && i > 4) {
                 pattern[i] = null;
                 i--;
                 invalidPlacesInARow++;
-
             } else invalidPlacesInARow = 0;
         }
 
@@ -104,6 +133,48 @@ public class CreatePatterns {
 
 
         return pattern;
+    }
+
+    public static Note endHorizontalPlacements(Note pattern, int firstHorizontalCutDirection, int horizontalsInARow) {
+        float random = (float) Math.random() * 100;
+
+        //starting with left swing and number is uneven
+        if (firstHorizontalCutDirection == 2 && horizontalsInARow % 2 == 1 && horizontalsInARow > 0) {
+            if (random <= 50) return new Note(pattern._time, 3, 1, 1, 7);
+            else return new Note(pattern._time, 3, 0, 1, 7);
+        }
+
+        //starting with left swing and number is even
+        if (firstHorizontalCutDirection == 2 && horizontalsInARow % 2 == 0 && horizontalsInARow > 0)
+            return new Note(pattern._time, 2, 2, 1, 4);
+
+
+        //starting with right swing and number is uneven
+        if (firstHorizontalCutDirection == 3 && horizontalsInARow % 2 == 1 && horizontalsInARow >= 2)
+            return new Note(pattern._time, 2, 0, 1, 6);
+        //starting with left swing and number is even
+        if (firstHorizontalCutDirection == 3 && horizontalsInARow % 2 == 0 && horizontalsInARow > 0)
+            return new Note(pattern._time, 3, 2, 1, 5);
+        return null;
+    }
+
+    public static Note nextNoteAfterTimingNote(Note[] pattern, float time, int i, int j) {
+        Note toReturn = firstNotePlacement(time);
+
+        //When second last note was an up swing:
+        if (pattern[i - 2 * j]._cutDirection == 6 || pattern[i - 2 * j]._cutDirection == 1 || pattern[i - 2 * j]._cutDirection == 7)
+            toReturn._cutDirection = 1;
+
+        //When second last note was a down swing:
+        if (pattern[i - 2 * j]._cutDirection == 4 || pattern[i - 2 * j]._cutDirection == 0 || pattern[i - 2 * j]._cutDirection == 5)
+            toReturn._cutDirection = 0;
+
+
+        //When second last note was a horizontal swing:
+        if (pattern[i - j]._cutDirection == 2 || pattern[i - j]._cutDirection == 3)
+            toReturn._cutDirection = 1;
+
+        return toReturn;
     }
 
     public static Note predictNextNote(PatternProbability pattern, float time) {
@@ -125,6 +196,17 @@ public class CreatePatterns {
         return null;
     }
 
+    public static Note firstNotePlacement(float _time) {
+        Note n;
+        double placement = Math.random() * 100;
+
+        if (placement < 20) n = new Note(_time, 1, 0, 1, 1);
+        else if (placement <= 65) n = new Note(_time, 2, 0, 1, 1);
+        else n = new Note(_time, 3, 0, 1, 1);
+
+        return n;
+    }
+
 
     //TODO: Stacked notes
     //TODO: Not linear Patterns
@@ -138,9 +220,9 @@ public class CreatePatterns {
 
 
         //blue bottom-middle-right lane, down swing
-        //2, 0, 1
+        //2,0,1
         if (p._lineIndex == 2 && p._lineLayer == 0 && p._type != 2 && p._cutDirection == 1) {
-//                if (placement < 10) return new Note(time, 3, 1, 1, 3);
+//                if (placement < 10) return new Note(time,3,1,1,3);
             if (placement < 20) return new Note(time, 3, 1, 1, 5);
             else if (placement < 30) return new Note(time, 3, 2, 1, 0);
             else if (placement < 50) return new Note(time, 3, 2, 1, 5);
@@ -150,14 +232,14 @@ public class CreatePatterns {
         }
 
         //blue middle-right lane, right swing
-        //3, 1, 3
+        //3,1,3
         else if ((p._lineIndex == 3 && p._lineLayer == 1 && p._type != 2 && p._cutDirection == 3)) {
             if (placement < 70) return new Note(time, 1, 0, 1, 6);
             else return new Note(time, 2, 0, 1, 1);
         }
 
         //blue upper-right lane, top-right swing
-        //3, 2, 5
+        //3,2,5
         else if (p._lineIndex == 3 && p._lineLayer == 2 && p._type != 2 && p._cutDirection == 5) {
             if (placement < 5) return new Note(time, 0, 0, 1, 6);
             else if (placement < 40) return new Note(time, 1, 0, 1, 6);
@@ -166,14 +248,14 @@ public class CreatePatterns {
         }
 
         //blue upper-right lane, top swing
-        //3, 2, 0
+        //3,2,0
         else if (p._lineIndex == 3 && p._lineLayer == 2 && p._type != 2 && p._cutDirection == 0) {
             if (placement <= 50) return new Note(time, 2, 0, 1, 1);
             else return new Note(time, 3, 0, 1, 1);
         }
 
         //blue upper-middle-right lane, top swing
-        //2, 2, 0
+        //2,2,0
         else if (p._lineIndex == 2 && p._lineLayer == 2 && p._type != 2 && p._cutDirection == 0) {
             if (placement < 5) return new Note(time, 3, 0, 1, 7);
             else if (placement < 20) return new Note(time, 3, 0, 1, 1);
@@ -182,7 +264,7 @@ public class CreatePatterns {
         }
 
         //blue bottom-middle-right lane, bottom-left swing
-        //3, 1, 6
+        //3,1,6
         else if (p._lineIndex == 3 && p._lineLayer == 1 && p._type != 2 && p._cutDirection == 6) {
             if (placement < 40) return new Note(time, 1, 0, 1, 6);
             else if (placement < 80) return new Note(time, 2, 0, 1, 6);
@@ -190,7 +272,7 @@ public class CreatePatterns {
         }
 
         //blue bottom-middle-left lane, bottom-left swing
-        //1, 0, 6
+        //1,0,6
         else if (p._lineIndex == 1 && p._lineLayer == 0 && p._type != 2 && p._cutDirection == 6) {
             if (placement < 38) return new Note(time, 3, 2, 1, 5);
             if (placement < 43) return new Note(time, 2, 0, 1, 5);
@@ -200,7 +282,7 @@ public class CreatePatterns {
         }
 
         //blue bottom-left lane, bottom-left swing
-        //0, 0, 6
+        //0,0,6
         else if (p._lineIndex == 0 && p._lineLayer == 0 && p._type != 2 && p._cutDirection == 6) {
             if (placement < 30) return new Note(time, 2, 2, 1, 5);
             else if (placement < 80) return new Note(time, 3, 2, 1, 5);
@@ -209,7 +291,7 @@ public class CreatePatterns {
         }
 
         //blue bottom-middle-right lane, bottom-left swing
-        //2, 0, 6
+        //2,0,6
         else if (p._lineIndex == 2 && p._lineLayer == 0 && p._type != 2 && p._cutDirection == 6) {
             if (placement <= 40) return new Note(time, 3, 1, 1, 5);
             if (placement <= 60) return new Note(time, 3, 2, 1, 0);
@@ -217,14 +299,14 @@ public class CreatePatterns {
         }
 
         //blue top-middle-right lane, top-right swing
-        //2, 2, 5
+        //2,2,5
         else if (p._lineIndex == 2 && p._lineLayer == 2 && p._type != 2 && p._cutDirection == 5) {
             if (placement <= 20) return new Note(time, 0, 0, 1, 6);
             else return new Note(time, 1, 0, 1, 6);
         }
 
         //blue bottom-right lane, bottom swing
-        //3, 0, 1
+        //3,0,1
         else if (p._lineIndex == 3 && p._lineLayer == 0 && p._type != 2 && p._cutDirection == 1) {
             if (placement <= 40) return new Note(time, 3, 1, 1, 0);
             if (placement <= 50) return new Note(time, 3, 0, 1, 0);
@@ -233,7 +315,7 @@ public class CreatePatterns {
         }
 
         //blue middle-right lane, top swing
-        //3, 1, 0
+        //3,1,0
         else if (p._lineIndex == 3 && p._lineLayer == 1 && p._type != 2 && p._cutDirection == 0) {
             if (placement <= 5) return new Note(time, 3, 1, 1, 1);
             if (placement <= 55) return new Note(time, 3, 0, 1, 1);
@@ -241,35 +323,41 @@ public class CreatePatterns {
         }
 
         //blue top-left-middle lane, top-left swing
-        //1, 2, 4
+        //1,2,4
         else if (p._lineIndex == 1 && p._lineLayer == 2 && p._type != 2 && p._cutDirection == 4) {
             if (placement <= 50) return new Note(time, 3, 0, 1, 7);
             else return new Note(time, 2, 0, 1, 1);
         }
 
         //blue middle-right lane, top-right swing
-        //3, 1, 5
+        //3,1,5
         else if (p._lineIndex == 3 && p._lineLayer == 1 && p._type != 2 && p._cutDirection == 5) {
             if (placement <= 60) return new Note(time, 2, 0, 1, 6);
             else return new Note(time, 1, 0, 1, 6);
         }
 
         //blue bottom-right lane, bottom-right swing
-        //3, 0, 7
+        //3,0,7
         else if (p._lineIndex == 3 && p._lineLayer == 0 && p._type != 2 && p._cutDirection == 7) {
             if (placement <= 10) return new Note(time, 3, 2, 1, 0);
             else return new Note(time, 2, 2, 1, 0);
         }
 
+        //blue top-right-middle lane, bottom-right swing
+        //3,1,7
+        else if (p._lineIndex == 3 && p._lineLayer == 1 && p._type != 2 && p._cutDirection == 7) {
+            return new Note(time, 2, 2, 1, 4);
+        }
+
         //blue middle-right lane, bottom-right swing
-        //3, 0, 1
+        //3,0,1
         else if (p._lineIndex == 3 && p._lineLayer == 1 && p._type != 2 && p._cutDirection == 1) {
             if (placement <= 30) return new Note(time, 3, 1, 1, 0);
             else return new Note(time, 3, 2, 1, 0);
         }
 
         //blue right-bottom lane, bottom swing
-        //3, 0, 0
+        //3,0,0
         else if (p._lineIndex == 3 && p._lineLayer == 0 && p._type != 2 && p._cutDirection == 0) {
             if (placement <= 35) return new Note(time, 3, 0, 1, 1);
             else if (placement <= 80) return new Note(time, 2, 0, 1, 1);
@@ -278,7 +366,7 @@ public class CreatePatterns {
         }
 
         //blue bottom-right-middle lane, bottom swing
-        //3, 0, 0
+        //3,0,0
         else if (p._lineIndex == 2 && p._lineLayer == 0 && p._type != 2 && p._cutDirection == 0) {
             if (placement <= 35) return new Note(time, 3, 0, 1, 1);
             else if (placement <= 40) return new Note(time, 3, 0, 1, 7);
@@ -287,14 +375,14 @@ public class CreatePatterns {
             else return new Note(time, 2, 0, 1, 6);
         }
 
-        //blue bottom-right-middle lane, top-right swing
-        //3, 0, 0
+        //blue bottom-right-middle lane,  top-right swing
+        //2,0,5
         else if (p._lineIndex == 2 && p._lineLayer == 0 && p._type != 2 && p._cutDirection == 5) {
             return new Note(time, 3, 0, 1, 1);
         }
 
         //blue bottom-left-middle lane, top swing
-        //1, 0, 0
+        //1,0,0
         else if (p._lineIndex == 1 && p._lineLayer == 0 && p._type != 2 && p._cutDirection == 0) {
             if (placement <= 33) return new Note(time, 2, 0, 1, 1);
             else if (placement <= 66) return new Note(time, 3, 0, 1, 1);
@@ -302,7 +390,7 @@ public class CreatePatterns {
         }
 
         //blue bottom-left-middle lane, bottom swing
-        //1, 0, 0
+        //1,0,0
         else if (p._lineIndex == 1 && p._lineLayer == 0 && p._type != 2 && p._cutDirection == 1) {
             if (placement <= 33) return new Note(time, 2, 0, 1, 1);
             else if (placement <= 55) return new Note(time, 2, 2, 1, 0);
@@ -310,12 +398,53 @@ public class CreatePatterns {
             else return new Note(time, 3, 2, 1, 5);
         }
 
+        //blue top-right lane, right swing
+        //3,2,3
+        else if (p._lineIndex == 3 && p._lineLayer == 2 && p._type != 2 && p._cutDirection == 3) {
+            if (placement <= 20) return new Note(time, 2, 2, 1, 2);
+            else if (placement <= 45) return new Note(time, 1, 2, 1, 2);
+            else if (placement <= 75) return new Note(time, 1, 0, 1, 6);
+            else return new Note(time, 2, 0, 1, 6);
+        }
+
+        //blue top-right-middle lane, right swing
+        //2,2,3
+        else if (p._lineIndex == 2 && p._lineLayer == 2 && p._type != 2 && p._cutDirection == 3) {
+            if (placement <= 5) return new Note(time, 2, 2, 1, 2);
+            else if (placement <= 55) return new Note(time, 1, 2, 1, 2);
+            else if (placement <= 64) return new Note(time, 0, 2, 1, 2);
+            else return new Note(time, 1, 0, 1, 6);
+        }
+
+        //blue top-right-middle lane,  left swing
+        //2,2,2
+        else if (p._lineIndex == 2 && p._lineLayer == 2 && p._type != 2 && p._cutDirection == 2) {
+            if (placement <= 65) return new Note(time, 3, 2, 1, 3);
+            else return new Note(time, 3, 2, 1, 5);
+        }
+
+        //blue top-left-middle lane, left swing
+        //1,2,2
+        else if (p._lineIndex == 1 && p._lineLayer == 2 && p._type != 2 && p._cutDirection == 2) {
+            if (placement <= 40) return new Note(time, 3, 2, 1, 3);
+            if (placement <= 75) return new Note(time, 2, 2, 1, 3);
+            else return new Note(time, 3, 2, 1, 5);
+        }
+
+        //blue top-right lane,  bottom-right swing
+        //3,2,7
+        else if (p._lineIndex == 3 && p._lineLayer == 2 && p._type != 2 && p._cutDirection == 7) {
+            if (placement <= 20) return new Note(time, 3, 2, 1, 4);
+            if (placement <= 60) return new Note(time, 2, 2, 1, 4);
+            else return new Note(time, 1, 2, 1, 4);
+        }
+
 
         //error catching:
-        //If I forgot to add a note, it will be displayed here:
+        //If I forgot to add a note,it will be displayed here:
         else {
-            System.out.println(p.toString().replaceAll("\n", ""));
-            System.err.println("THERE WAS AN UNDETECTED NOTE!");
+//            System.out.println(p.toString().replaceAll("\n",""));
+//            System.err.println("THERE WAS AN UNDETECTED NOTE!");
             if (p._type != 2 && (p._cutDirection == 1 || p._cutDirection == 6 || p._cutDirection == 2))
                 return new Note(time, 3, 2, 1, 5);
             else if (p._type != 2 && (p._cutDirection == 7 || p._cutDirection == 3))
