@@ -184,6 +184,7 @@ class BeatSaberMap {
 
             //when the note exists, then DON'T place another one on top of it
             if (i >= 2 && (_notes[i - 1]._time == _notes[i]._time || _notes[i]._time - _notes[i - 1]._time <= (float) 1 / 8)) {
+                _notes[i - 1].amountOfStackedNotes++;
                 numberOfNulls++;
                 continue;
             }
@@ -212,6 +213,7 @@ class Note {
     protected int _lineLayer;
     protected int _type;
     protected int _cutDirection;
+    protected int amountOfStackedNotes = 0;
 
     public Note(float time, int lineIndex, int lineLayer, int type, int cutDirection) {
         this._time = time;
@@ -304,6 +306,30 @@ class Note {
 
     public boolean isTimingNote() {
         return _cutDirection == 8;
+    }
+
+    public Note[] createStackedNote() {
+        if (amountOfStackedNotes == 0) return new Note[]{this};
+
+        List<Note> notes = new ArrayList<>();
+        switch (_cutDirection) {
+            case 0, 1 -> {
+                if (_lineIndex == 2) {
+                    notes.add(new Note(_time, _lineIndex, 0, _type, _cutDirection));
+                    notes.add(new Note(_time, _lineIndex, 2, _type, _cutDirection));
+                }
+                if (_lineIndex == 3) {
+                    if (amountOfStackedNotes >= 3) notes.add(new Note(_time, _lineIndex, 0, _type, _cutDirection));
+                    notes.add(new Note(_time, _lineIndex, 1, _type, _cutDirection));
+                    notes.add(new Note(_time, _lineIndex, 2, _type, _cutDirection));
+                }
+            }
+            case 5, 6 -> {
+                notes.add(new Note(_time, 2, 0, _type, _cutDirection));
+                notes.add(new Note(_time, 3, 1, _type, _cutDirection));
+            }
+        }
+        return notes.toArray(new Note[0]);
     }
 }
 

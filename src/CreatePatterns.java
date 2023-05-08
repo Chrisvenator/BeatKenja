@@ -27,6 +27,8 @@ public class CreatePatterns {
 //        System.out.println(new BeatSaberMap(linearSlowPattern(timings._notes)).exportAsMap());
     }
 
+    //TODO: Stacked notes. Theoretically they should work...
+
     /*
     Red: 0
     Blue: 1
@@ -83,18 +85,20 @@ public class CreatePatterns {
             boolean inValidPlacement = false;
 
             //manual error handling:
+            //When there exists an infinite loop:
+            //Then create a new next note
             if (i >= 8 && invalidPlacesInARow >= 500) {
                 System.err.println("ERROR at beat: " + timings[i]._time);
                 pattern[i] = new TimingNote(timings[i]._time);
                 invalidPlacesInARow = 0;
                 continue;
-            } else if (invalidPlacesInARow >= 500)
+            } else if (invalidPlacesInARow >= 500) {
                 throw new IllegalArgumentException("Infinite Loop while creating map! Please try again.");
-            //next note after the error:
+            }
             if (i >= 8 && pattern[i - j]._cutDirection == 8) {
                 pattern[i] = nextNoteAfterTimingNote(pattern, timings[i]._time, i, j);
                 continue;
-            }
+            } //<-- next note after the error
 
             Note previous = pattern[i - j];
             PatternProbability probabilities = p.getProbabilityOf(previous);
@@ -207,10 +211,6 @@ public class CreatePatterns {
         return n;
     }
 
-
-    //TODO: Stacked notes
-    //TODO: Not linear Patterns
-    //TODO: Integrate Pattern.analyzePattern
 
     //p is the current note, that is being processed
     //time is the placement position of the next note
