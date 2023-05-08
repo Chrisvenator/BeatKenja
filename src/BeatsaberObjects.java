@@ -183,7 +183,7 @@ class BeatSaberMap {
         for (int i = 0; i < _notes.length; i++) {
 
             //when the note exists, then DON'T place another one on top of it
-            if (i >= 2 && (_notes[i - 1]._time == _notes[i]._time || _notes[i]._time - _notes[i - 1]._time <= (float) 1/8)) {
+            if (i >= 2 && (_notes[i - 1]._time == _notes[i]._time || _notes[i]._time - _notes[i - 1]._time <= (float) 1 / 8)) {
                 numberOfNulls++;
                 continue;
             }
@@ -300,6 +300,16 @@ class Note {
         Note n = new Note(_time, _lineIndex, _lineLayer, _type, _cutDirection);
         invertNote();
         return n;
+    }
+
+    public boolean isTimingNote() {
+        return _cutDirection == 8;
+    }
+}
+
+class TimingNote extends Note {
+    public TimingNote(float time) {
+        super(time);
     }
 }
 
