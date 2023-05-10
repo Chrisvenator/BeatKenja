@@ -20,7 +20,7 @@ public class Main {
         //Settings:
         String inputPath = "Input.txt";
         String outputPath = "./output/";
-        float bpm = 120;
+        float bpm = 165;
         double placementPrecision = (double) 1 / 32;
 
         //creating a BeatSaberMap Object from the input String
