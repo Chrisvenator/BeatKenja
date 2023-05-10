@@ -1,4 +1,5 @@
 import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,6 +15,7 @@ class BeatSaberMap {
     protected Events[] _events;
     protected Note[] _notes;
     protected Obstacle[] _obstacles;
+    protected List<Bookmark> bookmarks;
     //    private CustomData[] customData; // not working yet
 
     public BeatSaberMap(Note[] notes) {
@@ -23,6 +25,7 @@ class BeatSaberMap {
     public BeatSaberMap(Note[] notes, String originalJSON) {
         this._notes = notes;
         this.originalJSON = originalJSON;
+        calculateBookmarks();
     }
 
 
@@ -48,6 +51,7 @@ class BeatSaberMap {
         BeatSaberMap map = gson.fromJson(jsonInput, BeatSaberMap.class);
 
         map.originalJSON = jsonInput;
+        map.calculateBookmarks();
         return map;
     }
 
@@ -204,6 +208,25 @@ class BeatSaberMap {
         }
 
         this._notes = toReturn;
+    }
+
+    public List<Bookmark> calculateBookmarks() {
+        if (this.originalJSON == null) return new ArrayList<>();
+        if (!this.originalJSON.contains("\"_bookmarks\":[")) return new ArrayList<>();
+
+        String sub = this.originalJSON.substring(this.originalJSON.indexOf("\"_bookmarks\":["));
+        sub = sub.substring(14, sub.indexOf("],") - 1);
+        String[] arr = sub.split("},");
+        List<Bookmark> l = new ArrayList<>();
+
+        for (String s : arr) {
+            s += "}";
+            Gson g = new Gson();
+            l.add(new Gson().fromJson(s, Bookmark.class));
+        }
+
+        this.bookmarks = l;
+        return l;
     }
 }
 
@@ -378,6 +401,23 @@ class Events {
 
     public void convertFlashLightsToOnLights() {
         if (_value == 6) _value = 1;
+    }
+}
+
+class Bookmark {
+    protected float _time;
+    protected String _name;
+    protected float[] _color;
+
+    public Bookmark(float _time, String _name, float[] _color) {
+        this._time = _time;
+        this._name = _name;
+        this._color = _color;
+    }
+
+    @Override
+    public String toString() {
+        return "{\"_time\":" + _time + ",\"_name\":\"" + _name + "\",\"_color\":" + Arrays.toString(_color) + "}";
     }
 }
 

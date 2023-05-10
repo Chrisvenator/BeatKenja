@@ -23,8 +23,11 @@ public class CreatePatterns {
         Pattern p = new Pattern(patterns._notes, 1);
         timings.toBlueLeftBottomRowDotTimings();
 
-        System.out.println(new BeatSaberMap(mapFromPatterns(timings._notes, p, false)).exportAsMap());
+//        System.out.println(new BeatSaberMap(mapFromPatterns(timings._notes, p, false)).exportAsMap());
 //        System.out.println(new BeatSaberMap(linearSlowPattern(timings._notes)).exportAsMap());
+
+        timings.originalJSON = input;
+        System.out.println(timings.calculateBookmarks());
     }
 
     //TODO: Stacked notes. Theoretically they should work...
@@ -70,12 +73,16 @@ public class CreatePatterns {
 
     public static Note[] mapFromPatterns(Note[] timings, Pattern p, boolean oneHanded) {
         Note[] pattern = new Note[timings.length];
+        List<Note> patterns = new ArrayList<>();
         int j = oneHanded ? 1 : 2;
 
         for (int i = 0; i < j; i++) {
             pattern[i] = firstNotePlacement(timings[i]._time);
+            patterns.add(pattern[i]);
         }
 
+        Note previousBlue = pattern[0];
+        Note previousRed = pattern[1];
 
         //invalidPlacesInARow is there to prevent an infinite loop.
         int invalidPlacesInARow = 0;
@@ -109,20 +116,6 @@ public class CreatePatterns {
             else pattern[i] = predictNextNote(probabilities, timings[i]._time);
 
 
-            /*
-            //If there are horizontals
-            if (previous._cutDirection == 2 || previous._cutDirection == 3) {
-                if (firstHorizontalCutDirection == -1) firstHorizontalCutDirection = pattern[i]._cutDirection;
-                horizontalsInARow++;
-            }
-
-            //If the previous note was a horizontal but current isn't
-            if ((previous._cutDirection == 2 || previous._cutDirection == 3) && (pattern[i]._cutDirection != 2 || pattern[i]._cutDirection != 3)) {
-//                pattern[i] = endHorizontalPlacements(pattern[i], firstHorizontalCutDirection, horizontalsInARow);
-                horizontalsInARow = 0;
-            }/**/
-
-
             //check, if the placement is valid (example: dd)
             if (!validPlacement(pattern, i, oneHanded)) inValidPlacement = true;
             if (inValidPlacement && i > 4) {
@@ -130,6 +123,11 @@ public class CreatePatterns {
                 i--;
                 invalidPlacesInARow++;
             } else invalidPlacesInARow = 0;
+
+
+            //Set previous notes:
+            if (pattern[i]._type == 1) previousBlue = pattern[i];
+            if (pattern[i]._type == 0) previousRed = pattern[i];
         }
 
         //make every second note red:
@@ -476,6 +474,9 @@ public class CreatePatterns {
                 || (notes[i - j]._cutDirection == 4 || notes[i - j]._cutDirection == 0 || notes[i - j]._cutDirection == 5) && (notes[i]._cutDirection == 4 || notes[i]._cutDirection == 0 || notes[i]._cutDirection == 5)
                 || (notes[i - j]._cutDirection == 4 || notes[i - j]._cutDirection == 2 || notes[i - j]._cutDirection == 6) && (notes[i]._cutDirection == 4 || notes[i]._cutDirection == 2 || notes[i]._cutDirection == 6)
         ) return false;
+        if (notes[i - j]._cutDirection == 0 && notes[i]._cutDirection == 6 && notes[i - j]._lineLayer == 2 && notes[i]._lineLayer >= 1 && notes[i - j]._lineIndex <= 2 && notes[i]._lineLayer >= 2)
+            return false;
+        if (notes[i]._lineIndex == 2 && notes[i]._lineLayer == 1) return false;
 
         //Avoiding vision blocks.
         //Only place the note, if the previous note is not placed directly in front of it
