@@ -1,10 +1,6 @@
 import com.google.gson.Gson;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CreatePatterns {
     public static void main(String[] args) {
@@ -23,14 +19,11 @@ public class CreatePatterns {
         Pattern p = new Pattern(patterns._notes, 1);
         timings.toBlueLeftBottomRowDotTimings();
 
-//        System.out.println(new BeatSaberMap(mapFromPatterns(timings._notes, p, false)).exportAsMap());
+        System.out.println(new BeatSaberMap(complexPatternWithTemplate(timings._notes, p, false, null, null)).exportAsMap());
 //        System.out.println(new BeatSaberMap(linearSlowPattern(timings._notes)).exportAsMap());
-
-        timings.originalJSON = input;
-        System.out.println(timings.calculateBookmarks());
     }
 
-    //TODO: Stacked notes. Theoretically they should work...
+    //TODO: Stacked notes. Theoretically they SHOULD work...
 
     /*
     Red: 0
@@ -46,7 +39,12 @@ public class CreatePatterns {
     |---|---|---|---|       |---|---|---|
      */
 
-
+    /**
+     * creates a really linear mid-speed pattern
+     *
+     * @param timings where the notes should be placed
+     * @return Note []
+     */
     public static Note[] linearSlowPattern(Note[] timings) {
         Note[] pattern = new Note[timings.length];
 
@@ -71,23 +69,17 @@ public class CreatePatterns {
     }
 
 
-    public static Note[] mapFromPatterns(Note[] timings, Pattern p, boolean oneHanded) {
+    public static Note[] complexPatternWithTemplate(Note[] timings, Pattern p, boolean oneHanded, Note prevBlue, Note prevRed) {
         Note[] pattern = new Note[timings.length];
-        List<Note> patterns = new ArrayList<>();
         int j = oneHanded ? 1 : 2;
 
-        for (int i = 0; i < j; i++) {
-            pattern[i] = firstNotePlacement(timings[i]._time);
-            patterns.add(pattern[i]);
-        }
+        //Placing the first notes manually:
+        pattern[0] = prevBlue != null ? nextLinearNote(prevBlue, timings[0]._time) : firstNotePlacement(timings[0]._time);
+        pattern[1] = prevRed != null ? nextLinearNote(prevRed, timings[1]._time) : firstNotePlacement(timings[1]._time);
 
-        Note previousBlue = pattern[0];
-        Note previousRed = pattern[1];
-
-        //invalidPlacesInARow is there to prevent an infinite loop.
-        int invalidPlacesInARow = 0;
-        int horizontalsInARow = 0;
-        int firstHorizontalCutDirection = -1;
+        int blueHorizontalsInARow = 0; //prevent parity breaks for red notes
+        int redHorizontalsInARow = 0; //prevent parity breaks for red notes
+        int invalidPlacesInARow = 0; //prevent infinite loops
         for (int i = 2; i < timings.length; i++) {
             boolean inValidPlacement = false;
 
@@ -99,13 +91,13 @@ public class CreatePatterns {
                 pattern[i] = new TimingNote(timings[i]._time);
                 invalidPlacesInARow = 0;
                 continue;
-            } else if (invalidPlacesInARow >= 500) {
+            } else if (invalidPlacesInARow >= 500)
                 throw new IllegalArgumentException("Infinite Loop while creating map! Please try again.");
-            }
             if (i >= 8 && pattern[i - j]._cutDirection == 8) {
                 pattern[i] = nextNoteAfterTimingNote(pattern, timings[i]._time, i, j);
                 continue;
             } //<-- next note after the error
+
 
             Note previous = pattern[i - j];
             PatternProbability probabilities = p.getProbabilityOf(previous);
@@ -122,44 +114,137 @@ public class CreatePatterns {
                 pattern[i] = null;
                 i--;
                 invalidPlacesInARow++;
+                continue;
             } else invalidPlacesInARow = 0;
 
 
-            //Set previous notes:
-            if (pattern[i]._type == 1) previousBlue = pattern[i];
-            if (pattern[i]._type == 0) previousRed = pattern[i];
+            //check if the horizontal placement is correct or if there is a parity break.
+            //For further info have a look at: endHorizontalPlacements()
+            if ((redHorizontalsInARow >= 2 || blueHorizontalsInARow >= 2) && (pattern[i]._cutDirection != 2 && pattern[i]._cutDirection != 3)) {
+                Note noteAfterHorizontal = endHorizontalPlacements(pattern, i, j);
+                pattern[i] = noteAfterHorizontal != null ? noteAfterHorizontal : pattern[i];
+                if (i % 2 == 0) blueHorizontalsInARow = 0;
+                if (i % 2 == 1) redHorizontalsInARow = 0;
+            }
+            if (i % 2 == 0 && (pattern[i]._cutDirection == 2 || pattern[i]._cutDirection == 3)) blueHorizontalsInARow++;
+            if (i % 2 == 1 && (pattern[i]._cutDirection == 2 || pattern[i]._cutDirection == 3) && !oneHanded) redHorizontalsInARow++;
         }
 
         //make every second note red:
         if (!oneHanded) for (int i = 1; i < pattern.length; i += 2) pattern[i].invertNote();
 
-
         return pattern;
     }
 
-    public static Note endHorizontalPlacements(Note pattern, int firstHorizontalCutDirection, int horizontalsInARow) {
-        float random = (float) Math.random() * 100;
 
-        //starting with left swing and number is uneven
-        if (firstHorizontalCutDirection == 2 && horizontalsInARow % 2 == 1 && horizontalsInARow > 0) {
-            if (random <= 50) return new Note(pattern._time, 3, 1, 1, 7);
-            else return new Note(pattern._time, 3, 0, 1, 7);
+    /**
+     * This function tries to avoid parity breaks when a horizontal segment is coming to an end.
+     *
+     * @param pattern pattern [] is the array, where the previous notes are saved.
+     * @param i       i specifies at which element the last note has been placed.
+     * @param j       j... If the pattern is one handed: j = 1. If two handed: j = 2.
+     * @return Note
+     */
+    public static Note endHorizontalPlacements(Note[] pattern, int i, int j) {
+        float random = (float) Math.random() * 100;
+        boolean debug = false;
+        int firstHorizontalCutDirection = -1;
+        int secondHorizontalCutDirection = -1;
+        int horizontalsInARow = 0;
+//        if (debug) System.out.println(pattern[i - j - j - j - j].toString().replaceAll("\n", ""));
+//        if (debug) System.out.println(pattern[i - j - j - j].toString().replaceAll("\n", ""));
+//        if (debug) System.out.println(pattern[i - j - j].toString().replaceAll("\n", ""));
+//        if (debug) System.out.println(pattern[i - j].toString().replaceAll("\n", ""));
+//        if (debug) System.out.println(pattern[i].toString().replaceAll("\n", ""));
+
+        for (int k = i - j; k >= 0; k -= j) {
+            if (pattern[k]._cutDirection != 2 && pattern[k]._cutDirection != 3) {
+                firstHorizontalCutDirection = pattern[k]._cutDirection;
+                secondHorizontalCutDirection = pattern[k + j]._cutDirection;
+                break;
+            }
+            horizontalsInARow++;
+        }
+        if (debug) System.out.println("In a row:   " + horizontalsInARow);
+        if (debug) System.out.println("Direction:  " + firstHorizontalCutDirection);
+        if (debug) System.out.println("Note (i):   " + i);
+        if (debug) System.out.println();
+
+        if (horizontalsInARow == 0) return null;
+
+        switch (horizontalsInARow % 2) {
+            case 0 -> {
+                //first: top left swing
+                if (firstHorizontalCutDirection == 4 || (firstHorizontalCutDirection == 0 && secondHorizontalCutDirection == 3)) {
+                    if (debug) System.out.println("Before-dir: " + firstHorizontalCutDirection);
+                    if (random <= 50) return new Note(pattern[i]._time, 3, 0, 1, 7);
+                    else return new Note(pattern[i]._time, 3, 1, 1, 7);
+                }
+
+                //first: top right swing
+                if (firstHorizontalCutDirection == 5 || (firstHorizontalCutDirection == 0 && secondHorizontalCutDirection == 2)) {
+                    if (debug) System.out.println("Before-dir: " + firstHorizontalCutDirection);
+                    if (random <= 50) return new Note(pattern[i]._time, 2, 0, 1, 6);
+                    else return new Note(pattern[i]._time, 1, 0, 1, 6);
+                }
+
+                //first: bottom left swing
+                if (firstHorizontalCutDirection == 6 || (firstHorizontalCutDirection == 1 && secondHorizontalCutDirection == 3)) {
+                    if (debug) System.out.println("Before-dir: " + firstHorizontalCutDirection);
+                    return new Note(pattern[i]._time, 3, 2, 1, 5);
+                }
+
+                //first: bottom right swing
+                if (firstHorizontalCutDirection == 7 || (firstHorizontalCutDirection == 1 && secondHorizontalCutDirection == 2)) {
+                    if (debug) System.out.println("Before-dir: " + firstHorizontalCutDirection);
+                    return new Note(pattern[i]._time, 2, 1, 1, 4);
+                }
+            }
+            case 1 -> {
+                //first: top left swing
+                if (firstHorizontalCutDirection == 4 || (firstHorizontalCutDirection == 0 && secondHorizontalCutDirection == 3)) {
+                    if (debug) System.out.println("Before-dir: " + firstHorizontalCutDirection);
+                    return new Note(pattern[i]._time, 2, 1, 1, 4);
+                }
+
+                //first: top right swing
+                if (firstHorizontalCutDirection == 5 || (firstHorizontalCutDirection == 0 && secondHorizontalCutDirection == 2)) {
+                    if (debug) System.out.println("Before-dir: " + firstHorizontalCutDirection);
+                    return new Note(pattern[i]._time, 3, 2, 1, 5);
+                }
+
+                //first: bottom left swing
+                if (firstHorizontalCutDirection == 6 || (firstHorizontalCutDirection == 1 && secondHorizontalCutDirection == 3)) {
+                    if (debug) System.out.println("Before-dir: " + firstHorizontalCutDirection);
+                    if (random <= 50) return new Note(pattern[i]._time, 2, 0, 1, 6);
+                    else return new Note(pattern[i]._time, 1, 0, 1, 6);
+                }
+
+                //first: bottom right swing
+                if (firstHorizontalCutDirection == 7 || (firstHorizontalCutDirection == 1 && secondHorizontalCutDirection == 2)) {
+                    if (debug) System.out.println("Before-dir: " + firstHorizontalCutDirection);
+                    if (random <= 50) return new Note(pattern[i]._time, 3, 0, 1, 7);
+                    else return new Note(pattern[i]._time, 3, 1, 1, 7);
+                }
+            }
         }
 
-        //starting with left swing and number is even
-        if (firstHorizontalCutDirection == 2 && horizontalsInARow % 2 == 0 && horizontalsInARow > 0)
-            return new Note(pattern._time, 2, 2, 1, 4);
 
-
-        //starting with right swing and number is uneven
-        if (firstHorizontalCutDirection == 3 && horizontalsInARow % 2 == 1 && horizontalsInARow >= 2)
-            return new Note(pattern._time, 2, 0, 1, 6);
-        //starting with left swing and number is even
-        if (firstHorizontalCutDirection == 3 && horizontalsInARow % 2 == 0 && horizontalsInARow > 0)
-            return new Note(pattern._time, 3, 2, 1, 5);
+        System.err.println("Check parity at: " + pattern[i]._time);
         return null;
     }
 
+
+    /**
+     * If there was an error, a timing note is being placed.
+     * This function tries to see which note came before the error and places a note accordingly, which does not break parity.
+     *
+     * @param pattern pattern [] is the array, where the previous notes are saved.
+     * @param time    time specifies on which bpm the note should be placed.
+     * @param i       i specifies at which element the last note has been placed.
+     * @param j       j... If the pattern is one handed: j = 1. If two handed: j = 2.
+     * @return Note
+     */
     public static Note nextNoteAfterTimingNote(Note[] pattern, float time, int i, int j) {
         Note toReturn = firstNotePlacement(time);
 
@@ -179,6 +264,13 @@ public class CreatePatterns {
         return toReturn;
     }
 
+    /**
+     * This function predicts the next note based the probabilities of the pattern
+     *
+     * @param pattern this is probability of the patterns from a map saved as the PatternProbability class
+     * @param time    time specifies on which bpm the note should be placed.
+     * @return Note
+     */
     public static Note predictNextNote(PatternProbability pattern, float time) {
         if (pattern == null || pattern.notes == null) return null;
 
@@ -198,6 +290,12 @@ public class CreatePatterns {
         return null;
     }
 
+    /**
+     * If there is no note placed yet, then this function will always generate a down-swing note
+     *
+     * @param _time time specifies on which bpm the note should be placed.
+     * @return Note
+     */
     public static Note firstNotePlacement(float _time) {
         Note n;
         double placement = Math.random() * 100;
@@ -209,9 +307,14 @@ public class CreatePatterns {
         return n;
     }
 
-
-    //p is the current note, that is being processed
-    //time is the placement position of the next note
+    /**
+     * This function creates a note based on the previous note that doesn't break parity.
+     * It only creates really linear patterns
+     *
+     * @param previousNote the note that came before.
+     * @param time         time specifies on which bpm the note should be placed.
+     * @return Note
+     */
     public static Note nextLinearNote(Note previousNote, float time) {
         Note p = previousNote; //p is much cleaner than having a thousand times previousNote
         double placement = Math.random() * 100;
@@ -417,7 +520,7 @@ public class CreatePatterns {
         //blue top-right-middle lane,  left swing
         //2,2,2
         else if (p._lineIndex == 2 && p._lineLayer == 2 && p._type != 2 && p._cutDirection == 2) {
-            if (placement <= 65) return new Note(time, 3, 2, 1, 3);
+            if (placement <= 40) return new Note(time, 3, 2, 1, 3);
             else return new Note(time, 3, 2, 1, 5);
         }
 
@@ -455,33 +558,62 @@ public class CreatePatterns {
     }
 
 
-    //This function checks if the note on position i has a valid placement there
-    //read further for more information
+    /**
+     * This function checks if the note on position i has a valid placement there
+     * currently supports:
+     * - Double Directional
+     * - Vision blocks
+     * - placeing note, if the previous note is not placed directly in front of it
+     * <p>
+     * read further for more information
+     *
+     * @param notes     notes [] is the array, where the previous notes are saved.
+     * @param i         i specifies at which element the last note has been placed.
+     * @param oneHanded is the map a one handed map.
+     * @return boolean
+     */
     public static boolean validPlacement(Note[] notes, int i, boolean oneHanded) {
         if (notes.length <= 2) return true;
         if (i < 4) return true;
         if (notes[i - 1] == null || notes[i] == null) return false;
 
-        //avoid DDs
-        //for One-Handed only. For two handed replace i-1 with i-2
-
         int j = 2;
         if (oneHanded) j = 1;
 
+
+        //DD:
         if (notes[i - j]._cutDirection == notes[i]._cutDirection
                 || (notes[i - j]._cutDirection == 6 || notes[i - j]._cutDirection == 1 || notes[i - j]._cutDirection == 7) && (notes[i]._cutDirection == 6 || notes[i]._cutDirection == 1 || notes[i]._cutDirection == 7)
                 || (notes[i - j]._cutDirection == 7 || notes[i - j]._cutDirection == 3 || notes[i - j]._cutDirection == 5) && (notes[i]._cutDirection == 7 || notes[i]._cutDirection == 3 || notes[i]._cutDirection == 5)
                 || (notes[i - j]._cutDirection == 4 || notes[i - j]._cutDirection == 0 || notes[i - j]._cutDirection == 5) && (notes[i]._cutDirection == 4 || notes[i]._cutDirection == 0 || notes[i]._cutDirection == 5)
                 || (notes[i - j]._cutDirection == 4 || notes[i - j]._cutDirection == 2 || notes[i - j]._cutDirection == 6) && (notes[i]._cutDirection == 4 || notes[i]._cutDirection == 2 || notes[i]._cutDirection == 6)
         ) return false;
+
+        //weird top row notes
         if (notes[i - j]._cutDirection == 0 && notes[i]._cutDirection == 6 && notes[i - j]._lineLayer == 2 && notes[i]._lineLayer >= 1 && notes[i - j]._lineIndex <= 2 && notes[i]._lineLayer >= 2)
             return false;
+
+        //Vision block
         if (notes[i]._lineIndex == 2 && notes[i]._lineLayer == 1) return false;
 
-        //Avoiding vision blocks.
         //Only place the note, if the previous note is not placed directly in front of it
         //If one-handed it true, then we can just skip this step.
         if (oneHanded) return true;
         return notes[i - 1]._lineIndex != notes[i].getInverted()._lineIndex || notes[i - 1]._lineLayer != notes[i]._lineLayer;
+    }
+
+    /**
+     * Removes every null element in the array notes[]
+     *
+     * @param notes notes[] is the array, where the notes are saved.
+     * @return Note [] without nulls
+     */
+    public static Note[] removeAllNulls(Note[] notes) {
+        List<Note> list = new ArrayList<>();
+        Collections.addAll(list, notes);
+
+        while (list.remove(null)) ;
+
+        return list.toArray(new Note[0]);
     }
 }

@@ -220,8 +220,11 @@ class BeatSaberMap {
         List<Bookmark> l = new ArrayList<>();
 
         for (String s : arr) {
-            s += "}";
-            Gson g = new Gson();
+            if (!s.contains("{")) s = "{" + s;
+            if (!s.contains("}")) s += "}";
+            if (!s.contains("_name")) break;
+            s = s.replaceAll("]", "");
+            while (s.contains("}}")) s = s.replaceAll("}}", "}");
             l.add(new Gson().fromJson(s, Bookmark.class));
         }
 
