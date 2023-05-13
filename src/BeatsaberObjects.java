@@ -276,6 +276,10 @@ class Note implements Comparable<Note> {
         return _lineIndex == note._lineIndex && _lineLayer == note._lineLayer && _type == note._type && _cutDirection == note._cutDirection;
     }
 
+    public boolean equalNotePlacement(Note note) {
+        return _lineIndex == note._lineIndex && _lineLayer == note._lineLayer;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(_time, _lineIndex, _lineLayer, _type, _cutDirection);
@@ -300,10 +304,12 @@ class Note implements Comparable<Note> {
         return "{" + "\"_time\":" + _time + ",\"_lineIndex\":" + _lineIndex + ",\"_lineLayer\":" + _lineLayer + ",\"_type\":" + _type + ",\"_cutDirection\":" + _cutDirection + "}\n";
     }
 
-    public void invertNote() {
+    public Note invertNote() {
         invertColor();
         invertLineIndex();
         invertNoteRotation();
+
+        return this;
     }
 
     public void invertColor() {
@@ -359,7 +365,7 @@ class Note implements Comparable<Note> {
                 notes.add(new Note(_time, 3, 1, _type, _cutDirection));
             }
             case 2, 3, 4, 7, 8 -> {
-                notes.add(this);
+                notes.add(new Note(this._time, this._lineIndex, this._lineLayer, this._type, this._cutDirection));
             }
         }
         return notes.toArray(new Note[0]);
