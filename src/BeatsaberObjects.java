@@ -28,6 +28,10 @@ class BeatSaberMap {
         calculateBookmarks();
     }
 
+    public BeatSaberMap(List<Note> notes) {
+        this._notes = notes.toArray(new Note[0]);
+    }
+
 
     //Make the note timing divisible by 64 so that is not being flagged by ScoreSaber as "unsure"
     public void fixPlacements(double precision) {
@@ -188,7 +192,7 @@ class BeatSaberMap {
 
             //when the note exists, then DON'T place another one on top of it
             if (i >= 2 && (_notes[i - 1]._time == _notes[i]._time || _notes[i]._time - _notes[i - 1]._time <= (float) 1 / 8)) {
-                _notes[i - 1].amountOfStackedNotes++;
+                timings[i - 1].amountOfStackedNotes++;
                 numberOfNulls++;
                 continue;
             }
@@ -233,7 +237,7 @@ class BeatSaberMap {
     }
 }
 
-class Note {
+class Note implements Comparable<Note> {
     protected float _time;
     protected int _lineIndex;
     protected int _lineLayer;
@@ -354,9 +358,21 @@ class Note {
                 notes.add(new Note(_time, 2, 0, _type, _cutDirection));
                 notes.add(new Note(_time, 3, 1, _type, _cutDirection));
             }
+            case 2, 3, 4, 7, 8 -> {
+                notes.add(this);
+            }
         }
         return notes.toArray(new Note[0]);
     }
+
+    @Override
+    public int compareTo(Note o) {
+        if (this._time < o._time) return -1;
+        if (this._time == o._time) return -0;
+        return 1;
+    }
+
+
 }
 
 class TimingNote extends Note {

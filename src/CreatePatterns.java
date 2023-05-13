@@ -19,8 +19,11 @@ public class CreatePatterns {
         Pattern p = new Pattern(patterns._notes, 1);
         timings.toBlueLeftBottomRowDotTimings();
 
-        System.out.println(new BeatSaberMap(complexPatternWithTemplate(timings._notes, p, false, null, null)).exportAsMap());
+//        System.out.println(new BeatSaberMap(complexPatternFromTemplate(timings._notes, p, false, null, null)).exportAsMap());
 //        System.out.println(new BeatSaberMap(linearSlowPattern(timings._notes)).exportAsMap());
+
+        System.out.println(new BeatSaberMap(twoRightOneLeft(timings._notes, p, null, null, true)).exportAsMap());
+        //new Note((float) 7.5, 1, 0, 1, 1)
     }
 
     //TODO: Stacked notes. Theoretically they SHOULD work...
@@ -39,8 +42,9 @@ public class CreatePatterns {
     |---|---|---|---|       |---|---|---|
      */
 
+
     /**
-     * creates a really linear mid-speed pattern
+     * creates a really linear two handed mid-speed pattern
      *
      * @param timings where the notes should be placed
      * @return Note []
@@ -69,18 +73,28 @@ public class CreatePatterns {
     }
 
 
-    public static Note[] complexPatternWithTemplate(Note[] timings, Pattern p, boolean oneHanded, Note prevBlue, Note prevRed) {
+    /**
+     * This methode creates a pattern on basis of the original Pattern.
+     *
+     * @param timings   where the notes should be placed
+     * @param p         p are the probabilities that which note follows which. It must be in the "Pattern"-Format
+     * @param oneHanded is the map one handed?
+     * @param prevBlue  What the previous blue note was
+     * @param prevRed   What the previous red note was
+     * @return A List of all notes that have been generated
+     */
+    public static Note[] complexPatternFromTemplate(Note[] timings, Pattern p, boolean oneHanded, Note prevBlue, Note prevRed) {
         Note[] pattern = new Note[timings.length];
         int j = oneHanded ? 1 : 2;
 
         //Placing the first notes manually:
         pattern[0] = prevBlue != null ? nextLinearNote(prevBlue, timings[0]._time) : firstNotePlacement(timings[0]._time);
-        pattern[1] = prevRed != null ? nextLinearNote(prevRed, timings[1]._time) : firstNotePlacement(timings[1]._time);
+        if (!oneHanded) pattern[1] = prevRed != null ? nextLinearNote(prevRed, timings[1]._time) : firstNotePlacement(timings[1]._time);
 
         int blueHorizontalsInARow = 0; //prevent parity breaks for red notes
         int redHorizontalsInARow = 0; //prevent parity breaks for red notes
         int invalidPlacesInARow = 0; //prevent infinite loops
-        for (int i = 2; i < timings.length; i++) {
+        for (int i = j; i < timings.length; i++) {
             boolean inValidPlacement = false;
 
             //manual error handling:
@@ -128,12 +142,94 @@ public class CreatePatterns {
             }
             if (i % 2 == 0 && (pattern[i]._cutDirection == 2 || pattern[i]._cutDirection == 3)) blueHorizontalsInARow++;
             if (i % 2 == 1 && (pattern[i]._cutDirection == 2 || pattern[i]._cutDirection == 3) && !oneHanded) redHorizontalsInARow++;
+
+            //creating the flag, so that a stack may be done later;
+            pattern[i].amountOfStackedNotes = timings[i].amountOfStackedNotes;
         }
 
         //make every second note red:
         if (!oneHanded) for (int i = 1; i < pattern.length; i += 2) pattern[i].invertNote();
 
         return pattern;
+    }
+
+    /**
+     * This methode creates a pattern, where there is one right-hand swing followed by a both-hand swing followed by a right-hand swing.
+     * This repeats until the end of timings[] is reached
+     *
+     * @param timings  where the notes should be placed
+     * @param p        p are the probabilities that which note follows which. It must be in the "Pattern"-Format
+     * @param prevBlue What the previous blue note was
+     * @param prevRed  What the previous red note was
+     * @param stacks   should stacks be generated?
+     * @return A List of all notes that have been generated
+     */
+    public static List<Note> twoRightOneLeft(Note[] timings, Pattern p, Note prevBlue, Note prevRed, boolean stacks) {
+        List<Note> redNotes = new ArrayList<>();
+
+
+        prevRed = prevRed == null ? firstNotePlacement(timings[0]._time) : nextLinearNote(prevRed, timings[0]._time);
+        redNotes.add(prevRed);
+
+        Note[] complexPattern = complexPatternFromTemplate(timings, p, true, prevBlue, null);
+//        List<Note> blueNotes = new ArrayList<>(List.of(complexPattern));
+
+        int invalidPlacementsInARow = 0;
+        for (int i = 2; i < complexPattern.length; i += 2) {
+            if (timings[i].amountOfStackedNotes >= 1) System.out.println("YAY: " + timings[i]._time);
+
+            // ERROR handling:
+            // Try 100 times to place a normal note. If this doesn't work, then place a Timing-Note.
+            // If this still doesn't work, then throw an exception
+            if (i >= 8 && invalidPlacementsInARow >= 100) {
+                System.err.println("ERROR at beat: " + timings[i]._time);
+                redNotes.add(new TimingNote(timings[i]._time));
+                invalidPlacementsInARow = 0;
+                continue;
+            } else if (invalidPlacementsInARow >= 500)
+                throw new IllegalArgumentException("Infinite Loop while creating map! Please try again.");
+
+            //Place a Note that doesn't break parity after the error:
+            if (i >= 8 && redNotes.get(redNotes.size() - 1)._cutDirection == 8) {
+                redNotes.add(nextNoteAfterTimingNote(redNotes.toArray(redNotes.toArray(new Note[0])), timings[i]._time, redNotes.size(), 1));
+                continue;
+            }
+
+
+            Note n = nextLinearNote(redNotes.get(redNotes.size() - 1), complexPattern[i]._time);
+
+            //If the Notes are placed inside each other or too close to one another, then try again
+            if (i >= 2 && (complexPattern[i]._lineIndex == n.getInverted()._lineIndex && complexPattern[i]._lineLayer == n._lineLayer || complexPattern[i - 1]._lineIndex == n.getInverted()._lineIndex && complexPattern[i - 1]._lineLayer == n._lineLayer)) {
+                i -= 2;
+                invalidPlacementsInARow++;
+                continue;
+            }
+
+            n.amountOfStackedNotes = timings[i].amountOfStackedNotes;
+            redNotes.add(n);
+        }
+
+
+        //Inverting all red Notes so that they are actually red notes LUL
+        for (Note n : redNotes) n.invertNote();
+
+        //Creating a list of all notes that should be returned
+        List<Note> allNotes = new ArrayList<>();
+
+        if (stacks) {
+            for (Note n : redNotes) {
+                allNotes.addAll(List.of(n.createStackedNote()));
+            }
+            for (Note n : complexPattern) {
+                allNotes.addAll(List.of(n.createStackedNote()));
+            }
+        } else {
+            allNotes.addAll(redNotes);
+            allNotes.addAll(List.of(complexPattern));
+        }
+
+        Collections.sort(allNotes);
+        return allNotes;
     }
 
 
@@ -550,7 +646,7 @@ public class CreatePatterns {
                 return new Note(time, 3, 2, 1, 5);
             else if (p._type != 2 && (p._cutDirection == 7 || p._cutDirection == 3))
                 return new Note(time, 2, 2, 1, 4);
-            else if (p._type != 4 && (p._cutDirection == 0 || p._cutDirection == 5))
+            else if (p._type != 4 && (p._cutDirection == 0 || p._cutDirection == 5 || p._cutDirection == 4))
                 return new Note(time, 0, 2, 1, 1);
 
             throw new IllegalArgumentException("There is an undetected note!");
