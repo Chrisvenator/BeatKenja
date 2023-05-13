@@ -150,6 +150,11 @@ public class CreatePatterns {
         //make every second note red:
         if (!oneHanded) for (int i = 1; i < pattern.length; i += 2) pattern[i].invertNote();
 
+        //TODO: This may break things:
+        //Check, if one note is inside another note
+        List<Note> l = new ArrayList(List.of(pattern));
+        pattern = checkForNoteInNote(l);
+
         return pattern;
     }
 
@@ -172,11 +177,10 @@ public class CreatePatterns {
         redNotes.add(prevRed);
 
         Note[] complexPattern = complexPatternFromTemplate(timings, p, true, prevBlue, null);
-//        List<Note> blueNotes = new ArrayList<>(List.of(complexPattern));
 
         int invalidPlacementsInARow = 0;
         for (int i = 2; i < complexPattern.length; i += 2) {
-            if (timings[i].amountOfStackedNotes >= 1) System.out.println("YAY: " + timings[i]._time);
+            boolean validPlacement = true;
 
             // ERROR handling:
             // Try 100 times to place a normal note. If this doesn't work, then place a Timing-Note.
@@ -198,8 +202,12 @@ public class CreatePatterns {
 
             Note n = nextLinearNote(redNotes.get(redNotes.size() - 1), complexPattern[i]._time);
 
+            Note[] stackedNotes = complexPattern[i].createStackedNote();
+//            for (Note s : stackedNotes) if (s.invertNote().equalNotePlacement(n)) validPlacement = false;
+
+
             //If the Notes are placed inside each other or too close to one another, then try again
-            if (i >= 2 && (complexPattern[i]._lineIndex == n.getInverted()._lineIndex && complexPattern[i]._lineLayer == n._lineLayer || complexPattern[i - 1]._lineIndex == n.getInverted()._lineIndex && complexPattern[i - 1]._lineLayer == n._lineLayer)) {
+            if (i >= 2 && (complexPattern[i]._lineIndex == n.getInverted()._lineIndex && complexPattern[i]._lineLayer == n._lineLayer || complexPattern[i - 1]._lineIndex == n.getInverted()._lineIndex && complexPattern[i - 1]._lineLayer == n._lineLayer) || !validPlacement) {
                 i -= 2;
                 invalidPlacementsInARow++;
                 continue;
@@ -229,7 +237,20 @@ public class CreatePatterns {
         }
 
         Collections.sort(allNotes);
+        checkForNoteInNote(allNotes);
+
         return allNotes;
+    }
+
+    public static Note[] checkForNoteInNote(List<Note> allNotes) {
+        Collections.sort(allNotes);
+        for (int i = 0; i < allNotes.size() - 1; i++) {
+            if (allNotes.get(i)._time == allNotes.get(i + 1)._time && allNotes.get(i).equalNotePlacement(allNotes.get(i + 1))) {
+                if (allNotes.get(i)._type == 0) allNotes.get(i)._lineIndex--;
+                System.err.println("Warning at beat: " + allNotes.get(i)._time + ": Note in another Note. Might be already fixed");
+            }
+        }
+        return allNotes.toArray(new Note[0]);
     }
 
 
