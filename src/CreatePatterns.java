@@ -173,15 +173,17 @@ public class CreatePatterns {
         List<Note> redNotes = new ArrayList<>();
 
 
+        //Define the previous note that came before this function was called
         prevRed = prevRed == null ? firstNotePlacement(timings[0]._time) : nextLinearNote(prevRed, timings[0]._time);
         redNotes.add(prevRed);
 
+        //Right-hand swings:
         Note[] complexPattern = complexPatternFromTemplate(timings, p, true, prevBlue, null);
 
+
+        //Create left-hand swings:
         int invalidPlacementsInARow = 0;
         for (int i = 2; i < complexPattern.length; i += 2) {
-            boolean validPlacement = true;
-
             // ERROR handling:
             // Try 100 times to place a normal note. If this doesn't work, then place a Timing-Note.
             // If this still doesn't work, then throw an exception
@@ -200,19 +202,17 @@ public class CreatePatterns {
             }
 
 
+            //create note:
             Note n = nextLinearNote(redNotes.get(redNotes.size() - 1), complexPattern[i]._time);
 
-            Note[] stackedNotes = complexPattern[i].createStackedNote();
-//            for (Note s : stackedNotes) if (s.invertNote().equalNotePlacement(n)) validPlacement = false;
-
-
             //If the Notes are placed inside each other or too close to one another, then try again
-            if (i >= 2 && (complexPattern[i]._lineIndex == n.getInverted()._lineIndex && complexPattern[i]._lineLayer == n._lineLayer || complexPattern[i - 1]._lineIndex == n.getInverted()._lineIndex && complexPattern[i - 1]._lineLayer == n._lineLayer) || !validPlacement) {
+            if (i >= 2 && (complexPattern[i]._lineIndex == n.getInverted()._lineIndex && complexPattern[i]._lineLayer == n._lineLayer || complexPattern[i - 1]._lineIndex == n.getInverted()._lineIndex && complexPattern[i - 1]._lineLayer == n._lineLayer)) {
                 i -= 2;
                 invalidPlacementsInARow++;
                 continue;
             }
 
+            //Transfer the information about if the note is a stack into the new array
             n.amountOfStackedNotes = timings[i].amountOfStackedNotes;
             redNotes.add(n);
         }
@@ -224,6 +224,8 @@ public class CreatePatterns {
         //Creating a list of all notes that should be returned
         List<Note> allNotes = new ArrayList<>();
 
+
+        //Creating the stacks and adding all notes to the final List
         if (stacks) {
             for (Note n : redNotes) {
                 allNotes.addAll(List.of(n.createStackedNote()));
@@ -237,8 +239,9 @@ public class CreatePatterns {
         }
 
         Collections.sort(allNotes);
-        checkForNoteInNote(allNotes);
 
+        //Check if there is a not inside another note
+        checkForNoteInNote(allNotes);
         return allNotes;
     }
 
