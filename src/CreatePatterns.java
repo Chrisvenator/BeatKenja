@@ -152,8 +152,8 @@ public class CreatePatterns {
 
         //TODO: This may break things:
         //Check, if one note is inside another note
-        List<Note> l = new ArrayList(List.of(pattern));
-        pattern = checkForNoteInNote(l);
+        List<Note> l = List.of(pattern);
+        pattern = checkForNoteInsideNote(l).toArray(new Note[0]);
 
         return pattern;
     }
@@ -225,35 +225,110 @@ public class CreatePatterns {
         List<Note> allNotes = new ArrayList<>();
 
 
-        //Creating the stacks and adding all notes to the final List
-        if (stacks) {
-            for (Note n : redNotes) {
-                allNotes.addAll(List.of(n.createStackedNote()));
-            }
-            for (Note n : complexPattern) {
-                allNotes.addAll(List.of(n.createStackedNote()));
-            }
-        } else {
-            allNotes.addAll(redNotes);
-            allNotes.addAll(List.of(complexPattern));
-        }
-
+        //Merging the red notes and the blue notes
+        allNotes.addAll(redNotes);
+        allNotes.addAll(Arrays.asList(complexPattern));
         Collections.sort(allNotes);
 
-        //Check if there is a not inside another note
-        checkForNoteInNote(allNotes);
+        //Creating the stacks and adding all notes to the final List
+        if (stacks) {
+            allNotes = createStacks(allNotes);
+        }
+
+
+        checkParity(allNotes);
         return allNotes;
     }
 
-    public static Note[] checkForNoteInNote(List<Note> allNotes) {
+
+    /**
+     * This function checks parity and prints an error, if there is a dd somewhere
+     *
+     * @param notes List of notes that should be checked
+     */
+    public static void checkParity(List<Note> notes) {
+        Note red = null;
+        Note blue = null;
+
+        for (Note n : notes) {
+
+            //set red and blue notes:
+            if (red == null && n._type == 0) {
+                red = n;
+                continue;
+            } else if (blue == null && n._type == 1) {
+                blue = n;
+                continue;
+            } else if (blue == null || red == null) continue;
+
+            if (n._type == 0 && red._time == n._time) continue;
+            if (n._type == 1 && blue._time == n._time) continue;
+
+            //check if red has a dd:
+            if (n._type == 0 && (n._cutDirection == red._cutDirection
+                    || (red._cutDirection == 6 || red._cutDirection == 1 || red._cutDirection == 7) && (n._cutDirection == 6 || n._cutDirection == 1 || n._cutDirection == 7)
+                    || (red._cutDirection == 7 || red._cutDirection == 3 || red._cutDirection == 5) && (n._cutDirection == 7 || n._cutDirection == 3 || n._cutDirection == 5)
+                    || (red._cutDirection == 4 || red._cutDirection == 0 || red._cutDirection == 5) && (n._cutDirection == 4 || n._cutDirection == 0 || n._cutDirection == 5)
+                    || (red._cutDirection == 4 || red._cutDirection == 2 || red._cutDirection == 6) && (n._cutDirection == 4 || n._cutDirection == 2 || n._cutDirection == 6))) {
+                System.err.println("ERROR at beat: " + n._time + ". Parity break!");
+            }
+
+            //check if blue has a dd:
+            if (n._type == 1 && (n._cutDirection == blue._cutDirection
+                    || (blue._cutDirection == 6 || blue._cutDirection == 1 || blue._cutDirection == 7) && (n._cutDirection == 6 || n._cutDirection == 1 || n._cutDirection == 7)
+                    || (blue._cutDirection == 7 || blue._cutDirection == 3 || blue._cutDirection == 5) && (n._cutDirection == 7 || n._cutDirection == 3 || n._cutDirection == 5)
+                    || (blue._cutDirection == 4 || blue._cutDirection == 0 || blue._cutDirection == 5) && (n._cutDirection == 4 || n._cutDirection == 0 || n._cutDirection == 5)
+                    || (blue._cutDirection == 4 || blue._cutDirection == 2 || blue._cutDirection == 6) && (n._cutDirection == 4 || n._cutDirection == 2 || n._cutDirection == 6))) {
+                System.err.println("ERROR at beat: " + n._time + ". Parity break!");
+            }
+
+
+            if (n._type == 0) red = n;
+            else if (n._type == 1) blue = n;
+        }
+    }
+
+
+    /**
+     * This function creates stacks for every note in notes. Stacks will only be placed if the flag has been set.
+     * The flag can be set with: note.amountOfStackedNotes = 2
+     *
+     * @param notes all the notes that should be looked at to create stacks. Doesn't guarantee that a stack will be placed!
+     * @return a List of all notes including stacks
+     */
+    public static List<Note> createStacks(List<Note> notes) {
+        List<Note> toReturn = new ArrayList<>();
+        for (Note n : notes) {
+            toReturn.addAll(List.of(n.createStackedNote()));
+        }
+
+        //Check if there is a note inside another note
+        return checkForNoteInsideNote(toReturn);
+    }
+
+    /**
+     * This function checks the list allNotes if there are 2 ore more notes inside one another. If this is true, the red Note
+     * will be placed moved one line to the right
+     *
+     * @param allNotes input List where all the notes have been saved
+     * @return a List without notes inside other notes
+     */
+    public static List<Note> checkForNoteInsideNote(List<Note> allNotes) {
+        if (allNotes.size() <= 1) return allNotes;
         Collections.sort(allNotes);
         for (int i = 0; i < allNotes.size() - 1; i++) {
             if (allNotes.get(i)._time == allNotes.get(i + 1)._time && allNotes.get(i).equalNotePlacement(allNotes.get(i + 1))) {
                 if (allNotes.get(i)._type == 0) allNotes.get(i)._lineIndex--;
-                System.err.println("Warning at beat: " + allNotes.get(i)._time + ": Note in another Note. Might be already fixed");
             }
         }
-        return allNotes.toArray(new Note[0]);
+
+        //Checking, if some notes inside other notes were missed:
+        for (int i = 0; i < allNotes.size() - 1; i++) {
+            if (allNotes.get(i)._time == allNotes.get(i + 1)._time && allNotes.get(i).equalNotePlacement(allNotes.get(i + 1))) {
+                System.err.println("ERROR at beat: " + allNotes.get(i)._time + ": Note in another Note!");
+            }
+        }
+        return allNotes;
     }
 
 
@@ -267,7 +342,7 @@ public class CreatePatterns {
      */
     public static Note endHorizontalPlacements(Note[] pattern, int i, int j) {
         float random = (float) Math.random() * 100;
-        boolean debug = false;
+//        boolean debug = false;
         int firstHorizontalCutDirection = -1;
         int secondHorizontalCutDirection = -1;
         int horizontalsInARow = 0;
@@ -285,10 +360,10 @@ public class CreatePatterns {
             }
             horizontalsInARow++;
         }
-        if (debug) System.out.println("In a row:   " + horizontalsInARow);
-        if (debug) System.out.println("Direction:  " + firstHorizontalCutDirection);
-        if (debug) System.out.println("Note (i):   " + i);
-        if (debug) System.out.println();
+//        if (debug) System.out.println("In a row:   " + horizontalsInARow);
+//        if (debug) System.out.println("Direction:  " + firstHorizontalCutDirection);
+//        if (debug) System.out.println("Note (i):   " + i);
+//        if (debug) System.out.println();
 
         if (horizontalsInARow == 0) return null;
 
@@ -296,53 +371,53 @@ public class CreatePatterns {
             case 0 -> {
                 //first: top left swing
                 if (firstHorizontalCutDirection == 4 || (firstHorizontalCutDirection == 0 && secondHorizontalCutDirection == 3)) {
-                    if (debug) System.out.println("Before-dir: " + firstHorizontalCutDirection);
+//                    if (debug) System.out.println("Before-dir: " + firstHorizontalCutDirection);
                     if (random <= 50) return new Note(pattern[i]._time, 3, 0, 1, 7);
                     else return new Note(pattern[i]._time, 3, 1, 1, 7);
                 }
 
                 //first: top right swing
                 if (firstHorizontalCutDirection == 5 || (firstHorizontalCutDirection == 0 && secondHorizontalCutDirection == 2)) {
-                    if (debug) System.out.println("Before-dir: " + firstHorizontalCutDirection);
+//                    if (debug) System.out.println("Before-dir: " + firstHorizontalCutDirection);
                     if (random <= 50) return new Note(pattern[i]._time, 2, 0, 1, 6);
                     else return new Note(pattern[i]._time, 1, 0, 1, 6);
                 }
 
                 //first: bottom left swing
                 if (firstHorizontalCutDirection == 6 || (firstHorizontalCutDirection == 1 && secondHorizontalCutDirection == 3)) {
-                    if (debug) System.out.println("Before-dir: " + firstHorizontalCutDirection);
+//                    if (debug) System.out.println("Before-dir: " + firstHorizontalCutDirection);
                     return new Note(pattern[i]._time, 3, 2, 1, 5);
                 }
 
                 //first: bottom right swing
                 if (firstHorizontalCutDirection == 7 || (firstHorizontalCutDirection == 1 && secondHorizontalCutDirection == 2)) {
-                    if (debug) System.out.println("Before-dir: " + firstHorizontalCutDirection);
+//                    if (debug) System.out.println("Before-dir: " + firstHorizontalCutDirection);
                     return new Note(pattern[i]._time, 2, 1, 1, 4);
                 }
             }
             case 1 -> {
                 //first: top left swing
                 if (firstHorizontalCutDirection == 4 || (firstHorizontalCutDirection == 0 && secondHorizontalCutDirection == 3)) {
-                    if (debug) System.out.println("Before-dir: " + firstHorizontalCutDirection);
+//                    if (debug) System.out.println("Before-dir: " + firstHorizontalCutDirection);
                     return new Note(pattern[i]._time, 2, 1, 1, 4);
                 }
 
                 //first: top right swing
                 if (firstHorizontalCutDirection == 5 || (firstHorizontalCutDirection == 0 && secondHorizontalCutDirection == 2)) {
-                    if (debug) System.out.println("Before-dir: " + firstHorizontalCutDirection);
+//                    if (debug) System.out.println("Before-dir: " + firstHorizontalCutDirection);
                     return new Note(pattern[i]._time, 3, 2, 1, 5);
                 }
 
                 //first: bottom left swing
                 if (firstHorizontalCutDirection == 6 || (firstHorizontalCutDirection == 1 && secondHorizontalCutDirection == 3)) {
-                    if (debug) System.out.println("Before-dir: " + firstHorizontalCutDirection);
+//                    if (debug) System.out.println("Before-dir: " + firstHorizontalCutDirection);
                     if (random <= 50) return new Note(pattern[i]._time, 2, 0, 1, 6);
                     else return new Note(pattern[i]._time, 1, 0, 1, 6);
                 }
 
                 //first: bottom right swing
                 if (firstHorizontalCutDirection == 7 || (firstHorizontalCutDirection == 1 && secondHorizontalCutDirection == 2)) {
-                    if (debug) System.out.println("Before-dir: " + firstHorizontalCutDirection);
+//                    if (debug) System.out.println("Before-dir: " + firstHorizontalCutDirection);
                     if (random <= 50) return new Note(pattern[i]._time, 3, 0, 1, 7);
                     else return new Note(pattern[i]._time, 3, 1, 1, 7);
                 }
