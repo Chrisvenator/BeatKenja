@@ -1,13 +1,9 @@
 import com.google.gson.Gson;
-import com.google.gson.stream.JsonReader;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-
-public class BeatsaberObjects {
-}
 
 class BeatSaberMap {
     public String originalJSON;
@@ -32,17 +28,17 @@ class BeatSaberMap {
         this._notes = notes.toArray(new Note[0]);
     }
 
+    public BeatSaberMap(List<Note> notes, String originalJSON) {
+        this._notes = notes.toArray(new Note[0]);
+        this.originalJSON = originalJSON;
+        calculateBookmarks();
+    }
+
 
     //Make the note timing divisible by 64 so that is not being flagged by ScoreSaber as "unsure"
     public void fixPlacements(double precision) {
         for (Note n : _notes) {
             n._time = (float) Math.round(n._time / precision) * (float) precision;
-        }
-    }
-
-    public void invertAllNotes() {
-        for (Note n : _notes) {
-            n.invertColor();
         }
     }
 
@@ -219,7 +215,12 @@ class BeatSaberMap {
         if (!this.originalJSON.contains("\"_bookmarks\":[")) return new ArrayList<>();
 
         String sub = this.originalJSON.substring(this.originalJSON.indexOf("\"_bookmarks\":["));
-        sub = sub.substring(14, sub.indexOf("],") - 1);
+
+        if (sub.contains("],")) sub = sub.substring(14, sub.indexOf("],") - 1);
+        else if (sub.contains("]}}")) sub = sub.substring(14, sub.indexOf("]}}") - 1);
+        else if (sub.contains("]}")) sub = sub.substring(14, sub.lastIndexOf("]}") - 2);
+
+
         String[] arr = sub.split("},");
         List<Bookmark> l = new ArrayList<>();
 
@@ -227,7 +228,7 @@ class BeatSaberMap {
             if (!s.contains("{")) s = "{" + s;
             if (!s.contains("}")) s += "}";
             if (!s.contains("_name")) break;
-            s = s.replaceAll("]", "");
+//            s = s.replaceAll("]", "");
             while (s.contains("}}")) s = s.replaceAll("}}", "}");
             l.add(new Gson().fromJson(s, Bookmark.class));
         }
@@ -264,9 +265,17 @@ class Note implements Comparable<Note> {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Note note = (Note) o;
-        return Float.compare(note._time, _time) == 0 && _lineIndex == note._lineIndex && _lineLayer == note._lineLayer && _type == note._type && _cutDirection == note._cutDirection;
+        if (o == null || o.getClass() != Note.class && o.getClass() != TimingNote.class) return false;
+
+        Note note;
+        if (o.getClass() == TimingNote.class) {
+            note = (TimingNote) o;
+            System.out.println(Float.compare(note._time, _time) == 0);
+            return Float.compare(note._time, _time) == 0;
+        } else {
+            note = (Note) o;
+            return Float.compare(note._time, _time) == 0 && _lineIndex == note._lineIndex && _lineLayer == note._lineLayer && _type == note._type && _cutDirection == note._cutDirection;
+        }
     }
 
     public boolean equalPlacement(Object o) {
@@ -340,10 +349,6 @@ class Note implements Comparable<Note> {
         return n;
     }
 
-    public boolean isTimingNote() {
-        return _cutDirection == 8;
-    }
-
     public Note[] createStackedNote() {
         if (amountOfStackedNotes == 0) return new Note[]{this};
 
@@ -364,18 +369,14 @@ class Note implements Comparable<Note> {
                 notes.add(new Note(_time, 2, 0, _type, _cutDirection));
                 notes.add(new Note(_time, 3, 1, _type, _cutDirection));
             }
-            case 2, 3, 4, 7, 8 -> {
-                notes.add(new Note(this._time, this._lineIndex, this._lineLayer, this._type, this._cutDirection));
-            }
+            case 2, 3, 4, 7, 8 -> notes.add(new Note(this._time, this._lineIndex, this._lineLayer, this._type, this._cutDirection));
         }
         return notes.toArray(new Note[0]);
     }
 
     @Override
     public int compareTo(Note o) {
-        if (this._time < o._time) return -1;
-        if (this._time == o._time) return -0;
-        return 1;
+        return Float.compare(this._time, o._time);
     }
 
 
@@ -444,34 +445,13 @@ class Bookmark {
     public String toString() {
         return "{\"_time\":" + _time + ",\"_name\":\"" + _name + "\",\"_color\":" + Arrays.toString(_color) + "}";
     }
-}
 
-//class CustomData { //not working ATM
-//    protected float _time;
-//    protected Bookmarks[] bookmarks;
-//
-//    public CustomData(float _time) {
-//        this._time = _time;
-//    }
-//
-//    protected class Bookmarks extends CustomData {
-//        protected String _name;
-//        protected float[] _color;
-//
-//        public Bookmarks(String _name, float[] _color, float time) {
-//            super(time);
-//            this._name = _name;
-//            this._color = _color;
-//        }
-//
-//        @Override
-//        public String toString() {
-//            return "{\"_time\":" + _time + ",\"_name\":\"" + _name + "\",\"_color\":" + Arrays.toString(_color) + "}";
-//        }
-//    }
-//
-//    @Override
-//    public String toString() {
-//        return "\"_time=\"" + _time + ",";
-//    }
-//}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj.getClass() != this.getClass()) return false;
+        Bookmark b = (Bookmark) obj;
+
+        return b._time == this._time && Objects.equals(b._name, this._name);
+    }
+}
