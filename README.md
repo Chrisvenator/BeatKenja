@@ -11,6 +11,11 @@ Beat Saber automapping tools:
 5. create a really simple linear two handed pattern
 6. make a map one-handed
 7. ability to analyze the block placements (how often which note follows wich)
+8. current patterns:
+   1. linear
+   2. "complex" (based on the input pattern)
+   3. jumps (small, normal, big)
+   4. 1left-2right (= twice as many blue notes as red notes)
 
 ## Setup
 
@@ -31,7 +36,6 @@ Beat Saber automapping tools:
 ## TODOs:
 
 1. creating new pattern types:
-    1. one handed
     2. doubles
     3. more variation
 2. Better music onsets

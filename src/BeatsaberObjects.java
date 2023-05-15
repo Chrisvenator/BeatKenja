@@ -187,7 +187,7 @@ class BeatSaberMap {
         for (int i = 0; i < _notes.length; i++) {
 
             //when the note exists, then DON'T place another one on top of it
-            if (i >= 2 && (_notes[i - 1]._time == _notes[i]._time || _notes[i]._time - _notes[i - 1]._time <= (float) 1 / 8)) {
+            if (i >= 1 && (_notes[i - 1]._time == _notes[i]._time || _notes[i]._time - _notes[i - 1]._time <= (float) 1 / 8)) {
                 timings[i - 1].amountOfStackedNotes++;
                 numberOfNulls++;
                 continue;
@@ -276,6 +276,15 @@ class Note implements Comparable<Note> {
             note = (Note) o;
             return Float.compare(note._time, _time) == 0 && _lineIndex == note._lineIndex && _lineLayer == note._lineLayer && _type == note._type && _cutDirection == note._cutDirection;
         }
+    }
+
+    public boolean isDD(Note previous) {
+        if (previous == null) return false;
+        return previous._cutDirection == this._cutDirection
+                || (previous._cutDirection == 6 || previous._cutDirection == 1 || previous._cutDirection == 7) && (this._cutDirection == 6 || this._cutDirection == 1 || this._cutDirection == 7)
+                || (previous._cutDirection == 7 || previous._cutDirection == 3 || previous._cutDirection == 5) && (this._cutDirection == 7 || this._cutDirection == 3 || this._cutDirection == 5)
+                || (previous._cutDirection == 4 || previous._cutDirection == 0 || previous._cutDirection == 5) && (this._cutDirection == 4 || this._cutDirection == 0 || this._cutDirection == 5)
+                || (previous._cutDirection == 4 || previous._cutDirection == 2 || previous._cutDirection == 6) && (this._cutDirection == 4 || this._cutDirection == 2 || this._cutDirection == 6);
     }
 
     public boolean equalPlacement(Object o) {
