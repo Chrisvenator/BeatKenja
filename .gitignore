@@ -33,3 +33,4 @@ aubio/*
 .idea/*
 libs/*
 /Input.txt
+/timings.txt
