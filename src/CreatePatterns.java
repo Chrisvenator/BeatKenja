@@ -14,6 +14,7 @@ public class CreatePatterns {
         BeatSaberMap timings = gson.fromJson(input, BeatSaberMap.class);
         BeatSaberMap patterns = gson.fromJson(patternInput, BeatSaberMap.class);
         timings._events = new Events[0];
+        timings._obstacles = new Obstacle[0];
         timings.originalJSON = input;
 
         //create pattern from the map:
@@ -26,9 +27,17 @@ public class CreatePatterns {
 //        System.out.println(new BeatSaberMap(twoRightOneLeft(timings._notes, p, null, null, true)).exportAsMap());
 
 
-        System.out.println(createMap(timings, p, false).exportAsMap());
+        System.out.println("Creating map... ");
+        BeatSaberMap b = createMap(timings, p, false);
+        System.out.println("Finished creating map... ");
+        System.out.println(timings._notes.length);
+
+        System.out.println(new BeatSaberMap(b._notes).exportAsMap());
+
+//        System.out.println(createDoubles(timings._notes, null, null));
     }
 
+    //TODO: stack placement is breaking everything. YAY
     /*
     Red: 0
     Blue: 1
@@ -55,6 +64,7 @@ public class CreatePatterns {
         List<Note> notes = new ArrayList<>();
         List<Note> timings = Arrays.asList(map._notes);
         List<Bookmark> bookmarks = map.bookmarks == null ? map.calculateBookmarks() : map.bookmarks;
+        bookmarks.add(new Bookmark(timings.get(timings.size() - 1)._time + 10, "END", new float[]{(float) 0.0, (float) 0.0, (float) 0.0}));
 
         //If the map is one handed or there are no bookmarks, then there is not that much to do
         if (oneHanded) return new BeatSaberMap(complexPatternFromTemplate(map._notes, p, true, null, null), map.originalJSON);
@@ -91,6 +101,7 @@ public class CreatePatterns {
                 case "small-jumps", "small-Jumps", "smallJumps", "small jumps" -> notes.addAll(createSmallJumps(currentNotes, false, prevBlue, prevRed));
                 case "jumps", "Jumps" -> notes.addAll(createJumps(currentNotes, false, prevBlue, prevRed));
                 case "big-jumps", "big-Jumps", "bigJumps", "big jumps" -> notes.addAll(createBigJumps(currentNotes, false, prevBlue, prevRed));
+                case "doubles", "double-handed" -> notes.addAll(createDoubles(currentNotes.toArray(new Note[0]), prevBlue, prevRed));
 
                 default -> System.out.println("There is no such flag as: \"" + bookmarks.get(i)._name + "\" with " + currentNotes.size() + " notes.");
             }
@@ -103,95 +114,80 @@ public class CreatePatterns {
         return new BeatSaberMap(notes, map.originalJSON);
     }
 
-    /**
-     * This function creates a jump-pattern where the jumps are not that big
-     *
-     * @param timings   List of note timings
-     * @param oneHanded should the jumps be one handed?
-     * @param prevBlue  previous blue note so that there is no parity break
-     * @param prevRed   previous blue note so that there is no parity break
-     * @return returns a jump-pattern with not-so-big swings
-     */
-    public static List<Note> createSmallJumps(List<Note> timings, boolean oneHanded, Note prevBlue, Note prevRed) {
+    public static List<Note> createDoubles(Note[] timings, Note prevBlue, Note prevRed) {
         List<Note> notes = new ArrayList<>();
 
-        for (int i = 0; i < timings.size(); i++) {
 
-            //If the pattern should be one handed OR every second note
-            if (i % 2 == 0 || oneHanded) {
-                //When there is an upper cut
-                if (prevBlue == null || prevBlue._cutDirection == 0 || prevBlue._cutDirection == 2 || prevBlue._cutDirection == 3 || prevBlue._cutDirection == 4 || prevBlue._cutDirection == 5 || prevBlue._cutDirection == 8)
-                    notes.add(new Note(timings.get(i)._time, 2, 0, 1, 1));
+        if (prevRed != null) prevRed.invertNote();
 
-                    //When there is a down-cut
-                else if (prevBlue._cutDirection == 1 || prevBlue._cutDirection == 6 || prevBlue._cutDirection == 7)
-                    notes.add(new Note(timings.get(i)._time, 3, 1, 1, 5));
-
-                    //error catching
-                else notes.add(new TimingNote(timings.get(i)._time));
-
-
-                prevBlue = notes.get(notes.size() - 1);
-
-            } else {
-                //Every second note should be red
-                if (prevRed == null || prevRed._cutDirection == 0 || prevRed._cutDirection == 2 || prevRed._cutDirection == 3 || prevRed._cutDirection == 4 || prevRed._cutDirection == 5 || prevRed._cutDirection == 8)
-                    notes.add(new Note(timings.get(i)._time, 2, 0, 1, 1));
-
-                    //When there is a down-cut
-                else if (prevRed._cutDirection == 1 || prevRed._cutDirection == 6 || prevRed._cutDirection == 7)
-                    notes.add(new Note(timings.get(i)._time, 3, 1, 1, 5));
-
-                    //error catching
-                else notes.add(new TimingNote(timings.get(i)._time));
-
-
-                //Setting the previous note:
-                prevRed = notes.get(notes.size() - 1);
-
-                //making the previous note red:
-                notes.get(notes.size() - 1).invertNote();
-            }
+        notes.add(prevBlue != null ? nextLinearNote(prevBlue, timings[0]._time) : firstNotePlacement(timings[0]._time));
+        int counter = 0;
+        while (notes.get(0).isDD(prevBlue) && counter <= 300) {
+            notes.remove(0);
+            notes.add(nextLinearNote(prevBlue, timings[0]._time));
+            counter++;
         }
-        return notes;
-    }
+        if (counter >= 300) System.err.println("ERROR at beat: " + timings[0]._time + " infinite loop in create doubles");
 
-    /**
-     * This function creates a jump-pattern where the jumps are "normally-big". That means, there is 1 air block in between the jumps
-     *
-     * @param timings   List of note timings
-     * @param oneHanded should the jumps be one handed?
-     * @param prevBlue  previous blue note so that there is no parity break
-     * @param prevRed   previous blue note so that there is no parity break
-     * @return returns a jump-pattern with not-so-big swings
-     */
-    public static List<Note> createJumps(List<Note> timings, boolean oneHanded, Note prevBlue, Note prevRed) {
-        List<Note> notes = createSmallJumps(timings, oneHanded, prevBlue, prevRed);
-        for (Note n : notes) if (n._lineLayer == 1) n._lineLayer++;
-
-        return notes;
-    }
-
-    /**
-     * This function creates a jump-pattern where the jumps are huge. Use with caution!
-     *
-     * @param timings   List of note timings
-     * @param oneHanded should the jumps be one handed?
-     * @param prevBlue  previous blue note so that there is no parity break
-     * @param prevRed   previous blue note so that there is no parity break
-     * @return returns a jump-pattern with not-so-big swings
-     */
-    public static List<Note> createBigJumps(List<Note> timings, boolean oneHanded, Note prevBlue, Note prevRed) {
-        List<Note> notes = createJumps(timings, oneHanded, prevBlue, prevRed);
-        for (Note n : notes) {
-            if (n._type == 1 && n._lineLayer == 0) {
-                if (n._lineIndex > 0) n._lineIndex--;
-                n._cutDirection = 6;
-            } else {
-                n._lineIndex++;
-                n._cutDirection = 7;
-            }
+        notes.add(prevRed != null ? nextLinearNote(prevRed, timings[0]._time) : firstNotePlacement(timings[0]._time));
+        counter = 0;
+        while (notes.get(1).isDD(prevRed)) {
+            notes.remove(1);
+            notes.add(nextLinearNote(prevRed, timings[0]._time));
+            counter++;
         }
+        if (prevRed != null) prevRed.invertNote();
+        if (counter >= 300) System.err.println("ERROR at beat: " + timings[0]._time + " infinite loop in create doubles");
+
+        int invalidPlacementsInARow = 0;
+        for (int i = 1; i < timings.length; i++) {
+            // ERROR handling:
+            // Try 100 times to place a normal note. If this doesn't work, then place a Timing-Note.
+            // If this still doesn't work, then throw an exception
+            if (i >= 4 && invalidPlacementsInARow >= 100) {
+                System.err.println("_ERROR at beat:   " + timings[i]._time + " Timing Note");
+                Note errorNote = new TimingNote(timings[i]._time);
+                notes.add(errorNote); //Adding blue Note
+                notes.add(errorNote); //Adding red Note
+                invalidPlacementsInARow = 0;
+                continue;
+            } else if (invalidPlacementsInARow >= 500)
+                throw new IllegalArgumentException("Infinite Loop while creating map! Please try again.");
+            //Place a Note that doesn't break parity after the error:
+            if (i >= 1 && notes.get(notes.size() - 1)._cutDirection == 8) {
+                notes.add(nextNoteAfterTimingNote(notes.toArray(notes.toArray(new Note[0])), timings[i]._time, notes.size(), 2));
+                notes.add(nextNoteAfterTimingNote(notes.toArray(notes.toArray(new Note[0])), timings[i]._time, notes.size() - 1, 2));
+                continue;
+            }
+
+
+            Note blue = nextLinearNote(notes.get(notes.size() - 2), timings[i]._time);
+            Note red = nextLinearNote(notes.get(notes.size() - 1), timings[i]._time);
+
+            if (blue.equalNotePlacement(red)) {
+                red._lineIndex -= 1;
+            }
+
+            if (red.equalNotePlacement(blue)) {
+                throw new IllegalArgumentException("hä?");
+            }
+
+
+            if (blue.isDD(notes.get(notes.size() - 2)) || red.isDD(notes.get(notes.size() - 1))) {
+                i--;
+                invalidPlacementsInARow++;
+                continue;
+            }
+
+            notes.add(blue);
+            notes.add(red);
+        }
+
+        for (int i = 1; i < notes.size(); i += 2) notes.get(i).invertNote();
+        for (int i = 1; i < notes.size() - 1; i++)
+            if (notes.get(i).equalNotePlacement(notes.get(i + 1)) && notes.get(i)._time == notes.get(i + 1)._time)
+                notes.get(i)._lineIndex--;
+
 
         return notes;
     }
@@ -213,10 +209,20 @@ public class CreatePatterns {
 
         //Placing the first notes manually:
         pattern[0] = prevBlue != null ? nextLinearNote(prevBlue, timings[0]._time) : firstNotePlacement(timings[0]._time);
-        while (pattern[0].isDD(prevBlue) && prevBlue != null) pattern[0] = nextLinearNote(prevBlue, timings[0]._time);
+        int counter = 0;
+        while (pattern[0].isDD(prevBlue) && prevBlue != null && counter <= 300) {
+            pattern[0] = nextLinearNote(prevBlue, timings[0]._time);
+            counter++;
+        }
+        if (counter >= 300) System.err.println("ERROR at beat: " + timings[0]._time + "infinite loop in create complex (blue)");
 
         if (!oneHanded) pattern[1] = prevRed != null ? nextLinearNote(prevRed, timings[1]._time) : firstNotePlacement(timings[1]._time);
-        if (!oneHanded) while (pattern[1].isDD(prevRed) && prevRed != null) pattern[1] = nextLinearNote(prevRed, timings[1]._time);
+        counter = 0;
+        if (!oneHanded) while (pattern[1].isDD(prevRed) && prevRed != null && counter <= 300) {
+            pattern[1] = nextLinearNote(prevRed, timings[1]._time);
+            counter++;
+        }
+        if (counter >= 300) System.err.println("ERROR at beat: " + timings[0]._time + "infinite loop in create complex (red)");
 
         int blueHorizontalsInARow = 0; //prevent parity breaks for red notes
         int redHorizontalsInARow = 0; //prevent parity breaks for red notes
@@ -303,19 +309,20 @@ public class CreatePatterns {
         List<Note> redNotes = new ArrayList<>();
 
 
-        //Define the previous note that came before this function was called
-        if (prevRed == null) firstNotePlacement(timings[0]._time);
-        redNotes.add(nextLinearNote(prevRed, timings[0]._time));
-        while (redNotes.get(0).isDD(prevRed)) {
-            redNotes.remove(0);
-            redNotes.add(nextLinearNote(prevRed, timings[0]._time));
-        }
-
         //Right-hand swings:
         Note[] complexPattern = complexPatternFromTemplate(timings, p, true, prevBlue, null);
 
-        if (complexPattern[1].isDD(complexPattern[2])) System.out.println("RIIIIP");
 
+        //Define the previous note that came before this function was called
+        if (prevRed == null) firstNotePlacement(timings[0]._time);
+        redNotes.add(nextLinearNote(prevRed, timings[0]._time));
+        int counter = 0;
+        while (redNotes.get(0).isDD(prevRed) && redNotes.get(0).equalNotePlacement(complexPattern[0]) && counter <= 300) {
+            redNotes.remove(0);
+            redNotes.add(nextLinearNote(prevRed, timings[0]._time));
+            counter++;
+        }
+        if (counter >= 300) System.err.println("ERROR at beat: " + timings[0]._time + " infinite loop in create tRoL");
 
         //Create left-hand swings:
         int invalidPlacementsInARow = 0;
@@ -408,6 +415,97 @@ public class CreatePatterns {
 
 
         return pattern;
+    }
+
+    /**
+     * This function creates a jump-pattern where the jumps are not that big
+     *
+     * @param timings   List of note timings
+     * @param oneHanded should the jumps be one handed?
+     * @param prevBlue  previous blue note so that there is no parity break
+     * @param prevRed   previous blue note so that there is no parity break
+     * @return returns a jump-pattern with not-so-big swings
+     */
+    public static List<Note> createSmallJumps(List<Note> timings, boolean oneHanded, Note prevBlue, Note prevRed) {
+        List<Note> notes = new ArrayList<>();
+
+        for (int i = 0; i < timings.size(); i++) {
+
+            //If the pattern should be one handed OR every second note
+            if (i % 2 == 0 || oneHanded) {
+                //When there is an upper cut
+                if (prevBlue == null || prevBlue._cutDirection == 0 || prevBlue._cutDirection == 2 || prevBlue._cutDirection == 3 || prevBlue._cutDirection == 4 || prevBlue._cutDirection == 5 || prevBlue._cutDirection == 8)
+                    notes.add(new Note(timings.get(i)._time, 2, 0, 1, 1));
+
+                    //When there is a down-cut
+                else if (prevBlue._cutDirection == 1 || prevBlue._cutDirection == 6 || prevBlue._cutDirection == 7)
+                    notes.add(new Note(timings.get(i)._time, 3, 1, 1, 5));
+
+                    //error catching
+                else notes.add(new TimingNote(timings.get(i)._time));
+
+
+                prevBlue = notes.get(notes.size() - 1);
+
+            } else {
+                //Every second note should be red
+                if (prevRed == null || prevRed._cutDirection == 0 || prevRed._cutDirection == 2 || prevRed._cutDirection == 3 || prevRed._cutDirection == 4 || prevRed._cutDirection == 5 || prevRed._cutDirection == 8)
+                    notes.add(new Note(timings.get(i)._time, 2, 0, 1, 1));
+
+                    //When there is a down-cut
+                else if (prevRed._cutDirection == 1 || prevRed._cutDirection == 6 || prevRed._cutDirection == 7)
+                    notes.add(new Note(timings.get(i)._time, 3, 1, 1, 5));
+
+                    //error catching
+                else notes.add(new TimingNote(timings.get(i)._time));
+
+
+                //Setting the previous note:
+                prevRed = notes.get(notes.size() - 1);
+
+                //making the previous note red:
+                notes.get(notes.size() - 1).invertNote();
+            }
+        }
+        return notes;
+    }
+
+    /**
+     * This function creates a jump-pattern where the jumps are "normally-big". That means, there is 1 air block in between the jumps
+     *
+     * @param timings   List of note timings
+     * @param oneHanded should the jumps be one handed?
+     * @param prevBlue  previous blue note so that there is no parity break
+     * @param prevRed   previous blue note so that there is no parity break
+     * @return returns a jump-pattern with not-so-big swings
+     */
+    public static List<Note> createJumps(List<Note> timings, boolean oneHanded, Note prevBlue, Note prevRed) {
+        List<Note> notes = createSmallJumps(timings, oneHanded, prevBlue, prevRed);
+        for (Note n : notes) if (n._lineLayer == 1) n._lineLayer++;
+
+        return notes;
+    }
+
+    /**
+     * This function creates a jump-pattern where the jumps are huge. Use with caution!
+     *
+     * @param timings   List of note timings
+     * @param oneHanded should the jumps be one handed?
+     * @param prevBlue  previous blue note so that there is no parity break
+     * @param prevRed   previous blue note so that there is no parity break
+     * @return returns a jump-pattern with not-so-big swings
+     */
+    public static List<Note> createBigJumps(List<Note> timings, boolean oneHanded, Note prevBlue, Note prevRed) {
+        List<Note> notes = createJumps(timings, oneHanded, prevBlue, prevRed);
+        for (Note n : notes) {
+            if (n._type == 1 && n._lineLayer == 0) {
+                n._cutDirection = 6;
+            } else {
+                n._lineIndex = 2;
+            }
+        }
+
+        return notes;
     }
 
     /**
@@ -620,7 +718,6 @@ public class CreatePatterns {
         System.err.println("Check parity at: " + pattern[i]._time);
         return null;
     }
-
 
     /**
      * If there was an error, a timing note is being placed.

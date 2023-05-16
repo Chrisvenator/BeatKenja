@@ -186,9 +186,14 @@ class BeatSaberMap {
         //traversing every note
         for (int i = 0; i < _notes.length; i++) {
 
+            if (_notes[i]._type != 1 && _notes[i]._type != 0){
+                numberOfNulls++;
+                continue;
+            }
             //when the note exists, then DON'T place another one on top of it
             if (i >= 1 && (_notes[i - 1]._time == _notes[i]._time || _notes[i]._time - _notes[i - 1]._time <= (float) 1 / 8)) {
-                timings[i - 1].amountOfStackedNotes++;
+                if (timings[i - 1] != null) timings[i - 1].amountOfStackedNotes++;
+//                else System.err.println("this one is null: " + timings[i-1] + " - " + numberOfNulls);
                 numberOfNulls++;
                 continue;
             }
@@ -228,7 +233,7 @@ class BeatSaberMap {
             if (!s.contains("{")) s = "{" + s;
             if (!s.contains("}")) s += "}";
             if (!s.contains("_name")) break;
-//            s = s.replaceAll("]", "");
+            s = s.replaceAll("]}]", "]}");
             while (s.contains("}}")) s = s.replaceAll("}}", "}");
             l.add(new Gson().fromJson(s, Bookmark.class));
         }
@@ -328,6 +333,12 @@ class Note implements Comparable<Note> {
         invertNoteRotation();
 
         return this;
+    }
+
+    public Note getInvertedNote() {
+        Note n = new Note(_time, _lineIndex, _lineLayer, _type, _cutDirection);
+        n.invertNote();
+        return n;
     }
 
     public void invertColor() {
