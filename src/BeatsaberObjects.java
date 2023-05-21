@@ -5,6 +5,20 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+    /*
+    Red: 0
+    Blue: 1
+
+    Layer - Index:          Cut direction:
+    |---|---|---|---|       |---|---|---|
+    |   |   |   |3-2|       | 4 | 0 | 5 |
+    |---|---|---|---|       |---|---|---|
+    |   |   |   |3-1|       | 2 | 8 | 3 |
+    |---|---|---|---|       |---|---|---|
+    |0-0|1-0|2-0|3-0|       | 6 | 1 | 7 |
+    |---|---|---|---|       |---|---|---|
+     */
+
 class BeatSaberMap {
     public String originalJSON;
     protected String _version = "2.1.0";
@@ -243,6 +257,20 @@ class BeatSaberMap {
     }
 }
 
+    /*
+    Red: 0
+    Blue: 1
+
+    Layer - Index:          Cut direction:
+    |---|---|---|---|       |---|---|---|
+    |   |   |   |3-2|       | 4 | 0 | 5 |
+    |---|---|---|---|       |---|---|---|
+    |   |   |   |3-1|       | 2 | 8 | 3 |
+    |---|---|---|---|       |---|---|---|
+    |0-0|1-0|2-0|3-0|       | 6 | 1 | 7 |
+    |---|---|---|---|       |---|---|---|
+     */
+
 class Note implements Comparable<Note> {
     protected float _time;
     protected int _lineIndex;
@@ -407,6 +435,20 @@ class TimingNote extends Note {
         super(time);
     }
 }
+
+    /*
+    Red: 0
+    Blue: 1
+
+    Layer - Index:          Cut direction:
+    |---|---|---|---|       |---|---|---|
+    |   |   |   |3-2|       | 4 | 0 | 5 |
+    |---|---|---|---|       |---|---|---|
+    |   |   |   |3-1|       | 2 | 8 | 3 |
+    |---|---|---|---|       |---|---|---|
+    |0-0|1-0|2-0|3-0|       | 6 | 1 | 7 |
+    |---|---|---|---|       |---|---|---|
+     */
 
 class Obstacle {
     protected float _time;

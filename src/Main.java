@@ -61,7 +61,7 @@ public class Main {
             CreateTimings.overwriteFile(outputPath + "TestOutput.txt", map.exportAsMap());
 
             //Creating a linear map from timings:
-            Note[] linearPattern = CreatePatterns.linearSlowPattern(map._notes);
+            Note[] linearPattern = CreatePatterns.linearSlowPattern(map._notes, null, null);
             CreateTimings.overwriteFile(outputPath + "linearMap.txt", new BeatSaberMap(linearPattern, map.originalJSON).exportAsMap());
 
 
