@@ -1,5 +1,8 @@
 import com.google.gson.Gson;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class Main {
 
         /*
@@ -26,8 +29,7 @@ public class Main {
         //creating a BeatSaberMap Object from the input String
         BeatSaberMap map = new Gson().fromJson(CreateTimings.readFile(inputPath).get(0), BeatSaberMap.class);
 
-        map.convertAllFlashLightsToOnLights();
-        CreateTimings.overwriteFile(outputPath + "NoFlashingLights.txt", map.exportAsMap());
+        CreatePatterns.checkForMappingErrors(Arrays.asList(map._notes), false);
 
 
         //Not executing things that are not needed at the moment
