@@ -3,9 +3,10 @@ import com.google.gson.Gson;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
-public class Pattern {
+public class Pattern implements Iterable {
 
     //In this variable all the possible notes
     protected Note[][] patterns;
@@ -220,6 +221,25 @@ public class Pattern {
         return null;
     }
 
+    @Override
+    public Iterator iterator() {
+        return new Iterator() {
+            int i = 0;
+
+            @Override
+            public boolean hasNext() {
+                if (i >= patterns.length) return false;
+                return patterns[i] != null;
+            }
+
+            @Override
+            public PatternProbability next() {
+                PatternProbability p = new PatternProbability(patterns[i], probabilities[i]);
+                i++;
+                return p;
+            }
+        };
+    }
 }
 
 class PatternProbability {

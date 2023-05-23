@@ -28,7 +28,7 @@ public class CreatePatterns {
 
 
         System.out.println("Creating map... ");
-        BeatSaberMap b = createMap(timings, p, false);
+        BeatSaberMap b = createMap(timings, p, false, false);
         System.out.println("Finished creating map... ");
         System.out.println("Length of the map: " + timings._notes.length);
 
@@ -60,51 +60,56 @@ public class CreatePatterns {
      * @param oneHanded should this map be one handed?
      * @return returns a new Map
      */
-    public static BeatSaberMap createMap(BeatSaberMap map, Pattern p, boolean oneHanded) {
+    public static BeatSaberMap createMap(BeatSaberMap map, Pattern p, boolean oneHanded, boolean stacks) throws IllegalArgumentException {
         List<Note> notes = new ArrayList<>();
         List<Note> timings = Arrays.asList(map._notes);
         List<Bookmark> bookmarks = map.bookmarks == null ? map.calculateBookmarks() : map.bookmarks;
         bookmarks.add(new Bookmark(timings.get(timings.size() - 1)._time + 10, "END", new float[]{(float) 0.0, (float) 0.0, (float) 0.0}));
 
         //If the map is one handed or there are no bookmarks, then there is not that much to do
-        if (oneHanded) return new BeatSaberMap(complexPatternFromTemplate(map._notes, p, true, null, null), map.originalJSON);
-        if (bookmarks.size() <= 1) return new BeatSaberMap(complexPatternFromTemplate(map._notes, p, true, null, null), map.originalJSON);
+        if (oneHanded) return new BeatSaberMap(complexPatternFromTemplate(map._notes, p, true, stacks, null, null), map.originalJSON);
+        if (bookmarks.size() <= 1)
+            return new BeatSaberMap(complexPatternFromTemplate(map._notes, p, true, stacks, null, null), map.originalJSON);
 
         Note prevBlue = null;
         Note prevRed = null;
         for (int i = 0; i < bookmarks.size() - 1; i++) {
             List<Note> currentNotes = new ArrayList<>();
-            System.out.println(bookmarks.get(i)._time + " - " + bookmarks.get(i + 1)._time + ": " + bookmarks.get(i)._name);
+//            System.out.println(bookmarks.get(i)._time + " - " + bookmarks.get(i + 1)._time + ": " + bookmarks.get(i)._name);
 
             for (Note timing : timings) {
                 if (timing._time >= bookmarks.get(i + 1)._time) break;
                 if (timing._time >= bookmarks.get(i)._time) currentNotes.add(timing);
             }
-//            System.out.println(bookmarks.get(i)._name + ": " + currentNotes.size());
 
-            switch (bookmarks.get(i)._name) {
+            if (bookmarks.get(i)._name.equalsIgnoreCase("end")) break;
+            switch (bookmarks.get(i)._name.toLowerCase()) {
                 case "complex" -> {
-                    Note[] complexNotes = complexPatternFromTemplate(currentNotes.toArray(new Note[0]), p, false, prevBlue, prevRed);
+                    Note[] complexNotes = complexPatternFromTemplate(currentNotes.toArray(new Note[0]), p, false, stacks, prevBlue, prevRed);
                     notes.addAll(Arrays.stream(complexNotes).toList());
                 }
                 case "linear" -> {
                     Note[] linearNotes = linearSlowPattern(currentNotes.toArray(new Note[0]), prevBlue, prevRed);
                     notes.addAll(Arrays.stream(linearNotes).toList());
                 }
-                case "1-2" -> notes.addAll(twoRightOneLeft(currentNotes.toArray(new Note[0]), p, prevBlue, prevRed, true));
+                case "1-2" -> notes.addAll(twoRightOneLeft(currentNotes.toArray(new Note[0]), p, prevBlue, prevRed, stacks));
 
                 case "2-1" -> {
                     //prevRed and prevBlue must be inverted right here because in the next line we invert all the notes again.
-                    List<Note> toAdd = twoRightOneLeft(currentNotes.toArray(new Note[0]), p, prevRed, prevBlue, true);
+                    List<Note> toAdd = twoRightOneLeft(currentNotes.toArray(new Note[0]), p, prevRed, prevBlue, stacks);
                     for (Note n : toAdd) n.invertNote();
                     notes.addAll(toAdd);
                 }
-                case "small-jumps", "small-Jumps", "smallJumps", "small jumps" -> notes.addAll(createSmallJumps(currentNotes, false, prevBlue, prevRed));
-                case "jumps", "Jumps" -> notes.addAll(createJumps(currentNotes, false, prevBlue, prevRed));
-                case "big-jumps", "big-Jumps", "bigJumps", "big jumps" -> notes.addAll(createBigJumps(currentNotes, false, prevBlue, prevRed));
+                case "small-jumps", "smalljumps", "small jumps" -> notes.addAll(createSmallJumps(currentNotes, false, prevBlue, prevRed));
+                case "jumps" -> notes.addAll(createJumps(currentNotes, false, prevBlue, prevRed));
+                case "big-jumps", "bigjumps", "big jumps" -> notes.addAll(createBigJumps(currentNotes, false, prevBlue, prevRed));
                 case "doubles", "double-handed" -> notes.addAll(createDoubles(currentNotes.toArray(new Note[0]), prevBlue, prevRed));
 
-                default -> System.out.println("There is no such flag as: \"" + bookmarks.get(i)._name + "\" with " + currentNotes.size() + " notes.");
+                default -> {
+                    System.err.println("There is no such flag as: \"" + bookmarks.get(i)._name + "\" with " + currentNotes.size() + " notes.");
+                    Note[] complexNotes = complexPatternFromTemplate(currentNotes.toArray(new Note[0]), p, false, stacks, prevBlue, prevRed);
+                    notes.addAll(Arrays.stream(complexNotes).toList());
+                }
             }
             prevRed = getLast(notes, 0) == null ? prevRed : getLast(notes, 0);
             prevBlue = getLast(notes, 1) == null ? prevBlue : getLast(notes, 1);
@@ -203,7 +208,7 @@ public class CreatePatterns {
      * @param prevRed   What the previous red note was
      * @return A List of all notes that have been generated
      */
-    public static Note[] complexPatternFromTemplate(Note[] timings, Pattern p, boolean oneHanded, Note prevBlue, Note prevRed) {
+    public static Note[] complexPatternFromTemplate(Note[] timings, Pattern p, boolean oneHanded, boolean stacks, Note prevBlue, Note prevRed) throws IllegalArgumentException {
         Note[] pattern = new Note[timings.length];
         int j = oneHanded ? 1 : 2;
 
@@ -289,8 +294,8 @@ public class CreatePatterns {
         if (!oneHanded) for (int i = 1; i < pattern.length; i += 2) pattern[i].invertNote();
 
         //Check, if one note is inside another note
-        List<Note> l = List.of(pattern);
-        l = createStacks(l);
+        List<Note> l = Arrays.asList(pattern);
+        if (stacks) l = createStacks(l);
         pattern = checkForMappingErrors(l, true).toArray(new Note[0]);
 
         return pattern;
@@ -307,12 +312,12 @@ public class CreatePatterns {
      * @param stacks   should stacks be generated?
      * @return A List of all notes that have been generated
      */
-    public static List<Note> twoRightOneLeft(Note[] timings, Pattern p, Note prevBlue, Note prevRed, boolean stacks) {
+    public static List<Note> twoRightOneLeft(Note[] timings, Pattern p, Note prevBlue, Note prevRed, boolean stacks) throws IllegalArgumentException {
         List<Note> redNotes = new ArrayList<>();
 
 
         //Right-hand swings:
-        Note[] complexPattern = complexPatternFromTemplate(timings, p, true, prevBlue, null);
+        Note[] complexPattern = complexPatternFromTemplate(timings, p, true, stacks, prevBlue, null);
 
         //Define the previous note that came before this function was called
         if (prevRed == null) firstNotePlacement(timings[0]._time);

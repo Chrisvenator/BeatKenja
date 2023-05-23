@@ -143,7 +143,7 @@ class BeatSaberMap {
     //If there are more notes on the same beat, then the notes are being converted into stacks
     //Red Notes are only created if there is a blue and a red note on the same beat. They are saved on the second lane
     //Note that there can only be a maximum of 6 Notes in one Beat or else the script will not create a 7th note;
-    public static List<List<Note>> mapToTimingNotesAsList(Note[] notes) {
+    private static List<List<Note>> mapToTimingNotesAsList(Note[] notes) {
         //Here is a List, where all grids are being saved.
         List<List<Note>> timings = new ArrayList<>(List.of(new ArrayList<>(List.of(new Note(notes[0]._time, notes[0]._type == 0 ? 1 : 0, 0, notes[0]._type, 8)))));
 
