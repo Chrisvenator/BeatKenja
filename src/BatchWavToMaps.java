@@ -12,6 +12,10 @@ public class BatchWavToMaps {
 
     }
 
+    /**
+     * @param inputPath Path to where the .wav files are located
+     * @param out       Path to where the outputted maps will be located. This can be the WIP folder
+     */
     public static void generateOnsets(String inputPath, String out) {
         PrintStream originalOut = System.out;
         PrintStream printStream = new PrintStream(new NullOutputStream());
@@ -30,7 +34,7 @@ public class BatchWavToMaps {
                     String filename = file.getName().replaceAll(".wav", "");
                     String destinationFolderPath = out + "/" + filename;
 
-                    // Disable prints while generating
+                    // Disable prints while generating, so that the console isn't spammed with bulls**t
                     System.setOut(printStream);
 
                     try {
@@ -49,6 +53,11 @@ public class BatchWavToMaps {
         }
     }
 
+    /**
+     * rename all files so that there are no illegal characters or japanese Kanji etc.
+     *
+     * @param inputPath Path where all the .wav files are located
+     */
     private static void renameAllIllegalFileNames(String inputPath) {
         File folder = new File(inputPath);
 
@@ -77,6 +86,14 @@ public class BatchWavToMaps {
         }
     }
 
+    /**
+     * creates the output folder and moves all renamed .wav files there. The Files MUST have been renamed before!
+     *
+     * @param filename              Name of the current file
+     * @param file                  the File itself
+     * @param destinationFolderPath Destination Folder where everything is saved. It doesn't have to exist!
+     * @throws IOException If one of the folders is missing
+     */
     private static void createFolderAndMoveItems(String filename, File file, String destinationFolderPath) throws IOException {
         File outFolder = new File(destinationFolderPath);
         if (!outFolder.exists())
@@ -95,6 +112,14 @@ public class BatchWavToMaps {
         Files.copy(sourceFile, destinationFile, StandardCopyOption.REPLACE_EXISTING);
     }
 
+    /**
+     * @param inputPath             path where the file is located
+     * @param filename              Name of the current file
+     * @param file                  the File itself
+     * @param destinationFolderPath Destination Folder where everything is saved. It doesn't have to exist!
+     * @throws IOException          If one of the folders is missing
+     * @throws InterruptedException No idea what this is lol
+     */
     private static void executePythonScript(String filename, File file, String inputPath, String destinationFolderPath) throws IOException, InterruptedException {
         ProcessBuilder processBuilder = new ProcessBuilder("python", "./OnsetGeneration/SongToOnsets.py", inputPath + "/" + file.getName(), "--output", destinationFolderPath + "/" + filename + ".txt");
         Process process = processBuilder.start();
@@ -113,11 +138,23 @@ public class BatchWavToMaps {
         }
     }
 
+    /**
+     * Ths function creates the timings
+     *
+     * @param destinationFolderPath Destination Folder where everything is saved. It doesn't have to exist!
+     * @param filename              Name of the current file
+     */
     private static void createDiffFromTimings(String destinationFolderPath, String filename) {
         String timingsFromSong = CreateTimings.makeMap(120, destinationFolderPath + "/" + filename + ".txt", (double) 1 / 16);
         CreateTimings.overwriteFile(destinationFolderPath + "/" + "ExpertPlusNoArrows.dat", timingsFromSong);
     }
 
+    /**
+     * Outsources the info.dat file generation
+     *
+     * @param songName Name of the song lol
+     * @return the complete info.dat File
+     */
     private static String createDatFile(String songName) {
         return "{\n" +
                 "  \"_version\" : \"2.0.0\",\n" +
@@ -157,7 +194,9 @@ public class BatchWavToMaps {
                 "}";
     }
 
-
+    /**
+     * required so that the console is not spammed by unnecessary things
+     */
     static class NullOutputStream extends java.io.OutputStream {
         @Override
         public void write(int b) {
