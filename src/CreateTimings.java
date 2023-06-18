@@ -12,10 +12,14 @@ public class CreateTimings {
 
         System.out.println("number of notes: " + timings.size());
         for (String s : timings) {
-            float t = Float.parseFloat(s);
-            double beat = Math.round(t * bpm / 60 / plPr) * plPr; //rounding, so that SS doesn't flag it as AI made
-            if (beat % 0.015625 != 0) System.err.println("NOTE NOT PLACED CORRECTLY!");
-            jsonResult.append("{\"_time\":").append(beat).append(",\"_lineIndex\":0,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":8},");
+            try {
+                float t = Float.parseFloat(s);
+                double beat = Math.round(t * bpm / 60 / plPr) * plPr; //rounding, so that SS doesn't flag it as AI made
+                if (beat % 0.015625 != 0) System.err.println("NOTE NOT PLACED CORRECTLY!");
+                jsonResult.append("{\"_time\":").append(beat).append(",\"_lineIndex\":0,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":8},");
+            } catch (NumberFormatException e) {
+                System.err.println("line in timings file is not a float!");
+            }
         }
         jsonResult = new StringBuilder(jsonResult.substring(0, jsonResult.length() - 1));
         jsonResult.append("],\"_obstacles\":[],\"_events\":[],\"_waypoints\":[]}");

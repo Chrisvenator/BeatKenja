@@ -64,7 +64,7 @@ public class CreatePatterns {
         List<Note> notes = new ArrayList<>();
         List<Note> timings = Arrays.asList(map._notes);
         List<Bookmark> bookmarks = map.bookmarks == null ? map.calculateBookmarks() : map.bookmarks;
-        bookmarks.add(new Bookmark(timings.get(timings.size() - 1)._time + 10, "END", new float[]{(float) 0.0, (float) 0.0, (float) 0.0}));
+        bookmarks.add(new Bookmark(timings.get(timings.size() - 1)._time + 10, "end", new float[]{(float) 0.0, (float) 0.0, (float) 0.0}));
 
         //If the map is one handed or there are no bookmarks, then there is not that much to do
         if (oneHanded) return new BeatSaberMap(complexPatternFromTemplate(map._notes, p, true, stacks, null, null), map.originalJSON);
@@ -75,7 +75,7 @@ public class CreatePatterns {
         Note prevRed = null;
         for (int i = 0; i < bookmarks.size() - 1; i++) {
             List<Note> currentNotes = new ArrayList<>();
-//            System.out.println(bookmarks.get(i)._time + " - " + bookmarks.get(i + 1)._time + ": " + bookmarks.get(i)._name);
+            System.out.println(bookmarks.get(i)._time + " - " + bookmarks.get(i + 1)._time + ": " + bookmarks.get(i)._name);
 
             for (Note timing : timings) {
                 if (timing._time >= bookmarks.get(i + 1)._time) break;
@@ -89,7 +89,7 @@ public class CreatePatterns {
                     notes.addAll(Arrays.stream(complexNotes).toList());
                 }
                 case "linear" -> {
-                    Note[] linearNotes = linearSlowPattern(currentNotes.toArray(new Note[0]), prevBlue, prevRed);
+                    Note[] linearNotes = linearSlowPattern(currentNotes.toArray(new Note[0]), false, prevBlue, prevRed);
                     notes.addAll(Arrays.stream(linearNotes).toList());
                 }
                 case "1-2" -> notes.addAll(twoRightOneLeft(currentNotes.toArray(new Note[0]), p, prevBlue, prevRed, stacks));
@@ -399,31 +399,52 @@ public class CreatePatterns {
      * @param timings where the notes should be placed
      * @return Note []
      */
-    public static Note[] linearSlowPattern(Note[] timings, Note prevBlue, Note prevRed) {
+    public static Note[] linearSlowPattern(Note[] timings, boolean oneHanded, Note prevBlue, Note prevRed) {
         Note[] pattern = new Note[timings.length];
+        int j = oneHanded ? 1 : 2;
 
         //The first 2 notes have to placed manually to ensure that they are not on some random position
         pattern[0] = prevBlue == null ? firstNotePlacement(timings[0]._time) : nextLinearNote(prevBlue, timings[0]._time);
-        pattern[1] = prevRed == null ? firstNotePlacement(timings[1]._time) : nextLinearNote(prevRed, timings[1]._time);
+        if (!oneHanded) pattern[1] = prevRed == null ? firstNotePlacement(timings[1]._time) : nextLinearNote(prevRed, timings[1]._time);
 
         for (int i = 0; i < 100; i++) {
-            if (prevRed != null && prevRed.isDD(pattern[1])) pattern[1] = nextLinearNote(prevRed, timings[1]._time);
+            if (!oneHanded) if (prevRed != null && prevRed.isDD(pattern[1])) pattern[1] = nextLinearNote(prevRed, timings[1]._time);
             if (prevBlue != null && prevBlue.isDD(pattern[0])) pattern[0] = nextLinearNote(prevBlue, timings[0]._time);
         }
 
-        for (int i = 2; i < timings.length; i++) {
+        int invalidPlacesInARow = 0;
+        for (int i = j; i < timings.length; i++) {
+            boolean inValidPlacement = false;
+
+            //manual error handling:
+            //When there exists an infinite loop:
+            //Then create a new next note
+            if ((oneHanded && i >= 2 || i >= 4) && invalidPlacesInARow >= 500) {
+                System.err.println("ERROR at beat:   " + timings[i]._time);
+                pattern[i] = new TimingNote(timings[i]._time);
+                invalidPlacesInARow = 0;
+                continue;
+            } else if (invalidPlacesInARow >= 500)
+                throw new IllegalArgumentException("Infinite Loop while creating map! Please try again.");
+            if ((oneHanded && i >= 2 || i >= 4) && pattern[i - j]._cutDirection == 8) {
+                pattern[i] = nextNoteAfterTimingNote(pattern, timings[i]._time, i, j);
+                continue;
+            } //<-- next note after the error
+
+
             //calculate note:
-            pattern[i] = nextLinearNote(pattern[i - 2], timings[i]._time);
+            pattern[i] = nextLinearNote(pattern[i - j], timings[i]._time);
 
             //Check if this note's placement valid
-            if (invalidPlacement(pattern, i, false)) {
+            if (i >= 4 * j && invalidPlacement(pattern, i, false)) {
                 pattern[i] = null;
                 i--;
+                invalidPlacesInARow++;
             }
         }
 
         //make every second note a red note
-        for (int i = 1; i < pattern.length; i += 2) pattern[i].invertNote();
+        if (!oneHanded) for (int i = 1; i < pattern.length; i += 2) pattern[i].invertNote();
 
 
         return pattern;
@@ -529,6 +550,12 @@ public class CreatePatterns {
     public static void checkParity(List<Note> notes, boolean quiet) {
         Note red = null;
         Note blue = null;
+
+        //ignore the rest, if the map is a no-arrow-map
+        for (Note n : notes) {
+            if (n._cutDirection != 8) break;
+            if (n.equals(notes.get(notes.size() - 1))) return;
+        }
 
         for (Note n : notes) {
 
