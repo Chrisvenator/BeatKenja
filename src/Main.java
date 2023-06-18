@@ -23,7 +23,7 @@ public class Main {
         //Settings:
         String inputPath = "Input.txt";
         String outputPath = "./output/";
-        float bpm = 165;
+        float bpm = 253;
         double placementPrecision = (double) 1 / 32;
 
         //creating a BeatSaberMap Object from the input String
@@ -31,14 +31,20 @@ public class Main {
 
         CreatePatterns.checkForMappingErrors(Arrays.asList(map._notes), false);
 
+//        map.toBlueLeftBottomRowDotTimings();
+//        CreateTimings.overwriteFile(outputPath + "TestOutput.txt", map.exportAsMap());
+
+        String timingsFromSong = CreateTimings.makeMap(bpm, "OnsetGeneration/timings.txt", placementPrecision);
+        CreateTimings.overwriteFile(outputPath + "timingsFromSong.txt", timingsFromSong);
+
 
         //Not executing things that are not needed at the moment
         if (1 == 2) {
 
             //creating a Map out of the timings file:
             //Needed are: bpm, timings filename, placementPrecision
-            String timingsFromSong = CreateTimings.makeMap(bpm, "timings.txt", placementPrecision);
-            CreateTimings.overwriteFile(outputPath + "timingsFromSong.txt", timingsFromSong);
+//            String timingsFromSong = CreateTimings.makeMap(bpm, "timings.txt", placementPrecision);
+//            CreateTimings.overwriteFile(outputPath + "timingsFromSong.txt", timingsFromSong);
 
 
             //fixing timings of a map, so that is not flagged by ScoreSaber as "unsure"
@@ -63,7 +69,7 @@ public class Main {
             CreateTimings.overwriteFile(outputPath + "TestOutput.txt", map.exportAsMap());
 
             //Creating a linear map from timings:
-            Note[] linearPattern = CreatePatterns.linearSlowPattern(map._notes, null, null);
+            Note[] linearPattern = CreatePatterns.linearSlowPattern(map._notes, false, null, null);
             CreateTimings.overwriteFile(outputPath + "linearMap.txt", new BeatSaberMap(linearPattern, map.originalJSON).exportAsMap());
 
 

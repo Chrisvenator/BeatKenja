@@ -76,7 +76,7 @@ class BeatSaberMap {
 
     public String exportAsMap() {
         if (originalJSON == null) {
-            return ("{\"_version\":\"" + _version + "\",\"_notes\":" + Arrays.toString(_notes) + ",\"_obstacles\":" + Arrays.toString(_obstacles) + ",\"_events\":" + Arrays.toString(_events) + ",\"_waypoints\":[],\"_customData\":{\"_time\":0.121}}")
+            return ("{\"_version\":\"" + _version + "\",\"_notes\":" + Arrays.toString(_notes) + ",\"_obstacles\":" + (_obstacles == null ? "[]" : Arrays.toString(_obstacles)) + ",\"_events\":" + (_events == null ? "[]" : Arrays.toString(_events)) + ",\"_waypoints\":[],\"_customData\":{\"_time\":0.121}}")
                     .replace("\n", "")
                     .replace(".0,", ",")
                     .replace(".0}", "}")
@@ -86,7 +86,7 @@ class BeatSaberMap {
                     .replace("null", "")
                     .replaceAll(",,", "");
         } else {
-            String s = ("{\"_version\":\"" + _version + "\",\"_notes\":" + Arrays.toString(_notes) + ",\"_obstacles\":" + Arrays.toString(_obstacles) + ",\"_events\":" + Arrays.toString(_events) + ",")
+            String s = ("{\"_version\":\"" + _version + "\",\"_notes\":" + Arrays.toString(_notes) + ",\"_obstacles\":" + (_obstacles == null ? "[]" : Arrays.toString(_obstacles)) + ",\"_events\":" + (_events == null ? "[]" : Arrays.toString(_events)) + ",")
                     .replace("\n", "")
                     .replace(".0,", ",")
                     .replace(".0}", "}")
@@ -94,7 +94,10 @@ class BeatSaberMap {
             s = s.replaceAll("\":null,\"", ":\":[],\"")
                     .replace(", null, ", ", ")
                     .replace("null", "")
-                    .replaceAll(",,", "");
+                    .replaceAll(",,", "")
+                    //These to don't fix the problem ):
+                    .replaceAll("\"_obstacles\":,", "\"_obstacles\":[],")
+                    .replaceAll("\"_events\":,", "\"_events\":[],");
 
             return s + "" + originalJSON.split("}],")[1];
         }
@@ -120,6 +123,12 @@ class BeatSaberMap {
         }
 
         this._notes = n;
+    }
+
+    public void makeNoArrows() {
+        for (Note n : _notes) {
+            n._cutDirection = 8;
+        }
     }
 
     //This function is only here to make the List in a List into a one dimensional array, so that it is compatible with
@@ -200,7 +209,7 @@ class BeatSaberMap {
         //traversing every note
         for (int i = 0; i < _notes.length; i++) {
 
-            if (_notes[i]._type != 1 && _notes[i]._type != 0){
+            if (_notes[i]._type != 1 && _notes[i]._type != 0) {
                 numberOfNulls++;
                 continue;
             }
@@ -227,6 +236,7 @@ class BeatSaberMap {
         }
 
         this._notes = toReturn;
+        this._obstacles = new Obstacle[0];
     }
 
     public List<Bookmark> calculateBookmarks() {
