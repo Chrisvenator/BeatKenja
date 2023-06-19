@@ -17,7 +17,6 @@ public class Pattern implements Iterable {
 
     public static void main(String[] args) {
         String inputPath = "Input.txt";
-        String outputPath = "./output/";
 
         // Read Pattern Template from the input file
         BeatSaberMap map = new Gson().fromJson(CreateTimings.readFile(inputPath).get(0), BeatSaberMap.class);
