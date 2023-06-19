@@ -48,6 +48,44 @@ class BeatSaberMap {
         calculateBookmarks();
     }
 
+    public void convertToDDMap() {
+        for (Note n : _notes) {
+            n._cutDirection = 1;
+            if (n._lineLayer == 2) {
+                float random = (float) Math.random() * 100;
+                if (random < 10) n._lineLayer = 2;
+                if (random < 45) {
+                    n._lineLayer = 1;
+                    n._lineIndex = n._type == 1 ? 3 : 0;
+                }
+                if (random < 100) n._lineLayer = 0;
+            }
+        }
+    }
+
+    public void createBombResets() {
+        List<Note> bombs = new ArrayList<>(List.of(_notes));
+        for (int i = 0; i < _notes.length - 1; i++) {
+            if (_notes[i]._time != _notes[i + 1]._time && _notes[i + 1]._time - _notes[i]._time >= (double) 1 / 8) {
+                float timing = _notes[i]._time + ((_notes[i + 1]._time - _notes[i]._time) / 2);
+                bombs.add(new Note(timing, 0, 0, 3, 1));
+                bombs.add(new Note(timing, 1, 0, 3, 1));
+                bombs.add(new Note(timing, 2, 0, 3, 1));
+                bombs.add(new Note(timing, 3, 0, 3, 1));
+            }
+        }
+
+        this._notes = bombs.toArray(new Note[0]);
+    }
+
+    public void deleteEverySecondNote() {
+        List<Note> notes = new ArrayList<>(List.of(_notes));
+        for (int i = 0; i < notes.size(); i ++) {
+            notes.remove(i);
+        }
+
+        this._notes = notes.toArray(new Note[0]);
+    }
 
     //Make the note timing divisible by 64 so that is not being flagged by ScoreSaber as "unsure"
     public void fixPlacements(double precision) {
