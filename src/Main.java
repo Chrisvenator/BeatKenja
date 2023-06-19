@@ -26,16 +26,23 @@ public class Main {
         float bpm = 253;
         double placementPrecision = (double) 1 / 32;
 
+        Pattern pattern = new Pattern();
+
+
         //creating a BeatSaberMap Object from the input String
         BeatSaberMap map = new Gson().fromJson(CreateTimings.readFile(inputPath).get(0), BeatSaberMap.class);
 
         CreatePatterns.checkForMappingErrors(Arrays.asList(map._notes), false);
 
 //        map.toBlueLeftBottomRowDotTimings();
+//        map = CreatePatterns.createMap(map, pattern, false, false);
+//        System.out.println(map.exportAsMap());
+
+//        map.toBlueLeftBottomRowDotTimings();
 //        CreateTimings.overwriteFile(outputPath + "TestOutput.txt", map.exportAsMap());
 
-        String timingsFromSong = CreateTimings.makeMap(bpm, "OnsetGeneration/timings.txt", placementPrecision);
-        CreateTimings.overwriteFile(outputPath + "timingsFromSong.txt", timingsFromSong);
+//        String timingsFromSong = CreateTimings.makeMap(bpm, "OnsetGeneration/timings.txt", placementPrecision);
+//        CreateTimings.overwriteFile(outputPath + "timingsFromSong.txt", timingsFromSong);
 
 
         //Not executing things that are not needed at the moment

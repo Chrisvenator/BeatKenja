@@ -100,6 +100,10 @@ public class CreatePatterns {
                     for (Note n : toAdd) n.invertNote();
                     notes.addAll(toAdd);
                 }
+
+                case "2-2" -> {
+                    notes.addAll(twoLeftTwoRight(currentNotes.toArray(new Note[0]), prevBlue, prevRed));
+                }
                 case "small-jumps", "smalljumps", "small jumps" -> notes.addAll(createSmallJumps(currentNotes, false, prevBlue, prevRed));
                 case "jumps" -> notes.addAll(createJumps(currentNotes, false, prevBlue, prevRed));
                 case "big-jumps", "bigjumps", "big jumps" -> notes.addAll(createBigJumps(currentNotes, false, prevBlue, prevRed));
@@ -197,6 +201,80 @@ public class CreatePatterns {
         return notes;
     }
 
+    public static List<Note> twoLeftTwoRight(Note[] timings, Note prevBlue, Note prevRed) {
+        List<Note> notes = new ArrayList<>();
+
+        notes.add(prevBlue != null ? nextLinearNote(prevBlue, timings[0]._time) : firstNotePlacement(timings[0]._time));
+        int counter = 0;
+        while (notes.get(0).isDD(prevBlue) && counter <= 300) {
+            notes.remove(0);
+            notes.add(nextLinearNote(prevBlue, timings[0]._time));
+            counter++;
+        }
+        if (counter >= 300) System.err.println("ERROR at beat: " + timings[0]._time + " infinite loop in create doubles");
+        notes.add(nextLinearNote(notes.get(0), timings[1]._time));
+
+        notes.add(prevRed != null ? nextLinearNote(prevRed, timings[2]._time) : firstNotePlacement(timings[2]._time));
+        counter = 0;
+        while (notes.get(2).isDD(prevRed)) {
+            notes.remove(2);
+            notes.add(nextLinearNote(prevRed, timings[2]._time));
+            counter++;
+        }
+        if (counter >= 300) System.err.println("ERROR at beat: " + timings[3]._time + " infinite loop in create doubles");
+        notes.add(nextLinearNote(notes.get(2), timings[3]._time));
+
+
+        int invalidPlacementsInARow = 0;
+        for (int i = 4; i < timings.length; i += 2) {
+            // ERROR handling:
+            // Try 100 times to place a normal note. If this doesn't work, then place a Timing-Note.
+            // If this still doesn't work, then throw an exception
+            if (i >= 4 && invalidPlacementsInARow >= 100) {
+                System.err.println("_ERROR at beat:   " + timings[i]._time + " Timing Note");
+                Note errorNote = new TimingNote(timings[i]._time);
+                notes.add(errorNote); //Adding Note
+                invalidPlacementsInARow = 0;
+                continue;
+            } else if (invalidPlacementsInARow >= 500)
+                throw new IllegalArgumentException("Infinite Loop while creating map! Please try again.");
+            //Place a Note that doesn't break parity after the error:
+            if (i >= 2 && notes.get(notes.size() - 1)._cutDirection == 8) {
+                notes.add(nextNoteAfterTimingNote(notes.toArray(notes.toArray(new Note[0])), timings[i]._time, notes.size(), i < 4 ? 2 : 4));
+                continue;
+            }
+
+
+            if (i % 4 == 0) {
+                Note blue1 = nextLinearNote(notes.get(notes.size() - 3), timings[i]._time);
+                if (i >= timings.length - 1) continue;
+                Note blue2 = nextLinearNote(notes.get(notes.size() - 1), timings[i + 1]._time);
+                if (blue1.isDD(notes.get(notes.size() - 3)) || blue2.isDD(blue1)) {
+                    i--;
+                    invalidPlacementsInARow++;
+                    continue;
+                }
+                notes.add(blue1);
+                notes.add(blue2);
+            } else {
+                Note red1 = nextLinearNote(notes.get(notes.size() - 3), timings[i]._time);
+                if (i >= timings.length - 1) continue;
+                Note red2 = nextLinearNote(notes.get(notes.size() - 1), timings[i + 1]._time);
+                if (red1.isDD(notes.get(notes.size() - 3)) || red2.isDD(red1)) {
+                    i--;
+                    invalidPlacementsInARow++;
+                    continue;
+                }
+                notes.add(red1);
+                notes.add(red2);
+            }
+        }
+
+        for (int i = 1; i < notes.size(); i++) if (i % 4 == 2 || i % 4 == 3) notes.get(i).invertNote();
+
+        return notes;
+
+    }
 
     /**
      * This methode creates a pattern on basis of the original Pattern.
@@ -571,6 +649,14 @@ public class CreatePatterns {
             if (n._type == 0 && red._time == n._time) continue;
             if (n._type == 1 && blue._time == n._time) continue;
 
+
+            //Hitbox path fix when both notes are next to each other in the bottom lane
+            if (blue._lineLayer == 0 && red._lineLayer == 0 && blue._lineIndex - red._lineIndex == -1 && blue._lineIndex - red._lineIndex == 1) {
+                if (blue._cutDirection == 2 || blue._cutDirection == 3) blue._cutDirection = 1;
+                if (blue._cutDirection == 4 || blue._cutDirection == 5) blue._cutDirection = 0;
+                if (red._cutDirection == 2 || red._cutDirection == 3) red._cutDirection = 1;
+                if (red._cutDirection == 4 || red._cutDirection == 5) red._cutDirection = 0;
+            }
 
             //Exclude this at dd-checking:
             if (n._type == 0 && (red._cutDirection == 6 && n._cutDirection == 4 || red._cutDirection == 4 && n._cutDirection == 6 || red._cutDirection == 7 && n._cutDirection == 5 || red._cutDirection == 5 && n._cutDirection == 7))
