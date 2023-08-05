@@ -1,10 +1,7 @@
 import com.google.gson.Gson;
 
 import javax.swing.*;
-import javax.swing.text.StyledDocument;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.*;
 import java.util.List;
@@ -16,7 +13,7 @@ public class UserInterface extends JFrame {
     private Pattern pattern;
     private float bpm = 120;
 
-    private final String DEFAULT_PATH = "C:/Program Files (x86)/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels";
+    private final String DEFAULT_PATH = "C:/Program Files/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels";
     private final JLabel labelMapDiff;
     private final JButton openMapButton;
     private final TextArea statusCheck;
@@ -108,9 +105,7 @@ public class UserInterface extends JFrame {
         JButton mapChecks = new JButton("Map Checks");
         mapChecks.setBounds(50, 200, 190, 30);
         mapChecks.setVisible(false);
-        mapChecks.addActionListener(e -> {
-            checkMap();
-        });
+        mapChecks.addActionListener(e -> checkMap());
         add(mapChecks);
 
 
