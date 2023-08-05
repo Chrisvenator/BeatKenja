@@ -80,7 +80,7 @@ class BeatSaberMap {
 
     public void deleteEverySecondNote() {
         List<Note> notes = new ArrayList<>(List.of(_notes));
-        for (int i = 0; i < notes.size(); i ++) {
+        for (int i = 0; i < notes.size(); i++) {
             notes.remove(i);
         }
 
@@ -335,6 +335,15 @@ class Note implements Comparable<Note> {
         this._cutDirection = cutDirection;
     }
 
+    public Note(Note n) {
+        this._time = n._time;
+        this._lineIndex = n._lineIndex;
+        this._lineLayer = n._lineLayer;
+        this._type = n._type;
+        this._cutDirection = n._cutDirection;
+        this.amountOfStackedNotes = n.amountOfStackedNotes;
+    }
+
     public Note(float time) {
         this._time = time;
         this._lineIndex = 0;
@@ -465,7 +474,8 @@ class Note implements Comparable<Note> {
                 notes.add(new Note(_time, 2, 0, _type, _cutDirection));
                 notes.add(new Note(_time, 3, 1, _type, _cutDirection));
             }
-            case 2, 3, 4, 7, 8 -> notes.add(new Note(this._time, this._lineIndex, this._lineLayer, this._type, this._cutDirection));
+            case 2, 3, 4, 7, 8 ->
+                    notes.add(new Note(this._time, this._lineIndex, this._lineLayer, this._type, this._cutDirection));
         }
         return notes.toArray(new Note[0]);
     }
