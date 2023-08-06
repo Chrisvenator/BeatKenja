@@ -25,7 +25,7 @@ public class Pattern implements Iterable {
         Pattern p = new Pattern(map._notes, 1);
 
         // Remove patterns that occur less than 8 times
-        p.removeXTimes(8);
+        p.removeXTimes(2);
         System.out.println(p);
 
         // Get the probability of a specific note sequence and print it
@@ -46,6 +46,9 @@ public class Pattern implements Iterable {
 
         // Compute the probabilities of each following note
         computeProbabilities();
+
+        //remove all timings to make it look better
+        for (Note n : notes) n._time = 0;
     }
 
     /**

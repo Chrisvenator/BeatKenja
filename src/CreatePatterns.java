@@ -564,6 +564,7 @@ public class CreatePatterns {
      * @return Note []
      */
     public static Note[] linearSlowPattern(Note[] timings, boolean oneHanded, Note prevBlue, Note prevRed) {
+
         Note[] pattern = new Note[timings.length];
         int j = oneHanded ? 1 : 2;
 

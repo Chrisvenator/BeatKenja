@@ -21,7 +21,7 @@ import java.util.Objects;
 
 class BeatSaberMap {
     public String originalJSON;
-    protected String _version = "2.1.0";
+    protected String _version = "2.2.0";
     protected Events[] _events;
     protected Note[] _notes;
     protected Obstacle[] _obstacles;
