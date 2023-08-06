@@ -13,18 +13,33 @@ public class UserInterface extends JFrame {
     private Pattern pattern;
     private float bpm = 120;
 
-    private final String DEFAULT_PATH = "C:/Program Files/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels";
+    //config.txt:
+    private boolean verbose = true; //For debugging purposes. It prints EVERYTHING
+    private String DEFAULT_PATH = "C:/Program Files/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels";
+
     private final JLabel labelMapDiff;
     private final JButton openMapButton;
     private final TextArea statusCheck;
     private boolean mapSuccessfullyLoaded = false;
 
+
+    // Redirect the standard error stream to the custom PrintStream
+    private final PrintStream ORIGINAL_ERR = System.err;
+    private final ByteArrayOutputStream OUTPUT_STREAM = new ByteArrayOutputStream();
+    private final PrintStream ERROR_PRINT_STREAM = new PrintStream(OUTPUT_STREAM);
+
     public static void main(String[] args) {
+        CreateAllNecessaryDIRsAndFiles.main();
+
         UserInterface ui = new UserInterface();
         ui.setVisible(true);
     }
 
     public UserInterface() {
+        //loading config:
+        readConfig();
+        if (verbose) System.setErr(ERROR_PRINT_STREAM);
+
         // Einstellungen für das Fenster
         setTitle("Beat Kenja");
         setSize(1200, 800);
@@ -47,6 +62,7 @@ public class UserInterface extends JFrame {
         add(openMapButton);
 
 
+        //BPM Buttons are currently disabled!
         JTextField bpmTextField = new JFormattedTextField("BPM");
         bpmTextField.setBounds(50, 70, 100, 30);
         bpmTextField.setVisible(false);
@@ -54,6 +70,7 @@ public class UserInterface extends JFrame {
 
 
         // Button erstellen und positionieren
+        //BPM Buttons are currently disabled!
         JButton submitBPM = new JButton("save BPM");
         submitBPM.setBounds(160, 70, 100, 30);
         submitBPM.setVisible(false);
@@ -68,7 +85,7 @@ public class UserInterface extends JFrame {
 
 
         //Status Bar:
-        statusCheck = new TextArea("Status:Nothing here yet.");
+        statusCheck = new TextArea("config: \nverbose: " + verbose + "\npath: " + DEFAULT_PATH + "\n");
         statusCheck.setBounds(50, 235, 1090, 510);
         statusCheck.setBackground(Color.WHITE);
         statusCheck.setEditable(false);
@@ -95,6 +112,8 @@ public class UserInterface extends JFrame {
 
                 statusCheck.setText(statusCheck.getText() + "\nINFO: Map saved successfully: " + filePath);
                 System.out.println("Map saved successfully: " + map.exportAsMap());
+                if (verbose)
+                    statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Map saved successfully: " + map.exportAsMap());
             } catch (IOException ioException) {
                 statusCheck.setText(statusCheck.getText() + "\nERROR: There was an error while saving the map " + filePath + "!");
                 ioException.printStackTrace();
@@ -172,24 +191,33 @@ public class UserInterface extends JFrame {
             map.fixPlacements((double) 1 / Integer.parseInt(fixPlacementTextField.getText()));
             statusCheck.setText(statusCheck.getText() + "\nINFO: Fixed Note Placement with a precision of 1/" + fixPlacementTextField.getText() + " of a beat.");
             System.out.println("Placements fixed: " + new BeatSaberMap(map._notes).exportAsMap());
+            if (verbose)
+                statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Placements fixed: " + new BeatSaberMap(map._notes).exportAsMap());
+
         });
         mapUtilsMakeOneHanded.addActionListener(e -> {
             map.makeOneHanded(Integer.parseInt(makeOneHandDeleteType.getText()));
             statusCheck.setText(statusCheck.getText() + "\nINFO: Removed All Notes with type: " + makeOneHandDeleteType.getText());
             System.out.println("One handed diff: : " + new BeatSaberMap(map._notes).exportAsMap());
+            if (verbose)
+                statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "One handed diff: : " + new BeatSaberMap(map._notes).exportAsMap());
         });
         mapUtilsConvertAllFlashingLight.addActionListener(e -> {
             map.convertAllFlashLightsToOnLights();
             statusCheck.setText(statusCheck.getText() + "\nINFO: Removed flashing lights");
             System.out.println("flashing lights removed: " + new BeatSaberMap(map._notes).exportAsMap());
+            if (verbose)
+                statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "flashing lights removed: " + new BeatSaberMap(map._notes).exportAsMap());
         });
         mapUtilsMakeIntoNoArrowMap.addActionListener(e -> {
             map.makeNoArrows();
             BeatSaberMap m = new BeatSaberMap(map._notes);
             m._obstacles = map._obstacles;
             m._events = map._events;
+            statusCheck.setText(statusCheck.getText() + "\nINFO: Map is now a no arrows map");
             System.out.println("No Arrow Map: " + m.exportAsMap());
-            checkMap();
+            if (verbose)
+                statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "No Arrow Map: " + m.exportAsMap());
         });
 
         //
@@ -207,12 +235,12 @@ public class UserInterface extends JFrame {
         toTimingNotes.setVisible(false);
         add(toTimingNotes);
 
-        JButton toBlueOnlyTimingNotes = new JButton("Convert to blue only timing notes");
+        JButton toBlueOnlyTimingNotes = new JButton("To 1 color timing notes");
         toBlueOnlyTimingNotes.setBounds(450, 180, 190, 15);
         toBlueOnlyTimingNotes.setVisible(false);
         add(toBlueOnlyTimingNotes);
 
-        JButton toStackedTimingNotes = new JButton("Convert to timing notes");
+        JButton toStackedTimingNotes = new JButton("To 2 color timing notes");
         toStackedTimingNotes.setBounds(450, 160, 190, 15);
         toStackedTimingNotes.setVisible(false);
         add(toStackedTimingNotes);
@@ -232,11 +260,16 @@ public class UserInterface extends JFrame {
             map = b;
             System.out.println("Normal timing notes: " + b.exportAsMap());
             statusCheck.setText(statusCheck.getText() + "\nINFO: Successfully converted Map to only blue timing notes");
+            if (verbose)
+                statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Normal timing notes: " + b.exportAsMap());
         });
         toStackedTimingNotes.addActionListener(e -> {
             map.toTimingNotes();
-            System.out.println("Stacked timing notes: " + map.exportAsMap());
+            System.out.println();
+            statusCheck.setText(statusCheck.getText() + "\nNOTE: It is very likely that this feature is broken! Use at your own risk!");
             statusCheck.setText(statusCheck.getText() + "\nINFO: Successfully converted Map to timing notes");
+            if (verbose)
+                statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Stacked timing notes: " + map.exportAsMap());
         });
 
 
@@ -294,25 +327,26 @@ public class UserInterface extends JFrame {
             map.toBlueLeftBottomRowDotTimings();
 
             try {
-                PrintStream originalErr = System.err;
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                PrintStream errorPrintStream = new PrintStream(outputStream);
                 // Redirect the standard error stream to the custom PrintStream
-                System.setErr(errorPrintStream);
+                System.setErr(ERROR_PRINT_STREAM);
 
 
-                System.out.println("og: " + map.exportAsMap());
+                String exported = map.exportAsMap();
+                System.out.println("og: " + exported);
+                if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "og: " + exported);
                 map = CreatePatterns.createMap(map, pattern, false, false);
 
+                if (exported.equals(map.exportAsMap()) || map.exportAsMap().split("\"_cutDirection\":8").length >= 20) {
+                    statusCheck.setText(statusCheck.getText() + "\n" + "ERROR! Something went wrong while creating the map... Try another diff. If this error still continues then contact the creator of this tool");
+                }
 
-                String errorOutput = outputStream.toString();
-                errorPrintStream.close();
+                //change back the error outputs
+                changeBackOutput();
 
-                System.setErr(originalErr);
-                System.err.println(errorOutput);
-                statusCheck.setText(statusCheck.getText() + "\n\n" + errorOutput);
-
+                statusCheck.setText(statusCheck.getText() + "\nMap creation finished");
                 System.out.println("Created map: " + new BeatSaberMap(map._notes).exportAsMap());
+                if (verbose)
+                    statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Created map: " + new BeatSaberMap(map._notes).exportAsMap());
             } catch (IllegalArgumentException ex) {
                 statusCheck.setText(statusCheck.getText() + "\nThere was an error while creating. Please try again!");
                 System.err.println(ex.getMessage());
@@ -328,7 +362,10 @@ public class UserInterface extends JFrame {
                 String ogJson = map.originalJSON;
                 map = new BeatSaberMap(CreatePatterns.complexPatternFromTemplate(map._notes, pattern, false, false, null, null));
                 map.originalJSON = ogJson;
+                statusCheck.setText(statusCheck.getText() + "\nMap creation finished");
                 System.out.println("Created Map: " + map.exportAsMap());
+                if (verbose)
+                    statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Created Map: " + map.exportAsMap());
                 checkMap();
             } catch (IllegalArgumentException ex) {
                 statusCheck.setText(statusCheck.getText() + "\nThere was an error while creating. Please try again!");
@@ -344,9 +381,13 @@ public class UserInterface extends JFrame {
 
             Thread calculateNewMap = new Thread(() -> {
                 String ogJson = map.originalJSON;
+
                 map = new BeatSaberMap(CreatePatterns.linearSlowPattern(map._notes, false, null, null));
                 map.originalJSON = ogJson;
+                statusCheck.setText(statusCheck.getText() + "\nMap creation finished");
                 System.out.println("Created Map: " + map.exportAsMap());
+                if (verbose)
+                    statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Created Map: " + map.exportAsMap());
                 checkMap();
             });
             Thread watchForInfiniteLoop = new Thread(() -> {
@@ -377,7 +418,10 @@ public class UserInterface extends JFrame {
                 String ogJson = map.originalJSON;
                 map = new BeatSaberMap(CreatePatterns.linearSlowPattern(map._notes, true, null, null));
                 map.originalJSON = ogJson;
+                statusCheck.setText(statusCheck.getText() + "\nMap creation finished");
                 System.out.println("Created Map: " + map.exportAsMap());
+                if (verbose)
+                    statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Created Map: " + map.exportAsMap());
                 checkMap();
             });
             Thread watchForInfiniteLoop = new Thread(() -> {
@@ -406,7 +450,10 @@ public class UserInterface extends JFrame {
                 String ogJson = map.originalJSON;
                 map = new BeatSaberMap(CreatePatterns.complexPatternFromTemplate(map._notes, pattern, true, false, null, null));
                 map.originalJSON = ogJson;
+                statusCheck.setText(statusCheck.getText() + "\nMap creation finished");
                 System.out.println("Created Map: " + new BeatSaberMap(map._notes).exportAsMap());
+                if (verbose)
+                    statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Created Map: " + new BeatSaberMap(map._notes).exportAsMap());
                 checkMap();
             } catch (IllegalArgumentException ex) {
                 statusCheck.setText(statusCheck.getText() + "\nThere was an error while creating. Please try again!");
@@ -418,8 +465,8 @@ public class UserInterface extends JFrame {
         new Thread(() -> {
             while (true) {
                 if (mapSuccessfullyLoaded) {
-                    bpmTextField.setVisible(true);
-                    submitBPM.setVisible(true);
+//                    bpmTextField.setVisible(true);
+//                    submitBPM.setVisible(true);
 
                     labelMapDiff.setText("Successfully loaded difficulty");
                     labelMapDiff.setBackground(Color.GREEN);
@@ -445,13 +492,29 @@ public class UserInterface extends JFrame {
     }
 
     public void manageMap() {
+
+        PrintStream ORIGINAL_ERR = System.err;
+        ByteArrayOutputStream OUTPUT_STREAM = new ByteArrayOutputStream();
+        PrintStream ERROR_PRINT_STREAM = new PrintStream(OUTPUT_STREAM);
+        // Redirect the standard error stream to the custom PrintStream
+        System.setErr(ERROR_PRINT_STREAM);
+
         if (pattern == null) {
             statusCheck.setText(statusCheck.getText() + "\nINFO: Patterns have not been specified. Proceeding with default patterns");
             BeatSaberMap patterMap = new Gson().fromJson(CreateTimings.readFile("PatternTemplates/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
             pattern = new Pattern(patterMap._notes, 1);
+            if (verbose) statusCheck.setText(statusCheck.getText() + "\n patterns: " + pattern.toString());
         }
         map._obstacles = new Obstacle[0];
         map._events = new Events[0];
+
+
+        String errorOutput = OUTPUT_STREAM.toString();
+        ERROR_PRINT_STREAM.close();
+
+        System.setErr(ORIGINAL_ERR);
+        System.err.println(errorOutput);
+        statusCheck.setText(statusCheck.getText() + "\n" + errorOutput);
     }
 
     public void loadPatterns() {
@@ -517,22 +580,34 @@ public class UserInterface extends JFrame {
         List<Note> notes = new ArrayList<>();
         Collections.addAll(notes, map._notes);
 
-        PrintStream originalErr = System.err;
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        PrintStream errorPrintStream = new PrintStream(outputStream);
-
-        // Redirect the standard error stream to the custom PrintStream
-        System.setErr(errorPrintStream);
-
+        System.setErr(ERROR_PRINT_STREAM);
         CreatePatterns.checkForMappingErrors(notes, false);
-        String errorOutput = outputStream.toString();
+        changeBackOutput();
+    }
 
-        errorPrintStream.close();
 
-        System.setErr(originalErr);
+    public void changeBackOutput() {
+        String errorOutput = OUTPUT_STREAM.toString();
+
+        ERROR_PRINT_STREAM.close();
+
+        System.setErr(ORIGINAL_ERR);
         System.err.println(errorOutput);
+        errorOutput = errorOutput.replaceAll("\n\n", "\n");
         if (errorOutput.length() == 0) statusCheck.setText(statusCheck.getText() + "\nINFO: No Errors detected");
-        statusCheck.setText(statusCheck.getText() + "\n\n" + errorOutput + "\n");
+        statusCheck.setText(statusCheck.getText() + "\n" + errorOutput + "\n");
+        if (verbose) System.setErr(ERROR_PRINT_STREAM);
+    }
+
+    //If you want to add more configs:
+    public void readConfig() {
+        List<String> config = CreateTimings.readFile("./config.txt");
+        if (config != null && config.size() >= 1) {
+            for (String s : config) {
+                String[] splits = s.split(":");
+                if (s.contains("verbose")) verbose = splits[1].contains("true");
+                if (s.contains("defaultPath")) DEFAULT_PATH = splits[1] + ":" + splits[2];
+            }
+        }
     }
 }

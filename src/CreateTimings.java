@@ -42,6 +42,7 @@ public class CreateTimings {
             scanner.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+            return timings;
         }
         return timings;
     }
