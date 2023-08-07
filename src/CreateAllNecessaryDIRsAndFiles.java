@@ -1,10 +1,6 @@
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class CreateAllNecessaryDIRsAndFiles {
     public static boolean main() {
@@ -22,11 +18,12 @@ public class CreateAllNecessaryDIRsAndFiles {
         String[] preMadePatternsFilesToCopy = {
                 "PreMadePatterns/jumps.txt",
                 "PreMadePatterns/test.txt",
-                "PreMadePatterns/umapyoi-test.txt"
+                "PreMadePatterns/umapyoi-test.txt",
+                "OnsetGeneration/SongToOnsets.py"
         };
 
         String config = "defaultPath:C:/Program Files/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels\nverbose:false //It is not recommended to change this except for debugging purposes.";
-        CreateTimings.overwriteFile("./config.txt", config);
+        FileManager.overwriteFile("./config.txt", config);
 
         return createDirectories() && extractFilesFromJar(templateFilesToCopy, "./") && extractFilesFromJar(preMadePatternsFilesToCopy, "./");
     }
@@ -35,6 +32,9 @@ public class CreateAllNecessaryDIRsAndFiles {
         try {
             Files.createDirectories(Paths.get("./PatternTemplates"));
             Files.createDirectories(Paths.get("./PreMadePatterns"));
+            Files.createDirectories(Paths.get("./OnsetGeneration"));
+            Files.createDirectories(Paths.get("./OnsetGeneration/mp3Files"));
+            Files.createDirectories(Paths.get("./OnsetGeneration/output"));
         } catch (IOException e) {
             return false;
         }

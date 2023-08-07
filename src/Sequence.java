@@ -52,7 +52,7 @@ public class Sequence implements Iterable {
     }
 
     private void loadSequence(String pathToSequenceFile) {
-        List<String> content = CreateTimings.readFile(pathToSequenceFile);
+        List<String> content = FileManager.readFile(pathToSequenceFile);
         if (!checkIfStringIsAValidSequenceFile(content))
             throw new InputMismatchException("Error in Sequence: Sequence File has wrong format!");
 

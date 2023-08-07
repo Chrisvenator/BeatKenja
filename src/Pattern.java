@@ -1,8 +1,6 @@
 import com.google.gson.Gson;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -19,7 +17,7 @@ public class Pattern implements Iterable {
         String inputPath = "Input.txt";
 
         // Read Pattern Template from the input file
-        BeatSaberMap map = new Gson().fromJson(CreateTimings.readFile(inputPath).get(0), BeatSaberMap.class);
+        BeatSaberMap map = new Gson().fromJson(FileManager.readFile(inputPath).get(0), BeatSaberMap.class);
 
         // Create a new Pattern object and analyze the notes based on the specified type
         Pattern p = new Pattern(map._notes, 1);
@@ -58,7 +56,7 @@ public class Pattern implements Iterable {
      */
     public Pattern(String pathToPatternFile) {
         // Read the pattern file and convert it to BeatSaberMap
-        String patternInput = CreateTimings.readFile(pathToPatternFile).get(0);
+        String patternInput = FileManager.readFile(pathToPatternFile).get(0);
         Gson gson = new Gson();
         BeatSaberMap patterns = gson.fromJson(patternInput, BeatSaberMap.class);
 

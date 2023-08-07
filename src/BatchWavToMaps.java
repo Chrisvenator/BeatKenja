@@ -1,15 +1,12 @@
 import java.io.*;
-import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 public class BatchWavToMaps {
     public static void main(String[] args) {
-        generateOnsets("./OnsetGeneration/wavFiles", "./OnsetGeneration/output");
-
+        generateOnsets("./OnsetGeneration/mp3Files", "./OnsetGeneration/output");
     }
 
     /**
@@ -43,19 +40,28 @@ public class BatchWavToMaps {
         // Print message for creating maps
         System.out.println("Creating maps...");
 
-        // Check if the list of files is not null
+
         if (files != null) {
-            // Iterate through each file in the input path
+            for (File file : files) {
+                if (file.isFile() && file.getName().contains(".mp3")) {
+                    executeConvertSongsPY(file, "./OnsetGeneration/mp3Files/", "wav");
+                }
+            }
+        }
+
+        //Update files.
+        files = folder.listFiles();
+
+
+        if (files != null) {
             for (File file : files) {
                 // Check if the current item is a file and has the ".wav" extension
-                if (file.isFile() && file.getName().contains(".wav")) {
-                    // Get the filename without the ".wav" extension
+                if (file.isFile() && (file.getName().contains(".wav"))) {
                     String filename = file.getName().replaceAll(".wav", "");
-                    // Create the destination folder path
                     String destinationFolderPath = out + "/" + filename;
 
                     // Disable prints while generating the map to avoid console spam
-                    System.setOut(printStream);
+//                    System.setOut(printStream);
 
                     try {
                         // Create the output folder and move the file to it
@@ -80,8 +86,10 @@ public class BatchWavToMaps {
         }
     }
 
+
     /**
      * Renames all files in the specified input path, removing illegal characters and Japanese Kanji, ensuring file names comply with the naming rules.
+     * If this step isn't done then the python script will throw an error
      *
      * @param inputPath The path where all the .wav files are located.
      */
@@ -101,13 +109,22 @@ public class BatchWavToMaps {
                     // Get the current file name
                     String fileName = file.getName();
                     // Sanitize the file name by removing the ".wav" extension and replacing illegal characters with empty strings
-                    String sanitizedFileName = fileName
-                            .replaceAll(".wav", "")
-                            .replaceAll("[^a-zA-Z0-9-_]", "")
-                            + ".wav";
+                    String sanitizedFileName = "";
+                    if (file.getName().contains(".wav")) {
+                        sanitizedFileName = fileName
+                                .replaceAll(".wav", "")
+                                .replaceAll("[^a-zA-Z0-9-_]", "")
+                                + ".wav";
+                    } else if (file.getName().contains(".mp3")) {
+                        sanitizedFileName = fileName
+                                .replaceAll(".mp3", "")
+                                .replaceAll("[^a-zA-Z0-9-_]", "")
+                                + ".mp3";
+                    }
+                    if (sanitizedFileName.equals("")) sanitizedFileName = "UNDEFINED";
 
                     // Check if the file name needs to be changed
-                    if (!fileName.equals(sanitizedFileName)) {
+                    if (!fileName.equals("") && !fileName.equals(sanitizedFileName)) {
                         // Create the new file path by appending the sanitized file name to the parent folder path
                         String newFilePath = file.getParent() + File.separator + sanitizedFileName;
                         File newFile = new File(newFilePath);
@@ -161,6 +178,48 @@ public class BatchWavToMaps {
     }
 
     /**
+     * This function executes the python script ConvertSong.
+     * It converts a mp3 to wav
+     * !! OGG IS BROKEN !!
+     *
+     * @param file      File that should be converted
+     * @param convertTo File extension. Supported: wav
+     */
+    private static void executeConvertSongsPY(File file, String filePath, String convertTo) {
+        //Command to do it manually:
+        //python ConvertSong.py mp3Files/input.mp3 output.wav wav
+
+        try {
+            ProcessBuilder processBuilder = new ProcessBuilder(
+                    "python",
+                    "./OnsetGeneration/ConvertSong.py",
+                    filePath + file.getName(),
+                    filePath + file.getName().replace(".mp3", "." + convertTo),
+                    "wav");
+            Process process = processBuilder.start();
+
+            int exitCode = process.waitFor();
+            if (exitCode == 0) {
+                System.out.println("Converted " + file.getName() + " to " + convertTo + " format");
+            } else {
+                System.out.println("Python script execution failed with exit code: " + exitCode);
+
+                // Capture and print the error output of the script
+                InputStream errorStream = process.getErrorStream();
+                BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream));
+                String line;
+                while ((line = errorReader.readLine()) != null) {
+                    System.out.println(line);
+                }
+            }
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    /**
      * This function executes a Python script to create timings from a .wav file.
      *
      * @param inputPath             The path where the input file is located.
@@ -200,18 +259,17 @@ public class BatchWavToMaps {
      */
     private static String createDiffFromTimings(String destinationFolderPath, String filename) {
         // Create timings for the song based on parameters and save it to timingsFromSong
-        String timingsFromSong = CreateTimings.makeMap(120, destinationFolderPath + "/" + filename + ".txt", (double) 1 / 32);
+        String timingsFromSong = FileManager.makeMap(120, destinationFolderPath + "/" + filename + ".txt", (double) 1 / 32);
 
         // Overwrite the timings file for the ExpertPlusNoArrows.dat with the timings generated for the song
-        CreateTimings.overwriteFile(destinationFolderPath + "/" + "ExpertPlusNoArrows.dat", timingsFromSong);
+        FileManager.overwriteFile(destinationFolderPath + "/" + "ExpertPlusNoArrows.dat", timingsFromSong);
 
         // Return the timings generated for the song
         return timingsFromSong;
     }
 
-
     /**
-     * Outsources the info.dat file generation
+     * Outsources the info.dat file generation so that the code isn't clustered
      *
      * @param songName Name of the song lol
      * @return the complete info.dat File

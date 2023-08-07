@@ -19,22 +19,20 @@ Beat Saber automapping tools:
 ## Installation
 1. Download .jar file drom Releases. You may put it into it's own folder. It will generate a few files
 
-2. install librosa (only needed for onsets):
+2. install dependencies (only needed for onsets):
     ```bash
      pip install librosa
-    ```
-
-3. install aubio (only needed for onsets):
-    ```bash
+     pip install ffmpeg or install it from: https://ffmpeg.org/download.html
+     pip install pydub
      pip install aubio
     ```
 
-4. Open BeatKenja.jar and let it create a few files and folders. Then close it again.
+3. Open BeatKenja.jar and let it create a few files and folders. Then close it again.
 
-5. open config.txt and change the defaultPath to your WIP folder (or whatever folder you may like)
+4. open config.txt and change the defaultPath to your WIP folder (or whatever folder you may like). **replace the backward slashes with forward ones!!!**
    verbose shouldn't be changed except if you want to get spammed by the program
 
-7. Now you are ready to go
+5. Now you are ready to go
 
 ## How to use
 <pre>Note that I will be using map and diff interchangeably</pre>
@@ -62,9 +60,13 @@ When you click on Map creator you then have a few options:<br>
   This is where you can have a LOT of freedom.<br>
   There are the following options to what sections should be generated: 
   <pre>complex | linear | 1-2 | 2-1 | 2-2 | small, normal, big jumps | doubles | sequence (WIP)</pre>
-  **MORE WILL BE ADDED**
+  **MORE WILL BE ADDED HERE** once the features actually work
   
 Then at last, hit SAVE MAP.
+
+TODO: How to get diff into the editor
+TODO: Explain what load patterns does
+TODO: Explain diff caching
 
 ----
 
@@ -84,5 +86,5 @@ Then at last, hit SAVE MAP.
     - [ ] more variation
     - [ ] stacks
 - [ ] Better music onsets
-- [ ] Dark Mode!!!
+- [ ] Dark Mode
 - [ ] Finish README.MD

@@ -36,10 +36,10 @@ aubio/*
 libs/*
 /Input.txt
 /timings.txt
-/OnsetGeneration/wavFiles/*
+/OnsetGeneration/mp3Files/*
 /OnsetGeneration/slices/*
 /OnsetGeneration/output/*
 /OnsetGeneration/output/
 /OnsetGeneration/slices/
-/OnsetGeneration/wavFiles/
+/OnsetGeneration/mp3Files/
 /BeatKenja.iml

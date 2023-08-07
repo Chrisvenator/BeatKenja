@@ -8,8 +8,8 @@ public class CreatePatterns {
         String filename = "Input.txt";
         String patternFilename = "PatternTemplates/Template--ISeeFire.txt";
         String outPath = "";
-        String input = CreateTimings.readFile(filename).get(0);
-        String patternInput = CreateTimings.readFile(patternFilename).get(0);
+        String input = FileManager.readFile(filename).get(0);
+        String patternInput = FileManager.readFile(patternFilename).get(0);
 
         Gson gson = new Gson();
         BeatSaberMap timings = gson.fromJson(input, BeatSaberMap.class);
@@ -107,7 +107,8 @@ public class CreatePatterns {
                 case "2-2" -> notes.addAll(twoLeftTwoRight(currentNotes.toArray(new Note[0]), prevBlue, prevRed));
                 case "small-jumps", "smalljumps", "small jumps" ->
                         notes.addAll(createSmallJumps(currentNotes, false, prevBlue, prevRed));
-                case "jumps" -> notes.addAll(createJumps(currentNotes, false, prevBlue, prevRed));
+                case "jumps", "normal jumps", "normal_jumps", "normal-jumps" ->
+                        notes.addAll(createJumps(currentNotes, false, prevBlue, prevRed));
                 case "big-jumps", "bigjumps", "big jumps" ->
                         notes.addAll(createBigJumps(currentNotes, false, prevBlue, prevRed));
                 case "doubles", "double-handed" ->
@@ -496,9 +497,10 @@ public class CreatePatterns {
 
                 if (i % 2 == 0 && prevRed == null) redNotes.add(new Note(complexPattern[i]._time, 2, 0, 1, 0));
                 else if (i % 2 == 1 && prevRed == null) redNotes.add(new Note(complexPattern[i]._time, 2, 0, 1, 1));
-                else if (i % 2 == 0) redNotes.add(new Note(complexPattern[i]._time, 2, 0, 1, prevRed.isDD(new Note(0, 0, 0, 0, 1)) ? 0 : 1));
-                else redNotes.add(new Note(complexPattern[i]._time, 2, 0, 1, prevRed.isDD(new Note(0, 0, 0, 0, 1)) ? 1 : 0));
-
+                else if (i % 2 == 0)
+                    redNotes.add(new Note(complexPattern[i]._time, 2, 0, 1, prevRed.isDD(new Note(0, 0, 0, 0, 1)) ? 0 : 1));
+                else
+                    redNotes.add(new Note(complexPattern[i]._time, 2, 0, 1, prevRed.isDD(new Note(0, 0, 0, 0, 1)) ? 1 : 0));
 
                 invalidPlacementsInARow = 0;
                 continue;

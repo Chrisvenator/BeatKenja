@@ -350,6 +350,7 @@ public class UserInterface extends JFrame {
             } catch (IllegalArgumentException ex) {
                 statusCheck.setText(statusCheck.getText() + "\nThere was an error while creating. Please try again!");
                 System.err.println(ex.getMessage());
+                changeBackOutput();
             }
 
 
@@ -501,7 +502,7 @@ public class UserInterface extends JFrame {
 
         if (pattern == null) {
             statusCheck.setText(statusCheck.getText() + "\nINFO: Patterns have not been specified. Proceeding with default patterns");
-            BeatSaberMap patterMap = new Gson().fromJson(CreateTimings.readFile("PatternTemplates/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
+            BeatSaberMap patterMap = new Gson().fromJson(FileManager.readFile("PatternTemplates/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
             pattern = new Pattern(patterMap._notes, 1);
             if (verbose) statusCheck.setText(statusCheck.getText() + "\n patterns: " + pattern.toString());
         }
@@ -601,7 +602,7 @@ public class UserInterface extends JFrame {
 
     //If you want to add more configs:
     public void readConfig() {
-        List<String> config = CreateTimings.readFile("./config.txt");
+        List<String> config = FileManager.readFile("./config.txt");
         if (config != null && config.size() >= 1) {
             for (String s : config) {
                 String[] splits = s.split(":");

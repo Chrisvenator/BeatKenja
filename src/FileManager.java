@@ -3,8 +3,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class CreateTimings {
+public class FileManager {
 
+    //Deprecated feature
     //makes a BeatSaber Map in the json format from a simple timings file.
     public static String makeMap(float bpm, String filename, double plPr) {
         List<String> timings = readFile(filename);
@@ -29,7 +30,11 @@ public class CreateTimings {
     }
 
 
-    //Reads the file and returns a String-List
+    /**
+     * Reads the file and returns a String-List
+     * @param filename Filename
+     * @return Every line of the File in List form
+     */
     public static List<String> readFile(String filename) {
         File file = new File(filename);
         List<String> timings = new ArrayList<>();
@@ -47,7 +52,12 @@ public class CreateTimings {
         return timings;
     }
 
-    //Overwrites a file with the String data
+    /**
+     * Overwrites a file with the String data
+     *
+     * @param filePath Path to the file
+     * @param data     the string data with which the File should be overwritten
+     */
     public static void overwriteFile(String filePath, String data) {
         File file = new File(filePath);
 
@@ -60,6 +70,43 @@ public class CreateTimings {
         } catch (IOException e) {
             System.out.println("An error occurred while overwriting the file: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * this feature is currently not in use. It may work or may not. No Idea
+     *
+     * @param pythonScriptPath Path to the script. Example: ./script
+     * @param argument1        Arg1
+     * @param argument2        Arg2
+     * @return return true if it was successful
+     */
+    public static boolean pythonScriptExecuter(String pythonScriptPath, String argument1, String argument2) {
+        try {
+            // Build the command to execute the Python script with arguments
+            String pythonExecutable = "python"; // Adjust if necessary, e.g., "python3"
+            String[] command = {pythonExecutable, pythonScriptPath, argument1, argument2};
+
+            // Execute the Python script
+            ProcessBuilder processBuilder = new ProcessBuilder(command);
+            Process process = processBuilder.start();
+
+            // Read the output of the Python script
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+
+            // Wait for the process to complete
+            int exitCode = process.waitFor();
+
+            System.out.println("Python script execution completed with exit code: " + exitCode);
+            return true;
+
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 }
