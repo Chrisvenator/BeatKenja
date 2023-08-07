@@ -19,6 +19,7 @@ public class UserInterface extends JFrame {
 
     private final JLabel labelMapDiff;
     private final JButton openMapButton;
+    private final JButton openSongButton;
     private final TextArea statusCheck;
     private boolean mapSuccessfullyLoaded = false;
 
@@ -60,6 +61,14 @@ public class UserInterface extends JFrame {
         openMapButton.addActionListener(e -> loadMap());
         openMapButton.setBackground(Color.cyan);
         add(openMapButton);
+
+
+        openSongButton = new JButton("Convert MP3s to timing maps");
+        openSongButton.setBounds(500, 20, 200, 30);
+        openSongButton.addActionListener(e -> convertMp3ToMap());
+        openSongButton.setBackground(Color.orange);
+        openSongButton.setVisible(true);
+        add(openSongButton);
 
 
         //BPM Buttons are currently disabled!
@@ -490,6 +499,20 @@ public class UserInterface extends JFrame {
                 }
             }
         }).start();
+    }
+
+    private void convertMp3ToMap() {
+        try {
+            statusCheck.setText(statusCheck.getText() + "\nINFO: Converting all Songs from OnsetGeneration/mp3Files/ to timing maps.\nThis might take a while if there are a lot of songs.\n");
+            statusCheck.setText(statusCheck.getText() + "You can always check the progress when heading to \"OnsetGeneration/output/\"\n");
+            BatchWavToMaps.generateOnsets("./OnsetGeneration/mp3Files/", "./OnsetGeneration/output/", true);
+            statusCheck.setText(statusCheck.getText() + "\nSuccessfully created Map. You can find your map in \"OnsetGeneration/output/\"\n\n");
+        } catch (Exception e) {
+            System.err.println("ERROR: Something went wrong during conversion. Is it the right file extension?\n" + e);
+            statusCheck.setText("ERROR: Something went wrong during conversion. Is it the right file extension?\n" + e + "\n\n");
+            openSongButton.setBounds(320, 20, 300, 30);
+            openSongButton.setBackground(Color.RED);
+        }
     }
 
     public void manageMap() {
