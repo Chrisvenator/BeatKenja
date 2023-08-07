@@ -64,13 +64,25 @@ public class CreatePatterns {
         List<Note> notes = new ArrayList<>();
         List<Note> timings = Arrays.asList(map._notes);
         List<Bookmark> bookmarks = map.bookmarks == null ? map.calculateBookmarks() : map.bookmarks;
-        bookmarks.add(new Bookmark(timings.get(timings.size() - 1)._time + 10, "end", new float[]{(float) 0.0, (float) 0.0, (float) 0.0}));
+        String[] supportedTypes = new String[]{"complex", "linear", "1-2", "2-1", "2-2", "small_jumps", "normal_jumps", "big_jumps", "doubles", "pattern"};
 
         //If the map is one-handed or there are no bookmarks, then there is not that much to do
         if (oneHanded)
             return new BeatSaberMap(complexPatternFromTemplate(map._notes, p, true, stacks, null, null), map.originalJSON);
-        if (bookmarks.size() <= 1)
-            return new BeatSaberMap(complexPatternFromTemplate(map._notes, p, true, stacks, null, null), map.originalJSON);
+        if (bookmarks.size() <= 1) {
+            Random random = new Random();
+            int min = 10;
+            int max = 40;
+
+            int randomNumber = random.nextInt(max - min + 1) + min;
+            for (int i = 0; i < randomNumber; i++) {
+                bookmarks.add(new Bookmark(timings.get(i * (int) (timings.size() / randomNumber))._time, supportedTypes[random.nextInt(supportedTypes.length - 1)], null));
+                if (bookmarks.get(bookmarks.size() - 1)._name.contains("jumps")) i--;
+            }
+//            return new BeatSaberMap(complexPatternFromTemplate(map._notes, p, oneHanded, stacks, null, null), map.originalJSON);
+        }
+        bookmarks.add(new Bookmark(timings.get(timings.size() - 1)._time + 10, "end", new float[]{(float) 0.0, (float) 0.0, (float) 0.0}));
+
 
         Note prevBlue = null;
         Note prevRed = null;
@@ -94,8 +106,7 @@ public class CreatePatterns {
                     Note[] linearNotes = linearSlowPattern(currentNotes.toArray(new Note[0]), false, prevBlue, prevRed);
                     notes.addAll(Arrays.stream(linearNotes).toList());
                 }
-                case "1-2" ->
-                        notes.addAll(twoRightOneLeft(currentNotes.toArray(new Note[0]), p, prevBlue, prevRed, stacks));
+                case "1-2" -> notes.addAll(twoRightOneLeft(currentNotes.toArray(new Note[0]), p, prevBlue, prevRed, stacks));
 
                 case "2-1" -> {
                     //prevRed and prevBlue must be inverted right here because in the next line we invert all the notes again.
@@ -105,19 +116,15 @@ public class CreatePatterns {
                 }
 
                 case "2-2" -> notes.addAll(twoLeftTwoRight(currentNotes.toArray(new Note[0]), prevBlue, prevRed));
-                case "small-jumps", "smalljumps", "small jumps" ->
-                        notes.addAll(createSmallJumps(currentNotes, false, prevBlue, prevRed));
-                case "jumps", "normal jumps", "normal_jumps", "normal-jumps" ->
-                        notes.addAll(createJumps(currentNotes, false, prevBlue, prevRed));
-                case "big-jumps", "bigjumps", "big jumps" ->
-                        notes.addAll(createBigJumps(currentNotes, false, prevBlue, prevRed));
-                case "doubles", "double-handed" ->
-                        notes.addAll(createDoubles(currentNotes.toArray(new Note[0]), prevBlue, prevRed));
-                case "sequence", "seq", "s", "pattern", "pat", "rand-seq", "random-sequence" ->
-                        notes.addAll(createPatternSequence(currentNotes.toArray(new Note[0]), prevBlue, prevRed, "jumps.txt"));
+                case "small-jumps", "smalljumps", "small_jumps", "small jumps" -> notes.addAll(createSmallJumps(currentNotes, false, prevBlue, prevRed));
+                case "jumps", "normal jumps", "normal_jumps", "normal-jumps" -> notes.addAll(createJumps(currentNotes, false, prevBlue, prevRed));
+                case "big-jumps", "bigjumps", "big_jumps", "big jumps" -> notes.addAll(createBigJumps(currentNotes, false, prevBlue, prevRed));
+                case "doubles", "double-handed" -> notes.addAll(createDoubles(currentNotes.toArray(new Note[0]), prevBlue, prevRed));
+                case "sequence", "seq", "s", "pattern", "pat", "rand-seq", "random-sequence" -> notes.addAll(createPatternSequence(currentNotes.toArray(new Note[0]), prevBlue, prevRed, "jumps.txt"));
 
                 default -> {
-                    System.err.println("There is no such flag as: \"" + bookmarks.get(i)._name + "\" with " + currentNotes.size() + " notes.");
+                    System.err.println("There is no such flag as: \"" + bookmarks.get(i)._name + "\" with " + currentNotes.size() + " notes. Please have a look at the supported ones in the README");
+                    System.err.println("Supported types: " + Arrays.toString(supportedTypes));
                     Note[] complexNotes = complexPatternFromTemplate(currentNotes.toArray(new Note[0]), p, false, stacks, prevBlue, prevRed);
                     notes.addAll(Arrays.stream(complexNotes).toList());
                 }
