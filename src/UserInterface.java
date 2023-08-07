@@ -11,7 +11,6 @@ public class UserInterface extends JFrame {
     private String filePath;
     private BeatSaberMap map;
     private Pattern pattern;
-    private float bpm = 120;
 
     //config.txt:
     private boolean verbose = true; //For debugging purposes. It prints EVERYTHING
@@ -69,28 +68,6 @@ public class UserInterface extends JFrame {
         openSongButton.setBackground(Color.orange);
         openSongButton.setVisible(true);
         add(openSongButton);
-
-
-        //BPM Buttons are currently disabled!
-        JTextField bpmTextField = new JFormattedTextField("BPM");
-        bpmTextField.setBounds(50, 70, 100, 30);
-        bpmTextField.setVisible(false);
-        add(bpmTextField);
-
-
-        // Button erstellen und positionieren
-        //BPM Buttons are currently disabled!
-        JButton submitBPM = new JButton("save BPM");
-        submitBPM.setBounds(160, 70, 100, 30);
-        submitBPM.setVisible(false);
-        submitBPM.addActionListener(e -> {
-            try {
-                bpm = Float.parseFloat(bpmTextField.getText());
-            } catch (NumberFormatException ex) {
-                System.err.println("The BPM you typed in is not a number!");
-            }
-        });
-        add(submitBPM);
 
 
         //Status Bar:
@@ -475,9 +452,6 @@ public class UserInterface extends JFrame {
         new Thread(() -> {
             while (true) {
                 if (mapSuccessfullyLoaded) {
-//                    bpmTextField.setVisible(true);
-//                    submitBPM.setVisible(true);
-
                     labelMapDiff.setText("Successfully loaded difficulty");
                     labelMapDiff.setBackground(Color.GREEN);
 
@@ -503,10 +477,15 @@ public class UserInterface extends JFrame {
 
     private void convertMp3ToMap() {
         try {
+            statusCheck.setBackground(Color.GRAY);
+            openSongButton.setText("In Progress...");
             statusCheck.setText(statusCheck.getText() + "\nINFO: Converting all Songs from OnsetGeneration/mp3Files/ to timing maps.\nThis might take a while if there are a lot of songs.\n");
             statusCheck.setText(statusCheck.getText() + "You can always check the progress when heading to \"OnsetGeneration/output/\"\n");
+            Thread.sleep(1000);
             BatchWavToMaps.generateOnsets("./OnsetGeneration/mp3Files/", "./OnsetGeneration/output/", true);
             statusCheck.setText(statusCheck.getText() + "\nSuccessfully created Map. You can find your map in \"OnsetGeneration/output/\"\n\n");
+            statusCheck.setBackground(Color.WHITE);
+            openSongButton.setText("Convert MP3s to timing maps");
         } catch (Exception e) {
             System.err.println("ERROR: Something went wrong during conversion. Is it the right file extension?\n" + e);
             statusCheck.setText("ERROR: Something went wrong during conversion. Is it the right file extension?\n" + e + "\n\n");
