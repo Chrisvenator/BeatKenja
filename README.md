@@ -18,13 +18,11 @@ Beat Saber automapping tools:
 
 ## Installation
 1. Download .jar file drom Releases. You may put it into it's own folder. It will generate a few files
-
-2. install dependencies (only needed for onsets):
+2. install install [pip](https://phoenixnap.com/kb/install-pip-windows#:~:text=Installing%20PIP%20On%20Windows%201%20Step%201%3A%20Download,Environment%20Variables%20...%205%20Step%205%3A%20Configuration%20) and dependencies (only needed for onsets):
     ```bash
      pip install librosa
      pip install ffmpeg or install it from: https://ffmpeg.org/download.html
      pip install pydub
-     pip install aubio
     ```
 
 3. Open BeatKenja.jar and let it create a few files and folders. Then close it again.
@@ -37,8 +35,16 @@ Beat Saber automapping tools:
 ## How to use
 <pre>Note that I will be using map and diff interchangeably</pre>
 ### Onset Creation
-1. create the onsets with and write it into timings.txt "aubioonset song.wav > timings.txt"
-2. (more will be added here)
+**You need to have all prerequisites installed!**
+1. Put all your desired Songs into the folder OnsetGeneration/mp3Files. Note: All your files must be **mp3** files! (.wav files will probably work too).
+2. Start BeatKenja and hit Convert "MP3s to timing maps". This will analyze the song and make a timings map. The output will be saved at OnsetGeneration/output/*SongName*.<br>
+  The more songs that need to be converted, the longer it will take. You can always review the prgoress when you look into the OnsetGeneration/output folder.
+3. Copy all the desired Maps folders from OnsetGeneration/output/ to your WIP folder.
+You can now open your maps in the editor of your choice.
+4. Verify the accuracy of the note placements. No algorithm is perfect. So the chance is VERY high that the algorithm placed some notes off beat.
+
+
+If you now want to make a "real" map out of these timings, then have a look at the next chapter:
 
 ----
 
@@ -51,11 +57,13 @@ If you are unsure to what a timing diff is, then convert an existing diff to a 1
 
 If the timings difficulty is prepared, then open BeatKenja.jar and choose it.<br>
 When you click on Map creator you then have a few options:<br>
-+ **(one handed) Create Linear Map [(Example)]()**:<br>
++ **Create Linear Map [(Example)]()**:<br>
   A really simple linear map. There should be no DDs or resets. It gets quite boringe quite fast. The swings will **always** be alternating.
-+ **(one handed) Create Complex Map [(Example)]()**:<br>
+  It is possible to make a one handed Linear Map: Map creator --> one han... (top left option)
++ **Create Complex Map [(Example)]()**:<br>
   A map which can contain quite interesting patterns but the swings will **always** be alternating.<br>
   It might conatin DDs or resets. But it will give a warning if it detects some.<br>
+  It is possible to make a one handed Complex Map: Map creator --> complex (top right option)
 + **Create Map [(Example)]()**:
   This is where you can have a LOT of freedom.<br>
   There are the following options to what sections should be generated: 
@@ -77,7 +85,18 @@ TODO: Explain diff caching
 + **Delete Note Type**. Blue: 1 and Red: 0
 + **fix Placements**
   This moves all placements to (by default) 1/16 of a beat
-  
+----
+
+## Known Issues:
++ **There are holes in the map:** No Algorithm is perfect. But I will fix that sometime in the future
++ **Map won't load in Beat Saber:** There may be something wrong with a difficulty file. Just go into the editor of your choice and open and save every difficulty. That should fix it.
++ **The map I generated doesn't show up in the editor:** TBD
++ **The map didn't change after generating a new one:** There may be 2 possibilities:
++   1. The Program didn't feel like generating something
++   2. Chromapper chached the difficulty. If this is the case, then exit and reopen the diff. that should fix it.
+
+----
+
 ## TODOs:
 - [ ] creating new pattern types:
     - [x] doubles
