@@ -1,7 +1,6 @@
 import com.google.gson.Gson;
 
 import java.util.Arrays;
-import java.util.List;
 
 public class Main {
 
@@ -30,7 +29,7 @@ public class Main {
 
 
         //creating a BeatSaberMap Object from the input String
-        BeatSaberMap map = new Gson().fromJson(CreateTimings.readFile(inputPath).get(0), BeatSaberMap.class);
+        BeatSaberMap map = new Gson().fromJson(FileManager.readFile(inputPath).get(0), BeatSaberMap.class);
 
         CreatePatterns.checkForMappingErrors(Arrays.asList(map._notes), false);
 
@@ -39,10 +38,10 @@ public class Main {
 //        System.out.println(map.exportAsMap());
 
 //        map.toBlueLeftBottomRowDotTimings();
-//        CreateTimings.overwriteFile(outputPath + "TestOutput.txt", map.exportAsMap());
+//        FileManager.overwriteFile(outputPath + "TestOutput.txt", map.exportAsMap());
 
-//        String timingsFromSong = CreateTimings.makeMap(bpm, "OnsetGeneration/timings.txt", placementPrecision);
-//        CreateTimings.overwriteFile(outputPath + "timingsFromSong.txt", timingsFromSong);
+//        String timingsFromSong = FileManager.makeMap(bpm, "OnsetGeneration/timings.txt", placementPrecision);
+//        FileManager.overwriteFile(outputPath + "timingsFromSong.txt", timingsFromSong);
 
 
         //Not executing things that are not needed at the moment
@@ -50,14 +49,14 @@ public class Main {
 
             //creating a Map out of the timings file:
             //Needed are: bpm, timings filename, placementPrecision
-//            String timingsFromSong = CreateTimings.makeMap(bpm, "timings.txt", placementPrecision);
-//            CreateTimings.overwriteFile(outputPath + "timingsFromSong.txt", timingsFromSong);
+//            String timingsFromSong = FileManager.makeMap(bpm, "timings.txt", placementPrecision);
+//            FileManager.overwriteFile(outputPath + "timingsFromSong.txt", timingsFromSong);
 
 
             //fixing timings of a map, so that is not flagged by ScoreSaber as "unsure"
             //Needed is only the placementPrecision
             map.fixPlacements(placementPrecision);
-            CreateTimings.overwriteFile(outputPath + "fixedTimings.txt", map.exportAsMap());
+            FileManager.overwriteFile(outputPath + "fixedTimings.txt", map.exportAsMap());
 
 
             //Converting an already existing map into a map with timings.
@@ -67,17 +66,17 @@ public class Main {
 
             //If you ONLY want timings and no stacks, etc. , then use "toLinearTimings".
             map.toBlueLeftBottomRowDotTimings();
-            CreateTimings.overwriteFile(outputPath + "linearTimings.txt", map.exportAsMap());
+            FileManager.overwriteFile(outputPath + "linearTimings.txt", map.exportAsMap());
 
 
             //If you want timings and stacks, etc. , then use "mapToTimingNotesArray" or "mapToTimingNotesList".
             //The only difference is the format which is returned.
             map.toTimingNotes();
-            CreateTimings.overwriteFile(outputPath + "TestOutput.txt", map.exportAsMap());
+            FileManager.overwriteFile(outputPath + "TestOutput.txt", map.exportAsMap());
 
             //Creating a linear map from timings:
             Note[] linearPattern = CreatePatterns.linearSlowPattern(map._notes, false, null, null);
-            CreateTimings.overwriteFile(outputPath + "linearMap.txt", new BeatSaberMap(linearPattern, map.originalJSON).exportAsMap());
+            FileManager.overwriteFile(outputPath + "linearMap.txt", new BeatSaberMap(linearPattern, map.originalJSON).exportAsMap());
 
 
             //removing all notes with the red color:
