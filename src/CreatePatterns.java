@@ -69,7 +69,7 @@ public class CreatePatterns {
         //If the map is one-handed or there are no bookmarks, then there is not that much to do
         if (oneHanded)
             return new BeatSaberMap(complexPatternFromTemplate(map._notes, p, true, stacks, null, null), map.originalJSON);
-        if (bookmarks.size() <= 1) {
+        if (bookmarks.size() == 0) {
             Random random = new Random();
             int min = 10;
             int max = 40;
@@ -707,10 +707,23 @@ public class CreatePatterns {
     public static List<Note> createBigJumps(List<Note> timings, boolean oneHanded, Note prevBlue, Note prevRed) {
         List<Note> notes = createJumps(timings, oneHanded, prevBlue, prevRed);
         for (Note n : notes) {
-            if (n._type == 1 && n._lineLayer == 0) {
-                n._cutDirection = 6;
-            } else {
-                n._lineIndex = 2;
+            if (n._lineLayer == 2) n._lineLayer--;
+            if (n._type == 1) {
+                if (n._cutDirection == 1) {
+                    n._lineIndex = 0;
+                    n._cutDirection = 6;
+                } else {
+                    n._lineIndex = 3;
+                    n._cutDirection = 5;
+                }
+            } else if (n._type == 0) {
+                if (n._cutDirection == 1) {
+                    n._lineIndex = 3;
+                    n._cutDirection = 7;
+                } else {
+                    n._lineIndex = 0;
+                    n._cutDirection = 4;
+                }
             }
         }
 
@@ -1044,6 +1057,12 @@ public class CreatePatterns {
      */
     public static Note nextLinearNote(Note previousNote, float time) {
         Note p = previousNote; //p is much cleaner than having a thousand times previousNote
+
+        if (p == null) {
+            System.err.println("Something went wrong. A note is null :thinking: Please have a look at beat: " + time);
+            p = new Note(time, 0, 0, 1, 1);
+        }
+
         double placement = Math.random() * 100;
 
 
