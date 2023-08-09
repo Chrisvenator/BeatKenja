@@ -15,6 +15,7 @@ public class UserInterface extends JFrame {
     //config.txt:
     private boolean verbose = true; //For debugging purposes. It prints EVERYTHING
     private String DEFAULT_PATH = "C:/Program Files/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels";
+    private boolean darkMode = false;
 
     private final JLabel labelMapDiff;
     private final JButton openMapButton;
@@ -29,7 +30,7 @@ public class UserInterface extends JFrame {
     private final PrintStream ERROR_PRINT_STREAM = new PrintStream(OUTPUT_STREAM);
 
     public static void main(String[] args) {
-        CreateAllNecessaryDIRsAndFiles.main();
+        CreateAllNecessaryDIRsAndFiles.createAllNecessaryDIRsAndFiles();
 
         UserInterface ui = new UserInterface();
         ui.setVisible(true);
@@ -44,11 +45,14 @@ public class UserInterface extends JFrame {
         setTitle("Beat Kenja");
         setSize(1200, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        if (darkMode) getContentPane().setBackground(Color.darkGray);
+        if (darkMode) getContentPane().setForeground(Color.white);
         setLayout(null);
 
 
         labelMapDiff = new JLabel("Choose map difficulty file: ");
         labelMapDiff.setBounds(50, 20, 200, 30);
+        if (darkMode) labelMapDiff.setForeground(Color.white);
         add(labelMapDiff);
 
         //Load Patterns from file
@@ -73,7 +77,7 @@ public class UserInterface extends JFrame {
         //Status Bar:
         statusCheck = new TextArea("config: \nverbose: " + verbose + "\npath: " + DEFAULT_PATH + "\n");
         statusCheck.setBounds(50, 235, 1090, 510);
-        statusCheck.setBackground(Color.WHITE);
+        statusCheck.setBackground(darkMode ? Color.gray : Color.WHITE);
         statusCheck.setEditable(false);
         add(statusCheck);
 
@@ -383,14 +387,14 @@ public class UserInterface extends JFrame {
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
-                calculateNewMap.stop();
+                calculateNewMap.interrupt();
                 throw new IllegalArgumentException("Took too long lol");
             });
 
             try {
                 watchForInfiniteLoop.start();
                 calculateNewMap.start();
-                watchForInfiniteLoop.stop();
+                watchForInfiniteLoop.interrupt();
             } catch (IllegalArgumentException ex) {
                 statusCheck.setText(statusCheck.getText() + "\nThere was an error while creating. Please try again!");
             }
@@ -417,14 +421,14 @@ public class UserInterface extends JFrame {
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
-                calculateNewMap.stop();
+                calculateNewMap.interrupt();
                 throw new IllegalArgumentException("Took too long lol");
             });
 
             try {
                 watchForInfiniteLoop.start();
                 calculateNewMap.start();
-                watchForInfiniteLoop.stop();
+                watchForInfiniteLoop.interrupt();
             } catch (IllegalArgumentException ex) {
                 statusCheck.setText(statusCheck.getText() + "\nThere was an error while creating. Please try again!");
             }
@@ -477,14 +481,14 @@ public class UserInterface extends JFrame {
 
     private void convertMp3ToMap() {
         try {
-            statusCheck.setBackground(Color.GRAY);
+            statusCheck.setBackground(darkMode ? Color.darkGray : Color.gray);
             openSongButton.setText("In Progress...");
             statusCheck.setText(statusCheck.getText() + "\nINFO: Converting all Songs from OnsetGeneration/mp3Files/ to timing maps.\nThis might take a while if there are a lot of songs.\n");
             statusCheck.setText(statusCheck.getText() + "You can always check the progress when heading to \"OnsetGeneration/output/\"\n");
             Thread.sleep(1000);
             BatchWavToMaps.generateOnsets("./OnsetGeneration/mp3Files/", "./OnsetGeneration/output/", true);
             statusCheck.setText(statusCheck.getText() + "\nSuccessfully created Map. You can find your map in \"OnsetGeneration/output/\"\n\n");
-            statusCheck.setBackground(Color.WHITE);
+            statusCheck.setBackground(darkMode ? Color.gray : Color.WHITE);
             openSongButton.setText("Convert MP3s to timing maps");
         } catch (Exception e) {
             System.err.println("ERROR: Something went wrong during conversion. Is it the right file extension?\n" + e);
@@ -526,6 +530,7 @@ public class UserInterface extends JFrame {
         loadPatternButton.addActionListener(action -> {
 
             JFileChooser fileChooser = new JFileChooser(DEFAULT_PATH);
+            if (darkMode) fileChooser.setForeground(Color.white);
             int option = fileChooser.showOpenDialog(this);
 
             if (option == JFileChooser.APPROVE_OPTION) {
@@ -552,6 +557,7 @@ public class UserInterface extends JFrame {
 
     public void loadMap() {
         JFileChooser fileChooser = new JFileChooser(DEFAULT_PATH);
+        if (darkMode) fileChooser.setForeground(Color.white);
         int option = fileChooser.showOpenDialog(this);
 
         if (option == JFileChooser.APPROVE_OPTION) {
@@ -610,6 +616,7 @@ public class UserInterface extends JFrame {
                 String[] splits = s.split(":");
                 if (s.contains("verbose")) verbose = splits[1].contains("true");
                 if (s.contains("defaultPath")) DEFAULT_PATH = splits[1] + ":" + splits[2];
+                if (s.contains("dark-mode")) darkMode = splits[1].contains("true");
             }
         }
     }
