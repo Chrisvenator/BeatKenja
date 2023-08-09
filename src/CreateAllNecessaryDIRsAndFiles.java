@@ -3,13 +3,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class CreateAllNecessaryDIRsAndFiles {
-    public static boolean main() {
+    public static void createAllNecessaryDIRsAndFiles() {
         //Checking if the directories exist.
         //If yes, then don't create them again
         File f1 = new File("./PatternTemplates");
         File f2 = new File("./PreMadePatterns");
         if (f1.exists() && f1.isDirectory() && f2.exists() && f2.isDirectory()) {
-            return true;
+            return;
         }
 
         String[] templateFilesToCopy = {
@@ -24,13 +24,24 @@ public class CreateAllNecessaryDIRsAndFiles {
                 "README.md"
         };
 
-        String config = "defaultPath:C:/Program Files/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels\nverbose:false //It is not recommended to change this except for debugging purposes.";
-        FileManager.overwriteFile("./config.txt", config);
 
-        return createDirectories() && extractFilesFromJar(templateFilesToCopy, "./") && extractFilesFromJar(preMadePatternsFilesToCopy, "./");
+        createConfigFile();
+        createDirectories();
+
+        extractFilesFromJar(templateFilesToCopy);
+        extractFilesFromJar(preMadePatternsFilesToCopy);
+
     }
 
-    public static boolean createDirectories() {
+    private static void createConfigFile() {
+        String config = """
+                defaultPath:C:/Program Files/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels
+                verbose:false //It is not recommended to change this except for debugging purposes.
+                dark-mode:false""";
+        FileManager.overwriteFile("./config.txt", config);
+    }
+
+    public static void createDirectories() {
         try {
             Files.createDirectories(Paths.get("./PatternTemplates"));
             Files.createDirectories(Paths.get("./PreMadePatterns"));
@@ -38,14 +49,14 @@ public class CreateAllNecessaryDIRsAndFiles {
             Files.createDirectories(Paths.get("./OnsetGeneration/mp3Files"));
             Files.createDirectories(Paths.get("./OnsetGeneration/output"));
         } catch (IOException e) {
-            return false;
+            System.err.println("There has been an Exception while creating the files:\n");
+            e.printStackTrace();
         }
 
-        return true;
     }
 
 
-    private static boolean extractFilesFromJar(String[] filesToCopy, String destinationDir) {
+    private static void extractFilesFromJar(String[] filesToCopy) {
         // Get the current ClassLoader
         ClassLoader classLoader = CreateAllNecessaryDIRsAndFiles.class.getClassLoader();
 
@@ -57,7 +68,7 @@ public class CreateAllNecessaryDIRsAndFiles {
 
                 if (inputStream != null) {
                     // Create the destination file path
-                    String destinationPath = destinationDir + fileToCopy;
+                    String destinationPath = "./" + fileToCopy;
 
                     // Create parent directories if they don't exist
                     File destinationFile = new File(destinationPath);
@@ -78,14 +89,12 @@ public class CreateAllNecessaryDIRsAndFiles {
                     System.out.println("File copied: " + destinationPath);
                 } else {
                     System.out.println("File not found in the JAR: " + fileToCopy);
-                    return false;
+                    return;
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
         }
-        return true;
     }
 
 }

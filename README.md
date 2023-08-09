@@ -97,7 +97,7 @@ When you click on Map creator you will then have a few options:<br>
   | **`small jumps`**<br>Depending on the previous notes the blue or red note comes first                                                                                                                                                                                                                          | ![small jumps gif](./assets/small_jumps.gif)   |
   | **`normal jumps`**<br>Depending on the previous notes the blue or red note comes first                                                                                                                                                                                                                         | ![normal jumps gif](./assets/normal_jumps.gif) |
   | **`big jumps`**<br>Depending on the previous notes the blue or red note comes first<br>*Currently broken D:*                                                                                                                                                                                                   | ![big jumps gif](./assets/big-jumps.gif)       |
-  | **`sequence`**<br>*Currently under construction*                                                                                                                                                                                                                                                               | ![sequence gif](./assets/sequence.gif)         |
+  | **`sequence`**<br>*Currently under construction*                                                                                                                                                                                                                                                               | *to be added*                                  |
 
 <br>
 
@@ -145,7 +145,7 @@ TODO: Explain what load patterns does<br>
     - [ ] more variation
     - [ ] stacks
 - [ ] Better music onsets
-- [ ] Dark Mode
+- [x] Dark Mode
 - [x] Finish README.MD
 - [x] FIX BIG JUMPS
 - [ ] add V3 support
