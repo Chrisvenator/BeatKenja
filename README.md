@@ -96,7 +96,7 @@ When you click on Map creator you will then have a few options:<br>
   | **`doubles`**<br>Red and Blue note will be placed at the same beat.<br>Dpeding on the previus notes they may be both the same or both different swings                                                                                                                                                         | ![big jumps gif](./assets/doubles.gif)         |
   | **`small jumps`**<br>Depending on the previous notes the blue or red note comes first                                                                                                                                                                                                                          | ![small jumps gif](./assets/small_jumps.gif)   |
   | **`normal jumps`**<br>Depending on the previous notes the blue or red note comes first                                                                                                                                                                                                                         | ![normal jumps gif](./assets/normal_jumps.gif) |
-  | **`big jumps`**<br>Depending on the previous notes the blue or red note comes first<br>*Currently broken D:*                                                                                                                                                                                                   | ![big jumps gif](./assets/big jumps.gif)       |
+  | **`big jumps`**<br>Depending on the previous notes the blue or red note comes first<br>*Currently broken D:*                                                                                                                                                                                                   | ![big jumps gif](./assets/big-jumps.gif)       |
   | **`sequence`**<br>*Currently under construction*                                                                                                                                                                                                                                                               | ![sequence gif](./assets/sequence.gif)         |
 
 <br>
@@ -146,6 +146,6 @@ TODO: Explain what load patterns does<br>
     - [ ] stacks
 - [ ] Better music onsets
 - [ ] Dark Mode
-- [ ] Finish README.MD
-- [ ] FIX BIG JUMPS
+- [x] Finish README.MD
+- [x] FIX BIG JUMPS
 - [ ] add V3 support
