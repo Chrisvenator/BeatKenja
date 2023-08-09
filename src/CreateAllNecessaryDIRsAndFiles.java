@@ -20,7 +20,8 @@ public class CreateAllNecessaryDIRsAndFiles {
                 "PreMadePatterns/test.txt",
                 "PreMadePatterns/umapyoi-test.txt",
                 "OnsetGeneration/SongToOnsets.py",
-                "OnsetGeneration/ConvertSong.py"
+                "OnsetGeneration/ConvertSong.py",
+                "README.md"
         };
 
         String config = "defaultPath:C:/Program Files/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels\nverbose:false //It is not recommended to change this except for debugging purposes.";
