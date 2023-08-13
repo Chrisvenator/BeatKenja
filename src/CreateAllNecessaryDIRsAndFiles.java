@@ -8,7 +8,8 @@ public class CreateAllNecessaryDIRsAndFiles {
         //If yes, then don't create them again
         File f1 = new File("./PatternTemplates");
         File f2 = new File("./PreMadePatterns");
-        if (f1.exists() && f1.isDirectory() && f2.exists() && f2.isDirectory()) {
+        File f3 = new File("./config.txt");
+        if (f1.exists() && f1.isDirectory() && f2.exists() && f2.isDirectory() && f3.exists() && f3.isFile()) {
             return;
         }
 

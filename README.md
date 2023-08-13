@@ -149,3 +149,6 @@ TODO: Explain what load patterns does<br>
 - [x] Finish README.MD
 - [x] FIX BIG JUMPS
 - [ ] add V3 support
+- [ ] mouse over support
+- [ ] Aim of the program?
+- [ ] Error message: "No audio files found in '/OnsetGeneration/wavFiles'"
