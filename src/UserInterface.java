@@ -8,6 +8,7 @@ import java.util.List;
 
 public class UserInterface extends JFrame {
 
+    //Variables:
     private String filePath;
     private BeatSaberMap map;
     private Pattern pattern;
@@ -17,6 +18,7 @@ public class UserInterface extends JFrame {
     private String DEFAULT_PATH = "C:/Program Files/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels";
     private boolean darkMode = false;
 
+    //GUI:
     private final JLabel labelMapDiff;
     private final JButton openMapButton;
     private final JButton openSongButton;
@@ -480,14 +482,49 @@ public class UserInterface extends JFrame {
     }
 
     private void convertMp3ToMap() {
+        if (!CreateAllNecessaryDIRsAndFiles.isFFMpegInstalled()) {
+            statusCheck.setText(statusCheck.getText() + "\nERROR: FFMpeg is not installed. Please install it and try again!");
+            return;
+        }
+
+        if (!CreateAllNecessaryDIRsAndFiles.isPythonInstalled()) {
+            statusCheck.setText(statusCheck.getText() + "\nERROR: Pyhton could not be found please ensure that it is installed and added to the PATH variable!");
+            return;
+        }
+
+
         try {
             statusCheck.setBackground(darkMode ? Color.darkGray : Color.gray);
             openSongButton.setText("In Progress...");
-            statusCheck.setText(statusCheck.getText() + "\nINFO: Converting all Songs from OnsetGeneration/mp3Files/ to timing maps.\nThis might take a while if there are a lot of songs.\n");
-            statusCheck.setText(statusCheck.getText() + "You can always check the progress when heading to \"OnsetGeneration/output/\"\n");
+            statusCheck.setText(statusCheck.getText() + "\nINFO: Converting all Songs from \"./OnsetGeneration/mp3Files/\" to timing maps... This might take a while if there are a lot of songs.\n");
+            statusCheck.setText(statusCheck.getText() + "INFO: You can always check the progress when heading to \"./OnsetGeneration/output/\"\n");
+
+            try {
+                List<File> files = new ArrayList<>(Arrays.stream(Objects.requireNonNull(new File("./OnsetGeneration/mp3Files/").listFiles())).toList());
+                files.removeIf(f -> !f.getName().endsWith(".mp3"));
+                if (files.size() == 0) throw new Exception();
+                statusCheck.setText(statusCheck.getText() + "INFO: Found " + files.size() + " MP3 Files in \"./OnsetGeneration/mp3Files/\"\n\n");
+            } catch (Exception e) {
+                statusCheck.setText(statusCheck.getText() + "\nINFO: Found 0 MP3 Files! Please put your mp3 Files into th folder \"./OnsetGeneration/mp3Files/\"\n\n");
+                statusCheck.setBackground(darkMode ? Color.gray : Color.WHITE);
+                openSongButton.setText("Convert MP3s to timing maps");
+                return;
+            }
+
+            //generate Onsets
             Thread.sleep(1000);
-            BatchWavToMaps.generateOnsets("./OnsetGeneration/mp3Files/", "./OnsetGeneration/output/", true);
-            statusCheck.setText(statusCheck.getText() + "\nSuccessfully created Map. You can find your map in \"OnsetGeneration/output/\"\n\n");
+            if (BatchWavToMaps.generateOnsets("./OnsetGeneration/mp3Files/", "./OnsetGeneration/output/", true)) {
+                statusCheck.setText(statusCheck.getText() + "\nINFO: Successfully created Map. You can find your map in \"OnsetGeneration/output/\"\n\n");
+
+                //Install dependencies if not already installed
+            } else {
+                statusCheck.setText(statusCheck.getText() + "\nERROR: There was an error while creating the onsets. It is possible that a dependencie is not installed. Please ensure that they are all installed and then try again!");
+                statusCheck.setText(statusCheck.getText() + "\nINFO: Trying installing dependencies...\n\n");
+                if (CreateAllNecessaryDIRsAndFiles.installDependencies()) {
+                    statusCheck.setText(statusCheck.getText() + "\nINFO: Finished installing dependencies... Please press the button again.\n\n");
+                } else statusCheck.setText(statusCheck.getText() + "\nERROR: error while installing dependencies...");
+            }
+
             statusCheck.setBackground(darkMode ? Color.gray : Color.WHITE);
             openSongButton.setText("Convert MP3s to timing maps");
         } catch (Exception e) {

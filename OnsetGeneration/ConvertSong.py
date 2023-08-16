@@ -1,4 +1,10 @@
 import sys
+try:
+    from pydub import AudioSegment
+    print("pydub is installed")
+except ImportError:
+    sys.exit(-4)
+
 from pydub import AudioSegment
 
 

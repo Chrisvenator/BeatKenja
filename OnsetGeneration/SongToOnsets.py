@@ -1,3 +1,10 @@
+import sys
+try:
+    import librosa
+    print("Librosa is installed")
+except ImportError:
+    sys.exit(-4)
+
 import argparse
 import librosa
 

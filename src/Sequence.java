@@ -15,12 +15,12 @@ public class Sequence implements Iterable {
     private final List<Note> notes = new ArrayList<>();
 
     public static void main(String[] args) {
-//        Sequence s = new Sequence("PreMadePatterns/test.txt");
+//        Sequence s = new Sequence("Patterns/test.txt");
 //        new Sequence();
     }
 
     public Sequence() throws NoSuchFileException {
-        File[] files = new File("PreMadePatterns").listFiles();
+        File[] files = new File("Patterns").listFiles();
 
         Random rand = new Random();
 
@@ -32,7 +32,7 @@ public class Sequence implements Iterable {
     }
 
     public Sequence(String pathToSequenceFile) {
-        if (!pathToSequenceFile.contains("/")) pathToSequenceFile = "PreMadePatterns/" + pathToSequenceFile;
+        if (!pathToSequenceFile.contains("/")) pathToSequenceFile = "Patterns/" + pathToSequenceFile;
         System.out.println("Sequence File chosen: " + pathToSequenceFile);
         loadSequence(pathToSequenceFile);
     }
