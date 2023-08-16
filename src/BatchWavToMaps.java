@@ -14,7 +14,7 @@ public class BatchWavToMaps {
      * @param inputPath Path to where the .wav files are located.
      * @param out       Path to where the outputted maps will be located. This can be the WIP folder.
      */
-    public static void generateOnsets(String inputPath, String out, boolean verbose) {
+    public static boolean generateOnsets(String inputPath, String out, boolean verbose) {
         // Save the original System.out to restore it later
         PrintStream originalOut = System.out;
 
@@ -43,7 +43,7 @@ public class BatchWavToMaps {
         if (files != null) {
             for (File file : files) {
                 if (file.isFile() && file.getName().contains(".mp3")) {
-                    executeConvertSongsPY(file, "./OnsetGeneration/mp3Files/", "wav", verbose);
+                    if (!executeConvertSongsPY(file, verbose)) return false;
                 }
             }
         }
@@ -67,7 +67,7 @@ public class BatchWavToMaps {
                         createFolderAndMoveItems(filename, file, destinationFolderPath, verbose);
 
                         // Execute the Python script to generate timings
-                        executePythonScript(filename, file, inputPath, destinationFolderPath);
+                        if (!executePythonScript(filename, file, inputPath, destinationFolderPath)) return false;
 
                         // Create the diff file from the timings
                         createDiffFromTimings(destinationFolderPath, filename);
@@ -83,6 +83,7 @@ public class BatchWavToMaps {
                 }
             }
         }
+        return true;
     }
 
 
@@ -181,10 +182,9 @@ public class BatchWavToMaps {
      * It converts a mp3 to wav
      * !! OGG IS BROKEN !!
      *
-     * @param file      File that should be converted
-     * @param convertTo File extension. Supported: wav
+     * @param file File that should be converted
      */
-    private static void executeConvertSongsPY(File file, String filePath, String convertTo, boolean verbose) {
+    private static boolean executeConvertSongsPY(File file, boolean verbose) {
         //Command to do it manually:
         //python ConvertSong.py mp3Files/input.mp3 output.wav wav
 
@@ -192,14 +192,14 @@ public class BatchWavToMaps {
             ProcessBuilder processBuilder = new ProcessBuilder(
                     "python",
                     "./OnsetGeneration/ConvertSong.py",
-                    filePath + file.getName(),
-                    filePath + file.getName().replace(".mp3", "." + convertTo),
+                    "./OnsetGeneration/mp3Files/" + file.getName(),
+                    "./OnsetGeneration/mp3Files/" + file.getName().replace(".mp3", "." + "wav"),
                     "wav");
             Process process = processBuilder.start();
 
             int exitCode = process.waitFor();
             if (exitCode == 0) {
-                if (verbose) System.out.println("Converted " + file.getName() + " to " + convertTo + " format");
+                if (verbose) System.out.println("Converted " + file.getName() + " to " + "wav" + " format");
             } else {
                 System.out.println("Python script execution failed with exit code: " + exitCode);
 
@@ -210,12 +210,13 @@ public class BatchWavToMaps {
                 while ((line = errorReader.readLine()) != null) {
                     System.out.println(line);
                 }
+                return exitCode != -4;
             }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
 
-
+        return true;
     }
 
     /**
@@ -228,13 +229,14 @@ public class BatchWavToMaps {
      * @throws IOException          If there is an issue with input/output operations or missing folders.
      * @throws InterruptedException If the execution of the Python script is interrupted.
      */
-    private static void executePythonScript(String filename, File file, String inputPath, String destinationFolderPath) throws IOException, InterruptedException {
+    private static boolean executePythonScript(String filename, File file, String inputPath, String destinationFolderPath) throws IOException, InterruptedException {
         // Create a ProcessBuilder to execute the Python script
         ProcessBuilder processBuilder = new ProcessBuilder("python", "./OnsetGeneration/SongToOnsets.py", inputPath + "/" + file.getName(), "--output", destinationFolderPath + "/" + filename + ".txt");
         Process process = processBuilder.start();
 
         // Wait for the process to finish and retrieve the exit code
         int exitCode = process.waitFor();
+        System.out.println("Python script execution finished with exit code: " + exitCode);
 
         // Check if the process exited with an error
         if (exitCode != 0) {
@@ -247,6 +249,7 @@ public class BatchWavToMaps {
                 System.out.println(line);
             }
         }
+        return exitCode != -4;
     }
 
     /**
