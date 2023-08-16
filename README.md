@@ -52,7 +52,8 @@ This tool is still in its early stages and will be improved.
 
 ## How to use
 
-<pre>Note that I may be using map and diff interchangeably because me dumb D:</pre>
+<pre>Note that a map is the whole of a map. It contains a song, info.dat and at least one difficulty.
+A diff (short for difficulty) is only a single difficulty file (For example: "ExpertPlusStandard.dat"). We will only work with difficulties from this point on. </pre>
 
 ### Onset Creation
 
