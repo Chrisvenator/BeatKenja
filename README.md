@@ -33,7 +33,7 @@ This tool is still in its early stages and will be improved.
 
     ```bash
     pip install librosa
-    pip install ffmpeg or install it from: https://ffmpeg.org/download.html (and add it to PATH)
+    pip install ffmpeg #or install it from: https://ffmpeg.org/download.html (and add it to PATH)
     pip install pydub
     ```
    Note that you may need to install ffmpeg manually and add it to PATH. Here is a tutorial for Windows [tutorial](https://phoenixnap.com/kb/ffmpeg-windows)
