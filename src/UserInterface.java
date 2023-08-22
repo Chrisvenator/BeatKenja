@@ -15,10 +15,27 @@ public class UserInterface extends JFrame {
 
     //config.txt:
     private boolean verbose = true; //For debugging purposes. It prints EVERYTHING
-    private String DEFAULT_PATH = "C:/Program Files/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels";
+    private String DEFAULT_PATH = "C:/Program Files (x86)/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels";
     private boolean darkMode = false;
+    //toAdd
+    public static final double BPM = 120;
+    public static final double PLACEMENT_PRECISION = (double) 1 / 32; //Placement Precision
+    public static final boolean FIX_PLACEMENTS = true; //should the timings be fixed so that SS doesn't flag it as AI made?
+
+
+    //General Config:
+    public static final String CONFIG_FILE_LOCATION = "./config.txt";
+    public static final String README_FILE_LOCATION = "README.md";
+    public static final String DEFAULT_PATTERN_TEMPLATE_FOLDER = "./PatternTemplates/";
+    public static final String DEFAULT_PATTERN_TEMPLATE = "./PatternTemplates/Template--ISeeFire.txt";
+    public static final String DEFAULT_ONSET_GENERATION_FOLDER = "./OnsetGeneration/";
+    public static final String ONSET_GENERATION_FOLDER_PATH_INPUT = "./OnsetGeneration/mp3Files/";
+    public static final String ONSET_GENERATION_FOLDER_PATH_OUTPUT = "./OnsetGeneration/output/";
+    public static final String DEFAULT_SEQUENCE_TEMPLATE_FOLDER = "./Patterns/";
+    public static final String DEFAULT_EXPORT_PATH = "./";
 
     //GUI:
+    private final UIElements uiElements;
     private final JLabel labelMapDiff;
     private final JButton openMapButton;
     private final JButton openSongButton;
@@ -39,57 +56,60 @@ public class UserInterface extends JFrame {
     }
 
     public UserInterface() {
+
+
         //loading config:
-        readConfig();
+        loadConfig();
         if (verbose) System.setErr(ERROR_PRINT_STREAM);
 
-        // Einstellungen für das Fenster
-        setTitle("Beat Kenja");
-        setSize(1200, 800);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        if (darkMode) getContentPane().setBackground(Color.darkGray);
-        if (darkMode) getContentPane().setForeground(Color.white);
-        setLayout(null);
+        //////////////////////////////
+        //  Initialize UI Elements  //
+        //////////////////////////////
+
+        //Global Elements
+        uiElements = new UIElements(darkMode, this);
+        uiElements.initialize();
+
+        labelMapDiff = uiElements.labelMapDiff();
+        openMapButton = uiElements.openMapButton();
+        openSongButton = uiElements.openSongButton();
+        statusCheck = uiElements.statusTextArea();
+
+        JButton saveMap = uiElements.saveMapButton();
+        JButton mapChecks = uiElements.mapChecks();
+        JButton loadPatternButton = uiElements.loadPatternsButton();
+
+        //Map Utilities
+        JButton mapUtils = uiElements.mapUtils();
+        JButton mapUtilsFixPlacements = uiElements.mapUtilsFixPlacements();
+        JTextField fixPlacementTextField = uiElements.fixPlacementTextField(PLACEMENT_PRECISION);
+        JButton mapUtilsMakeOneHanded = uiElements.mapUtilsMakeOneHanded();
+        JTextField makeOneHandDeleteType = uiElements.makeOneHandDeleteType();
+        JButton mapUtilsConvertAllFlashingLight = uiElements.mapUtilsConvertAllFlashingLight();
+        JButton mapUtilsMakeIntoNoArrowMap = uiElements.mapUtilsMakeIntoNoArrowMap();
+
+        //Timing Note Generator
+        JButton toTimingNotes = uiElements.toTimingNotes();
+        JButton toBlueOnlyTimingNotes = uiElements.toBlueOnlyTimingNotes();
+        JButton toStackedTimingNotes = uiElements.toStackedTimingNotes();
+
+        //Map Creator
+        JButton mapCreator = uiElements.mapCreator();
+        JButton mapCreatorCreateMap = uiElements.mapCreatorCreateMap();
+        JButton mapCreatorCreateComplexMap = uiElements.mapCreatorCreateComplexMap();
+        JButton mapCreatorCreateLinearMap = uiElements.mapCreatorCreateLinearMap();
+        JButton mapCreatorCreateBlueLinearMap = uiElements.mapCreatorCreateBlueLinearMap();
+        JButton mapCreatorCreateBlueComplexMap = uiElements.mapCreatorCreateBlueComplexMap();
 
 
-        labelMapDiff = new JLabel("Choose map difficulty file: ");
-        labelMapDiff.setBounds(50, 20, 200, 30);
-        if (darkMode) labelMapDiff.setForeground(Color.white);
-        add(labelMapDiff);
+        /////////////////////
+        //  Event Listener //
+        /////////////////////
 
-        //Load Patterns from file
-        loadPatterns();
-
-
-        openMapButton = new JButton("click here and select your desired difficulty");
-        openMapButton.setBounds(200, 20, 100, 30);
+        //global
         openMapButton.addActionListener(e -> loadMap());
-        openMapButton.setBackground(Color.cyan);
-        add(openMapButton);
-
-
-        openSongButton = new JButton("Convert MP3s to timing maps");
-        openSongButton.setBounds(500, 20, 200, 30);
         openSongButton.addActionListener(e -> convertMp3ToMap());
-        openSongButton.setBackground(Color.orange);
-        openSongButton.setVisible(true);
-        add(openSongButton);
-
-
-        //Status Bar:
-        statusCheck = new TextArea("config: \nverbose: " + verbose + "\npath: " + DEFAULT_PATH + "\n");
-        statusCheck.setBounds(50, 235, 1090, 510);
-        statusCheck.setBackground(darkMode ? Color.gray : Color.WHITE);
-        statusCheck.setEditable(false);
-        add(statusCheck);
-
-
-        //TODO: Here is an error!
-        //Save Map Button:
-        JButton saveMap = new JButton("SAVE MAP");
-        saveMap.setBounds(750, 50, 150, 50);
-        saveMap.setBackground(Color.green);
-        saveMap.setVisible(false);
+        statusCheck.setText(statusCheck.getText() + "config: \nverbose: " + verbose + "\npath: " + DEFAULT_PATH + "\ndark mode:" + darkMode + "\n");
         saveMap.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser(filePath);
             int option = fileChooser.showSaveDialog(saveMap);
@@ -104,64 +124,40 @@ public class UserInterface extends JFrame {
 
                 statusCheck.setText(statusCheck.getText() + "\nINFO: Map saved successfully: " + filePath);
                 System.out.println("Map saved successfully: " + map.exportAsMap());
-                if (verbose)
-                    statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Map saved successfully: " + map.exportAsMap());
+                if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Map saved successfully: " + map.exportAsMap());
             } catch (IOException ioException) {
                 statusCheck.setText(statusCheck.getText() + "\nERROR: There was an error while saving the map " + filePath + "!");
                 ioException.printStackTrace();
             }
         });
-        add(saveMap);
-
-        JButton mapChecks = new JButton("Map Checks");
-        mapChecks.setBounds(50, 200, 190, 30);
-        mapChecks.setVisible(false);
         mapChecks.addActionListener(e -> checkMap());
-        add(mapChecks);
+        loadPatternButton.addActionListener(action -> {
 
+            JFileChooser fileChooser = new JFileChooser(DEFAULT_PATH);
+            if (darkMode) fileChooser.setForeground(Color.white);
+            int option = fileChooser.showOpenDialog(this);
 
-        //
-        //
-        //
-        //
-        //////////////
-        //MAP UTILS///
-        //////////////
+            if (option == JFileChooser.APPROVE_OPTION) {
+                try {
+                    Scanner scanner = new Scanner(fileChooser.getSelectedFile());
+                    String mapAsString = scanner.nextLine();
 
-        JButton mapUtils = new JButton("Map Utilities");
-        mapUtils.setBounds(250, 200, 190, 30);
-        mapUtils.setVisible(false);
-        add(mapUtils);
+                    BeatSaberMap beatSaberMap = new Gson().fromJson(mapAsString, BeatSaberMap.class);
+                    pattern = new Pattern(beatSaberMap._notes, 1);
 
-        JButton mapUtilsFixPlacements = new JButton("Fix Placements");
-        JTextField fixPlacementTextField = new JFormattedTextField(16);
-        mapUtilsFixPlacements.setBounds(250, 180, 145, 15);
-        fixPlacementTextField.setBounds(400, 180, 40, 15);
-        mapUtilsFixPlacements.setVisible(false);
-        fixPlacementTextField.setVisible(false);
-        add(mapUtilsFixPlacements);
-        add(fixPlacementTextField);
+                    statusCheck.setText(statusCheck.getText() + "\nINFO: Successfully loaded Patterns");
+                    loadPatternButton.setBackground(Color.green);
+                } catch (FileNotFoundException e) {
+                    labelMapDiff.setText(statusCheck.getText() + "\nERROR: File Not found!");
+                    System.err.println(e.getMessage());
+                } catch (Exception e) {
+                    System.err.println("ERROR: Map probably has the wrong format: \n" + e);
+                    labelMapDiff.setText(statusCheck.getText() + "\nERROR: There was an error while importing the patterns!");
+                }
+            }
+        });
 
-        JButton mapUtilsMakeOneHanded = new JButton("Delete Note Type");
-        JTextField makeOneHandDeleteType = new JFormattedTextField(0);
-        mapUtilsMakeOneHanded.setBounds(250, 160, 145, 15);
-        makeOneHandDeleteType.setBounds(400, 160, 40, 15);
-        mapUtilsMakeOneHanded.setVisible(false);
-        makeOneHandDeleteType.setVisible(false);
-        add(mapUtilsMakeOneHanded);
-        add(makeOneHandDeleteType);
-
-        JButton mapUtilsConvertAllFlashingLight = new JButton("Convert All FlashingLight");
-        mapUtilsConvertAllFlashingLight.setBounds(250, 140, 190, 15);
-        mapUtilsConvertAllFlashingLight.setVisible(false);
-        add(mapUtilsConvertAllFlashingLight);
-
-        JButton mapUtilsMakeIntoNoArrowMap = new JButton("Make into no arrow map");
-        mapUtilsMakeIntoNoArrowMap.setBounds(250, 120, 190, 15);
-        mapUtilsMakeIntoNoArrowMap.setVisible(false);
-        add(mapUtilsMakeIntoNoArrowMap);
-
-
+        //Map Utilities
         mapUtils.addActionListener(e -> {
             if (mapUtilsFixPlacements.isVisible()) {
                 mapUtilsFixPlacements.setVisible(false);
@@ -180,7 +176,7 @@ public class UserInterface extends JFrame {
             }
         });
         mapUtilsFixPlacements.addActionListener(e -> {
-            map.fixPlacements((double) 1 / Integer.parseInt(fixPlacementTextField.getText()));
+            map.fixPlacements((double) 1 / Integer.parseInt(fixPlacementTextField.getText().replaceAll("[^\\d.]", "")));
             statusCheck.setText(statusCheck.getText() + "\nINFO: Fixed Note Placement with a precision of 1/" + fixPlacementTextField.getText() + " of a beat.");
             System.out.println("Placements fixed: " + new BeatSaberMap(map._notes).exportAsMap());
             if (verbose)
@@ -191,52 +187,22 @@ public class UserInterface extends JFrame {
             map.makeOneHanded(Integer.parseInt(makeOneHandDeleteType.getText()));
             statusCheck.setText(statusCheck.getText() + "\nINFO: Removed All Notes with type: " + makeOneHandDeleteType.getText());
             System.out.println("One handed diff: : " + new BeatSaberMap(map._notes).exportAsMap());
-            if (verbose)
-                statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "One handed diff: : " + new BeatSaberMap(map._notes).exportAsMap());
+            if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "One handed diff: : " + new BeatSaberMap(map._notes).exportAsMap());
         });
         mapUtilsConvertAllFlashingLight.addActionListener(e -> {
             map.convertAllFlashLightsToOnLights();
             statusCheck.setText(statusCheck.getText() + "\nINFO: Removed flashing lights");
             System.out.println("flashing lights removed: " + new BeatSaberMap(map._notes).exportAsMap());
-            if (verbose)
-                statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "flashing lights removed: " + new BeatSaberMap(map._notes).exportAsMap());
+            if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "flashing lights removed: " + new BeatSaberMap(map._notes).exportAsMap());
         });
         mapUtilsMakeIntoNoArrowMap.addActionListener(e -> {
             map.makeNoArrows();
-            BeatSaberMap m = new BeatSaberMap(map._notes);
-            m._obstacles = map._obstacles;
-            m._events = map._events;
             statusCheck.setText(statusCheck.getText() + "\nINFO: Map is now a no arrows map");
-            System.out.println("No Arrow Map: " + m.exportAsMap());
-            if (verbose)
-                statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "No Arrow Map: " + m.exportAsMap());
+            System.out.println("No Arrow Map: " + map.exportAsMap());
+            if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "No Arrow Map: " + map.exportAsMap());
         });
 
-        //
-        //
-        //
-        //
-        //
-        //
-        /////////////////////////
-        //Timing Note Generator//
-        /////////////////////////
-
-        JButton toTimingNotes = new JButton("Map to timing Notes");
-        toTimingNotes.setBounds(450, 200, 190, 30);
-        toTimingNotes.setVisible(false);
-        add(toTimingNotes);
-
-        JButton toBlueOnlyTimingNotes = new JButton("To 1 color timing notes");
-        toBlueOnlyTimingNotes.setBounds(450, 180, 190, 15);
-        toBlueOnlyTimingNotes.setVisible(false);
-        add(toBlueOnlyTimingNotes);
-
-        JButton toStackedTimingNotes = new JButton("To 2 color timing notes");
-        toStackedTimingNotes.setBounds(450, 160, 190, 15);
-        toStackedTimingNotes.setVisible(false);
-        add(toStackedTimingNotes);
-
+        //Timing Note Generator
         toTimingNotes.addActionListener(e -> {
             if (toBlueOnlyTimingNotes.isVisible()) {
                 toBlueOnlyTimingNotes.setVisible(false);
@@ -247,65 +213,20 @@ public class UserInterface extends JFrame {
             }
         });
         toBlueOnlyTimingNotes.addActionListener(e -> {
-            BeatSaberMap b = new BeatSaberMap(map._notes);
-            b.toBlueLeftBottomRowDotTimings();
-            map = b;
-            System.out.println("Normal timing notes: " + b.exportAsMap());
+            map = new BeatSaberMap(map._notes);
+            System.out.println("Normal timing notes: " + map.exportAsMap());
             statusCheck.setText(statusCheck.getText() + "\nINFO: Successfully converted Map to only blue timing notes");
-            if (verbose)
-                statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Normal timing notes: " + b.exportAsMap());
+            if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Normal timing notes: " + map.exportAsMap());
         });
         toStackedTimingNotes.addActionListener(e -> {
             map.toTimingNotes();
             System.out.println();
             statusCheck.setText(statusCheck.getText() + "\nNOTE: It is very likely that this feature is broken! Use at your own risk!");
             statusCheck.setText(statusCheck.getText() + "\nINFO: Successfully converted Map to timing notes");
-            if (verbose)
-                statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Stacked timing notes: " + map.exportAsMap());
+            if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Stacked timing notes: " + map.exportAsMap());
         });
 
-
-        //
-        //
-        //
-        //
-        //
-        //
-        ///////////////
-        //Map Creator//
-        ///////////////
-
-        JButton mapCreator = new JButton("Map creator");
-        mapCreator.setBounds(650, 200, 190, 30);
-        mapCreator.setVisible(false);
-        add(mapCreator);
-
-        JButton mapCreatorCreateMap = new JButton("Create Map");
-        mapCreatorCreateMap.setBounds(650, 180, 190, 15);
-        mapCreatorCreateMap.setVisible(false);
-        add(mapCreatorCreateMap);
-
-        JButton mapCreatorCreateComplexMap = new JButton("Create Complex Map");
-        mapCreatorCreateComplexMap.setBounds(650, 160, 190, 15);
-        mapCreatorCreateComplexMap.setVisible(false);
-        add(mapCreatorCreateComplexMap);
-
-        JButton mapCreatorCreateLinearMap = new JButton("Create Linear Map");
-        mapCreatorCreateLinearMap.setBounds(650, 140, 190, 15);
-        mapCreatorCreateLinearMap.setVisible(false);
-        add(mapCreatorCreateLinearMap);
-
-        JButton mapCreatorCreateBlueLinearMap = new JButton("one handed simpl linear");
-        mapCreatorCreateBlueLinearMap.setBounds(650, 120, 90, 15);
-        mapCreatorCreateBlueLinearMap.setVisible(false);
-        add(mapCreatorCreateBlueLinearMap);
-
-        JButton mapCreatorCreateBlueComplexMap = new JButton("complex");
-        mapCreatorCreateBlueComplexMap.setBounds(750, 120, 90, 15);
-        mapCreatorCreateBlueComplexMap.setVisible(false);
-        add(mapCreatorCreateBlueComplexMap);
-
-
+        //Map Creator
         mapCreator.addActionListener(e -> {
             mapCreatorCreateMap.setVisible(!mapCreatorCreateMap.isVisible());
             mapCreatorCreateComplexMap.setVisible(!mapCreatorCreateComplexMap.isVisible());
@@ -313,13 +234,12 @@ public class UserInterface extends JFrame {
             mapCreatorCreateBlueLinearMap.setVisible(!mapCreatorCreateBlueLinearMap.isVisible());
             mapCreatorCreateBlueComplexMap.setVisible(!mapCreatorCreateBlueComplexMap.isVisible());
         });
-
         mapCreatorCreateMap.addActionListener(e -> {
             manageMap();
             map.toBlueLeftBottomRowDotTimings();
 
             try {
-                // Redirect the standard error stream to the custom PrintStream
+                // Redirect the standard error stream to the custom PrintStream so that errors can be printed to the UI
                 System.setErr(ERROR_PRINT_STREAM);
 
 
@@ -357,8 +277,7 @@ public class UserInterface extends JFrame {
                 map.originalJSON = ogJson;
                 statusCheck.setText(statusCheck.getText() + "\nMap creation finished");
                 System.out.println("Created Map: " + map.exportAsMap());
-                if (verbose)
-                    statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Created Map: " + map.exportAsMap());
+                if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Created Map: " + map.exportAsMap());
                 checkMap();
             } catch (IllegalArgumentException ex) {
                 statusCheck.setText(statusCheck.getText() + "\nThere was an error while creating. Please try again!");
@@ -379,8 +298,7 @@ public class UserInterface extends JFrame {
                 map.originalJSON = ogJson;
                 statusCheck.setText(statusCheck.getText() + "\nMap creation finished");
                 System.out.println("Created Map: " + map.exportAsMap());
-                if (verbose)
-                    statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Created Map: " + map.exportAsMap());
+                if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Created Map: " + map.exportAsMap());
                 checkMap();
             });
             Thread watchForInfiniteLoop = new Thread(() -> {
@@ -488,44 +406,44 @@ public class UserInterface extends JFrame {
         }
 
         if (!CreateAllNecessaryDIRsAndFiles.isPythonInstalled()) {
-            statusCheck.setText(statusCheck.getText() + "\nERROR: Pyhton could not be found please ensure that it is installed and added to the PATH variable!");
+            statusCheck.setText(statusCheck.getText() + "\nERROR: Python could not be found please ensure that it is installed and added to the PATH variable!");
             return;
         }
 
 
         try {
-            statusCheck.setBackground(darkMode ? Color.darkGray : Color.gray);
+            statusCheck.setBackground(darkMode ? Color.gray : Color.BLACK);
             openSongButton.setText("In Progress...");
-            statusCheck.setText(statusCheck.getText() + "\nINFO: Converting all Songs from \"./OnsetGeneration/mp3Files/\" to timing maps... This might take a while if there are a lot of songs.\n");
-            statusCheck.setText(statusCheck.getText() + "INFO: You can always check the progress when heading to \"./OnsetGeneration/output/\"\n");
+            statusCheck.setText(statusCheck.getText() + "\nINFO: Converting all Songs from \"" + ONSET_GENERATION_FOLDER_PATH_INPUT + "\" to timing maps... This might take a while if there are a lot of songs.\n");
+            statusCheck.setText(statusCheck.getText() + "INFO: You can always check the progress when heading to \"" + ONSET_GENERATION_FOLDER_PATH_OUTPUT + "\"\n");
 
             try {
-                List<File> files = new ArrayList<>(Arrays.stream(Objects.requireNonNull(new File("./OnsetGeneration/mp3Files/").listFiles())).toList());
+                List<File> files = new ArrayList<>(Arrays.stream(Objects.requireNonNull(new File(ONSET_GENERATION_FOLDER_PATH_INPUT).listFiles())).toList());
                 files.removeIf(f -> !f.getName().endsWith(".mp3"));
                 if (files.size() == 0) throw new Exception();
-                statusCheck.setText(statusCheck.getText() + "INFO: Found " + files.size() + " MP3 Files in \"./OnsetGeneration/mp3Files/\"\n\n");
+                statusCheck.setText(statusCheck.getText() + "INFO: Found " + files.size() + " MP3 Files in \"" + ONSET_GENERATION_FOLDER_PATH_INPUT + "\"\n\n");
             } catch (Exception e) {
-                statusCheck.setText(statusCheck.getText() + "\nINFO: Found 0 MP3 Files! Please put your mp3 Files into th folder \"./OnsetGeneration/mp3Files/\"\n\n");
-                statusCheck.setBackground(darkMode ? Color.gray : Color.WHITE);
+                statusCheck.setText(statusCheck.getText() + "\nINFO: Found 0 MP3 Files! Please put your mp3 Files into th folder \"" + ONSET_GENERATION_FOLDER_PATH_INPUT + "\"\n\n");
+                statusCheck.setBackground(darkMode ? Color.BLACK : Color.WHITE);
                 openSongButton.setText("Convert MP3s to timing maps");
                 return;
             }
 
             //generate Onsets
             Thread.sleep(1000);
-            if (BatchWavToMaps.generateOnsets("./OnsetGeneration/mp3Files/", "./OnsetGeneration/output/", true)) {
-                statusCheck.setText(statusCheck.getText() + "\nINFO: Successfully created Map. You can find your map in \"OnsetGeneration/output/\"\n\n");
+            if (BatchWavToMaps.generateOnsets(ONSET_GENERATION_FOLDER_PATH_INPUT, ONSET_GENERATION_FOLDER_PATH_OUTPUT, true)) {
+                statusCheck.setText(statusCheck.getText() + "\nINFO: Successfully created Map. You can find your map in \"" + ONSET_GENERATION_FOLDER_PATH_OUTPUT + "\"\n\n");
 
                 //Install dependencies if not already installed
             } else {
-                statusCheck.setText(statusCheck.getText() + "\nERROR: There was an error while creating the onsets. It is possible that a dependencie is not installed. Please ensure that they are all installed and then try again!");
+                statusCheck.setText(statusCheck.getText() + "\nERROR: There was an error while creating the onsets. It is possible that a dependency is not installed. Please ensure that they are all installed and then try again!");
                 statusCheck.setText(statusCheck.getText() + "\nINFO: Trying installing dependencies...\n\n");
                 if (CreateAllNecessaryDIRsAndFiles.installDependencies()) {
                     statusCheck.setText(statusCheck.getText() + "\nINFO: Finished installing dependencies... Please press the button again.\n\n");
                 } else statusCheck.setText(statusCheck.getText() + "\nERROR: error while installing dependencies...");
             }
 
-            statusCheck.setBackground(darkMode ? Color.gray : Color.WHITE);
+            statusCheck.setBackground(darkMode ? Color.BLACK : Color.WHITE);
             openSongButton.setText("Convert MP3s to timing maps");
         } catch (Exception e) {
             System.err.println("ERROR: Something went wrong during conversion. Is it the right file extension?\n" + e);
@@ -545,7 +463,7 @@ public class UserInterface extends JFrame {
 
         if (pattern == null) {
             statusCheck.setText(statusCheck.getText() + "\nINFO: Patterns have not been specified. Proceeding with default patterns");
-            BeatSaberMap patterMap = new Gson().fromJson(FileManager.readFile("PatternTemplates/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
+            BeatSaberMap patterMap = new Gson().fromJson(FileManager.readFile(DEFAULT_PATTERN_TEMPLATE).get(0), BeatSaberMap.class);
             pattern = new Pattern(patterMap._notes, 1);
             if (verbose) statusCheck.setText(statusCheck.getText() + "\n patterns: " + pattern.toString());
         }
@@ -559,37 +477,6 @@ public class UserInterface extends JFrame {
         System.setErr(ORIGINAL_ERR);
         System.err.println(errorOutput);
         statusCheck.setText(statusCheck.getText() + "\n" + errorOutput);
-    }
-
-    public void loadPatterns() {
-        JButton loadPatternButton = new JButton("Load Patterns File");
-        loadPatternButton.setBounds(270, 70, 200, 30);
-        loadPatternButton.addActionListener(action -> {
-
-            JFileChooser fileChooser = new JFileChooser(DEFAULT_PATH);
-            if (darkMode) fileChooser.setForeground(Color.white);
-            int option = fileChooser.showOpenDialog(this);
-
-            if (option == JFileChooser.APPROVE_OPTION) {
-                try {
-                    Scanner scanner = new Scanner(fileChooser.getSelectedFile());
-                    String mapAsString = scanner.nextLine();
-
-                    BeatSaberMap beatSaberMap = new Gson().fromJson(mapAsString, BeatSaberMap.class);
-                    pattern = new Pattern(beatSaberMap._notes, 1);
-
-                    statusCheck.setText(statusCheck.getText() + "\nINFO: Successfully loaded Patterns");
-                    loadPatternButton.setBackground(Color.green);
-                } catch (FileNotFoundException e) {
-                    labelMapDiff.setText(statusCheck.getText() + "\nERROR: File Not found!");
-                    System.err.println(e.getMessage());
-                } catch (Exception e) {
-                    System.err.println("ERROR: Map probably has the wrong format: \n" + e);
-                    labelMapDiff.setText(statusCheck.getText() + "\nERROR: There was an error while importing the patterns!");
-                }
-            }
-        });
-        add(loadPatternButton);
     }
 
     public void loadMap() {
@@ -646,8 +533,8 @@ public class UserInterface extends JFrame {
     }
 
     //If you want to add more configs:
-    public void readConfig() {
-        List<String> config = FileManager.readFile("./config.txt");
+    public void loadConfig() {
+        List<String> config = FileManager.readFile(CONFIG_FILE_LOCATION);
         if (config != null && config.size() >= 1) {
             for (String s : config) {
                 String[] splits = s.split(":");
