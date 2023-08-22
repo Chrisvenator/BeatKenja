@@ -2,12 +2,10 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BatchWavToMaps {
-    public static void main(String[] args) {
-        generateOnsets("./OnsetGeneration/mp3Files", "./OnsetGeneration/output", false);
-    }
-
     /**
      * Generates Beat Saber maps based on .wav files located in the specified input path. The generated maps will be located in the specified output path.
      *
@@ -15,28 +13,16 @@ public class BatchWavToMaps {
      * @param out       Path to where the outputted maps will be located. This can be the WIP folder.
      */
     public static boolean generateOnsets(String inputPath, String out, boolean verbose) {
-        // Save the original System.out to restore it later
         PrintStream originalOut = System.out;
-
-        // Create a PrintStream with a NullOutputStream to discard the output
         PrintStream printStream = new PrintStream(new NullOutputStream());
 
-        // Print initial message
         System.out.println("Checking if there are some illegal file names...");
 
-        // Rename files with illegal characters in their names
         renameAllIllegalFileNames(inputPath, verbose);
 
-        // Create a File object representing the input path
         File folder = new File(inputPath);
-
-        // Get the list of files in the input path
         File[] files = folder.listFiles();
-
-        // Print separator line
         System.out.println();
-
-        // Print message for creating maps
         System.out.println("Creating maps...");
 
 
@@ -48,13 +34,11 @@ public class BatchWavToMaps {
             }
         }
 
-        //Update files.
         files = folder.listFiles();
 
 
         if (files != null) {
             for (File file : files) {
-                // Check if the current item is a file and has the ".wav" extension
                 if (file.isFile() && (file.getName().contains(".wav"))) {
                     String filename = file.getName().replaceAll(".wav", "");
                     String destinationFolderPath = out + "/" + filename;
@@ -63,13 +47,11 @@ public class BatchWavToMaps {
                     if (verbose) System.setOut(printStream);
 
                     try {
-                        // Create the output folder and move the file to it
                         createFolderAndMoveItems(filename, file, destinationFolderPath, verbose);
 
-                        // Execute the Python script to generate timings
+                        //Try to execute the python script. If unsuccessful, try installing all dependencies
                         if (!executePythonScript(filename, file, inputPath, destinationFolderPath)) return false;
 
-                        // Create the diff file from the timings
                         createDiffFromTimings(destinationFolderPath, filename);
                     } catch (IOException | InterruptedException e) {
                         e.printStackTrace();
@@ -77,8 +59,6 @@ public class BatchWavToMaps {
 
                     // Enable prints after the generation
                     System.setOut(originalOut);
-
-                    // Print success message for the created map
                     System.out.println("Created Beat Saber Map: " + file.getName());
                 }
             }
@@ -94,21 +74,14 @@ public class BatchWavToMaps {
      * @param inputPath The path where all the .wav files are located.
      */
     private static void renameAllIllegalFileNames(String inputPath, boolean verbose) {
-        // Create a File object representing the input path
         File folder = new File(inputPath);
-
         // Get the list of files in the folder
         File[] files = folder.listFiles();
 
-        // Check if the list of files is not null
         if (files != null) {
-            // Iterate through each file in the folder
             for (File file : files) {
-                // Check if the current item is a file
                 if (file.isFile()) {
-                    // Get the current file name
                     String fileName = file.getName();
-                    // Sanitize the file name by removing the ".wav" extension and replacing illegal characters with empty strings
                     String sanitizedFileName = "";
                     if (file.getName().contains(".wav")) {
                         sanitizedFileName = fileName
@@ -123,13 +96,10 @@ public class BatchWavToMaps {
                     }
                     if (sanitizedFileName.equals("")) sanitizedFileName = "UNDEFINED";
 
-                    // Check if the file name needs to be changed
                     if (!fileName.equals("") && !fileName.equals(sanitizedFileName)) {
-                        // Create the new file path by appending the sanitized file name to the parent folder path
                         String newFilePath = file.getParent() + File.separator + sanitizedFileName;
                         File newFile = new File(newFilePath);
 
-                        // Attempt to rename the file
                         if (file.renameTo(newFile)) {
                             if (verbose) System.out.println("File renamed successfully: " + fileName + " -> " + sanitizedFileName);
                         } else {
@@ -150,30 +120,22 @@ public class BatchWavToMaps {
      * @throws IOException If there is an issue with input/output operations or missing folders.
      */
     private static void createFolderAndMoveItems(String filename, File file, String destinationFolderPath, boolean verbose) throws IOException {
-        // Create a File object representing the destination folder
         File outFolder = new File(destinationFolderPath);
 
-        // Check if the destination folder exists
         if (!outFolder.exists()) {
-            // If it doesn't exist, attempt to create the folder
             if (!outFolder.mkdir()) {
                 if (verbose) System.out.println("Failed to create parent folder: " + outFolder.getAbsolutePath());
             }
         }
 
-        // Create a FileWriter to write the contents of the info.dat file
         FileWriter writer = new FileWriter(destinationFolderPath + "/info.dat");
         writer.write(createDatFile(filename));
         writer.close();
 
-        // Get the source file path and destination folder path as Path objects
         Path sourceFile = Path.of(file.getAbsolutePath());
         Path destinationFolder = Path.of(destinationFolderPath);
-
-        // Resolve the destination file path by appending the source file name to the destination folder path
         Path destinationFile = destinationFolder.resolve(sourceFile.getFileName());
 
-        // Copy the source file to the destination file, replacing it if it already exists
         Files.copy(sourceFile, destinationFile, StandardCopyOption.REPLACE_EXISTING);
     }
 
@@ -191,9 +153,9 @@ public class BatchWavToMaps {
         try {
             ProcessBuilder processBuilder = new ProcessBuilder(
                     "python",
-                    "./OnsetGeneration/ConvertSong.py",
-                    "./OnsetGeneration/mp3Files/" + file.getName(),
-                    "./OnsetGeneration/mp3Files/" + file.getName().replace(".mp3", "." + "wav"),
+                    UserInterface.DEFAULT_ONSET_GENERATION_FOLDER + "ConvertSong.py",
+                    UserInterface.ONSET_GENERATION_FOLDER_PATH_INPUT + file.getName(),
+                    UserInterface.ONSET_GENERATION_FOLDER_PATH_INPUT + file.getName().replace(".mp3", "." + "wav"),
                     "wav");
             Process process = processBuilder.start();
 
@@ -230,18 +192,15 @@ public class BatchWavToMaps {
      * @throws InterruptedException If the execution of the Python script is interrupted.
      */
     private static boolean executePythonScript(String filename, File file, String inputPath, String destinationFolderPath) throws IOException, InterruptedException {
-        // Create a ProcessBuilder to execute the Python script
-        ProcessBuilder processBuilder = new ProcessBuilder("python", "./OnsetGeneration/SongToOnsets.py", inputPath + "/" + file.getName(), "--output", destinationFolderPath + "/" + filename + ".txt");
+        ProcessBuilder processBuilder = new ProcessBuilder("python", UserInterface.DEFAULT_ONSET_GENERATION_FOLDER + "SongToOnsets.py", inputPath + "/" + file.getName(), "--output", destinationFolderPath + "/" + filename + ".txt");
         Process process = processBuilder.start();
 
-        // Wait for the process to finish and retrieve the exit code
         int exitCode = process.waitFor();
         System.out.println("Python script execution finished with exit code: " + exitCode);
 
-        // Check if the process exited with an error
         if (exitCode != 0) {
             System.out.println("Fehler beim Ausführen des Skripts. Exit-Code: " + exitCode);
-            // Capture and print the error output of the script
+
             InputStream errorStream = process.getErrorStream();
             BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream));
             String line;
@@ -259,12 +218,24 @@ public class BatchWavToMaps {
      * @param filename              The name of the current file.
      */
     private static void createDiffFromTimings(String destinationFolderPath, String filename) {
-        // Create timings for the song based on parameters and save it to timingsFromSong
-        String timingsFromSong = FileManager.makeMap(120, destinationFolderPath + "/" + filename + ".txt", (double) 1 / 32);
+        List<String> timings = FileManager.readFile(destinationFolderPath + "/" + filename + ".txt");
+        List<Note> notes = new ArrayList<>();
 
-        // Overwrite the timings file for the ExpertPlusNoArrows.dat with the timings generated for the song
-        FileManager.overwriteFile(destinationFolderPath + "/" + "ExpertPlusNoArrows.dat", timingsFromSong);
+        for (String s : timings) {
+
+            float t = Float.parseFloat(s);
+            double beat = t * UserInterface.BPM / 60;
+            System.out.println(beat);
+
+            notes.add(new Note((float) beat));
+        }
+
+        BeatSaberMap map = new BeatSaberMap(notes);
+        if (UserInterface.FIX_PLACEMENTS) map.fixPlacements(UserInterface.PLACEMENT_PRECISION);
+
+        FileManager.overwriteFile(destinationFolderPath + "/" + "ExpertPlusNoArrows.dat", map.exportAsMap());
     }
+
 
     /**
      * Outsources the info.dat file generation so that the code isn't clustered

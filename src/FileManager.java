@@ -1,13 +1,15 @@
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class FileManager {
 
-    //Deprecated feature
+    //Deprecated feature. It may work or may not. No Idea
     //makes a BeatSaber Map in the json format from a simple timings file.
-    public static String makeMap(float bpm, String filename, double plPr) {
+    //Only kept for Archive purposes
+    private static String makeMap(float bpm, String filename, double plPr) {
         List<String> timings = readFile(filename);
         StringBuilder jsonResult = new StringBuilder("{\"_version\":\"2.2.0\",\"_notes\":[");
 
@@ -32,11 +34,17 @@ public class FileManager {
 
     /**
      * Reads the file and returns a String-List
+     *
      * @param filename Filename
      * @return Every line of the File in List form
      */
     public static List<String> readFile(String filename) {
         File file = new File(filename);
+        if (!file.exists()){
+            System.err.println("File not found!");
+            throw new NoSuchElementException("File not found!");
+        }
+
         List<String> timings = new ArrayList<>();
         try {
             Scanner scanner = new Scanner(file);
@@ -75,6 +83,7 @@ public class FileManager {
 
     /**
      * this feature is currently not in use. It may work or may not. No Idea
+     * Only Kept for Achive purposes
      *
      * @param pythonScriptPath Path to the script. Example: ./script
      * @param argument1        Arg1

@@ -43,7 +43,7 @@ public class CreateAllNecessaryDIRsAndFiles {
      */
     private static void createConfigFile() {
         String config = """
-                defaultPath:C:/Program Files(x86)/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels
+                defaultPath:C:/Program Files (x86)/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels
                 verbose:false //It is not recommended to change this except for debugging purposes.
                 dark-mode:false""";
         FileManager.overwriteFile(UserInterface.CONFIG_FILE_LOCATION, config);
@@ -77,13 +77,14 @@ public class CreateAllNecessaryDIRsAndFiles {
 
         try {
             for (String filePathToCopy : filesToCopy) {
+                filePathToCopy = filePathToCopy.replaceAll("\\./", "");
                 InputStream inputStream = classLoader.getResourceAsStream(filePathToCopy);
                 File f = new File(filePathToCopy);
                 System.out.println(f.getAbsolutePath());
 
                 if (inputStream != null) {
 
-                    File destinationFile = new File("./" + filePathToCopy);
+                    File destinationFile = new File(UserInterface.DEFAULT_EXPORT_PATH + filePathToCopy);
                     destinationFile.getParentFile().mkdirs();
 
                     OutputStream outputStream = new FileOutputStream(destinationFile);
