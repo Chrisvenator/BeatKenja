@@ -11,25 +11,25 @@ public class CreateAllNecessaryDIRsAndFiles {
 
         //Checking if the directories exist.
         //If yes, then don't create them again
-        File f1 = new File("./PatternTemplates");
-        File f2 = new File("./Patterns");
-        File f3 = new File("./config.txt");
+        File f1 = new File(UserInterface.DEFAULT_PATTERN_TEMPLATE_FOLDER);  //Default Value: "./PatternTemplates"
+        File f2 = new File(UserInterface.DEFAULT_SEQUENCE_TEMPLATE_FOLDER); //Default Value: "./Patterns"
+        File f3 = new File(UserInterface.CONFIG_FILE_LOCATION);             //Default Value: "./config.txt"
         if (f1.exists() && f1.isDirectory() && f2.exists() && f2.isDirectory() && f3.exists() && f3.isFile()) {
             return;
         }
+        System.out.println("Creating all necessary directories and files.");
 
         String[] templateFilesToCopy = {
-                "PatternTemplates/Template--ISeeFire.txt"
+                UserInterface.DEFAULT_PATTERN_TEMPLATE
         };
         String[] preMadePatternsFilesToCopy = {
-                "Patterns/jumps.txt",
-                "Patterns/test.txt",
-                "Patterns/umapyoi-test.txt",
-                "OnsetGeneration/SongToOnsets.py",
-                "OnsetGeneration/ConvertSong.py",
-                "README.md"
+                UserInterface.DEFAULT_SEQUENCE_TEMPLATE_FOLDER + "jumps.txt",           //Default value: "Patterns/jumps.txt",
+                UserInterface.DEFAULT_SEQUENCE_TEMPLATE_FOLDER + "test.txt",            //Default value: "Patterns/test.txt",
+                UserInterface.DEFAULT_SEQUENCE_TEMPLATE_FOLDER + "umapyoi-test.txt",    //Default value: "Patterns/umapyoi-test.txt",
+                UserInterface.DEFAULT_ONSET_GENERATION_FOLDER + "SongToOnsets.py",      //Default value: "OnsetGeneration/SongToOnsets.py",
+                UserInterface.DEFAULT_ONSET_GENERATION_FOLDER + "ConvertSong.py",       //Default value: "OnsetGeneration/ConvertSong.py",
+                UserInterface.README_FILE_LOCATION                                      //Default value: "README.md"
         };
-
 
         createConfigFile();
         createDirectories();
@@ -38,48 +38,54 @@ public class CreateAllNecessaryDIRsAndFiles {
         extractFilesFromJar(preMadePatternsFilesToCopy);
     }
 
+    /**
+     * Creates a config file with default values.
+     */
     private static void createConfigFile() {
         String config = """
-                defaultPath:C:/Program Files/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels
+                defaultPath:C:/Program Files(x86)/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels
                 verbose:false //It is not recommended to change this except for debugging purposes.
                 dark-mode:false""";
-        FileManager.overwriteFile("./config.txt", config);
+        FileManager.overwriteFile(UserInterface.CONFIG_FILE_LOCATION, config);
     }
 
+    /**
+     * Creates all the directories that are needed for the program to work.
+     */
     public static void createDirectories() {
         try {
-            Files.createDirectories(Paths.get("./PatternTemplates"));
-            Files.createDirectories(Paths.get("./Patterns"));
-            Files.createDirectories(Paths.get("./OnsetGeneration"));
-            Files.createDirectories(Paths.get("./OnsetGeneration/mp3Files"));
-            Files.createDirectories(Paths.get("./OnsetGeneration/output"));
+            Files.createDirectories(Paths.get(UserInterface.DEFAULT_PATTERN_TEMPLATE_FOLDER));
+            Files.createDirectories(Paths.get(UserInterface.DEFAULT_SEQUENCE_TEMPLATE_FOLDER));
+            Files.createDirectories(Paths.get(UserInterface.DEFAULT_ONSET_GENERATION_FOLDER));
+            Files.createDirectories(Paths.get(UserInterface.ONSET_GENERATION_FOLDER_PATH_INPUT));
+            Files.createDirectories(Paths.get(UserInterface.ONSET_GENERATION_FOLDER_PATH_OUTPUT));
         } catch (IOException e) {
             System.err.println("There has been an Exception while creating the files:\n");
             e.printStackTrace();
         }
-
     }
 
 
+    /**
+     * Extracts files from the JAR and copies them to the destination directory.
+     *
+     * @param filesToCopy String array of the relative file paths of the files that should be moved out of the JAR.
+     */
     private static void extractFilesFromJar(String[] filesToCopy) {
         // Get the current ClassLoader
         ClassLoader classLoader = CreateAllNecessaryDIRsAndFiles.class.getClassLoader();
 
         try {
-            // Loop through each file path and copy it to the destination directory
-            for (String fileToCopy : filesToCopy) {
-                // Read the resource from the JAR
-                InputStream inputStream = classLoader.getResourceAsStream(fileToCopy);
+            for (String filePathToCopy : filesToCopy) {
+                InputStream inputStream = classLoader.getResourceAsStream(filePathToCopy);
+                File f = new File(filePathToCopy);
+                System.out.println(f.getAbsolutePath());
 
                 if (inputStream != null) {
-                    // Create the destination file path
-                    String destinationPath = "./" + fileToCopy;
 
-                    // Create parent directories if they don't exist
-                    File destinationFile = new File(destinationPath);
+                    File destinationFile = new File("./" + filePathToCopy);
                     destinationFile.getParentFile().mkdirs();
 
-                    // Write the resource to the destination file
                     OutputStream outputStream = new FileOutputStream(destinationFile);
                     byte[] buffer = new byte[1024];
                     int bytesRead;
@@ -87,13 +93,12 @@ public class CreateAllNecessaryDIRsAndFiles {
                         outputStream.write(buffer, 0, bytesRead);
                     }
 
-                    // Close streams
                     outputStream.close();
                     inputStream.close();
 
-                    System.out.println("File copied: " + destinationPath);
+                    System.out.println("File copied: " + filePathToCopy);
                 } else {
-                    System.out.println("File not found in the JAR: " + fileToCopy);
+                    System.out.println("File not found in the JAR: " + filePathToCopy);
                     return;
                 }
             }
@@ -102,6 +107,11 @@ public class CreateAllNecessaryDIRsAndFiles {
         }
     }
 
+    /**
+     * Checks if ffmpeg is installed.
+     *
+     * @return true if ffmpeg is installed, false if not.
+     */
     public static boolean isFFMpegInstalled() {
         try {
             ProcessBuilder processBuilder = new ProcessBuilder("ffmpeg", "-version");
@@ -114,6 +124,11 @@ public class CreateAllNecessaryDIRsAndFiles {
         }
     }
 
+    /**
+     * Checks if python is installed.
+     *
+     * @return true if python is installed, false if not.
+     */
     public static boolean isPythonInstalled() {
         try {
             ProcessBuilder processBuilder = new ProcessBuilder("python", "--version");
@@ -126,6 +141,11 @@ public class CreateAllNecessaryDIRsAndFiles {
         }
     }
 
+    /**
+     * Checks if pip is installed.
+     *
+     * @return true if pip is installed, false if not.
+     */
     public static boolean isPipInstalled() {
         try {
             ProcessBuilder processBuilder = new ProcessBuilder("pip", "--version");
@@ -138,6 +158,9 @@ public class CreateAllNecessaryDIRsAndFiles {
         }
     }
 
+    /**
+     * Installs pip.
+     */
     public static void installPip() {
         try {
             ProcessBuilder processBuilder = new ProcessBuilder("python", "-m", "ensurepip");
@@ -150,6 +173,11 @@ public class CreateAllNecessaryDIRsAndFiles {
         }
     }
 
+    /**
+     * Installs the dependencies.
+     *
+     * @return true if the dependencies have been installed, false if not.
+     */
     public static boolean installDependencies() {
         try {
             ProcessBuilder processBuilder = new ProcessBuilder("pip", "install", "pydub");
@@ -169,4 +197,5 @@ public class CreateAllNecessaryDIRsAndFiles {
             return false;
         }
     }
+
 }
