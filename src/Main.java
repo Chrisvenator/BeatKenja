@@ -2,6 +2,12 @@ import com.google.gson.Gson;
 
 import java.util.Arrays;
 
+/**
+ * Main is super outdated.
+ * It was used for testing various things. But it has been out of use since the creation of the UserInterface.
+ * It mainly contains examples of how to use the functions of the other classes.
+ * This class will be removed in the foreseeable future.
+ */
 public class Main {
 
         /*
@@ -17,6 +23,7 @@ public class Main {
     |0-0|1-0|2-0|3-0|       | 6 | 1 | 7 |
     |---|---|---|---|       |---|---|---|
      */
+
 
     public static void main(String[] args) {
         //Settings:
