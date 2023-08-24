@@ -38,10 +38,11 @@ public class FileManager {
      * @param filename Filename
      * @return Every line of the File in List form
      */
-    public static List<String> readFile(String filename) {
+    public static List<String> readFile(String filename, boolean... print) {
         File file = new File(filename);
-        if (!file.exists()){
-            System.err.println("File not found!");
+        if (!file.exists()) {
+            //The following if is for testing, so that it doesn't span the console
+            if (print == null || print.length == 0) System.err.println("File not found!");
             throw new NoSuchElementException("File not found!");
         }
 
@@ -66,7 +67,7 @@ public class FileManager {
      * @param filePath Path to the file
      * @param data     the string data with which the File should be overwritten
      */
-    public static void overwriteFile(String filePath, String data) {
+    public static void overwriteFile(String filePath, String data, boolean... print) {
         File file = new File(filePath);
 
         try {
@@ -74,7 +75,8 @@ public class FileManager {
             fos.write(data.getBytes());
             fos.close();
 
-            System.out.println("File overwritten successfully!");
+            //The following if is for testing, so that it doesn't span the console
+            if (print == null || print.length == 0) System.out.println("File overwritten successfully!");
         } catch (IOException e) {
             System.out.println("An error occurred while overwriting the file: " + e.getMessage());
             e.printStackTrace();
