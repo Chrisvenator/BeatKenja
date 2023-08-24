@@ -22,7 +22,7 @@ public class Sequence implements Iterable {
     public Sequence() throws NoSuchFileException {
         File[] files = new File("Patterns").listFiles();
 
-        Random rand = new Random();
+        Random rand = new Random(UserInterface.SEED);
 
         if (files != null && files.length != 0) {
             File file = files[rand.nextInt(files.length)];

@@ -49,7 +49,7 @@ class BeatSaberMap {
         for (Note n : _notes) {
             n._cutDirection = 1;
             if (n._lineLayer == 2) {
-                float random = (float) Math.random() * 100;
+                float random = UserInterface.RANDOM.nextFloat() * 100;
                 if (random < 10) n._lineLayer = 2;
                 if (random < 45) {
                     n._lineLayer = 1;

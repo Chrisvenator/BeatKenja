@@ -70,7 +70,7 @@ public class CreatePatterns {
         if (oneHanded)
             return new BeatSaberMap(complexPatternFromTemplate(map._notes, p, true, stacks, null, null), map.originalJSON);
         if (bookmarks.size() == 0) {
-            Random random = new Random();
+            Random random = new Random(UserInterface.SEED);
             int min = 10;
             int max = 40;
 
@@ -120,7 +120,8 @@ public class CreatePatterns {
                 case "jumps", "normal jumps", "normal_jumps", "normal-jumps" -> notes.addAll(createJumps(currentNotes, false, prevBlue, prevRed));
                 case "big-jumps", "bigjumps", "big_jumps", "big jumps" -> notes.addAll(createBigJumps(currentNotes, false, prevBlue, prevRed));
                 case "doubles", "double-handed" -> notes.addAll(createDoubles(currentNotes.toArray(new Note[0]), prevBlue, prevRed));
-                case "sequence", "seq", "s", "pattern", "pat", "rand-seq", "random-sequence" -> notes.addAll(createPatternSequence(currentNotes.toArray(new Note[0]), prevBlue, prevRed, "jumps.txt"));
+                case "sequence", "seq", "s", "pattern", "pat", "rand-seq", "random-sequence" ->
+                        notes.addAll(createPatternSequence(currentNotes.toArray(new Note[0]), prevBlue, prevRed, "jumps.txt"));
 
                 default -> {
                     System.err.println("There is no such flag as: \"" + bookmarks.get(i)._name + "\" with " + currentNotes.size() + " notes. Please have a look at the supported ones in the README");
@@ -887,7 +888,7 @@ public class CreatePatterns {
      * @return Note
      */
     public static Note endHorizontalPlacements(Note[] pattern, int i, int j) {
-        float random = (float) Math.random() * 100;
+        float random = UserInterface.RANDOM.nextFloat() * 100;
 //        boolean debug = false;
         int firstHorizontalCutDirection = -1;
         int secondHorizontalCutDirection = -1;
@@ -1015,7 +1016,7 @@ public class CreatePatterns {
         if (pattern == null || pattern.notes == null) return null;
 
         float currentProbability = 0;
-        double placement = Math.random() * 100;
+        double placement = UserInterface.RANDOM.nextDouble() * 100;
 
         for (int i = 0; i < pattern.probabilities.length; i++) {
             if (pattern.notes[i] == null || currentProbability > 99) return null;
@@ -1038,7 +1039,7 @@ public class CreatePatterns {
      */
     public static Note firstNotePlacement(float _time) {
         Note n;
-        double placement = Math.random() * 100;
+        double placement = UserInterface.RANDOM.nextDouble() * 100;
 
         if (placement < 20) n = new Note(_time, 1, 0, 1, 1);
         else if (placement <= 65) n = new Note(_time, 2, 0, 1, 1);
@@ -1063,7 +1064,7 @@ public class CreatePatterns {
             p = new Note(time, 0, 0, 1, 1);
         }
 
-        double placement = Math.random() * 100;
+        double placement = UserInterface.RANDOM.nextDouble() * 100;
 
 
         //blue bottom-middle-right lane, down swing
