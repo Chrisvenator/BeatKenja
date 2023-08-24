@@ -9,6 +9,7 @@ import java.util.List;
 public class UserInterface extends JFrame {
 
     //Variables:
+    public static long SEED = 133742069;
     private String filePath;
     private BeatSaberMap map;
     private Pattern pattern;
@@ -17,7 +18,8 @@ public class UserInterface extends JFrame {
     private boolean verbose = true; //For debugging purposes. It prints EVERYTHING
     private String DEFAULT_PATH = "C:/Program Files (x86)/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels";
     private boolean darkMode = false;
-    //toAdd
+
+    //Note Generator settings:
     public static final double BPM = 120;
     public static final double PLACEMENT_PRECISION = (double) 1 / 32; //Placement Precision
     public static final boolean FIX_PLACEMENTS = true; //should the timings be fixed so that SS doesn't flag it as AI made?
@@ -49,6 +51,10 @@ public class UserInterface extends JFrame {
     private final PrintStream ERROR_PRINT_STREAM = new PrintStream(OUTPUT_STREAM);
 
     public static void main(String[] args) {
+        UserInterface.SEED = (long) (new Random().nextDouble() * 1000000000);
+        System.out.println("Current seed is: " + SEED);
+
+
         CreateAllNecessaryDIRsAndFiles.createAllNecessaryDIRsAndFiles();
 
         UserInterface ui = new UserInterface();
@@ -78,6 +84,8 @@ public class UserInterface extends JFrame {
         JButton saveMap = uiElements.saveMapButton();
         JButton mapChecks = uiElements.mapChecks();
         JButton loadPatternButton = uiElements.loadPatternsButton();
+        TextField seedFrame = uiElements.seedFrame();
+
 
         //Map Utilities
         JButton mapUtils = uiElements.mapUtils();
@@ -154,6 +162,14 @@ public class UserInterface extends JFrame {
                     System.err.println("ERROR: Map probably has the wrong format: \n" + e);
                     labelMapDiff.setText(statusCheck.getText() + "\nERROR: There was an error while importing the patterns!");
                 }
+            }
+        });
+        seedFrame.addActionListener(e -> {
+            try {
+                SEED = Long.parseLong(seedFrame.getText().replace(" ", ""));
+                System.out.println(SEED);
+            } catch (NumberFormatException ex){
+                statusCheck.setText(statusCheck.getText() + "\nERROR: Seed is not a number!");
             }
         });
 

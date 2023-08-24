@@ -1,3 +1,3 @@
 defaultPath:C:/Program Files (x86)/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels
 verbose:false //It is not recommended to change this except for debugging purposes.
-dark-mode:false
+dark-mode:true

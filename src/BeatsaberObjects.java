@@ -1,9 +1,6 @@
 import com.google.gson.Gson;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
     /*
     Red: 0
@@ -113,32 +110,34 @@ class BeatSaberMap {
     }
 
     public String exportAsMap() {
-        if (originalJSON == null) {
-            return ("{\"_version\":\"" + _version + "\",\"_notes\":" + Arrays.toString(_notes) + ",\"_obstacles\":" + (_obstacles == null ? "[]" : Arrays.toString(_obstacles)) + ",\"_events\":" + (_events == null ? "[]" : Arrays.toString(_events)) + ",\"_waypoints\":[],\"_customData\":{\"_time\":0.121}}")
-                    .replace("\n", "")
-                    .replace(".0,", ",")
-                    .replace(".0}", "}")
-                    .replace(" ", "")
-                    .replace("\":null\",", ":[],")
-                    .replace(", null, ", ", ")
-                    .replace("null", "")
-                    .replaceAll(",,", "");
-        } else {
-            String s = ("{\"_version\":\"" + _version + "\",\"_notes\":" + Arrays.toString(_notes) + ",\"_obstacles\":" + (_obstacles == null ? "[]" : Arrays.toString(_obstacles)) + ",\"_events\":" + (_events == null ? "[]" : Arrays.toString(_events)) + ",")
-                    .replace("\n", "")
-                    .replace(".0,", ",")
-                    .replace(".0}", "}")
-                    .replace(" ", "");
-            s = s.replaceAll("\":null,\"", ":\":[],\"")
-                    .replace(", null, ", ", ")
-                    .replace("null", "")
-                    .replaceAll(",,", "")
-                    //These to don't fix the problem ):
-                    .replaceAll("\"_obstacles\":,", "\"_obstacles\":[],")
-                    .replaceAll("\"_events\":,", "\"_events\":[],");
-
-            return s + "" + originalJSON.split("}],")[1];
+        //TODO: Fix this mess
+        String json = "";
+        json += "{";
+        json += "\"_version\":\"" + _version + "\",";
+        json += "\"_notes\":" + (_notes == null ? "[]" : Arrays.toString(_notes)) + ",";
+        json += "\"_obstacles\":" + (_obstacles == null ? "[]" : Arrays.toString(_obstacles)) + ",";
+        json += "\"_events\":" + (_events == null ? "[]" : Arrays.toString(_events)) + ",";
+        json += "\"_waypoints\":[]";
+        if (bookmarks != null && bookmarks.size() > 0) {
+            json += ",\"_customData\":{";
+            json += "\"_bookmarks\":" + bookmarks.toString();
+            json += "}";
         }
+        json += "}";
+
+        json = json.replaceAll(" ", "")
+                .replaceAll("\\.0,", ",")
+                .replaceAll("\\.0]", "]")
+                .replaceAll("\\.0}", "}")
+                .replace("\n", "");
+
+        return json;
+    }
+
+    public BeatSaberMap setOriginalJson(String originalJSON) {
+        this.originalJSON = originalJSON;
+        calculateBookmarks();
+        return this;
     }
 
     public void convertAllFlashLightsToOnLights() {
@@ -185,11 +184,16 @@ class BeatSaberMap {
         this._notes = list.toArray(new Note[0]);
     }
 
-    //This function takes all the notes of a map and converts it to a List inside a List in which all the notes are saved
-    //as a dot on the leftmost lane.
-    //If there are more notes on the same beat, then the notes are being converted into stacks
-    //Red Notes are only created if there is a blue and a red note on the same beat. They are saved on the second lane
-    //Note that there can only be a maximum of 6 Notes in one Beat or else the script will not create a 7th note;
+    /**
+     * This function takes all the notes of a map and converts it to a List inside a List in which all the notes are saved
+     * as a dot on the leftmost lane.
+     * If there are more notes on the same beat, then the notes are being converted into stacks
+     * Red Notes are only created if there is a blue and a red note on the same beat. They are saved on the second lane
+     * Note that there can only be a maximum of 6 Notes in one Beat or else the script will not create a 7th note;
+     *
+     * @param notes The notes of the map
+     * @return A List of all Notes. If there are more notes on the same beat, then they are being saved in a List inside the List
+     */
     private static List<List<Note>> mapToTimingNotesAsList(Note[] notes) {
         //Here is a List, where all grids are being saved.
         List<List<Note>> timings = new ArrayList<>(List.of(new ArrayList<>(List.of(new Note(notes[0]._time, notes[0]._type == 0 ? 1 : 0, 0, notes[0]._type, 8)))));
@@ -327,6 +331,14 @@ class Note implements Comparable<Note> {
     protected int _cutDirection;
     protected int amountOfStackedNotes = 0;
 
+    public Note(float time) {
+        this._time = time;
+        this._lineIndex = 0;
+        this._lineLayer = 0;
+        this._type = 1;
+        this._cutDirection = 8;
+    }
+
     public Note(float time, int lineIndex, int lineLayer, int type, int cutDirection) {
         this._time = time;
         this._lineIndex = lineIndex;
@@ -344,13 +356,6 @@ class Note implements Comparable<Note> {
         this.amountOfStackedNotes = n.amountOfStackedNotes;
     }
 
-    public Note(float time) {
-        this._time = time;
-        this._lineIndex = 0;
-        this._lineLayer = 0;
-        this._type = 1;
-        this._cutDirection = 8;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -381,6 +386,7 @@ class Note implements Comparable<Note> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Note note = (Note) o;
+
         return _lineIndex == note._lineIndex && _lineLayer == note._lineLayer && _type == note._type && _cutDirection == note._cutDirection;
     }
 
@@ -463,20 +469,19 @@ class Note implements Comparable<Note> {
                 if (_lineIndex == 2) {
                     notes.add(new Note(_time, _lineIndex, 0, _type, _cutDirection));
                     notes.add(new Note(_time, _lineIndex, 2, _type, _cutDirection));
-                }
-                if (_lineIndex == 3) {
+                } else if (_lineIndex == 3) {
                     if (amountOfStackedNotes >= 3) notes.add(new Note(_time, _lineIndex, 0, _type, _cutDirection));
                     notes.add(new Note(_time, _lineIndex, 1, _type, _cutDirection));
                     notes.add(new Note(_time, _lineIndex, 2, _type, _cutDirection));
-                }
+                } else notes.add(new Note(this._time, this._lineIndex, this._lineLayer, this._type, this._cutDirection));
             }
             case 5, 6 -> {
                 notes.add(new Note(_time, 2, 0, _type, _cutDirection));
                 notes.add(new Note(_time, 3, 1, _type, _cutDirection));
             }
-            case 2, 3, 4, 7, 8 ->
-                    notes.add(new Note(this._time, this._lineIndex, this._lineLayer, this._type, this._cutDirection));
+            case 2, 3, 4, 7, 8 -> notes.add(new Note(this._time, this._lineIndex, this._lineLayer, this._type, this._cutDirection));
         }
+
         return notes.toArray(new Note[0]);
     }
 

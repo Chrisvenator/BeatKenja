@@ -16,10 +16,7 @@ public class Pattern implements Iterable {
     public static void main(String[] args) {
         String inputPath = "Input.txt";
 
-        // Read Pattern Template from the input file
         BeatSaberMap map = new Gson().fromJson(FileManager.readFile(inputPath).get(0), BeatSaberMap.class);
-
-        // Create a new Pattern object and analyze the notes based on the specified type
         Pattern p = new Pattern(map._notes, 1);
 
         // Remove patterns that occur less than 8 times
@@ -103,12 +100,10 @@ public class Pattern implements Iterable {
     public void analyzePattern(Note[] map, int type) {
         Note[] notes = removeAllOtherTypes(map, type);
 
-        // Checking every Note in the map
         for (int k = 1; k < notes.length; k++) {
             Note n = notes[k];
             Note prev = notes[k - 1];
 
-            // Skip if the current Note is null or has a cut direction of 8
             if (n == null || n._cutDirection == 8) continue;
 
             // Iterating over the 2-dimensional array
@@ -414,6 +409,21 @@ public class Pattern implements Iterable {
                 return p; // Return the PatternProbability object
             }
         };
+    }
+
+    public List<List<Note>> asList() {
+        List<List<Note>> list = new ArrayList<>();
+        for (Note[] pat : this.patterns) {
+            ArrayList<Note> l = new ArrayList<>();
+            for (Note n : pat) {
+                if (n == null) break;
+                l.add(n);
+            }
+            if (l.size() == 0) break;
+            list.add(l);
+        }
+
+        return list;
     }
 }
 

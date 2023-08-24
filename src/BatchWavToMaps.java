@@ -29,14 +29,12 @@ public class BatchWavToMaps {
         if (files != null) {
             for (File file : files) {
                 if (file.isFile() && file.getName().contains(".mp3")) {
+                    //If there is an error generating the map, then dependencies are probably missing
                     if (!executeConvertSongsPY(file, verbose)) return false;
                 }
             }
         }
-
         files = folder.listFiles();
-
-
         if (files != null) {
             for (File file : files) {
                 if (file.isFile() && (file.getName().contains(".wav"))) {
@@ -238,7 +236,7 @@ public class BatchWavToMaps {
 
 
     /**
-     * Outsources the info.dat file generation so that the code isn't clustered
+     * Outsources the info.dat file generation so that the code isn't cluttered
      *
      * @param songName Name of the song lol
      * @return the complete info.dat File

@@ -1,8 +1,34 @@
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class CreateAllNecessaryDIRsAndFiles {
+    public static String[] templateFilesToCopy = {
+            UserInterface.DEFAULT_PATTERN_TEMPLATE
+    };
+    public static String[] preMadePatternsFilesToCopy = {
+            UserInterface.DEFAULT_SEQUENCE_TEMPLATE_FOLDER + "jumps.txt",           //Default value: "Patterns/jumps.txt",
+            UserInterface.DEFAULT_SEQUENCE_TEMPLATE_FOLDER + "test.txt",            //Default value: "Patterns/test.txt",
+            UserInterface.DEFAULT_SEQUENCE_TEMPLATE_FOLDER + "umapyoi-test.txt",    //Default value: "Patterns/umapyoi-test.txt",
+            UserInterface.DEFAULT_ONSET_GENERATION_FOLDER + "SongToOnsets.py",      //Default value: "OnsetGeneration/SongToOnsets.py",
+            UserInterface.DEFAULT_ONSET_GENERATION_FOLDER + "ConvertSong.py",       //Default value: "OnsetGeneration/ConvertSong.py",
+            UserInterface.README_FILE_LOCATION                                      //Default value: "README.md"
+    };
+
+    public static String[] directories = {
+            UserInterface.DEFAULT_PATTERN_TEMPLATE_FOLDER,
+            UserInterface.DEFAULT_SEQUENCE_TEMPLATE_FOLDER,
+            UserInterface.DEFAULT_ONSET_GENERATION_FOLDER,
+            UserInterface.ONSET_GENERATION_FOLDER_PATH_INPUT,
+            UserInterface.ONSET_GENERATION_FOLDER_PATH_OUTPUT
+    };
+
+    public static String config = """
+            defaultPath:C:/Program Files (x86)/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels
+            verbose:false //It is not recommended to change this except for debugging purposes.
+            dark-mode:false""";
+
     public static void createAllNecessaryDIRsAndFiles() {
         //Checking dependencies:
         if (isPipInstalled()) System.out.println("Pip is installed.");
@@ -19,46 +45,30 @@ public class CreateAllNecessaryDIRsAndFiles {
         }
         System.out.println("Creating all necessary directories and files.");
 
-        String[] templateFilesToCopy = {
-                UserInterface.DEFAULT_PATTERN_TEMPLATE
-        };
-        String[] preMadePatternsFilesToCopy = {
-                UserInterface.DEFAULT_SEQUENCE_TEMPLATE_FOLDER + "jumps.txt",           //Default value: "Patterns/jumps.txt",
-                UserInterface.DEFAULT_SEQUENCE_TEMPLATE_FOLDER + "test.txt",            //Default value: "Patterns/test.txt",
-                UserInterface.DEFAULT_SEQUENCE_TEMPLATE_FOLDER + "umapyoi-test.txt",    //Default value: "Patterns/umapyoi-test.txt",
-                UserInterface.DEFAULT_ONSET_GENERATION_FOLDER + "SongToOnsets.py",      //Default value: "OnsetGeneration/SongToOnsets.py",
-                UserInterface.DEFAULT_ONSET_GENERATION_FOLDER + "ConvertSong.py",       //Default value: "OnsetGeneration/ConvertSong.py",
-                UserInterface.README_FILE_LOCATION                                      //Default value: "README.md"
-        };
 
         createConfigFile();
-        createDirectories();
+        createDirectories(CreateAllNecessaryDIRsAndFiles.directories);
 
-        extractFilesFromJar(templateFilesToCopy);
-        extractFilesFromJar(preMadePatternsFilesToCopy);
+        extractFilesFromJar(CreateAllNecessaryDIRsAndFiles.templateFilesToCopy);
+        extractFilesFromJar(CreateAllNecessaryDIRsAndFiles.preMadePatternsFilesToCopy);
     }
 
     /**
      * Creates a config file with default values.
      */
     private static void createConfigFile() {
-        String config = """
-                defaultPath:C:/Program Files (x86)/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels
-                verbose:false //It is not recommended to change this except for debugging purposes.
-                dark-mode:false""";
+
         FileManager.overwriteFile(UserInterface.CONFIG_FILE_LOCATION, config);
     }
 
     /**
      * Creates all the directories that are needed for the program to work.
      */
-    public static void createDirectories() {
+    public static void createDirectories(String[] dirs) {
         try {
-            Files.createDirectories(Paths.get(UserInterface.DEFAULT_PATTERN_TEMPLATE_FOLDER));
-            Files.createDirectories(Paths.get(UserInterface.DEFAULT_SEQUENCE_TEMPLATE_FOLDER));
-            Files.createDirectories(Paths.get(UserInterface.DEFAULT_ONSET_GENERATION_FOLDER));
-            Files.createDirectories(Paths.get(UserInterface.ONSET_GENERATION_FOLDER_PATH_INPUT));
-            Files.createDirectories(Paths.get(UserInterface.ONSET_GENERATION_FOLDER_PATH_OUTPUT));
+            for (String dir : dirs) {
+                Files.createDirectories(Paths.get(dir));
+            }
         } catch (IOException e) {
             System.err.println("There has been an Exception while creating the files:\n");
             e.printStackTrace();
@@ -190,8 +200,13 @@ public class CreateAllNecessaryDIRsAndFiles {
             int exitCode2 = p2.waitFor();
 
 
-            System.out.println("dependencies has been installed.");
-            return exitCode == exitCode2 && exitCode == 0;
+            if (exitCode == exitCode2 && exitCode == 0) {
+                System.out.println("dependencies has been installed.");
+                return true;
+            } else {
+                System.err.println("Failed to install dependencies. Are they already installed?");
+                return false;
+            }
         } catch (IOException | InterruptedException e) {
             System.out.println("Failed to install dependencies.");
             e.printStackTrace();

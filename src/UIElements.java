@@ -1,6 +1,11 @@
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * This class contains all the UI element definitions that are used in the program.
+ * It is used to keep the UI class clean and readable.
+ * There is no logic contained in this class.
+ */
 public class UIElements {
     private final boolean darkMode;
     private final UserInterface userInterface;
@@ -39,6 +44,28 @@ public class UIElements {
 
         return saveMap;
     }
+
+    public TextField seedFrame() {
+        JLabel seedLabel = new JLabel("Seed:");
+        seedLabel.setBounds(960, 17, 40, 20);
+        if (darkMode) seedLabel.setForeground(Color.white);
+        userInterface.add(seedLabel);
+
+        JLabel pressEnter = new JLabel("Press enter when finished");
+        pressEnter.setBounds(960, 40, 200, 20);
+        pressEnter.setForeground(Color.red);
+        userInterface.add(pressEnter);
+
+
+        TextField seedFrame = new TextField(" " + String.valueOf(UserInterface.SEED));
+        seedFrame.setBounds(1000, 20, 100, 20);
+        if (darkMode) seedFrame.setBackground(Color.black);
+        if (darkMode) seedFrame.setForeground(Color.white);
+        userInterface.add(seedFrame);
+
+        return seedFrame;
+    }
+
 
     public JButton openMapButton() {
         JButton openMapButton = new JButton("click here and select your desired difficulty");
@@ -230,4 +257,6 @@ public class UIElements {
 
         return loadPatternButton;
     }
+
+
 }
