@@ -51,13 +51,7 @@ public class UIElements {
         if (darkMode) seedLabel.setForeground(Color.white);
         userInterface.add(seedLabel);
 
-        JLabel pressEnter = new JLabel("Press enter when finished");
-        pressEnter.setBounds(960, 40, 200, 20);
-        pressEnter.setForeground(Color.red);
-        userInterface.add(pressEnter);
-
-
-        TextField seedFrame = new TextField(" " + String.valueOf(UserInterface.SEED));
+        TextField seedFrame = new TextField(String.valueOf(UserInterface.SEED));
         seedFrame.setBounds(1000, 20, 100, 20);
         if (darkMode) seedFrame.setBackground(Color.black);
         if (darkMode) seedFrame.setForeground(Color.white);
