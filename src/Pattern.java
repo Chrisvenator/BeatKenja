@@ -64,13 +64,6 @@ public class Pattern implements Iterable {
         this.count = p.count;
         this.patterns = p.patterns;
         this.probabilities = p.probabilities;
-
-        // Free memory by setting references to null and running garbage collection
-        p = null;
-        patterns = null;
-        gson = null;
-        patternInput = null;
-        System.gc();
     }
 
     // Default constructor that creates a Pattern object based on a predefined template file

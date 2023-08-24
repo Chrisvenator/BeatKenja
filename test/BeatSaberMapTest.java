@@ -2,9 +2,6 @@ import com.google.gson.Gson;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.logging.LogManager;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class BeatSaberMapTest {

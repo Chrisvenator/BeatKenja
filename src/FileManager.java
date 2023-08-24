@@ -82,42 +82,4 @@ public class FileManager {
             e.printStackTrace();
         }
     }
-
-    /**
-     * this feature is currently not in use. It may work or may not. No Idea
-     * Only Kept for Achive purposes
-     *
-     * @param pythonScriptPath Path to the script. Example: ./script
-     * @param argument1        Arg1
-     * @param argument2        Arg2
-     * @return return true if it was successful
-     */
-    public static boolean pythonScriptExecuter(String pythonScriptPath, String argument1, String argument2) {
-        try {
-            // Build the command to execute the Python script with arguments
-            String pythonExecutable = "python"; // Adjust if necessary, e.g., "python3"
-            String[] command = {pythonExecutable, pythonScriptPath, argument1, argument2};
-
-            // Execute the Python script
-            ProcessBuilder processBuilder = new ProcessBuilder(command);
-            Process process = processBuilder.start();
-
-            // Read the output of the Python script
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                System.out.println(line);
-            }
-
-            // Wait for the process to complete
-            int exitCode = process.waitFor();
-
-            System.out.println("Python script execution completed with exit code: " + exitCode);
-            return true;
-
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
 }

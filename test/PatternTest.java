@@ -1,10 +1,6 @@
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class PatternTest {
@@ -385,239 +381,241 @@ class PatternTest {
         BeatSaberMap map = new Gson().fromJson(FileManager.readFile("test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
         Pattern p = new Pattern(map._notes, 1);
 
-        assertEquals("{\"_time\":0.0,\"_lineIndex\":0,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":8}: [\n" +
-                "  {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":5}: 100.0%\n" +
-                "]", p.getProbabilityOf(new Note(0)).toString());
+        assertEquals("""
+                {"_time":0.0,"_lineIndex":0,"_lineLayer":0,"_type":1,"_cutDirection":8}: [
+                  {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":5}: 100.0%
+                ]""", p.getProbabilityOf(new Note(0)).toString());
     }
 
     @Test
     void asList() {
         BeatSaberMap map = new Gson().fromJson(FileManager.readFile("test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
         Pattern p = new Pattern(map._notes, 1);
-        assertEquals("[[{\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":7}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":4}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":1}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":8}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":7}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":8}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":4}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":0}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":0,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":8}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":7}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":7}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":4}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":4}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":4}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":7}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":7}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":7}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":3}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":0}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":5}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":0,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":8}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":5}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":0,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":6}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":8}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":1}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":0,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":2}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":0,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":3}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":0}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":4}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":3}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":7}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":1}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":1}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":7}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":4}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":4}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":4}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":0}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":4}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":7}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":7}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":1}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":0}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":3}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":2}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":0,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":2}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":0,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":2}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":3}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":3}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":2}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":2}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":7}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":0,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":0,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":4}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":8}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":0,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":5}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":0}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":0,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":5}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":1}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":4}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":7}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":6}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":7}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":4}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":0,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":2}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":3}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":4}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":1}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":0}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":5}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":5}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":8}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":7}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":8}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":5}\n" +
-                "], [{\"_time\":0.0,\"_lineIndex\":1,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":6}\n" +
-                ", {\"_time\":0.0,\"_lineIndex\":3,\"_lineLayer\":2,\"_type\":1,\"_cutDirection\":5}\n" +
-                "]]", p.asList().toString());
+        assertEquals("""
+                [[{"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":7}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":2,"_type":1,"_cutDirection":4}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                ], [{"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":1,"_type":1,"_cutDirection":1}
+                ], [{"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":8}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":7}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                ], [{"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":8}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":4}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":0}
+                ], [{"_time":0.0,"_lineIndex":0,"_lineLayer":2,"_type":1,"_cutDirection":8}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":7}
+                ], [{"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":7}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":4}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":2,"_type":1,"_cutDirection":4}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":4}
+                ], [{"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":7}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                ], [{"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":7}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":7}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                ], [{"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":3}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":0}
+                ], [{"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":5}
+                ], [{"_time":0.0,"_lineIndex":0,"_lineLayer":0,"_type":1,"_cutDirection":8}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":5}
+                ], [{"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                ], [{"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":0,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":1,"_type":1,"_cutDirection":6}
+                ], [{"_time":0.0,"_lineIndex":1,"_lineLayer":2,"_type":1,"_cutDirection":8}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":1}
+                ], [{"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                ], [{"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":0,"_lineLayer":1,"_type":1,"_cutDirection":2}
+                , {"_time":0.0,"_lineIndex":0,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                ], [{"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":3}
+                ], [{"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":0}
+                ], [{"_time":0.0,"_lineIndex":2,"_lineLayer":1,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                ], [{"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":4}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":3}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":7}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":1}
+                ], [{"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":1}
+                ], [{"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":7}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":2,"_type":1,"_cutDirection":4}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":4}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":4}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":0}
+                ], [{"_time":0.0,"_lineIndex":1,"_lineLayer":2,"_type":1,"_cutDirection":4}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":7}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":7}
+                ], [{"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":1}
+                ], [{"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":0}
+                ], [{"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":3}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":2,"_type":1,"_cutDirection":2}
+                , {"_time":0.0,"_lineIndex":0,"_lineLayer":1,"_type":1,"_cutDirection":2}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":0,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                ], [{"_time":0.0,"_lineIndex":1,"_lineLayer":2,"_type":1,"_cutDirection":2}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":3}
+                ], [{"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":3}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":2}
+                ], [{"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":2}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":7}
+                ], [{"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                ], [{"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":0,"_lineLayer":1,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":0,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                ], [{"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":2,"_type":1,"_cutDirection":4}
+                ], [{"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":8}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                ], [{"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                ], [{"_time":0.0,"_lineIndex":0,"_lineLayer":1,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":5}
+                ], [{"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":2,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":0}
+                ], [{"_time":0.0,"_lineIndex":0,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":5}
+                ], [{"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":1}
+                ], [{"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":4}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":7}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":6}
+                ], [{"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":7}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":4}
+                ], [{"_time":0.0,"_lineIndex":0,"_lineLayer":1,"_type":1,"_cutDirection":2}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":3}
+                ], [{"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":4}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                ], [{"_time":0.0,"_lineIndex":1,"_lineLayer":2,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":1}
+                ], [{"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":1}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":0}
+                , {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":5}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":5}
+                ], [{"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":8}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":0,"_type":1,"_cutDirection":7}
+                ], [{"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":8}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":1,"_type":1,"_cutDirection":5}
+                ], [{"_time":0.0,"_lineIndex":1,"_lineLayer":1,"_type":1,"_cutDirection":6}
+                , {"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":5}
+                ]]""", p.asList().toString());
     }
 }
