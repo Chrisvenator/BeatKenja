@@ -110,7 +110,6 @@ class BeatSaberMap {
     }
 
     public String exportAsMap() {
-        //TODO: Fix this mess
         String json = "";
         json += "{";
         json += "\"_version\":\"" + _version + "\",";

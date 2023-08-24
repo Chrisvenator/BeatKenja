@@ -1,9 +1,6 @@
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
 class NoteTest {
     Note note01 = new Note(255.5f, 1, 1, 0, 1);
     Note note02 = new Note(256.5f, 2, 1, 0, 2);

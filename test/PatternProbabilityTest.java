@@ -26,8 +26,9 @@ class PatternProbabilityTest {
         BeatSaberMap map = new Gson().fromJson(FileManager.readFile("test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
         Pattern p = new Pattern(map._notes, 1);
 
-        assertEquals("{\"_time\":0.0,\"_lineIndex\":0,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":8}: [\n" +
-                "  {\"_time\":0.0,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":5}: 100.0%\n" +
-                "]", new PatternProbability(p.patterns[10], p.probabilities[10]).toString());
+        assertEquals("""
+                {"_time":0.0,"_lineIndex":0,"_lineLayer":0,"_type":1,"_cutDirection":8}: [
+                  {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":5}: 100.0%
+                ]""", new PatternProbability(p.patterns[10], p.probabilities[10]).toString());
     }
 }
