@@ -88,6 +88,18 @@ public class UIElements {
         statusCheck.setEditable(false);
         userInterface.add(statusCheck);
 
+        if (!CreateAllNecessaryDIRsAndFiles.isPythonInstalled())
+            statusCheck.setText(statusCheck.getText() + "[ERROR]: Python could not be found please ensure that it is installed and added to the PATH variable or else the Onset Generation will not work!\n");
+
+        if (!CreateAllNecessaryDIRsAndFiles.isPipInstalled())
+            statusCheck.setText(statusCheck.getText() + "[ERROR]: PIP could not be found please ensure that it is installed or else the Onset Generation will not work!\n");
+
+        if (!CreateAllNecessaryDIRsAndFiles.isFFMpegInstalled())
+            statusCheck.setText(statusCheck.getText() + "[ERROR]: FFMPEG could not be found please ensure that it is installed and added to the PATH variable or else the Onset Generation will not work!\n");
+
+        if (CreateAllNecessaryDIRsAndFiles.isPythonInstalled() && CreateAllNecessaryDIRsAndFiles.isPipInstalled() && CreateAllNecessaryDIRsAndFiles.isFFMpegInstalled())
+            statusCheck.setText(statusCheck.getText() + "[INFO]: All necessary dependencies are installed. You can now convert MP3s to timing maps.\n\n");
+
         return statusCheck;
     }
 

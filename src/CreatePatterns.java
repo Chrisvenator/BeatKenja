@@ -6,7 +6,7 @@ import java.util.*;
 public class CreatePatterns {
     public static void main(String[] args) {
         String filename = "Input.txt";
-        String patternFilename = "PatternTemplates/Template--ISeeFire.txt";
+        String patternFilename = "MapTemplates/Template--ISeeFire.txt";
         String outPath = "";
         String input = FileManager.readFile(filename).get(0);
         String patternInput = FileManager.readFile(patternFilename).get(0);
@@ -212,7 +212,7 @@ public class CreatePatterns {
             counter++;
         }
         if (counter >= 300)
-            System.err.println("ERROR at beat: " + timings[0]._time + " infinite loop in create doubles");
+            System.err.println("[ERROR] at beat: " + timings[0]._time + " infinite loop in create doubles");
 
         notes.add(prevRed != null ? nextLinearNote(prevRed, timings[0]._time) : firstNotePlacement(timings[0]._time));
         counter = 0;
@@ -223,7 +223,7 @@ public class CreatePatterns {
         }
         if (prevRed != null) prevRed.invertNote();
         if (counter >= 300)
-            System.err.println("ERROR at beat: " + timings[0]._time + " infinite loop in create doubles");
+            System.err.println("[ERROR] at beat: " + timings[0]._time + " infinite loop in create doubles");
 
         int invalidPlacementsInARow = 0;
         for (int i = 1; i < timings.length; i++) {
@@ -289,7 +289,7 @@ public class CreatePatterns {
             counter++;
         }
         if (counter >= 300)
-            System.err.println("ERROR at beat: " + timings[0]._time + " infinite loop in create doubles");
+            System.err.println("[ERROR] at beat: " + timings[0]._time + " infinite loop in create doubles");
         notes.add(nextLinearNote(notes.get(0), timings[1]._time));
 
         notes.add(prevRed != null ? nextLinearNote(prevRed, timings[2]._time) : firstNotePlacement(timings[2]._time));
@@ -300,7 +300,7 @@ public class CreatePatterns {
             counter++;
         }
         if (counter >= 300)
-            System.err.println("ERROR at beat: " + timings[3]._time + " infinite loop in create doubles");
+            System.err.println("[ERROR] at beat: " + timings[3]._time + " infinite loop in create doubles");
         notes.add(nextLinearNote(notes.get(2), timings[3]._time));
 
 
@@ -378,7 +378,7 @@ public class CreatePatterns {
             counter++;
         }
         if (counter >= 300)
-            System.err.println("ERROR at beat: " + timings[0]._time + "infinite loop in create complex (blue)");
+            System.err.println("[ERROR] at beat: " + timings[0]._time + "infinite loop in create complex (blue)");
 
         if (!oneHanded)
             pattern[1] = prevRed != null ? nextLinearNote(prevRed, timings[1]._time) : firstNotePlacement(timings[1]._time);
@@ -388,7 +388,7 @@ public class CreatePatterns {
             counter++;
         }
         if (counter >= 300)
-            System.err.println("ERROR at beat: " + timings[0]._time + "infinite loop in create complex (red)");
+            System.err.println("[ERROR] at beat: " + timings[0]._time + "infinite loop in create complex (red)");
 
 //        if (oneHanded) System.out.println("DEBUG blue: " + pattern[0]._time + ": " + (prevBlue == null ? "" : prevBlue._cutDirection) + " -> " + pattern[0]._cutDirection);
         int blueHorizontalsInARow = 0; //prevent parity breaks for red notes
@@ -401,7 +401,7 @@ public class CreatePatterns {
             //When there exists an infinite loop:
             //Then create a new next note
             if ((oneHanded && i >= 2 || i >= 4) && invalidPlacesInARow >= 500) {
-                System.err.println("ERROR at beat:   " + timings[i]._time);
+                System.err.println("[ERROR] at beat:   " + timings[i]._time);
                 pattern[i] = new TimingNote(timings[i]._time);
                 invalidPlacesInARow = 0;
                 continue;
@@ -597,7 +597,7 @@ public class CreatePatterns {
             //When there exists an infinite loop:
             //Then create a new next note
             if ((oneHanded && i >= 2 || i >= 4) && invalidPlacesInARow >= 500) {
-                System.err.println("ERROR at beat:   " + timings[i]._time);
+                System.err.println("[ERROR] at beat:   " + timings[i]._time);
                 pattern[i] = new TimingNote(timings[i]._time);
                 invalidPlacesInARow = 0;
                 continue;
@@ -779,7 +779,7 @@ public class CreatePatterns {
                     || (red._cutDirection == 7 || red._cutDirection == 3 || red._cutDirection == 5) && (n._cutDirection == 7 || n._cutDirection == 3 || n._cutDirection == 5)
                     || (red._cutDirection == 4 || red._cutDirection == 0 || red._cutDirection == 5) && (n._cutDirection == 4 || n._cutDirection == 0 || n._cutDirection == 5)
                     || (red._cutDirection == 4 || red._cutDirection == 2 || red._cutDirection == 6) && (n._cutDirection == 4 || n._cutDirection == 2 || n._cutDirection == 6))) {
-                if (!quiet) System.err.println("ERROR at beat:   " + n._time + ": Parity break!");
+                if (!quiet) System.err.println("[ERROR] at beat:   " + n._time + ": Parity break!");
             }
 
             //Exclude this at dd-checking:
@@ -791,7 +791,7 @@ public class CreatePatterns {
                     || (blue._cutDirection == 7 || blue._cutDirection == 3 || blue._cutDirection == 5) && (n._cutDirection == 7 || n._cutDirection == 3 || n._cutDirection == 5)
                     || (blue._cutDirection == 4 || blue._cutDirection == 0 || blue._cutDirection == 5) && (n._cutDirection == 4 || n._cutDirection == 0 || n._cutDirection == 5)
                     || (blue._cutDirection == 4 || blue._cutDirection == 2 || blue._cutDirection == 6) && (n._cutDirection == 4 || n._cutDirection == 2 || n._cutDirection == 6))) {
-                if (!quiet) System.err.println("ERROR at beat:   " + n._time + ": Parity break!");
+                if (!quiet) System.err.println("[ERROR] at beat:   " + n._time + ": Parity break!");
             }
 
 
@@ -870,7 +870,7 @@ public class CreatePatterns {
         for (int i = 0; i < allNotes.size() - 1; i++) {
             if (allNotes.get(i)._time == allNotes.get(i + 1)._time && allNotes.get(i).equalNotePlacement(allNotes.get(i + 1))) {
                 if (!quiet)
-                    System.err.println("ERROR at beat:   " + allNotes.get(i)._time + ": Note inside another Note!");
+                    System.err.println("[ERROR] at beat:   " + allNotes.get(i)._time + ": Note inside another Note!");
             }
         }
 

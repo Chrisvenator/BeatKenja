@@ -26,7 +26,8 @@ public class CreateAllNecessaryDIRsAndFiles {
     public static String config = """
             defaultPath:C:/Program Files (x86)/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels
             verbose:false //It is not recommended to change this except for debugging purposes.
-            dark-mode:false""";
+            dark-mode:false
+            save_new_maps_to_default_path:true""";
 
     public static void createAllNecessaryDIRsAndFiles() {
         //Checking dependencies:
@@ -36,7 +37,7 @@ public class CreateAllNecessaryDIRsAndFiles {
 
         //Checking if the directories exist.
         //If yes, then don't create them again
-        File f1 = new File(UserInterface.DEFAULT_PATTERN_TEMPLATE_FOLDER);  //Default Value: "./PatternTemplates"
+        File f1 = new File(UserInterface.DEFAULT_PATTERN_TEMPLATE_FOLDER);  //Default Value: "./MapTemplates"
         File f2 = new File(UserInterface.DEFAULT_SEQUENCE_TEMPLATE_FOLDER); //Default Value: "./Patterns"
         File f3 = new File(UserInterface.CONFIG_FILE_LOCATION);             //Default Value: "./config.txt"
         if (f1.exists() && f1.isDirectory() && f2.exists() && f2.isDirectory() && f3.exists() && f3.isFile()) {
