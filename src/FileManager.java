@@ -43,7 +43,7 @@ public class FileManager {
         if (!file.exists()) {
             //The following if is for testing, so that it doesn't span the console
             if (print == null || print.length == 0) System.err.println("File not found!");
-            throw new NoSuchElementException("File not found!");
+            throw new NoSuchElementException("File not found: " + filename + "!");
         }
 
         List<String> timings = new ArrayList<>();

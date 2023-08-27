@@ -29,7 +29,11 @@ public class UserInterface extends JFrame {
     public static final boolean FIX_PLACEMENTS = true; //should the timings be fixed so that SS doesn't flag it as AI made?
 
     static {
-        loadConfig();
+        try {
+            loadConfig();
+        } catch (Exception e) {
+            System.err.println("Couldn't find config.txt. Is it created yet? Using default values...");
+        }
     }
 
     //General Config:
