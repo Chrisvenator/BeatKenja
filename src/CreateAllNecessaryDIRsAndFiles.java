@@ -24,10 +24,10 @@ public class CreateAllNecessaryDIRsAndFiles {
     };
 
     public static String config = """
-            defaultPath:C:/Program Files (x86)/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels
+            defaultPath:C:/Program Files (x86)/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels //This should link to your WIP folder
             verbose:false //It is not recommended to change this except for debugging purposes.
             dark-mode:false
-            save_new_maps_to_default_path:true""";
+            save_new_maps_to_default_path:true //If true, new maps will be saved to the default path. If false, new maps will be saved to ./OnsetGeneration/out/""";
 
     public static void createAllNecessaryDIRsAndFiles() {
         //Checking dependencies:

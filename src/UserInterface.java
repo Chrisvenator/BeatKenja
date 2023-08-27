@@ -28,6 +28,7 @@ public class UserInterface extends JFrame {
     public static final double PLACEMENT_PRECISION = (double) 1 / 32; //Placement Precision
     public static final boolean FIX_PLACEMENTS = true; //should the timings be fixed so that SS doesn't flag it as AI made?
 
+    //try to load the config. If it doesn't exist then use the default values
     static {
         try {
             loadConfig();
@@ -583,6 +584,7 @@ public class UserInterface extends JFrame {
             for (String s : config) {
                 String[] splits = s.split(":");
                 if (s.contains("defaultPath")) DEFAULT_PATH = splits[1] + ":" + splits[2];
+                if (s.contains("defaultPath") && s.contains("//")) DEFAULT_PATH = splits[1] + ":" + splits[2].substring(0, splits[2].indexOf("//"));
             }
             UserInterface.verbose = config.toString().contains("verbose:true");
             UserInterface.darkMode = config.toString().contains("dark-mode:true");
