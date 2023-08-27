@@ -69,7 +69,7 @@ public class Pattern implements Iterable {
     // Default constructor that creates a Pattern object based on a predefined template file
     public Pattern() {
         // Create a new Pattern object based on a predefined template file
-        Pattern p = new Pattern("PatternTemplates/Template--ISeeFire.txt");
+        Pattern p = new Pattern("MapTemplates/Template--ISeeFire.txt");
 
         // Copy the patterns, count, and probabilities from the created Pattern object
         this.count = p.count;
