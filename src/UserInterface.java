@@ -5,15 +5,19 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class UserInterface extends JFrame {
 
     //Variables:
     public static long SEED = 133742069;
     public static Random RANDOM = new Random(SEED);
-    private String filePath;
+    public static String filePath;
     private BeatSaberMap map;
     private Pattern pattern;
 
@@ -22,6 +26,7 @@ public class UserInterface extends JFrame {
     public static String DEFAULT_PATH = "C:/Program Files (x86)/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels";
     public static boolean darkMode = false;
     public static boolean saveNewMapsToDefaultPath = true;
+    public static boolean ignoreDDs = false;
 
     //Note Generator settings:
     public static final double BPM = 120;
@@ -47,6 +52,11 @@ public class UserInterface extends JFrame {
     public static final String ONSET_GENERATION_FOLDER_PATH_OUTPUT = saveNewMapsToDefaultPath ? DEFAULT_PATH : "./OnsetGeneration/output/";
     public static final String DEFAULT_SEQUENCE_TEMPLATE_FOLDER = "./Patterns/";
     public static final String DEFAULT_EXPORT_PATH = "./";
+    public static final Color lightModeBackgroundColor = Color.white;
+    public static final Color lightModeForegroundColor = Color.BLACK;
+    public static final Color darkModeBackgroundColor = Color.darkGray;
+    public static final Color darkModeForegroundColor = Color.white;
+    public static final String mapViewerURL = "https://skystudioapps.com/bs-viewer/"; //https://skystudioapps.com/bs-viewer/  or  https://skystudioapps.com/bs-viewer/
 
     //GUI:
     private final UIElements uiElements;
@@ -98,6 +108,8 @@ public class UserInterface extends JFrame {
         JButton mapChecks = uiElements.mapChecks();
         JButton loadPatternButton = uiElements.loadPatternsButton();
         TextField seedFrame = uiElements.seedFrame();
+        JCheckBox ignoreDDsCheckBox = uiElements.ignoreDDsCheckbox();
+        JButton openMapInBrowser = uiElements.openMapInBrowser();
 
 
         //Map Utilities
@@ -118,9 +130,11 @@ public class UserInterface extends JFrame {
         JButton mapCreator = uiElements.mapCreator();
         JButton mapCreatorCreateMap = uiElements.mapCreatorCreateMap();
         JButton mapCreatorCreateComplexMap = uiElements.mapCreatorCreateComplexMap();
+        JButton mapCreatorCreateRandomV2Map = uiElements.mapCreatorCreateRandomV2Map();
         JButton mapCreatorCreateLinearMap = uiElements.mapCreatorCreateLinearMap();
         JButton mapCreatorCreateBlueLinearMap = uiElements.mapCreatorCreateBlueLinearMap();
         JButton mapCreatorCreateBlueComplexMap = uiElements.mapCreatorCreateBlueComplexMap();
+        JButton mapCreatorCreateRandomMap = uiElements.mapCreatorCreateRandomMap();
 
 
         /////////////////////
@@ -201,6 +215,35 @@ public class UserInterface extends JFrame {
                 }
             }
         });
+        ignoreDDsCheckBox.addActionListener(e -> {
+            ignoreDDs = ignoreDDsCheckBox.isSelected();
+            UserInterface.ignoreDDs = ignoreDDsCheckBox.isSelected();
+            statusCheck.setText(statusCheck.getText() + "\n[INFO]: ignore DDs: " + ignoreDDs);
+        });
+        openMapInBrowser.addActionListener(e -> {
+//            String url = "https://allpoland.github.io/ArcViewer/";
+//            String url = "https://skystudioapps.com/bs-viewer/";
+
+            try {
+                URI uri = new URI(mapViewerURL);
+
+                if (Desktop.isDesktopSupported()) {
+                    Desktop desktop = Desktop.getDesktop();
+
+                    if (filePath != null && !filePath.equals("")) {
+                        desktop.browse(uri);
+                        desktop.open(new File(filePath));
+                        createZipFileFromCurrentDifficulty();
+                    }
+                } else {
+                    System.out.println("Map preview viewing is not supported on this platform.");
+                    statusCheck.setText(statusCheck.getText() + "\n[ERROR]: Map preview viewing is not supported on this platform.");
+                }
+            } catch (IOException | URISyntaxException ex) {
+                ex.printStackTrace();
+                statusCheck.setText(statusCheck.getText() + "\n[ERROR]: Map preview viewing encountered an error! This feature is currently not available :/");
+            }
+        });
 
         //Map Utilities
         mapUtils.addActionListener(e -> {
@@ -278,6 +321,9 @@ public class UserInterface extends JFrame {
             mapCreatorCreateLinearMap.setVisible(!mapCreatorCreateLinearMap.isVisible());
             mapCreatorCreateBlueLinearMap.setVisible(!mapCreatorCreateBlueLinearMap.isVisible());
             mapCreatorCreateBlueComplexMap.setVisible(!mapCreatorCreateBlueComplexMap.isVisible());
+            mapCreatorCreateRandomMap.setVisible(!mapCreatorCreateRandomMap.isVisible());
+            mapCreatorCreateRandomV2Map.setVisible(!mapCreatorCreateRandomV2Map.isVisible());
+
         });
         mapCreatorCreateMap.addActionListener(e -> {
             manageMap();
@@ -406,10 +452,43 @@ public class UserInterface extends JFrame {
                 String ogJson = map.originalJSON;
                 map = new BeatSaberMap(CreatePatterns.complexPatternFromTemplate(map._notes, pattern, true, false, null, null));
                 map.originalJSON = ogJson;
+
                 statusCheck.setText(statusCheck.getText() + "\nMap creation finished");
                 System.out.println("Created Map: " + new BeatSaberMap(map._notes).exportAsMap());
-                if (verbose)
-                    statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Created Map: " + new BeatSaberMap(map._notes).exportAsMap());
+                if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Created Map: " + new BeatSaberMap(map._notes).exportAsMap());
+                checkMap();
+            } catch (IllegalArgumentException ex) {
+                statusCheck.setText(statusCheck.getText() + "\nThere was an error while creating. Please try again!");
+            }
+        });
+        mapCreatorCreateRandomMap.addActionListener(e -> {
+            manageMap();
+            map.toBlueLeftBottomRowDotTimings();
+            String ogJson = map.originalJSON;
+
+            try {
+                map = new BeatSaberMap(CreatePatterns.createRandomPattern(map._notes, false));
+                map.originalJSON = ogJson;
+
+                System.out.println("Created Map: " + new BeatSaberMap(map._notes).exportAsMap());
+                statusCheck.setText(statusCheck.getText() + "\nMap creation finished");
+                if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Created Map: " + new BeatSaberMap(map._notes).exportAsMap());
+                statusCheck.setText(statusCheck.getText() + "\nThere will be a lot of errors. But that's what you wanted lol");
+            } catch (IllegalArgumentException ex) {
+                statusCheck.setText(statusCheck.getText() + "\nThere was an error while creating. Please try again!");
+            }
+        });
+        mapCreatorCreateRandomV2Map.addActionListener(e -> {
+            manageMap();
+            map.toBlueLeftBottomRowDotTimings();
+
+            try {
+                String ogJson = map.originalJSON;
+                map = new BeatSaberMap(CreatePatterns.randomV2FromTemplate(map._notes, pattern, false, null, null));
+                map.originalJSON = ogJson;
+                statusCheck.setText(statusCheck.getText() + "\nMap creation finished");
+                System.out.println("Created Map: " + map.exportAsMap());
+                if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Created Map: " + map.exportAsMap());
                 checkMap();
             } catch (IllegalArgumentException ex) {
                 statusCheck.setText(statusCheck.getText() + "\nThere was an error while creating. Please try again!");
@@ -433,6 +512,7 @@ public class UserInterface extends JFrame {
                     toTimingNotes.setVisible(true);
                     mapCreator.setVisible(true);
                     saveMap.setVisible(true);
+                    openMapInBrowser.setVisible(true);
                 }
                 try {
                     Thread.sleep(1000); // Check for changes every second
@@ -442,6 +522,48 @@ public class UserInterface extends JFrame {
                 }
             }
         }).start();
+    }
+
+    private void createZipFileFromCurrentDifficulty() {
+        String sourceDir = new File(filePath).getAbsolutePath();
+        System.out.println(sourceDir);
+
+        String zipFileName = sourceDir + "/output.zip";
+
+        try {
+            FileOutputStream fos = new FileOutputStream(zipFileName);
+            ZipOutputStream zipOut = new ZipOutputStream(fos);
+
+            byte[] buffer = new byte[1024];
+
+            // Get a list of files in the source directory
+            File dir = new File(sourceDir);
+            File[] files = dir.listFiles();
+
+            if (files == null || files.length <= 3) {
+                statusCheck.setText(statusCheck.getText() + "\n[ERROR]: Something went wrong...");
+                return;
+            }
+
+            for (File file : files) {
+                if (file.getName().contains(".zip") || file.isDirectory()) continue;
+                ZipEntry zipEntry = new ZipEntry(file.getName());
+                zipOut.putNextEntry(zipEntry);
+
+                FileInputStream fis = new FileInputStream(file);
+                int length;
+                while ((length = fis.read(buffer)) > 0) {
+                    zipOut.write(buffer, 0, length);
+                }
+                fis.close();
+            }
+
+            zipOut.close();
+
+            System.out.println("The files have been successfully added to " + zipFileName);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     private void convertMp3ToMap() {

@@ -20,8 +20,8 @@ public class UIElements {
         userInterface.setTitle("Beat Kenja");
         userInterface.setSize(1200, 800);
         userInterface.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        if (darkMode) userInterface.getContentPane().setBackground(Color.darkGray);
-        if (darkMode) userInterface.getContentPane().setForeground(Color.white);
+        if (darkMode) userInterface.getContentPane().setBackground(UserInterface.darkModeBackgroundColor);
+        if (darkMode) userInterface.getContentPane().setForeground(UserInterface.darkModeForegroundColor);
         userInterface.setLayout(null);
     }
 
@@ -58,6 +58,25 @@ public class UIElements {
         userInterface.add(seedFrame);
 
         return seedFrame;
+    }
+
+    public JCheckBox ignoreDDsCheckbox(){
+        JCheckBox ignoreDDsCheckbox = new JCheckBox("Ignore DDs");
+        ignoreDDsCheckbox.setBounds(957, 45, 100, 20);
+        if (darkMode) ignoreDDsCheckbox.setForeground(Color.white);
+        userInterface.add(ignoreDDsCheckbox);
+
+        return ignoreDDsCheckbox;
+    }
+
+    public JButton openMapInBrowser(){
+        JButton openMapInBrowser = new JButton("Open Map in Browser");
+        openMapInBrowser.setBounds(975, 70, 150, 50);
+        openMapInBrowser.setBackground(Color.gray);
+        openMapInBrowser.setVisible(false);
+        userInterface.add(openMapInBrowser);
+
+        return openMapInBrowser;
     }
 
 
@@ -221,13 +240,14 @@ public class UIElements {
     }
 
     public JButton mapCreatorCreateComplexMap() {
-        JButton mapCreatorCreateComplexMap = new JButton("Create Complex Map");
+        JButton mapCreatorCreateComplexMap = new JButton("Complex");
         mapCreatorCreateComplexMap.setBounds(650, 160, 190, 15);
         mapCreatorCreateComplexMap.setVisible(false);
         userInterface.add(mapCreatorCreateComplexMap);
 
         return mapCreatorCreateComplexMap;
     }
+
 
     public JButton mapCreatorCreateLinearMap() {
         JButton mapCreatorCreateLinearMap = new JButton("Create Linear Map");
@@ -256,6 +276,24 @@ public class UIElements {
         return mapCreatorCreateBlueComplexMap;
     }
 
+    public JButton mapCreatorCreateRandomMap() {
+        JButton mapCreatorCreateRandomMap = new JButton("random");
+        mapCreatorCreateRandomMap.setBounds(650, 100, 90, 15);
+        mapCreatorCreateRandomMap.setVisible(false);
+        userInterface.add(mapCreatorCreateRandomMap);
+
+        return mapCreatorCreateRandomMap;
+    }
+
+    public JButton mapCreatorCreateRandomV2Map() {
+        JButton mapCreatorCreateRandomV2Map = new JButton("rand. V2");
+        mapCreatorCreateRandomV2Map.setBounds(750, 100, 90, 15);
+        mapCreatorCreateRandomV2Map.setVisible(false);
+        userInterface.add(mapCreatorCreateRandomV2Map);
+
+        return mapCreatorCreateRandomV2Map;
+    }
+
     public JButton loadPatternsButton() {
         JButton loadPatternButton = new JButton("Load Patterns File");
         loadPatternButton.setBounds(270, 70, 200, 30);
@@ -263,6 +301,7 @@ public class UIElements {
 
         return loadPatternButton;
     }
+
 
 
 }

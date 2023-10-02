@@ -144,6 +144,57 @@ public class CreatePatterns {
     }
 
     /**
+     * createRandomPattern is a function that creates random Notes with the timings given
+     *
+     * @param timings   timings of the notes
+     * @param oneHanded is the map one-handed?
+     * @return the resulting Notes as a List
+     */
+    public static List<Note> createRandomPattern(Note[] timings, boolean oneHanded) {
+        List<Note> notes = new ArrayList<>();
+        Random random = new Random(UserInterface.SEED);
+
+        double bpm = 120;
+        try {
+            List<String> list = FileManager.readFile(UserInterface.filePath + "/info.dat");
+            for (String s : list) {
+                if (s.contains("\"_beatsPerMinute\" : ")) {
+                    bpm = Double.parseDouble(s.substring(s.indexOf(":") + 1, s.indexOf(",")));
+                    break;
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        System.out.println("Using " + bpm + " bpm");
+
+        for (int i = 0; i < timings.length; i++) {
+
+            Note n = new Note(timings[i]._time);
+            //nextInt(5) --> [INCLUSIVE 0, EXCLUSIVE 5)
+            n._lineIndex = random.nextInt(4);
+            n._lineLayer = random.nextInt(3);
+            n._type = random.nextInt(2);
+            n._cutDirection = random.nextInt(8);
+
+            if (i < timings.length - 1) {
+                float time = (float) (timings[i]._time / bpm * 60);
+                float timeNext = (float) (timings[i + 1]._time / bpm * 60);
+
+                if (timeNext - time < 0.5) {
+                    if (n._lineIndex == 1 && n._lineLayer == 1) n._lineIndex--;
+                    if (n._lineIndex == 2 && n._lineLayer == 1) n._lineIndex++;
+                }
+            }
+
+            if (!UserInterface.ignoreDDs && i >= 1 && n.isDD(notes.get(i - 1))) {
+                i--;
+            } else notes.add(n);
+        }
+        return notes;
+    }
+
+    /**
      * WARNING! CURRENTLY NOT FILTERING DDs!!
      * This function reads a saved pattern and repeatedly places it as long as there are elements in timings[]
      * If you want multiple saved sequences (patterns), you can call this function multiple times without a sequenceName
@@ -169,7 +220,7 @@ public class CreatePatterns {
 
         Note timingTemp = timings[0];
 
-        if (firstBlue != null && prevBlue != null && prevBlue.isDD(firstBlue)) {
+        if (firstBlue != null && prevBlue != null && prevBlue.isDD(firstBlue) && !UserInterface.ignoreDDs) {
 //            int pos = sequence.getPosition(firstBlue);
             prevBlue = nextLinearNote(prevBlue, timings[0]._time);
             pattern.add(prevBlue);
@@ -461,6 +512,82 @@ public class CreatePatterns {
         pattern = checkForMappingErrors(l, true).toArray(new Note[0]);
 
         return pattern;
+    }
+
+
+    public static List<Note> randomV2FromTemplate(Note[] timings, Pattern p, boolean stacks, Note prevBlue, Note prevRed) throws IllegalArgumentException {
+        List<Note> notes = new ArrayList<>();
+        List<Note> randomNotes = createRandomPattern(timings, false);
+
+        List<Note> blueNotes = new ArrayList<>();
+        List<Note> redNotes = new ArrayList<>();
+
+        for (Note randomNote : randomNotes) {
+            if (randomNote._type == 1) blueNotes.add(randomNote);
+            else redNotes.add(randomNote);
+        }
+
+        List<Note> blueComplex = Arrays.stream(complexPatternFromTemplate(blueNotes.toArray(new Note[0]), p, true, false, prevBlue, null)).toList();
+        List<Note> redComplex = Arrays.stream(complexPatternFromTemplate(redNotes.toArray(new Note[0]), p, true, false, prevRed, null)).toList();
+        redComplex.forEach(Note::invertNote);
+
+        for (int i = 0; i < blueNotes.size(); i++) {
+            notes.add(new Note(
+                    blueComplex.get(i)._time,
+                    blueNotes.get(i)._lineIndex == 0 ? 1 : blueNotes.get(i)._lineIndex,
+                    blueNotes.get(i)._lineLayer,
+                    blueComplex.get(i)._type,
+                    blueComplex.get(i)._cutDirection
+            ));
+            if (!UserInterface.ignoreDDs && i >= 1 && notes.get(i).isDD(notes.get(i - 1))) {
+                notes.remove(i);
+                i--;
+            }
+        }
+
+        for (int i = 0; i < redComplex.size(); i++) {
+            notes.add(new Note(
+                    redComplex.get(i)._time,
+                    redNotes.get(i)._lineIndex == 3 ? 2 : redNotes.get(i)._lineIndex,
+                    redNotes.get(i)._lineLayer,
+                    redComplex.get(i)._type,
+                    redComplex.get(i)._cutDirection
+            ));
+
+            if (!UserInterface.ignoreDDs && i >= 1 && notes.get(i).isDD(notes.get(i - 1))) {
+                notes.remove(i);
+                i--;
+            }
+        }
+
+        if (stacks) notes = createStacks(notes);
+
+        return fixInverts(notes);
+    }
+
+    private static List<Note> fixInverts(List<Note> notes) {
+        Note prevBlue = null;
+        Note prevRed = null;
+        for (Note n : notes) {
+
+            if ((n._cutDirection == 1 || n._cutDirection == 6 || n._cutDirection == 7) &&
+                    (n._type == 1 && prevBlue != null && (prevBlue._cutDirection == 4 || prevBlue._cutDirection == 0 || prevBlue._cutDirection == 5) && n._lineLayer == 2 && prevBlue._lineLayer == 0) ||
+                    (n._type == 0 && prevRed != null && (prevRed._cutDirection == 4 || prevRed._cutDirection == 0 || prevRed._cutDirection == 5) && n._lineLayer == 2 && prevRed._lineLayer == 0)) {
+                n._lineLayer = 0;
+            }
+            if ((n._cutDirection == 4 || n._cutDirection == 0 || n._cutDirection == 5) &&
+                    (n._type == 1 && prevBlue != null && (prevBlue._cutDirection == 1 || prevBlue._cutDirection == 6 || prevBlue._cutDirection == 7) && n._lineLayer == 0 && prevBlue._lineLayer == 2) ||
+                    (n._type == 0 && prevRed != null && (prevRed._cutDirection == 1 || prevRed._cutDirection == 6 || prevRed._cutDirection == 7) && n._lineLayer == 0 && prevRed._lineLayer == 2)) {
+                n._lineLayer = 2;
+            }
+
+
+            if (n._type == 1) prevBlue = n;
+            if (n._type == 0) prevRed = n;
+        }
+
+
+        return notes;
     }
 
     /**
