@@ -373,6 +373,7 @@ class Note implements Comparable<Note> {
     }
 
     public boolean isDD(Note previous) {
+        if (UserInterface.ignoreDDs) return false;
         if (previous == null) return false;
         return previous._cutDirection == this._cutDirection
                 || (previous._cutDirection == 6 || previous._cutDirection == 1 || previous._cutDirection == 7) && (this._cutDirection == 6 || this._cutDirection == 1 || this._cutDirection == 7)
