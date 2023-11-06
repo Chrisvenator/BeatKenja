@@ -1,3 +1,8 @@
+import DataManager.CreateAllNecessaryDIRsAndFiles;
+import DataManager.FileManager;
+
+import static DataManager.Parameters.*;
+
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -29,11 +34,11 @@ class CreateAllNecessaryDIRsAndFilesTest {
             }
         }
 
-        File config = new File(UserInterface.CONFIG_FILE_LOCATION);
+        File config = new File(CONFIG_FILE_LOCATION);
         assertTrue(config.exists() && config.isFile());
 
         StringBuilder configContent = new StringBuilder();
-        for (String s : FileManager.readFile(UserInterface.CONFIG_FILE_LOCATION)) configContent.append(s).append("\n");
+        for (String s : FileManager.readFile(CONFIG_FILE_LOCATION)) configContent.append(s).append("\n");
         assertEquals(CreateAllNecessaryDIRsAndFiles.config + "\n", configContent.toString());
     }
 

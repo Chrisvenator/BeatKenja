@@ -1,3 +1,4 @@
+import BeatSaberObjects.Events;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -5,19 +6,19 @@ class EventsTest {
 
     @Test
     void testToString() {
-//        new Events(1, 0, 1);
-//        new Events(1, 0, 1);
-//        new Events(1, 2, 1);
-//        new Events(1, 2, 1);
-//        new Events(1, 3, 2);
-//        new Events(1, 3, 2);
-//        new Events(1, 4, 2);
-//        new Events(1, 4, 2);
-//        new Events(1, 5, 3);
-//        new Events(1, 5, 3);
-//        new Events(1, 6, 3);
-//        new Events(1, 6, 3);
-//        System.out.println("Assertions.assertEquals(" + this.toString() + ",new Events(" + _time + ", " + _type + ", " + _value + ").toString());");
+//        new BeatSaberObjects.Events(1, 0, 1);
+//        new BeatSaberObjects.Events(1, 0, 1);
+//        new BeatSaberObjects.Events(1, 2, 1);
+//        new BeatSaberObjects.Events(1, 2, 1);
+//        new BeatSaberObjects.Events(1, 3, 2);
+//        new BeatSaberObjects.Events(1, 3, 2);
+//        new BeatSaberObjects.Events(1, 4, 2);
+//        new BeatSaberObjects.Events(1, 4, 2);
+//        new BeatSaberObjects.Events(1, 5, 3);
+//        new BeatSaberObjects.Events(1, 5, 3);
+//        new BeatSaberObjects.Events(1, 6, 3);
+//        new BeatSaberObjects.Events(1, 6, 3);
+//        System.out.println("Assertions.assertEquals(" + this.toString() + ",new BeatSaberObjects.Events(" + _time + ", " + _type + ", " + _value + ").toString());");
 
         Assertions.assertEquals("{\"_time\":0.0,\"_type\":0,\"_value\":0}", new Events(0, 0, 0).toString());
         Assertions.assertEquals("{\"_time\":1.0,\"_type\":0,\"_value\":1}", new Events(1, 0, 1).toString());

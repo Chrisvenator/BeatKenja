@@ -1,3 +1,11 @@
+package MapGeneration;
+
+import BeatSaberObjects.BeatSaberMap;
+import BeatSaberObjects.Note;
+import DataManager.FileManager;
+
+import static DataManager.Parameters.*;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,7 +47,7 @@ public class BatchWavToMaps {
             for (File file : files) {
                 if (file.isFile() && (file.getName().contains(".wav"))) {
                     String filename = file.getName().replaceAll(".wav", "");
-                    String destinationFolderPath = out + "/" + filename;
+                    String destinationFolderPath = out + "/[BeatKenja]_" + filename;
 
                     // Disable prints while generating the map to avoid console spam
                     if (verbose) System.setOut(printStream);
@@ -67,7 +75,7 @@ public class BatchWavToMaps {
 
     /**
      * Renames all files in the specified input path, removing illegal characters and Japanese Kanji, ensuring file names comply with the naming rules.
-     * If this step isn't done then the python script will throw an error
+     * If this step isn't done, then the python script will throw an error
      *
      * @param inputPath The path where all the .wav files are located.
      */
@@ -80,6 +88,11 @@ public class BatchWavToMaps {
             for (File file : files) {
                 if (file.isFile()) {
                     String fileName = file.getName();
+
+                    //Converting the filename to CamelCase:
+                    for (int i = 0; i < fileName.length() - 2; i++)
+                        if (fileName.charAt(i) == ' ') fileName = fileName.substring(0, i) + (String.valueOf(fileName.charAt(i + 1))).toUpperCase() + fileName.substring(i + 2);
+
                     String sanitizedFileName = "";
                     if (file.getName().contains(".wav")) {
                         sanitizedFileName = fileName
@@ -139,7 +152,7 @@ public class BatchWavToMaps {
 
     /**
      * This function executes the python script ConvertSong.
-     * It converts a mp3 to wav
+     * It converts mp3 to wav
      * !! OGG IS BROKEN !!
      *
      * @param file File that should be converted
@@ -151,9 +164,9 @@ public class BatchWavToMaps {
         try {
             ProcessBuilder processBuilder = new ProcessBuilder(
                     "python",
-                    UserInterface.DEFAULT_ONSET_GENERATION_FOLDER + "ConvertSong.py",
-                    UserInterface.ONSET_GENERATION_FOLDER_PATH_INPUT + file.getName(),
-                    UserInterface.ONSET_GENERATION_FOLDER_PATH_INPUT + file.getName().replace(".mp3", "." + "wav"),
+                    DEFAULT_ONSET_GENERATION_FOLDER + "ConvertSong.py",
+                    ONSET_GENERATION_FOLDER_PATH_INPUT + file.getName(),
+                    ONSET_GENERATION_FOLDER_PATH_INPUT + file.getName().replace(".mp3", "." + "wav"),
                     "wav");
             Process process = processBuilder.start();
 
@@ -190,7 +203,7 @@ public class BatchWavToMaps {
      * @throws InterruptedException If the execution of the Python script is interrupted.
      */
     private static boolean executePythonScript(String filename, File file, String inputPath, String destinationFolderPath) throws IOException, InterruptedException {
-        ProcessBuilder processBuilder = new ProcessBuilder("python", UserInterface.DEFAULT_ONSET_GENERATION_FOLDER + "SongToOnsets.py", inputPath + "/" + file.getName(), "--output", destinationFolderPath + "/" + filename + ".txt");
+        ProcessBuilder processBuilder = new ProcessBuilder("python", DEFAULT_ONSET_GENERATION_FOLDER + "SongToOnsets.py", inputPath + "/" + file.getName(), "--output", destinationFolderPath + "/" + filename + ".txt");
         Process process = processBuilder.start();
 
         int exitCode = process.waitFor();
@@ -222,14 +235,14 @@ public class BatchWavToMaps {
         for (String s : timings) {
 
             float t = Float.parseFloat(s);
-            double beat = t * UserInterface.BPM / 60;
+            double beat = t * BPM / 60;
             System.out.println(beat);
 
             notes.add(new Note((float) beat));
         }
 
         BeatSaberMap map = new BeatSaberMap(notes);
-        if (UserInterface.FIX_PLACEMENTS) map.fixPlacements(UserInterface.PLACEMENT_PRECISION);
+        if (FIX_PLACEMENTS) map.fixPlacements(PLACEMENT_PRECISION);
 
         FileManager.overwriteFile(destinationFolderPath + "/" + "ExpertPlusNoArrows.dat", map.exportAsMap());
     }
@@ -292,7 +305,7 @@ public class BatchWavToMaps {
      * <p>
      * // This NullOutputStream class can be useful in situations where there is a need to suppress or ignore output.
      * // For example, it can be used to prevent certain data from being written to a stream or to suppress unnecessary output during testing or debugging.
-     * required so that the console is not spammed by unnecessary things
+     * Required so that the console is not spammed by unnecessary things
      */
     static class NullOutputStream extends java.io.OutputStream {
         @Override

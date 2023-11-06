@@ -1,3 +1,8 @@
+import BeatSaberObjects.BeatSaberMap;
+import BeatSaberObjects.Note;
+import DataManager.FileManager;
+import MapGeneration.GenerationElements.Pattern;
+import MapGeneration.GenerationElements.PatternProbability;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Test;
 
