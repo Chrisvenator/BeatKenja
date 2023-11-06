@@ -35,13 +35,11 @@ public class CustomWaveGenerator {
         }
 
         // Find the two peaks that x is between
-        for (int i = 0, fails = 0; i < peaks.size() - 2; i += 2, fails++) {
+        for (int i = 0; i < peaks.size() - 2; i += 2) {
             double x1 = peaks.get(i);
             double y1 = peaks.get(i + 1);
             double x2 = peaks.get(i + 2);
             double y2 = peaks.get(i + 3);
-
-
 
             if (x >= x1 && x <= x2) {
                 // Interpolate between the two peaks
