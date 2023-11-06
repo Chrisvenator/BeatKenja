@@ -1,3 +1,17 @@
+package UserInterface;
+
+import BeatSaberObjects.BeatSaberMap;
+import BeatSaberObjects.Events;
+import BeatSaberObjects.Note;
+import BeatSaberObjects.Obstacle;
+import DataManager.CreateAllNecessaryDIRsAndFiles;
+import DataManager.FileManager;
+import MapGeneration.BatchWavToMaps;
+import MapGeneration.CreatePatterns;
+import MapGeneration.GenerationElements.Pattern;
+
+import static DataManager.Parameters.*;
+
 import com.google.gson.Gson;
 
 import javax.swing.*;
@@ -12,54 +26,15 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+@SuppressWarnings("ALL")
 public class UserInterface extends JFrame {
 
-    //Variables:
-    public static long SEED = 133742069;
-    public static Random RANDOM = new Random(SEED);
-    public static String filePath;
     private BeatSaberMap map;
     private Pattern pattern;
 
-    //config.txt:
-    public static boolean verbose = true; //For debugging purposes. It prints EVERYTHING
-    public static String DEFAULT_PATH = "C:/Program Files (x86)/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels";
-    public static boolean darkMode = false;
-    public static boolean saveNewMapsToDefaultPath = true;
-    public static boolean ignoreDDs = false;
-
-    //Note Generator settings:
-    public static final double BPM = 120;
-    public static final double PLACEMENT_PRECISION = (double) 1 / 32; //Placement Precision
-    public static final boolean FIX_PLACEMENTS = true; //should the timings be fixed so that SS doesn't flag it as AI made?
-
-    //try to load the config. If it doesn't exist then use the default values
-    static {
-        try {
-            loadConfig();
-        } catch (Exception e) {
-            System.err.println("Couldn't find config.txt. Is it created yet? Using default values...");
-        }
-    }
-
-    //General Config:
-    public static final String CONFIG_FILE_LOCATION = "./config.txt";
-    public static final String README_FILE_LOCATION = "README.md";
-    public static final String DEFAULT_PATTERN_TEMPLATE_FOLDER = "./MapTemplates/";
-    public static final String DEFAULT_PATTERN_TEMPLATE = "./MapTemplates/Template--ISeeFire.txt";
-    public static final String DEFAULT_ONSET_GENERATION_FOLDER = "./OnsetGeneration/";
-    public static final String ONSET_GENERATION_FOLDER_PATH_INPUT = "./OnsetGeneration/mp3Files/";
-    public static final String ONSET_GENERATION_FOLDER_PATH_OUTPUT = saveNewMapsToDefaultPath ? DEFAULT_PATH : "./OnsetGeneration/output/";
-    public static final String DEFAULT_SEQUENCE_TEMPLATE_FOLDER = "./Patterns/";
-    public static final String DEFAULT_EXPORT_PATH = "./";
-    public static final Color lightModeBackgroundColor = Color.white;
-    public static final Color lightModeForegroundColor = Color.BLACK;
-    public static final Color darkModeBackgroundColor = Color.darkGray;
-    public static final Color darkModeForegroundColor = Color.white;
-    public static final String mapViewerURL = "https://skystudioapps.com/bs-viewer/"; //https://skystudioapps.com/bs-viewer/  or  https://skystudioapps.com/bs-viewer/
 
     //GUI:
-    private final UIElements uiElements;
+
     private final JLabel labelMapDiff;
     private final JButton openMapButton;
     private final JButton openSongButton;
@@ -72,20 +47,8 @@ public class UserInterface extends JFrame {
     private final ByteArrayOutputStream OUTPUT_STREAM = new ByteArrayOutputStream();
     private final PrintStream ERROR_PRINT_STREAM = new PrintStream(OUTPUT_STREAM);
 
-    public static void main(String[] args) {
-        UserInterface.SEED = (long) (new Random().nextDouble() * 1000000000);
-        RANDOM = new Random(SEED);
-        System.out.println("Current seed is: " + SEED);
-
-
-        CreateAllNecessaryDIRsAndFiles.createAllNecessaryDIRsAndFiles();
-
-        UserInterface ui = new UserInterface();
-        ui.setVisible(true);
-    }
-
     public UserInterface() {
-
+        final UIElements uiElements;
 
         //loading config:
         loadConfig();
@@ -102,6 +65,7 @@ public class UserInterface extends JFrame {
         labelMapDiff = uiElements.labelMapDiff();
         openMapButton = uiElements.openMapButton();
         openSongButton = uiElements.openSongButton();
+        JButton openSongFolderButton = uiElements.openSongFolderButton();
         statusCheck = uiElements.statusTextArea();
 
         JButton saveMap = uiElements.saveMapButton();
@@ -144,6 +108,13 @@ public class UserInterface extends JFrame {
         //global
         openMapButton.addActionListener(e -> loadMap());
         openSongButton.addActionListener(e -> convertMp3ToMap());
+        openSongFolderButton.addActionListener(e -> {
+            try {
+                Desktop.getDesktop().open(new File(ONSET_GENERATION_FOLDER_PATH_INPUT));
+            } catch (IOException ex) {
+                statusCheck.append("\n[ERROR]: Couldn't open the folder: " + ONSET_GENERATION_FOLDER_PATH_INPUT);
+            }
+        });
         statusCheck.setText(statusCheck.getText() + "config: \nverbose: " + verbose + "\npath: " + DEFAULT_PATH + "\ndark mode:" + darkMode + "\nsave new maps to WIP folder (default path): " + saveNewMapsToDefaultPath + "\n\n");
         saveMap.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser(filePath);
@@ -217,7 +188,7 @@ public class UserInterface extends JFrame {
         });
         ignoreDDsCheckBox.addActionListener(e -> {
             ignoreDDs = ignoreDDsCheckBox.isSelected();
-            UserInterface.ignoreDDs = ignoreDDsCheckBox.isSelected();
+            ignoreDDs = ignoreDDsCheckBox.isSelected();
             statusCheck.setText(statusCheck.getText() + "\n[INFO]: ignore DDs: " + ignoreDDs);
         });
         openMapInBrowser.addActionListener(e -> {
@@ -708,9 +679,9 @@ public class UserInterface extends JFrame {
                 if (s.contains("defaultPath")) DEFAULT_PATH = splits[1] + ":" + splits[2];
                 if (s.contains("defaultPath") && s.contains("//")) DEFAULT_PATH = splits[1] + ":" + splits[2].substring(0, splits[2].indexOf("//"));
             }
-            UserInterface.verbose = config.toString().contains("verbose:true");
-            UserInterface.darkMode = config.toString().contains("dark-mode:true");
-            UserInterface.saveNewMapsToDefaultPath = config.toString().contains("save_new_maps_to_default_path:true") && new File(DEFAULT_PATH).exists() && new File(DEFAULT_PATH).isDirectory();
+            verbose = config.toString().contains("verbose:true");
+            darkMode = config.toString().contains("dark-mode:true");
+            saveNewMapsToDefaultPath = config.toString().contains("save_new_maps_to_default_path:true") && new File(DEFAULT_PATH).exists() && new File(DEFAULT_PATH).isDirectory();
         }
     }
 }

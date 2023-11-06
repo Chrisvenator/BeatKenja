@@ -1,3 +1,9 @@
+package UserInterface;
+
+import DataManager.CreateAllNecessaryDIRsAndFiles;
+import DataManager.Parameters;
+import static DataManager.Parameters.*;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -20,8 +26,8 @@ public class UIElements {
         userInterface.setTitle("Beat Kenja");
         userInterface.setSize(1200, 800);
         userInterface.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        if (darkMode) userInterface.getContentPane().setBackground(UserInterface.darkModeBackgroundColor);
-        if (darkMode) userInterface.getContentPane().setForeground(UserInterface.darkModeForegroundColor);
+        if (darkMode) userInterface.getContentPane().setBackground(darkModeBackgroundColor);
+        if (darkMode) userInterface.getContentPane().setForeground(darkModeForegroundColor);
         userInterface.setLayout(null);
     }
 
@@ -35,7 +41,7 @@ public class UIElements {
     }
 
     public JButton saveMapButton() {
-        JButton saveMap = new JButton("SAVE MAP");
+        JButton saveMap = new JButton("SAVE MAP AS");
         saveMap.setBounds(750, 50, 150, 50);
         saveMap.setBackground(Color.green);
         saveMap.setVisible(false);
@@ -51,7 +57,7 @@ public class UIElements {
         if (darkMode) seedLabel.setForeground(Color.white);
         userInterface.add(seedLabel);
 
-        TextField seedFrame = new TextField(String.valueOf(UserInterface.SEED));
+        TextField seedFrame = new TextField(String.valueOf(Parameters.SEED));
         seedFrame.setBounds(1000, 20, 100, 20);
         if (darkMode) seedFrame.setBackground(Color.black);
         if (darkMode) seedFrame.setForeground(Color.white);
@@ -60,7 +66,7 @@ public class UIElements {
         return seedFrame;
     }
 
-    public JCheckBox ignoreDDsCheckbox(){
+    public JCheckBox ignoreDDsCheckbox() {
         JCheckBox ignoreDDsCheckbox = new JCheckBox("Ignore DDs");
         ignoreDDsCheckbox.setBounds(957, 45, 100, 20);
         if (darkMode) ignoreDDsCheckbox.setForeground(Color.white);
@@ -69,7 +75,7 @@ public class UIElements {
         return ignoreDDsCheckbox;
     }
 
-    public JButton openMapInBrowser(){
+    public JButton openMapInBrowser() {
         JButton openMapInBrowser = new JButton("Open Map in Browser");
         openMapInBrowser.setBounds(975, 70, 150, 50);
         openMapInBrowser.setBackground(Color.gray);
@@ -97,6 +103,16 @@ public class UIElements {
         userInterface.add(openSongButton);
 
         return openSongButton;
+    }
+
+    public JButton openSongFolderButton() {
+        JButton openSongFolderButton = new JButton("open folder");
+        openSongFolderButton.setBounds(705, 22, 110, 26);
+        openSongFolderButton.setBackground(darkMode ? new Color(175, 140, 59) : new Color(255, 212, 123));
+        openSongFolderButton.setVisible(true);
+        userInterface.add(openSongFolderButton);
+
+        return openSongFolderButton;
     }
 
     public TextArea statusTextArea() {
@@ -301,7 +317,6 @@ public class UIElements {
 
         return loadPatternButton;
     }
-
 
 
 }

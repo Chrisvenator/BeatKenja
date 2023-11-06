@@ -1,4 +1,9 @@
+package BeatSaberObjects;
+
 import com.google.gson.Gson;
+
+import static DataManager.Parameters.*;
+
 
 import java.util.*;
 
@@ -16,13 +21,13 @@ import java.util.*;
     |---|---|---|---|       |---|---|---|
      */
 
-class BeatSaberMap {
+public class BeatSaberMap {
     public String originalJSON;
-    protected String _version = "2.2.0";
-    protected Events[] _events;
-    protected Note[] _notes;
-    protected Obstacle[] _obstacles;
-    protected List<Bookmark> bookmarks;
+    public String _version = "2.2.0";
+    public Events[] _events;
+    public Note[] _notes;
+    public Obstacle[] _obstacles;
+    public List<Bookmark> bookmarks;
     //    private CustomData[] customData; // not working yet
 
     public BeatSaberMap(Note[] notes) {
@@ -49,7 +54,7 @@ class BeatSaberMap {
         for (Note n : _notes) {
             n._cutDirection = 1;
             if (n._lineLayer == 2) {
-                float random = UserInterface.RANDOM.nextFloat() * 100;
+                float random = RANDOM.nextFloat() * 100;
                 if (random < 10) n._lineLayer = 2;
                 if (random < 45) {
                     n._lineLayer = 1;
@@ -84,7 +89,7 @@ class BeatSaberMap {
         this._notes = notes.toArray(new Note[0]);
     }
 
-    //Make the note timing divisible by 64 so that is not being flagged by ScoreSaber as "unsure"
+    //Make the note timing divisible by 64, so ScoreSaber is not flagging that as "unsure".
     public void fixPlacements(double precision) {
         for (Note n : _notes) {
             n._time = (float) Math.round(n._time / precision) * (float) precision;
@@ -119,7 +124,7 @@ class BeatSaberMap {
         json += "\"_waypoints\":[]";
         if (bookmarks != null && bookmarks.size() > 0) {
             json += ",\"_customData\":{";
-            json += "\"_bookmarks\":" + bookmarks.toString();
+            json += "\"_bookmarks\":" + bookmarks;
             json += "}";
         }
         json += "}";
@@ -167,7 +172,7 @@ class BeatSaberMap {
         }
     }
 
-    //This function is only here to make the List in a List into a one dimensional array, so that it is compatible with
+    //This function is only here to make the List in a List into a one-dimensional array, so that it is compatible with
     //the other functions
     public void toTimingNotes() {
 
@@ -188,7 +193,7 @@ class BeatSaberMap {
      * as a dot on the leftmost lane.
      * If there are more notes on the same beat, then the notes are being converted into stacks
      * Red Notes are only created if there is a blue and a red note on the same beat. They are saved on the second lane
-     * Note that there can only be a maximum of 6 Notes in one Beat or else the script will not create a 7th note;
+     * BeatSaberObjects.Note that there can only be a maximum of six Notes in one Beat or else the script will not create a 7th note;
      *
      * @param notes The notes of the map
      * @return A List of all Notes. If there are more notes on the same beat, then they are being saved in a List inside the List
@@ -224,17 +229,13 @@ class BeatSaberMap {
             }
         }
 
-        //when there is only one red note, the we will be converting this red note into a blue one.
-        // (It makes copying someone else's map way harder)
+        //When there is only one red note, then we will be converting this red note into a blue one.
+        // (It makes copying someone else's map way harder.)
         for (List<Note> l : timings) {
             if (l.size() == 1) {
                 l.get(0)._lineIndex = 0;
                 l.get(0)._type = 1;
             }
-//            for (Note n : l) { //for debugging purposes
-//                System.out.println("Note:" + n.toString().replaceAll("\n", ""));
-//            }
-//            System.out.println("");
         }
         return timings;
     }
@@ -322,261 +323,9 @@ class BeatSaberMap {
     |---|---|---|---|       |---|---|---|
      */
 
-class Note implements Comparable<Note> {
-    protected float _time;
-    protected int _lineIndex;
-    protected int _lineLayer;
-    protected int _type;
-    protected int _cutDirection;
-    protected int amountOfStackedNotes = 0;
-
-    public Note(float time) {
-        this._time = time;
-        this._lineIndex = 0;
-        this._lineLayer = 0;
-        this._type = 1;
-        this._cutDirection = 8;
-    }
-
-    public Note(float time, int lineIndex, int lineLayer, int type, int cutDirection) {
-        this._time = time;
-        this._lineIndex = lineIndex;
-        this._lineLayer = lineLayer;
-        this._type = type;
-        this._cutDirection = cutDirection;
-    }
-
-    public Note(Note n) {
-        this._time = n._time;
-        this._lineIndex = n._lineIndex;
-        this._lineLayer = n._lineLayer;
-        this._type = n._type;
-        this._cutDirection = n._cutDirection;
-        this.amountOfStackedNotes = n.amountOfStackedNotes;
-    }
 
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || o.getClass() != Note.class && o.getClass() != TimingNote.class) return false;
-
-        Note note;
-        if (o.getClass() == TimingNote.class) {
-            note = (TimingNote) o;
-            System.out.println(Float.compare(note._time, _time) == 0);
-            return Float.compare(note._time, _time) == 0;
-        } else {
-            note = (Note) o;
-            return Float.compare(note._time, _time) == 0 && _lineIndex == note._lineIndex && _lineLayer == note._lineLayer && _type == note._type && _cutDirection == note._cutDirection;
-        }
-    }
-
-    public boolean isDD(Note previous) {
-        if (UserInterface.ignoreDDs) return false;
-        if (previous == null) return false;
-        return previous._cutDirection == this._cutDirection
-                || (previous._cutDirection == 6 || previous._cutDirection == 1 || previous._cutDirection == 7) && (this._cutDirection == 6 || this._cutDirection == 1 || this._cutDirection == 7)
-                || (previous._cutDirection == 7 || previous._cutDirection == 3 || previous._cutDirection == 5) && (this._cutDirection == 7 || this._cutDirection == 3 || this._cutDirection == 5)
-                || (previous._cutDirection == 4 || previous._cutDirection == 0 || previous._cutDirection == 5) && (this._cutDirection == 4 || this._cutDirection == 0 || this._cutDirection == 5)
-                || (previous._cutDirection == 4 || previous._cutDirection == 2 || previous._cutDirection == 6) && (this._cutDirection == 4 || this._cutDirection == 2 || this._cutDirection == 6);
-    }
-
-    public boolean equalPlacement(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Note note = (Note) o;
-
-        return _lineIndex == note._lineIndex && _lineLayer == note._lineLayer && _type == note._type && _cutDirection == note._cutDirection;
-    }
-
-    public boolean equalNotePlacement(Note note) {
-        return _lineIndex == note._lineIndex && _lineLayer == note._lineLayer;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(_time, _lineIndex, _lineLayer, _type, _cutDirection);
-    }
-
-    /*
-    Red: 0
-    Blue: 1
-
-    Layer - Index:          Cut direction:
-    |---|---|---|---|       |---|---|---|
-    |   |   |   |3-2|       | 4 | 0 | 5 |
-    |---|---|---|---|       |---|---|---|
-    |   |   |   |3-1|       | 2 | 8 | 3 |
-    |---|---|---|---|       |---|---|---|
-    |0-0|1-0|2-0|3-0|       | 6 | 1 | 7 |
-    |---|---|---|---|       |---|---|---|
-     */
-
-    @Override
-    public String toString() {
-        return "{" + "\"_time\":" + _time + ",\"_lineIndex\":" + _lineIndex + ",\"_lineLayer\":" + _lineLayer + ",\"_type\":" + _type + ",\"_cutDirection\":" + _cutDirection + "}\n";
-    }
-
-    public Note invertNote() {
-        invertColor();
-        invertLineIndex();
-        invertNoteRotation();
-
-        return this;
-    }
-
-    public Note getInvertedNote() {
-        Note n = new Note(_time, _lineIndex, _lineLayer, _type, _cutDirection);
-        n.invertNote();
-        return n;
-    }
-
-    public void invertColor() {
-        if (_type == 0) _type = 1;
-        else if (_type == 1) _type = 0;
-    }
-
-    public void invertLineIndex() {
-        if (_lineIndex == 0) _lineIndex = 3;
-        else if (_lineIndex == 1) _lineIndex = 2;
-        else if (_lineIndex == 2) _lineIndex = 1;
-        else if (_lineIndex == 3) _lineIndex = 0;
-    }
-
-    public void invertNoteRotation() {
-        if (_cutDirection == 2) _cutDirection = 3;
-        else if (_cutDirection == 3) _cutDirection = 2;
-        else if (_cutDirection == 4) _cutDirection = 5;
-        else if (_cutDirection == 5) _cutDirection = 4;
-        else if (_cutDirection == 6) _cutDirection = 7;
-        else if (_cutDirection == 7) _cutDirection = 6;
-    }
-
-    public Note getInverted() {
-        invertNote();
-        Note n = new Note(_time, _lineIndex, _lineLayer, _type, _cutDirection);
-        invertNote();
-        return n;
-    }
-
-    public Note[] createStackedNote() {
-        if (amountOfStackedNotes == 0) return new Note[]{this};
-
-        List<Note> notes = new ArrayList<>();
-        switch (_cutDirection) {
-            case 0, 1 -> {
-                if (_lineIndex == 2) {
-                    notes.add(new Note(_time, _lineIndex, 0, _type, _cutDirection));
-                    notes.add(new Note(_time, _lineIndex, 2, _type, _cutDirection));
-                } else if (_lineIndex == 3) {
-                    if (amountOfStackedNotes >= 3) notes.add(new Note(_time, _lineIndex, 0, _type, _cutDirection));
-                    notes.add(new Note(_time, _lineIndex, 1, _type, _cutDirection));
-                    notes.add(new Note(_time, _lineIndex, 2, _type, _cutDirection));
-                } else notes.add(new Note(this._time, this._lineIndex, this._lineLayer, this._type, this._cutDirection));
-            }
-            case 5, 6 -> {
-                notes.add(new Note(_time, 2, 0, _type, _cutDirection));
-                notes.add(new Note(_time, 3, 1, _type, _cutDirection));
-            }
-            case 2, 3, 4, 7, 8 -> notes.add(new Note(this._time, this._lineIndex, this._lineLayer, this._type, this._cutDirection));
-        }
-
-        return notes.toArray(new Note[0]);
-    }
-
-    @Override
-    public int compareTo(Note o) {
-        return Float.compare(this._time, o._time);
-    }
 
 
-}
 
-class TimingNote extends Note {
-    public TimingNote(float time) {
-        super(time);
-    }
-}
 
-    /*
-    Red: 0
-    Blue: 1
-
-    Layer - Index:          Cut direction:
-    |---|---|---|---|       |---|---|---|
-    |   |   |   |3-2|       | 4 | 0 | 5 |
-    |---|---|---|---|       |---|---|---|
-    |   |   |   |3-1|       | 2 | 8 | 3 |
-    |---|---|---|---|       |---|---|---|
-    |0-0|1-0|2-0|3-0|       | 6 | 1 | 7 |
-    |---|---|---|---|       |---|---|---|
-     */
-
-class Obstacle {
-    protected float _time;
-    protected String _lineIndex;
-    protected int _type;
-    protected float _duration;
-    protected float _width;
-
-    public Obstacle(float _time, String _lineIndex, int _type, float _duration, float _width) {
-        this._time = _time;
-        this._lineIndex = _lineIndex;
-        this._type = _type;
-        this._duration = _duration;
-        this._width = _width;
-    }
-
-    @Override
-    public String toString() {
-        return "{\"_time\":" + _time + ",\"_lineIndex\":" + _lineIndex + ",\"_type\":" + _type + ",\"_duration\":" + _duration + ",\"_width\":" + _width + "}";
-    }
-}
-
-class Events {
-    protected float _time;
-    protected int _type;
-    protected int _value;
-
-    public Events(float _time, int _type, int _value) {
-        this._time = _time;
-        this._type = _type;
-        this._value = _value;
-    }
-
-    @Override
-    public String toString() {
-        return "{\"_time\":" + _time + ",\"_type\":" + _type + ",\"_value\":" + _value + "}";
-    }
-
-    public void convertFlashLightsToOnLights() {
-        if (_value == 6) _value = 1;
-    }
-}
-
-class Bookmark {
-    protected float _time;
-    protected String _name;
-    protected float[] _color;
-
-    public Bookmark(float _time, String _name, float[] _color) {
-        this._time = _time;
-        this._name = _name;
-        this._color = _color;
-    }
-
-    @Override
-    public String toString() {
-        return "{\"_time\":" + _time + ",\"_name\":\"" + _name + "\",\"_color\":" + Arrays.toString(_color) + "}";
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj.getClass() != this.getClass()) return false;
-        Bookmark b = (Bookmark) obj;
-
-        return b._time == this._time && Objects.equals(b._name, this._name);
-    }
-}

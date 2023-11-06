@@ -1,3 +1,13 @@
+package MapGeneration;
+
+import BeatSaberObjects.*;
+import DataManager.FileManager;
+import DataManager.Parameters;
+import MapGeneration.GenerationElements.Pattern;
+import MapGeneration.GenerationElements.PatternProbability;
+import MapGeneration.GenerationElements.Sequence;
+import static DataManager.Parameters.*;
+
 import com.google.gson.Gson;
 
 import java.nio.file.NoSuchFileException;
@@ -22,9 +32,9 @@ public class CreatePatterns {
         Pattern p = new Pattern(patterns._notes, 1);
         timings.toBlueLeftBottomRowDotTimings();
 
-//        System.out.println(new BeatSaberMap(complexPatternFromTemplate(timings._notes, p, true, null, null)).exportAsMap());
-//        System.out.println(new BeatSaberMap(linearSlowPattern(timings._notes)).exportAsMap());
-//        System.out.println(new BeatSaberMap(twoRightOneLeft(timings._notes, p, null, null, true)).exportAsMap());
+//        System.out.println(new BeatSaberObjects.BeatSaberMap(complexPatternFromTemplate(timings._notes, p, true, null, null)).exportAsMap());
+//        System.out.println(new BeatSaberObjects.BeatSaberMap(linearSlowPattern(timings._notes)).exportAsMap());
+//        System.out.println(new BeatSaberObjects.BeatSaberMap(twoRightOneLeft(timings._notes, p, null, null, true)).exportAsMap());
 
         System.out.println("Creating map... ");
         BeatSaberMap b = createMap(timings, p, false, false);
@@ -53,7 +63,7 @@ public class CreatePatterns {
      */
 
     /**
-     * This function creates a BeatSaberMap from a timings-map.
+     * This function creates a BeatSaberObjects.BeatSaberMap from a timings-map.
      *
      * @param map       the map that should be m
      * @param p         input patterns. This is used to calculate the probabilities of the complex patterns
@@ -70,7 +80,7 @@ public class CreatePatterns {
         if (oneHanded)
             return new BeatSaberMap(complexPatternFromTemplate(map._notes, p, true, stacks, null, null), map.originalJSON);
         if (bookmarks.size() == 0) {
-            Random random = new Random(UserInterface.SEED);
+            Random random = new Random(Parameters.SEED);
             int min = 10;
             int max = 40;
 
@@ -79,7 +89,7 @@ public class CreatePatterns {
                 bookmarks.add(new Bookmark(timings.get(i * (int) (timings.size() / randomNumber))._time, supportedTypes[random.nextInt(supportedTypes.length - 1)], null));
                 if (bookmarks.get(bookmarks.size() - 1)._name.contains("jumps")) i--;
             }
-//            return new BeatSaberMap(complexPatternFromTemplate(map._notes, p, oneHanded, stacks, null, null), map.originalJSON);
+//            return new BeatSaberObjects.BeatSaberMap(complexPatternFromTemplate(map._notes, p, oneHanded, stacks, null, null), map.originalJSON);
         }
         bookmarks.add(new Bookmark(timings.get(timings.size() - 1)._time + 10, "end", new float[]{(float) 0.0, (float) 0.0, (float) 0.0}));
 
@@ -140,7 +150,23 @@ public class CreatePatterns {
         }
 
         checkForMappingErrors(notes, false);
+
+        checkIfEveryNoteIsPlaced(notes, timings);
+
         return new BeatSaberMap(notes, map.originalJSON);
+    }
+
+    private static void checkIfEveryNoteIsPlaced(List<Note> notes, List<Note> timings) {
+        for (Note timing : timings) {
+            boolean found = false;
+            for (Note note : notes) {
+                if (note._time == timing._time) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) System.err.println("BeatSaberObjects.Note at " + timing._time + " was not placed!");
+        }
     }
 
     /**
@@ -152,11 +178,11 @@ public class CreatePatterns {
      */
     public static List<Note> createRandomPattern(Note[] timings, boolean oneHanded) {
         List<Note> notes = new ArrayList<>();
-        Random random = new Random(UserInterface.SEED);
+        Random random = new Random(Parameters.SEED);
 
         double bpm = 120;
         try {
-            List<String> list = FileManager.readFile(UserInterface.filePath + "/info.dat");
+            List<String> list = FileManager.readFile(Parameters.filePath + "/info.dat");
             for (String s : list) {
                 if (s.contains("\"_beatsPerMinute\" : ")) {
                     bpm = Double.parseDouble(s.substring(s.indexOf(":") + 1, s.indexOf(",")));
@@ -187,7 +213,7 @@ public class CreatePatterns {
                 }
             }
 
-            if (!UserInterface.ignoreDDs && i >= 1 && n.isDD(notes.get(i - 1))) {
+            if (!ignoreDDs && i >= 1 && n.isDD(notes.get(i - 1))) {
                 i--;
             } else notes.add(n);
         }
@@ -220,7 +246,7 @@ public class CreatePatterns {
 
         Note timingTemp = timings[0];
 
-        if (firstBlue != null && prevBlue != null && prevBlue.isDD(firstBlue) && !UserInterface.ignoreDDs) {
+        if (firstBlue != null && prevBlue != null && prevBlue.isDD(firstBlue) && !ignoreDDs) {
 //            int pos = sequence.getPosition(firstBlue);
             prevBlue = nextLinearNote(prevBlue, timings[0]._time);
             pattern.add(prevBlue);
@@ -279,18 +305,18 @@ public class CreatePatterns {
         int invalidPlacementsInARow = 0;
         for (int i = 1; i < timings.length; i++) {
             // ERROR handling:
-            // Try 100 times to place a normal note. If this doesn't work, then place a Timing-Note.
+            // Try 100 times to place a normal note. If this doesn't work, then place a Timing-BeatSaberObjects.Note.
             // If this still doesn't work, then throw an exception
             if (i >= 4 && invalidPlacementsInARow >= 100) {
-                System.err.println("_ERROR at beat:   " + timings[i]._time + " Timing Note");
+                System.err.println("_ERROR at beat:   " + timings[i]._time + " Timing BeatSaberObjects.Note");
                 Note errorNote = new TimingNote(timings[i]._time);
-                notes.add(errorNote); //Adding blue Note
-                notes.add(errorNote); //Adding red Note
+                notes.add(errorNote); //Adding blue BeatSaberObjects.Note
+                notes.add(errorNote); //Adding red BeatSaberObjects.Note
                 invalidPlacementsInARow = 0;
                 continue;
             } else if (invalidPlacementsInARow >= 500)
                 throw new IllegalArgumentException("Infinite Loop while creating map! Please try again. (Error occured in \"doubles\"");
-            //Place a Note that doesn't break parity after the error:
+            //Place a BeatSaberObjects.Note that doesn't break parity after the error:
             if (i >= 1 && notes.get(notes.size() - 1)._cutDirection == 8) {
                 notes.add(nextNoteAfterTimingNote(notes.toArray(notes.toArray(new Note[0])), timings[i]._time, notes.size(), 2));
                 notes.add(nextNoteAfterTimingNote(notes.toArray(notes.toArray(new Note[0])), timings[i]._time, notes.size() - 1, 2));
@@ -358,13 +384,13 @@ public class CreatePatterns {
         int invalidPlacementsInARow = 0;
         for (int i = 4; i < timings.length; i += 2) {
             // ERROR handling:
-            // Try 100 times to place a normal note. If this doesn't work, then place a Timing-Note.
+            // Try 100 times to place a normal note. If this doesn't work, then place a Timing-BeatSaberObjects.Note.
             // If this still doesn't work, then throw an exception
-            //Place a Note that doesn't break parity after the error:
+            //Place a BeatSaberObjects.Note that doesn't break parity after the error:
             if (i >= 4 && invalidPlacementsInARow >= 100) {
-                System.err.println("_ERROR at beat:   " + timings[i]._time + " Timing Note");
+                System.err.println("_ERROR at beat:   " + timings[i]._time + " Timing BeatSaberObjects.Note");
                 Note errorNote = new TimingNote(timings[i]._time);
-                notes.add(errorNote); //Adding Note
+                notes.add(errorNote); //Adding BeatSaberObjects.Note
                 invalidPlacementsInARow = 0;
                 continue;
             } else if (invalidPlacementsInARow >= 500)
@@ -407,10 +433,10 @@ public class CreatePatterns {
     }
 
     /**
-     * This methode creates a pattern on basis of the original Pattern.
+     * This methode creates a pattern on basis of the original MapGeneration.GenerationElements.Pattern.
      *
      * @param timings   where the notes should be placed
-     * @param p         p are the probabilities that which note follows which. It must be in the "Pattern"-Format
+     * @param p         p are the probabilities that which note follows which. It must be in the "MapGeneration.GenerationElements.Pattern"-Format
      * @param oneHanded is the map one handed?
      * @param prevBlue  What the previous blue note was
      * @param prevRed   What the previous red note was
@@ -539,7 +565,7 @@ public class CreatePatterns {
                     blueComplex.get(i)._type,
                     blueComplex.get(i)._cutDirection
             ));
-            if (!UserInterface.ignoreDDs && i >= 1 && notes.get(i).isDD(notes.get(i - 1))) {
+            if (!ignoreDDs && i >= 1 && notes.get(i).isDD(notes.get(i - 1))) {
                 notes.remove(i);
                 i--;
             }
@@ -554,7 +580,7 @@ public class CreatePatterns {
                     redComplex.get(i)._cutDirection
             ));
 
-            if (!UserInterface.ignoreDDs && i >= 1 && notes.get(i).isDD(notes.get(i - 1))) {
+            if (!ignoreDDs && i >= 1 && notes.get(i).isDD(notes.get(i - 1))) {
                 notes.remove(i);
                 i--;
             }
@@ -595,7 +621,7 @@ public class CreatePatterns {
      * This repeats until the end of timings[] is reached
      *
      * @param timings  where the notes should be placed
-     * @param p        p are the probabilities that which note follows which. It must be in the "Pattern"-Format
+     * @param p        p are the probabilities that which note follows which. It must be in the "MapGeneration.GenerationElements.Pattern"-Format
      * @param prevBlue What the previous blue note was
      * @param prevRed  What the previous red note was
      * @param stacks   should stacks be generated?
@@ -624,11 +650,11 @@ public class CreatePatterns {
         int invalidPlacementsInARow = 0;
         for (int i = 2; i < complexPattern.length; i += 2) {
             // ERROR handling:
-            // Try 100 times to place a normal note. If this doesn't work, then place a Timing-Note.
+            // Try 100 times to place a normal note. If this doesn't work, then place a Timing-BeatSaberObjects.Note.
             // If this still doesn't work, then throw an exception
             if (invalidPlacementsInARow >= 100) {
-                System.err.println("WARN at beat:    " + timings[i]._time + " There may be a mismatched Note");
-//                redNotes.add(new TimingNote(timings[i]._time));
+                System.err.println("WARN at beat:    " + timings[i]._time + " There may be a mismatched BeatSaberObjects.Note");
+//                redNotes.add(new BeatSaberObjects.TimingNote(timings[i]._time));
 
                 if (i % 2 == 0 && prevRed == null) redNotes.add(new Note(complexPattern[i]._time, 2, 0, 1, 0));
                 else if (i % 2 == 1 && prevRed == null) redNotes.add(new Note(complexPattern[i]._time, 2, 0, 1, 1));
@@ -643,7 +669,7 @@ public class CreatePatterns {
 //            else if (invalidPlacementsInARow >= 500)
 //                throw new IllegalArgumentException("Infinite Loop while creating map! Please try again.(Error occured in \"1-2 or 2-1\")");
 
-            //Place a Note that doesn't break parity after the error:
+            //Place a BeatSaberObjects.Note that doesn't break parity after the error:
             if (redNotes.get(redNotes.size() - 1)._cutDirection == 8) {
                 if (i >= 4) {
                     redNotes.add(nextNoteAfterTimingNote(redNotes.toArray(redNotes.toArray(new Note[0])), timings[i]._time, redNotes.size(), 1));
@@ -698,7 +724,7 @@ public class CreatePatterns {
      * creates a really linear two handed mid-speed pattern
      *
      * @param timings where the notes should be placed
-     * @return Note []
+     * @return BeatSaberObjects.Note []
      */
     public static Note[] linearSlowPattern(Note[] timings, boolean oneHanded, Note prevBlue, Note prevRed) {
 
@@ -928,11 +954,11 @@ public class CreatePatterns {
     }
 
     /**
-     * returns the last Note of type "type" in the list l
+     * returns the last BeatSaberObjects.Note of type "type" in the list l
      *
      * @param l    the list conatining all the notes
      * @param type what type of note should be returned? 0 or 1?
-     * @return the last Note of type "type" in lis l
+     * @return the last BeatSaberObjects.Note of type "type" in lis l
      */
     public static Note getLast(List<Note> l, int type) {
         for (int i = l.size() - 1; i >= 0; i--) {
@@ -959,7 +985,7 @@ public class CreatePatterns {
     }
 
     /**
-     * This function checks the list allNotes if there are 2 or more notes inside one another. If this is true, the red Note
+     * This function checks the list allNotes if there are 2 or more notes inside one another. If this is true, the red BeatSaberObjects.Note
      * will be placed moved one line to the right
      *
      * @param allNotes input List where all the notes have been saved
@@ -989,7 +1015,7 @@ public class CreatePatterns {
             }
 
             if (n._lineIndex < 0 || n._lineIndex >= 4 || n._lineLayer < 0 || n._lineLayer >= 3)
-                if (!quiet) System.err.println("WARNING at beat: " + n._time + " Note outside the grid!");
+                if (!quiet) System.err.println("WARNING at beat: " + n._time + " BeatSaberObjects.Note outside the grid!");
 
         }
 
@@ -997,7 +1023,7 @@ public class CreatePatterns {
         for (int i = 0; i < allNotes.size() - 1; i++) {
             if (allNotes.get(i)._time == allNotes.get(i + 1)._time && allNotes.get(i).equalNotePlacement(allNotes.get(i + 1))) {
                 if (!quiet)
-                    System.err.println("[ERROR] at beat:   " + allNotes.get(i)._time + ": Note inside another Note!");
+                    System.err.println("[ERROR] at beat:   " + allNotes.get(i)._time + ": BeatSaberObjects.Note inside another BeatSaberObjects.Note!");
             }
         }
 
@@ -1012,10 +1038,10 @@ public class CreatePatterns {
      * @param pattern pattern [] is the array, where the previous notes are saved.
      * @param i       i specifies at which element the last note has been placed.
      * @param j       j... If the pattern is one handed: j = 1. If two handed: j = 2.
-     * @return Note
+     * @return BeatSaberObjects.Note
      */
     public static Note endHorizontalPlacements(Note[] pattern, int i, int j) {
-        float random = UserInterface.RANDOM.nextFloat() * 100;
+        float random = RANDOM.nextFloat() * 100;
 //        boolean debug = false;
         int firstHorizontalCutDirection = -1;
         int secondHorizontalCutDirection = -1;
@@ -1036,7 +1062,7 @@ public class CreatePatterns {
         }
 //        if (debug) System.out.println("In a row:   " + horizontalsInARow);
 //        if (debug) System.out.println("Direction:  " + firstHorizontalCutDirection);
-//        if (debug) System.out.println("Note (i):   " + i);
+//        if (debug) System.out.println("BeatSaberObjects.Note (i):   " + i);
 //        if (debug) System.out.println();
 
         if (horizontalsInARow == 0) return null;
@@ -1111,7 +1137,7 @@ public class CreatePatterns {
      * @param time    time specifies on which bpm the note should be placed.
      * @param i       i specifies at which element the last note has been placed.
      * @param j       j... If the pattern is one handed: j = 1. If two handed: j = 2.
-     * @return Note
+     * @return BeatSaberObjects.Note
      */
     public static Note nextNoteAfterTimingNote(Note[] pattern, float time, int i, int j) {
         Note toReturn = firstNotePlacement(time);
@@ -1137,13 +1163,13 @@ public class CreatePatterns {
      *
      * @param pattern this is probability of the patterns from a map saved as the PatternProbability class
      * @param time    time specifies on which bpm the note should be placed.
-     * @return Note
+     * @return BeatSaberObjects.Note
      */
     public static Note predictNextNote(PatternProbability pattern, float time) {
         if (pattern == null || pattern.notes == null) return null;
 
         float currentProbability = 0;
-        double placement = UserInterface.RANDOM.nextDouble() * 100;
+        double placement = RANDOM.nextDouble() * 100;
 
         for (int i = 0; i < pattern.probabilities.length; i++) {
             if (pattern.notes[i] == null || currentProbability > 99) return null;
@@ -1162,11 +1188,11 @@ public class CreatePatterns {
      * If there is no note placed yet, then this function will always generate a down-swing note
      *
      * @param _time time specifies on which bpm the note should be placed.
-     * @return Note
+     * @return BeatSaberObjects.Note
      */
     public static Note firstNotePlacement(float _time) {
         Note n;
-        double placement = UserInterface.RANDOM.nextDouble() * 100;
+        double placement = RANDOM.nextDouble() * 100;
 
         if (placement < 20) n = new Note(_time, 1, 0, 1, 1);
         else if (placement <= 65) n = new Note(_time, 2, 0, 1, 1);
@@ -1181,7 +1207,7 @@ public class CreatePatterns {
      *
      * @param previousNote the note that came before.
      * @param time         time specifies on which bpm the note should be placed.
-     * @return Note
+     * @return BeatSaberObjects.Note
      */
     public static Note nextLinearNote(Note previousNote, float time) {
         Note p = previousNote; //p is much cleaner than having a thousand times previousNote
@@ -1191,13 +1217,13 @@ public class CreatePatterns {
             p = new Note(time, 0, 0, 1, 1);
         }
 
-        double placement = UserInterface.RANDOM.nextDouble() * 100;
+        double placement = RANDOM.nextDouble() * 100;
 
 
         //blue bottom-middle-right lane, down swing
         //2,0,1
         if (p._lineIndex == 2 && p._lineLayer == 0 && p._type != 2 && p._cutDirection == 1) {
-//                if (placement < 10) return new Note(time,3,1,1,3);
+//                if (placement < 10) return new BeatSaberObjects.Note(time,3,1,1,3);
             if (placement < 20) return new Note(time, 3, 1, 1, 5);
             else if (placement < 30) return new Note(time, 3, 2, 1, 0);
             else if (placement < 50) return new Note(time, 3, 2, 1, 5);
@@ -1482,7 +1508,7 @@ public class CreatePatterns {
      * Removes every null element in the array notes[]
      *
      * @param notes notes[] is the array, where the notes are saved.
-     * @return Note [] without nulls
+     * @return BeatSaberObjects.Note [] without nulls
      */
     public static Note[] removeAllNulls(Note[] notes) {
         List<Note> list = new ArrayList<>();

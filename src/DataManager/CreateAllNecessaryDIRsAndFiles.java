@@ -1,26 +1,31 @@
+package DataManager;
+
+import static DataManager.Parameters.*;
+
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class CreateAllNecessaryDIRsAndFiles {
     public static String[] templateFilesToCopy = {
-            UserInterface.DEFAULT_PATTERN_TEMPLATE
+            DEFAULT_PATTERN_TEMPLATE
     };
     public static String[] preMadePatternsFilesToCopy = {
-            UserInterface.DEFAULT_SEQUENCE_TEMPLATE_FOLDER + "jumps.txt",           //Default value: "Patterns/jumps.txt",
-            UserInterface.DEFAULT_SEQUENCE_TEMPLATE_FOLDER + "test.txt",            //Default value: "Patterns/test.txt",
-            UserInterface.DEFAULT_SEQUENCE_TEMPLATE_FOLDER + "umapyoi-test.txt",    //Default value: "Patterns/umapyoi-test.txt",
-            UserInterface.DEFAULT_ONSET_GENERATION_FOLDER + "SongToOnsets.py",      //Default value: "OnsetGeneration/SongToOnsets.py",
-            UserInterface.DEFAULT_ONSET_GENERATION_FOLDER + "ConvertSong.py",       //Default value: "OnsetGeneration/ConvertSong.py",
-            UserInterface.README_FILE_LOCATION                                      //Default value: "README.md"
+            DEFAULT_SEQUENCE_TEMPLATE_FOLDER + "jumps.txt",           //Default value: "Patterns/jumps.txt",
+            DEFAULT_SEQUENCE_TEMPLATE_FOLDER + "test.txt",            //Default value: "Patterns/test.txt",
+            DEFAULT_SEQUENCE_TEMPLATE_FOLDER + "umapyoi-test.txt",    //Default value: "Patterns/umapyoi-test.txt",
+            DEFAULT_ONSET_GENERATION_FOLDER + "SongToOnsets.py",      //Default value: "OnsetGeneration/SongToOnsets.py",
+            DEFAULT_ONSET_GENERATION_FOLDER + "ConvertSong.py",       //Default value: "OnsetGeneration/ConvertSong.py",
+            README_FILE_LOCATION                                      //Default value: "README.md"
     };
 
     public static String[] directories = {
-            UserInterface.DEFAULT_PATTERN_TEMPLATE_FOLDER,
-            UserInterface.DEFAULT_SEQUENCE_TEMPLATE_FOLDER,
-            UserInterface.DEFAULT_ONSET_GENERATION_FOLDER,
-            UserInterface.ONSET_GENERATION_FOLDER_PATH_INPUT,
-            UserInterface.ONSET_GENERATION_FOLDER_PATH_OUTPUT
+            DEFAULT_PATTERN_TEMPLATE_FOLDER,
+            DEFAULT_SEQUENCE_TEMPLATE_FOLDER,
+            DEFAULT_ONSET_GENERATION_FOLDER,
+            ONSET_GENERATION_FOLDER_PATH_INPUT,
+            ONSET_GENERATION_FOLDER_PATH_OUTPUT
     };
 
     public static String config = """
@@ -37,9 +42,9 @@ public class CreateAllNecessaryDIRsAndFiles {
 
         //Checking if the directories exist.
         //If yes, then don't create them again
-        File f1 = new File(UserInterface.DEFAULT_PATTERN_TEMPLATE_FOLDER);  //Default Value: "./MapTemplates"
-        File f2 = new File(UserInterface.DEFAULT_SEQUENCE_TEMPLATE_FOLDER); //Default Value: "./Patterns"
-        File f3 = new File(UserInterface.CONFIG_FILE_LOCATION);             //Default Value: "./config.txt"
+        File f1 = new File(DEFAULT_PATTERN_TEMPLATE_FOLDER);  //Default Value: "./MapTemplates"
+        File f2 = new File(DEFAULT_SEQUENCE_TEMPLATE_FOLDER); //Default Value: "./Patterns"
+        File f3 = new File(CONFIG_FILE_LOCATION);             //Default Value: "./config.txt"
         if (f1.exists() && f1.isDirectory() && f2.exists() && f2.isDirectory() && f3.exists() && f3.isFile()) {
             return;
         }
@@ -58,7 +63,7 @@ public class CreateAllNecessaryDIRsAndFiles {
      */
     private static void createConfigFile() {
 
-        FileManager.overwriteFile(UserInterface.CONFIG_FILE_LOCATION, config);
+        FileManager.overwriteFile(CONFIG_FILE_LOCATION, config);
     }
 
     /**
@@ -94,7 +99,7 @@ public class CreateAllNecessaryDIRsAndFiles {
 
                 if (inputStream != null) {
 
-                    File destinationFile = new File(UserInterface.DEFAULT_EXPORT_PATH + filePathToCopy);
+                    File destinationFile = new File(DEFAULT_EXPORT_PATH + filePathToCopy);
                     destinationFile.getParentFile().mkdirs();
 
                     OutputStream outputStream = new FileOutputStream(destinationFile);
