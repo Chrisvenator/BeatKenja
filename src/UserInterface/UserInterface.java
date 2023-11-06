@@ -1,17 +1,14 @@
 package UserInterface;
 
-import BeatSaberObjects.BeatSaberMap;
-import BeatSaberObjects.Events;
-import BeatSaberObjects.Note;
-import BeatSaberObjects.Obstacle;
-import DataManager.CreateAllNecessaryDIRsAndFiles;
-import DataManager.FileManager;
-import MapGeneration.BatchWavToMaps;
-import MapGeneration.CreatePatterns;
-import MapGeneration.GenerationElements.Pattern;
+import BeatSaberObjects.*;
+import CustomWaveGenerator.*;
+import DataManager.*;
+import MapGeneration.*;
+import MapGeneration.GenerationElements.*;
 
 import static DataManager.Parameters.*;
 
+import UserInterface.Elements.*;
 import com.google.gson.Gson;
 
 import javax.swing.*;
@@ -26,7 +23,6 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-@SuppressWarnings("ALL")
 public class UserInterface extends JFrame {
 
     private BeatSaberMap map;
@@ -48,8 +44,6 @@ public class UserInterface extends JFrame {
     private final PrintStream ERROR_PRINT_STREAM = new PrintStream(OUTPUT_STREAM);
 
     public UserInterface() {
-        final UIElements uiElements;
-
         //loading config:
         loadConfig();
         if (verbose) System.setErr(ERROR_PRINT_STREAM);
@@ -59,7 +53,12 @@ public class UserInterface extends JFrame {
         //////////////////////////////
 
         //Global Elements
-        uiElements = new UIElements(darkMode, this);
+        final UIElements uiElements = new UIElements(darkMode, this);
+        final WaveFunctions waveFunctions = new WaveFunctions(darkMode, this);
+        final MapUtils mapUtilsClass = new MapUtils(darkMode, this);
+        final TimingNoteGenerator timingNoteGenerator = new TimingNoteGenerator(darkMode, this);
+        final MapCreator mapCreator = new MapCreator(darkMode, this);
+
         uiElements.initialize();
 
         labelMapDiff = uiElements.labelMapDiff();
@@ -75,30 +74,33 @@ public class UserInterface extends JFrame {
         JCheckBox ignoreDDsCheckBox = uiElements.ignoreDDsCheckbox();
         JButton openMapInBrowser = uiElements.openMapInBrowser();
 
+        //Wave Generator
+        JButton showWaveFunctions = waveFunctions.showWaveFunctions();
+        JButton waveFunctionsGenerateWave = waveFunctions.WaveFunctionsGenerateWave();
 
         //Map Utilities
-        JButton mapUtils = uiElements.mapUtils();
-        JButton mapUtilsFixPlacements = uiElements.mapUtilsFixPlacements();
-        JTextField fixPlacementTextField = uiElements.fixPlacementTextField(PLACEMENT_PRECISION);
-        JButton mapUtilsMakeOneHanded = uiElements.mapUtilsMakeOneHanded();
-        JTextField makeOneHandDeleteType = uiElements.makeOneHandDeleteType();
-        JButton mapUtilsConvertAllFlashingLight = uiElements.mapUtilsConvertAllFlashingLight();
-        JButton mapUtilsMakeIntoNoArrowMap = uiElements.mapUtilsMakeIntoNoArrowMap();
+        JButton mapUtils = mapUtilsClass.mapUtils();
+        JButton mapUtilsFixPlacements = mapUtilsClass.mapUtilsFixPlacements();
+        JTextField fixPlacementTextField = mapUtilsClass.fixPlacementTextField(PLACEMENT_PRECISION);
+        JButton mapUtilsMakeOneHanded = mapUtilsClass.mapUtilsMakeOneHanded();
+        JTextField makeOneHandDeleteType = mapUtilsClass.makeOneHandDeleteType();
+        JButton mapUtilsConvertAllFlashingLight = mapUtilsClass.mapUtilsConvertAllFlashingLight();
+        JButton mapUtilsMakeIntoNoArrowMap = mapUtilsClass.mapUtilsMakeIntoNoArrowMap();
 
         //Timing Note Generator
-        JButton toTimingNotes = uiElements.toTimingNotes();
-        JButton toBlueOnlyTimingNotes = uiElements.toBlueOnlyTimingNotes();
-        JButton toStackedTimingNotes = uiElements.toStackedTimingNotes();
+        JButton toTimingNotes = timingNoteGenerator.toTimingNotes();
+        JButton toBlueOnlyTimingNotes = timingNoteGenerator.toBlueOnlyTimingNotes();
+        JButton toStackedTimingNotes = timingNoteGenerator.toStackedTimingNotes();
 
         //Map Creator
-        JButton mapCreator = uiElements.mapCreator();
-        JButton mapCreatorCreateMap = uiElements.mapCreatorCreateMap();
-        JButton mapCreatorCreateComplexMap = uiElements.mapCreatorCreateComplexMap();
-        JButton mapCreatorCreateRandomV2Map = uiElements.mapCreatorCreateRandomV2Map();
-        JButton mapCreatorCreateLinearMap = uiElements.mapCreatorCreateLinearMap();
-        JButton mapCreatorCreateBlueLinearMap = uiElements.mapCreatorCreateBlueLinearMap();
-        JButton mapCreatorCreateBlueComplexMap = uiElements.mapCreatorCreateBlueComplexMap();
-        JButton mapCreatorCreateRandomMap = uiElements.mapCreatorCreateRandomMap();
+        JButton showMapCreator = mapCreator.mapCreator();
+        JButton mapCreatorCreateMap = mapCreator.mapCreatorCreateMap();
+        JButton mapCreatorCreateComplexMap = mapCreator.mapCreatorCreateComplexMap();
+        JButton mapCreatorCreateRandomV2Map = mapCreator.mapCreatorCreateRandomV2Map();
+        JButton mapCreatorCreateLinearMap = mapCreator.mapCreatorCreateLinearMap();
+        JButton mapCreatorCreateBlueLinearMap = mapCreator.mapCreatorCreateBlueLinearMap();
+        JButton mapCreatorCreateBlueComplexMap = mapCreator.mapCreatorCreateBlueComplexMap();
+        JButton mapCreatorCreateRandomMap = mapCreator.mapCreatorCreateRandomMap();
 
 
         /////////////////////
@@ -216,24 +218,31 @@ public class UserInterface extends JFrame {
             }
         });
 
-        //Map Utilities
-        mapUtils.addActionListener(e -> {
-            if (mapUtilsFixPlacements.isVisible()) {
-                mapUtilsFixPlacements.setVisible(false);
-                mapUtilsMakeOneHanded.setVisible(false);
-                mapUtilsConvertAllFlashingLight.setVisible(false);
-                fixPlacementTextField.setVisible(false);
-                makeOneHandDeleteType.setVisible(false);
-                mapUtilsMakeIntoNoArrowMap.setVisible(false);
-            } else {
-                mapUtilsFixPlacements.setVisible(true);
-                mapUtilsMakeOneHanded.setVisible(true);
-                mapUtilsConvertAllFlashingLight.setVisible(true);
-                fixPlacementTextField.setVisible(true);
-                makeOneHandDeleteType.setVisible(true);
-                mapUtilsMakeIntoNoArrowMap.setVisible(true);
-            }
+        //Wave Functions
+        showWaveFunctions.addActionListener(e -> waveFunctions.waveFunctionsElements.forEach(element -> element.setVisible(!element.isVisible())));
+        waveFunctionsGenerateWave.addActionListener(e -> {
+
+            CustomWaveGenerator waveGenerator = new CustomWaveGenerator(SEED);
+            List<Coordinate> coordinates = waveGenerator.getCoordinates(Arrays.stream(map._notes).toList());
+
+
+            String ogJson = map.originalJSON;
+            map.toBlueLeftBottomRowDotTimings();
+            map = new BeatSaberMap(CreatePatterns.createMapFromWaves(coordinates));
+            map.originalJSON = ogJson;
+            statusCheck.setText(statusCheck.getText() + "\nMap creation finished");
+            System.out.println("Created Map: " + map.exportAsMap());
+            if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Created Map: " + map.exportAsMap());
+            checkMap();
+
+            SwingUtilities.invokeLater(() -> {
+                WaveVisualizationFrame frame = new WaveVisualizationFrame(coordinates);
+                frame.setVisible(true);
+            });
         });
+
+        //Map Utilities
+        mapUtils.addActionListener(e -> mapUtilsClass.mapUtilsElements.forEach(element -> element.setVisible(!element.isVisible())));
         mapUtilsFixPlacements.addActionListener(e -> {
             map.fixPlacements((double) 1 / Integer.parseInt(fixPlacementTextField.getText().replaceAll("[^\\d.]", "")));
             statusCheck.setText(statusCheck.getText() + "\n[INFO]: Fixed Note Placement with a precision of 1/" + fixPlacementTextField.getText() + " of a beat.");
@@ -262,15 +271,7 @@ public class UserInterface extends JFrame {
         });
 
         //Timing Note Generator
-        toTimingNotes.addActionListener(e -> {
-            if (toBlueOnlyTimingNotes.isVisible()) {
-                toBlueOnlyTimingNotes.setVisible(false);
-                toStackedTimingNotes.setVisible(false);
-            } else {
-                toBlueOnlyTimingNotes.setVisible(true);
-                toStackedTimingNotes.setVisible(true);
-            }
-        });
+        toTimingNotes.addActionListener(e -> timingNoteGenerator.timingNoteGeneratorElements.forEach(element -> element.setVisible(!element.isVisible())));
         toBlueOnlyTimingNotes.addActionListener(e -> {
             map = new BeatSaberMap(map._notes);
             System.out.println("Normal timing notes: " + map.exportAsMap());
@@ -286,16 +287,7 @@ public class UserInterface extends JFrame {
         });
 
         //Map Creator
-        mapCreator.addActionListener(e -> {
-            mapCreatorCreateMap.setVisible(!mapCreatorCreateMap.isVisible());
-            mapCreatorCreateComplexMap.setVisible(!mapCreatorCreateComplexMap.isVisible());
-            mapCreatorCreateLinearMap.setVisible(!mapCreatorCreateLinearMap.isVisible());
-            mapCreatorCreateBlueLinearMap.setVisible(!mapCreatorCreateBlueLinearMap.isVisible());
-            mapCreatorCreateBlueComplexMap.setVisible(!mapCreatorCreateBlueComplexMap.isVisible());
-            mapCreatorCreateRandomMap.setVisible(!mapCreatorCreateRandomMap.isVisible());
-            mapCreatorCreateRandomV2Map.setVisible(!mapCreatorCreateRandomV2Map.isVisible());
-
-        });
+        showMapCreator.addActionListener(e -> mapCreator.mapCreatorElements.forEach(element -> element.setVisible(!element.isVisible())));
         mapCreatorCreateMap.addActionListener(e -> {
             manageMap();
             map.toBlueLeftBottomRowDotTimings();
@@ -481,9 +473,10 @@ public class UserInterface extends JFrame {
                     mapChecks.setVisible(true);
                     mapUtils.setVisible(true);
                     toTimingNotes.setVisible(true);
-                    mapCreator.setVisible(true);
+                    showMapCreator.setVisible(true);
                     saveMap.setVisible(true);
                     openMapInBrowser.setVisible(true);
+                    showWaveFunctions.setVisible(true);
                 }
                 try {
                     Thread.sleep(1000); // Check for changes every second
@@ -618,7 +611,7 @@ public class UserInterface extends JFrame {
     }
 
     public void loadMap() {
-        JFileChooser fileChooser = new JFileChooser(DEFAULT_PATH);
+        JFileChooser fileChooser = new JFileChooser(DEFAULT_PATH.trim());
         if (darkMode) fileChooser.setForeground(Color.white);
         int option = fileChooser.showOpenDialog(this);
 
