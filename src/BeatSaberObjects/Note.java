@@ -22,8 +22,8 @@ Layer - Index:          Cut direction:
  */
 public class Note implements Comparable<Note> {
     public float _time;
-    public int _lineIndex;
-    public int _lineLayer;
+    public double _lineIndex;
+    public double _lineLayer;
     public int _type;
     public int _cutDirection;
     public int amountOfStackedNotes = 0;
@@ -37,6 +37,14 @@ public class Note implements Comparable<Note> {
     }
 
     public Note(float time, int lineIndex, int lineLayer, int type, int cutDirection) {
+        this._time = time;
+        this._lineIndex = lineIndex;
+        this._lineLayer = lineLayer;
+        this._type = type;
+        this._cutDirection = cutDirection;
+    }
+
+    public Note(float time, double lineIndex, double lineLayer, int type, int cutDirection) {
         this._time = time;
         this._lineIndex = lineIndex;
         this._lineLayer = lineLayer;
@@ -113,7 +121,12 @@ public class Note implements Comparable<Note> {
 
     @Override
     public String toString() {
-        return "{" + "\"_time\":" + _time + ",\"_lineIndex\":" + _lineIndex + ",\"_lineLayer\":" + _lineLayer + ",\"_type\":" + _type + ",\"_cutDirection\":" + _cutDirection + "}\n";
+        return "{" + "\"_time\":" + _time +
+                ",\"_lineIndex\":" + (_lineIndex % 10 != 0 ? _lineIndex : (String.valueOf(_lineIndex).substring(0, String.valueOf(_lineIndex).lastIndexOf(".")))) +
+                ",\"_lineLayer\":" + (_lineLayer % 10 != 0 ? _lineLayer : (String.valueOf(_lineLayer).substring(0, String.valueOf(_lineLayer).lastIndexOf(".")))) +
+                ",\"_type\":" + _type +
+                ",\"_cutDirection\":" + _cutDirection +
+                "}\n";
     }
 
     public Note invertNote() {

@@ -50,4 +50,5 @@ public class Parameters {
     public static final Color darkModeBackgroundColor = Color.darkGray;
     public static final Color darkModeForegroundColor = Color.white;
     public static final String mapViewerURL = "https://skystudioapps.com/bs-viewer/"; //https://skystudioapps.com/bs-viewer/  or  https://skystudioapps.com/bs-viewer/
+    public static final int WAVE_NOTE_GENERATION_SAMPLING_POINTS = 1000;
 }
