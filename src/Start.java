@@ -40,22 +40,5 @@ public class Start {
 
         UserInterface ui = new UserInterface();
         ui.setVisible(true);
-
-
-        CustomWaveGenerator waveGenerator = new CustomWaveGenerator(SEED);
-        List<Note> notes = new ArrayList<>();
-        for (int i = 0; i < 10000; i++) {
-            notes.add(new TimingNote(i));
-        }
-        List<Coordinate> coordinates = waveGenerator.getCoordinates(notes);
-        for (Coordinate c : coordinates) {
-            System.out.println(c);
-        }
-
-        SwingUtilities.invokeLater(() -> {
-            WaveVisualizationFrame frame = new WaveVisualizationFrame(coordinates);
-            frame.setVisible(true);
-        });
-
     }
 }

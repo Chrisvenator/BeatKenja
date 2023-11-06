@@ -1,15 +1,15 @@
 package MapGeneration;
 
 import BeatSaberObjects.*;
-import DataManager.FileManager;
-import DataManager.Parameters;
-import MapGeneration.GenerationElements.Pattern;
-import MapGeneration.GenerationElements.PatternProbability;
-import MapGeneration.GenerationElements.Sequence;
+import DataManager.*;
+import MapGeneration.GenerationElements.*;
+import CustomWaveGenerator.*;
+
 import static DataManager.Parameters.*;
 
 import com.google.gson.Gson;
 
+import javax.swing.*;
 import java.nio.file.NoSuchFileException;
 import java.util.*;
 
@@ -154,6 +154,13 @@ public class CreatePatterns {
         checkIfEveryNoteIsPlaced(notes, timings);
 
         return new BeatSaberMap(notes, map.originalJSON);
+    }
+
+    public static List<Note> createMapFromWaves(List<Coordinate> coordinates) {
+        List<Note> notes = new ArrayList<>();
+        coordinates.forEach(c -> notes.add(new Note(c.x(), 0, c.y(), 1, 8)));
+
+        return notes;
     }
 
     private static void checkIfEveryNoteIsPlaced(List<Note> notes, List<Note> timings) {

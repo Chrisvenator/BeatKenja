@@ -1,6 +1,7 @@
 package CustomWaveGenerator;
 
 import BeatSaberObjects.Note;
+import BeatSaberObjects.TimingNote;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,19 +11,28 @@ public class CustomWaveGenerator {
 
     private final List<Double> peaks;
     private final Random random;
-    private double lastPeakX;
+    private double lastPeakX = -1;
 
     public CustomWaveGenerator(long SEED) {
         this.peaks = new ArrayList<>();
         this.random = new Random(SEED);
-        this.lastPeakX = -1;
         addNewPeak();
         addNewPeak();
     }
 
+    public CustomWaveGenerator(long SEED, int points) {
+        this.peaks = new ArrayList<>();
+        this.random = new Random(SEED);
+        addNewPeak();
+        addNewPeak();
+
+        for (int i = 0; i < points; i++) getY(i);
+    }
+
+
     private void addNewPeak() {
         double newY = random.nextDouble() * 3;
-        double newX = lastPeakX + 0.2 + random.nextDouble() * 2; // Ensuring a minimum distance of 10 units and up to 100 units.
+        double newX = lastPeakX + random.nextDouble() / 2; // Ensuring a minimum distance of 10 units and up to 100 units.
         peaks.add(newX);
         peaks.add(newY);
         lastPeakX = newX;
