@@ -1,14 +1,20 @@
 package UserInterface;
 
 import BeatSaberObjects.*;
-import CustomWaveGenerator.*;
 import DataManager.*;
 import MapGeneration.*;
 import MapGeneration.GenerationElements.*;
 
 import static DataManager.Parameters.*;
 
-import UserInterface.Elements.*;
+import UserInterface.Elements.Buttons.*;
+import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.*;
+import UserInterface.Elements.Buttons.ButtonTypes.*;
+import UserInterface.Elements.Buttons.ButtonTypes.MapUtilities.*;
+import UserInterface.Elements.Buttons.ButtonTypes.TimingNoteGenerator.*;
+import UserInterface.Elements.Buttons.ButtonTypes.WaveGeneration.WaveGenerationGenerateWave;
+import UserInterface.Elements.TextFields.*;
+import UserInterface.Elements.TextFields.TextFieldTypes.MapUtils.*;
 import com.google.gson.Gson;
 
 import javax.swing.*;
@@ -25,8 +31,8 @@ import java.util.zip.ZipOutputStream;
 
 public class UserInterface extends JFrame {
 
-    private BeatSaberMap map;
-    private Pattern pattern;
+    public BeatSaberMap map;
+    public Pattern pattern;
 
 
     //GUI:
@@ -39,9 +45,9 @@ public class UserInterface extends JFrame {
 
 
     // Redirect the standard error stream to the custom PrintStream
-    private final PrintStream ORIGINAL_ERR = System.err;
-    private final ByteArrayOutputStream OUTPUT_STREAM = new ByteArrayOutputStream();
-    private final PrintStream ERROR_PRINT_STREAM = new PrintStream(OUTPUT_STREAM);
+    public final PrintStream ORIGINAL_ERR = System.err;
+    public final ByteArrayOutputStream OUTPUT_STREAM = new ByteArrayOutputStream();
+    public final PrintStream ERROR_PRINT_STREAM = new PrintStream(OUTPUT_STREAM);
 
     public UserInterface() {
         //loading config:
@@ -54,10 +60,6 @@ public class UserInterface extends JFrame {
 
         //Global Elements
         final UIElements uiElements = new UIElements(darkMode, this);
-        final WaveFunctions waveFunctions = new WaveFunctions(darkMode, this);
-        final MapUtils mapUtilsClass = new MapUtils(darkMode, this);
-        final TimingNoteGenerator timingNoteGenerator = new TimingNoteGenerator(darkMode, this);
-        final MapCreator mapCreator = new MapCreator(darkMode, this);
 
         uiElements.initialize();
 
@@ -74,34 +76,35 @@ public class UserInterface extends JFrame {
         JCheckBox ignoreDDsCheckBox = uiElements.ignoreDDsCheckbox();
         JButton openMapInBrowser = uiElements.openMapInBrowser();
 
-        //Wave Generator
-        JButton showWaveFunctions = waveFunctions.showWaveFunctions();
-        JButton waveFunctionsGenerateWave = waveFunctions.WaveFunctionsGenerateWave();
+        ///////////////////OBJEKTORIENTIERTE BUTTONS////////////////////////
 
-        //Map Utilities
-        JButton mapUtils = mapUtilsClass.mapUtils();
-        JButton mapUtilsFixPlacements = mapUtilsClass.mapUtilsFixPlacements();
-        JTextField fixPlacementTextField = mapUtilsClass.fixPlacementTextField(PLACEMENT_PRECISION);
-        JButton mapUtilsMakeOneHanded = mapUtilsClass.mapUtilsMakeOneHanded();
-        JTextField makeOneHandDeleteType = mapUtilsClass.makeOneHandDeleteType();
-        JButton mapUtilsConvertAllFlashingLight = mapUtilsClass.mapUtilsConvertAllFlashingLight();
-        JButton mapUtilsMakeIntoNoArrowMap = mapUtilsClass.mapUtilsMakeIntoNoArrowMap();
+        //Map Creator //TODO: Objektorientiert machen
+        MyButton showMapCreatorButton = new MapCreatorButton(this);
+        MyButton createMapButton = new CreateMapButton(showMapCreatorButton);
+        MyButton createComplexMapButton = new CreateComplexMap(showMapCreatorButton);
+        MyButton createRandomV2MapButton = new CreateRandomV2Map(showMapCreatorButton);
+        MyButton createLinearMapButton = new CreateLinearMap(showMapCreatorButton);
+        MyButton createBlueLinearMap = new CreateBlueLinearMap(showMapCreatorButton);
+        MyButton createBlueComplexMap = new CreateBlueComplexMap(showMapCreatorButton);
+        MyButton createRandomMap = new CreateRandomMap(showMapCreatorButton);
 
         //Timing Note Generator
-        JButton toTimingNotes = timingNoteGenerator.toTimingNotes();
-        JButton toBlueOnlyTimingNotes = timingNoteGenerator.toBlueOnlyTimingNotes();
-        JButton toStackedTimingNotes = timingNoteGenerator.toStackedTimingNotes();
+        MyButton toTimingNotes = new ToTimingNotesButton(this);
+        MyButton toBlueOnlyTimingNotes = new ToBlueOnlyTimingNotes(toTimingNotes);
+        MyButton toTwoColorTimingNotes = new ToTwoColorTimingNotes(toTimingNotes);
 
-        //Map Creator
-        JButton showMapCreator = mapCreator.mapCreator();
-        JButton mapCreatorCreateMap = mapCreator.mapCreatorCreateMap();
-        JButton mapCreatorCreateComplexMap = mapCreator.mapCreatorCreateComplexMap();
-        JButton mapCreatorCreateRandomV2Map = mapCreator.mapCreatorCreateRandomV2Map();
-        JButton mapCreatorCreateLinearMap = mapCreator.mapCreatorCreateLinearMap();
-        JButton mapCreatorCreateBlueLinearMap = mapCreator.mapCreatorCreateBlueLinearMap();
-        JButton mapCreatorCreateBlueComplexMap = mapCreator.mapCreatorCreateBlueComplexMap();
-        JButton mapCreatorCreateRandomMap = mapCreator.mapCreatorCreateRandomMap();
+        //Map Utilities
+        MyButton utilsMapUtilsButton = new MapUtilitiesButton(this);
+        MyTextField utilsFixPlacementTextField = new UtilsFixPlacementsTextField(utilsMapUtilsButton);
+        MyButton utilsFixPlacementButton = new UtilsFixPlacements(utilsMapUtilsButton, utilsFixPlacementTextField);
+        MyButton utilsDeleteNoteTypeButton = new UtilsDeleteNoteType(utilsMapUtilsButton, utilsFixPlacementTextField);
+        MyButton utilsConvertAllFlashingLightButton = new UtilsConvertAllFlashingLight(utilsMapUtilsButton);
+        MyTextField utilsDeleteNoteTypeTextField = new UtilsDeleteNoteTypeTextField(utilsMapUtilsButton);
+        MyButton utilsMakeNoArrowMapButton = new UtilsMakeIntoNoArrowMap(utilsMapUtilsButton);
 
+        //Wave Generator
+        MyButton waveGeneratorButton = new WaveGenerationButton(this);
+        MyButton waveGeneratorCreateWaveButton = new WaveGenerationGenerateWave(waveGeneratorButton);
 
         /////////////////////
         //  Event Listener //
@@ -218,248 +221,6 @@ public class UserInterface extends JFrame {
             }
         });
 
-        //Wave Functions
-        showWaveFunctions.addActionListener(e -> waveFunctions.waveFunctionsElements.forEach(element -> element.setVisible(!element.isVisible())));
-        waveFunctionsGenerateWave.addActionListener(e -> {
-
-            CustomWaveGenerator waveGenerator = new CustomWaveGenerator(SEED);
-            List<Coordinate> coordinates = waveGenerator.getCoordinates(Arrays.stream(map._notes).toList());
-
-
-            String ogJson = map.originalJSON;
-            map.toBlueLeftBottomRowDotTimings();
-            map = new BeatSaberMap(CreatePatterns.createMapFromWaves(coordinates));
-            map.originalJSON = ogJson;
-            statusCheck.setText(statusCheck.getText() + "\nMap creation finished");
-            System.out.println("Created Map: " + map.exportAsMap());
-            if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Created Map: " + map.exportAsMap());
-            checkMap();
-
-            SwingUtilities.invokeLater(() -> {
-                WaveVisualizationFrame frame = new WaveVisualizationFrame(coordinates);
-                frame.setVisible(true);
-            });
-        });
-
-        //Map Utilities
-        mapUtils.addActionListener(e -> mapUtilsClass.mapUtilsElements.forEach(element -> element.setVisible(!element.isVisible())));
-        mapUtilsFixPlacements.addActionListener(e -> {
-            map.fixPlacements((double) 1 / Integer.parseInt(fixPlacementTextField.getText().replaceAll("[^\\d.]", "")));
-            statusCheck.setText(statusCheck.getText() + "\n[INFO]: Fixed Note Placement with a precision of 1/" + fixPlacementTextField.getText() + " of a beat.");
-            System.out.println("Placements fixed: " + new BeatSaberMap(map._notes).exportAsMap());
-            if (verbose)
-                statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Placements fixed: " + new BeatSaberMap(map._notes).exportAsMap());
-
-        });
-        mapUtilsMakeOneHanded.addActionListener(e -> {
-            map.makeOneHanded(Integer.parseInt(makeOneHandDeleteType.getText()));
-            statusCheck.setText(statusCheck.getText() + "\n[INFO]: Removed All Notes with type: " + makeOneHandDeleteType.getText());
-            System.out.println("One handed diff: : " + new BeatSaberMap(map._notes).exportAsMap());
-            if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "One handed diff: : " + new BeatSaberMap(map._notes).exportAsMap());
-        });
-        mapUtilsConvertAllFlashingLight.addActionListener(e -> {
-            map.convertAllFlashLightsToOnLights();
-            statusCheck.setText(statusCheck.getText() + "\n[INFO]: Removed flashing lights");
-            System.out.println("flashing lights removed: " + new BeatSaberMap(map._notes).exportAsMap());
-            if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "flashing lights removed: " + new BeatSaberMap(map._notes).exportAsMap());
-        });
-        mapUtilsMakeIntoNoArrowMap.addActionListener(e -> {
-            map.makeNoArrows();
-            statusCheck.setText(statusCheck.getText() + "\n[INFO]: Map is now a no arrows map");
-            System.out.println("No Arrow Map: " + map.exportAsMap());
-            if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "No Arrow Map: " + map.exportAsMap());
-        });
-
-        //Timing Note Generator
-        toTimingNotes.addActionListener(e -> timingNoteGenerator.timingNoteGeneratorElements.forEach(element -> element.setVisible(!element.isVisible())));
-        toBlueOnlyTimingNotes.addActionListener(e -> {
-            map = new BeatSaberMap(map._notes);
-            System.out.println("Normal timing notes: " + map.exportAsMap());
-            statusCheck.setText(statusCheck.getText() + "\n[INFO]: Successfully converted Map to only blue timing notes");
-            if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Normal timing notes: " + map.exportAsMap());
-        });
-        toStackedTimingNotes.addActionListener(e -> {
-            map.toTimingNotes();
-            System.out.println();
-            statusCheck.setText(statusCheck.getText() + "\nNOTE: It is very likely that this feature is broken! Use at your own risk!");
-            statusCheck.setText(statusCheck.getText() + "\n[INFO]: Successfully converted Map to timing notes");
-            if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Stacked timing notes: " + map.exportAsMap());
-        });
-
-        //Map Creator
-        showMapCreator.addActionListener(e -> mapCreator.mapCreatorElements.forEach(element -> element.setVisible(!element.isVisible())));
-        mapCreatorCreateMap.addActionListener(e -> {
-            manageMap();
-            map.toBlueLeftBottomRowDotTimings();
-
-            try {
-                // Redirect the standard error stream to the custom PrintStream so that errors can be printed to the UI
-                System.setErr(ERROR_PRINT_STREAM);
-
-
-                String exported = map.exportAsMap();
-                System.out.println("og: " + exported);
-                if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "og: " + exported);
-                map = CreatePatterns.createMap(map, pattern, false, false);
-
-                if (exported.equals(map.exportAsMap()) || map.exportAsMap().split("\"_cutDirection\":8").length >= 20) {
-                    statusCheck.setText(statusCheck.getText() + "\n" + "[ERROR]! Something went wrong while creating the map... Try another diff. If this error still continues then contact the creator of this tool");
-                }
-
-                //change back the error outputs
-                changeBackOutput();
-
-                statusCheck.setText(statusCheck.getText() + "\nMap creation finished");
-                System.out.println("Created map: " + new BeatSaberMap(map._notes).exportAsMap());
-                if (verbose)
-                    statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Created map: " + new BeatSaberMap(map._notes).exportAsMap());
-            } catch (IllegalArgumentException ex) {
-                statusCheck.setText(statusCheck.getText() + "\nThere was an error while creating. Please try again!");
-                System.err.println(ex.getMessage());
-                changeBackOutput();
-            }
-
-
-        });
-        mapCreatorCreateComplexMap.addActionListener(e -> {
-            manageMap();
-            map.toBlueLeftBottomRowDotTimings();
-
-            try {
-                String ogJson = map.originalJSON;
-                map = new BeatSaberMap(CreatePatterns.complexPatternFromTemplate(map._notes, pattern, false, false, null, null));
-                map.originalJSON = ogJson;
-                statusCheck.setText(statusCheck.getText() + "\nMap creation finished");
-                System.out.println("Created Map: " + map.exportAsMap());
-                if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Created Map: " + map.exportAsMap());
-                checkMap();
-            } catch (IllegalArgumentException ex) {
-                statusCheck.setText(statusCheck.getText() + "\nThere was an error while creating. Please try again!");
-            }
-
-
-        });
-        mapCreatorCreateLinearMap.addActionListener(e -> {
-            //DO NOT QUESTION THIS SECTION
-            //IT WAS NECESSARY TO ENSURE THAT THERE IS NO INFINITE LOOP
-            manageMap();
-            map.toBlueLeftBottomRowDotTimings();
-
-            Thread calculateNewMap = new Thread(() -> {
-                String ogJson = map.originalJSON;
-
-                map = new BeatSaberMap(CreatePatterns.linearSlowPattern(map._notes, false, null, null));
-                map.originalJSON = ogJson;
-                statusCheck.setText(statusCheck.getText() + "\nMap creation finished");
-                System.out.println("Created Map: " + map.exportAsMap());
-                if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Created Map: " + map.exportAsMap());
-                checkMap();
-            });
-            Thread watchForInfiniteLoop = new Thread(() -> {
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace();
-                }
-                calculateNewMap.interrupt();
-                throw new IllegalArgumentException("Took too long lol");
-            });
-
-            try {
-                watchForInfiniteLoop.start();
-                calculateNewMap.start();
-                watchForInfiniteLoop.interrupt();
-            } catch (IllegalArgumentException ex) {
-                statusCheck.setText(statusCheck.getText() + "\nThere was an error while creating. Please try again!");
-            }
-        });
-        mapCreatorCreateBlueLinearMap.addActionListener(e -> {
-            //DO NOT QUESTION THIS SECTION
-            //IT WAS NECESSARY TO ENSURE THAT THERE IS NO INFINITE LOOP
-            manageMap();
-            map.toBlueLeftBottomRowDotTimings();
-
-            Thread calculateNewMap = new Thread(() -> {
-                String ogJson = map.originalJSON;
-                map = new BeatSaberMap(CreatePatterns.linearSlowPattern(map._notes, true, null, null));
-                map.originalJSON = ogJson;
-                statusCheck.setText(statusCheck.getText() + "\nMap creation finished");
-                System.out.println("Created Map: " + map.exportAsMap());
-                if (verbose)
-                    statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Created Map: " + map.exportAsMap());
-                checkMap();
-            });
-            Thread watchForInfiniteLoop = new Thread(() -> {
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace();
-                }
-                calculateNewMap.interrupt();
-                throw new IllegalArgumentException("Took too long lol");
-            });
-
-            try {
-                watchForInfiniteLoop.start();
-                calculateNewMap.start();
-                watchForInfiniteLoop.interrupt();
-            } catch (IllegalArgumentException ex) {
-                statusCheck.setText(statusCheck.getText() + "\nThere was an error while creating. Please try again!");
-            }
-        });
-        mapCreatorCreateBlueComplexMap.addActionListener(e -> {
-            manageMap();
-            map.toBlueLeftBottomRowDotTimings();
-
-            try {
-                String ogJson = map.originalJSON;
-                map = new BeatSaberMap(CreatePatterns.complexPatternFromTemplate(map._notes, pattern, true, false, null, null));
-                map.originalJSON = ogJson;
-
-                statusCheck.setText(statusCheck.getText() + "\nMap creation finished");
-                System.out.println("Created Map: " + new BeatSaberMap(map._notes).exportAsMap());
-                if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Created Map: " + new BeatSaberMap(map._notes).exportAsMap());
-                checkMap();
-            } catch (IllegalArgumentException ex) {
-                statusCheck.setText(statusCheck.getText() + "\nThere was an error while creating. Please try again!");
-            }
-        });
-        mapCreatorCreateRandomMap.addActionListener(e -> {
-            manageMap();
-            map.toBlueLeftBottomRowDotTimings();
-            String ogJson = map.originalJSON;
-
-            try {
-                map = new BeatSaberMap(CreatePatterns.createRandomPattern(map._notes, false));
-                map.originalJSON = ogJson;
-
-                System.out.println("Created Map: " + new BeatSaberMap(map._notes).exportAsMap());
-                statusCheck.setText(statusCheck.getText() + "\nMap creation finished");
-                if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Created Map: " + new BeatSaberMap(map._notes).exportAsMap());
-                statusCheck.setText(statusCheck.getText() + "\nThere will be a lot of errors. But that's what you wanted lol");
-            } catch (IllegalArgumentException ex) {
-                statusCheck.setText(statusCheck.getText() + "\nThere was an error while creating. Please try again!");
-            }
-        });
-        mapCreatorCreateRandomV2Map.addActionListener(e -> {
-            manageMap();
-            map.toBlueLeftBottomRowDotTimings();
-
-            try {
-                String ogJson = map.originalJSON;
-                map = new BeatSaberMap(CreatePatterns.randomV2FromTemplate(map._notes, pattern, false, null, null));
-                map.originalJSON = ogJson;
-                statusCheck.setText(statusCheck.getText() + "\nMap creation finished");
-                System.out.println("Created Map: " + map.exportAsMap());
-                if (verbose) statusCheck.setText(statusCheck.getText() + "\n" + "VERBOSE: " + "Created Map: " + map.exportAsMap());
-                checkMap();
-            } catch (IllegalArgumentException ex) {
-                statusCheck.setText(statusCheck.getText() + "\nThere was an error while creating. Please try again!");
-            }
-        });
-
-
-        // Monitor changes in the variable and update frame visibility accordingly
         new Thread(() -> {
             while (true) {
                 if (mapSuccessfullyLoaded) {
@@ -470,13 +231,15 @@ public class UserInterface extends JFrame {
                     openMapButton.setBounds(270, 20, 200, 30);
                     openMapButton.setBackground(Color.GREEN);
 
-                    mapChecks.setVisible(true);
-                    mapUtils.setVisible(true);
+                    showMapCreatorButton.setVisible(true);
                     toTimingNotes.setVisible(true);
-                    showMapCreator.setVisible(true);
+                    utilsMapUtilsButton.setVisible(true);
+                    waveGeneratorButton.setVisible(true);
+
+                    mapChecks.setVisible(true);
+                    toTimingNotes.setVisible(true);
                     saveMap.setVisible(true);
                     openMapInBrowser.setVisible(true);
-                    showWaveFunctions.setVisible(true);
                 }
                 try {
                     Thread.sleep(1000); // Check for changes every second
