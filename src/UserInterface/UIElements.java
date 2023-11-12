@@ -2,10 +2,8 @@ package UserInterface;
 
 import DataManager.CreateAllNecessaryDIRsAndFiles;
 import DataManager.Parameters;
-import UserInterface.Elements.WaveFunctions;
 
 import static DataManager.Parameters.*;
-import static DataManager.Parameters.darkMode;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,9 +30,6 @@ public class UIElements {
         if (darkMode) userInterface.getContentPane().setBackground(darkModeBackgroundColor);
         if (darkMode) userInterface.getContentPane().setForeground(darkModeForegroundColor);
         userInterface.setLayout(null);
-    }
-
-    private void initializeVariables() {
     }
 
     public JLabel labelMapDiff() {
