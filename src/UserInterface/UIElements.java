@@ -1,7 +1,6 @@
 package UserInterface;
 
 import DataManager.CreateAllNecessaryDIRsAndFiles;
-import DataManager.Parameters;
 
 import static DataManager.Parameters.*;
 
@@ -41,31 +40,6 @@ public class UIElements {
         return labelMapDiff;
     }
 
-    public JButton saveMapButton() {
-        JButton saveMap = new JButton("SAVE MAP AS");
-        saveMap.setBounds(750, 50, 150, 50);
-        saveMap.setBackground(Color.green);
-        saveMap.setVisible(false);
-        userInterface.add(saveMap);
-
-
-        return saveMap;
-    }
-
-    public TextField seedFrame() {
-        JLabel seedLabel = new JLabel("Seed:");
-        seedLabel.setBounds(960, 17, 40, 20);
-        if (darkMode) seedLabel.setForeground(Color.white);
-        userInterface.add(seedLabel);
-
-        TextField seedFrame = new TextField(String.valueOf(Parameters.SEED));
-        seedFrame.setBounds(1000, 20, 100, 20);
-        if (darkMode) seedFrame.setBackground(Color.black);
-        if (darkMode) seedFrame.setForeground(Color.white);
-        userInterface.add(seedFrame);
-
-        return seedFrame;
-    }
 
     public JCheckBox ignoreDDsCheckbox() {
         JCheckBox ignoreDDsCheckbox = new JCheckBox("Ignore DDs");
@@ -74,46 +48,6 @@ public class UIElements {
         userInterface.add(ignoreDDsCheckbox);
 
         return ignoreDDsCheckbox;
-    }
-
-    public JButton openMapInBrowser() {
-        JButton openMapInBrowser = new JButton("Open Map in Browser");
-        openMapInBrowser.setBounds(975, 70, 150, 50);
-        openMapInBrowser.setBackground(Color.gray);
-        openMapInBrowser.setVisible(false);
-        userInterface.add(openMapInBrowser);
-
-        return openMapInBrowser;
-    }
-
-
-    public JButton openMapButton() {
-        JButton openMapButton = new JButton("click here and select your desired difficulty");
-        openMapButton.setBounds(200, 20, 100, 30);
-        openMapButton.setBackground(Color.cyan);
-        userInterface.add(openMapButton);
-
-        return openMapButton;
-    }
-
-    public JButton openSongButton() {
-        JButton openSongButton = new JButton("Convert MP3s to timing maps");
-        openSongButton.setBounds(500, 20, 200, 30);
-        openSongButton.setBackground(Color.orange);
-        openSongButton.setVisible(true);
-        userInterface.add(openSongButton);
-
-        return openSongButton;
-    }
-
-    public JButton openSongFolderButton() {
-        JButton openSongFolderButton = new JButton("open folder");
-        openSongFolderButton.setBounds(705, 22, 110, 26);
-        openSongFolderButton.setBackground(darkMode ? new Color(175, 140, 59) : new Color(255, 212, 123));
-        openSongFolderButton.setVisible(true);
-        userInterface.add(openSongFolderButton);
-
-        return openSongFolderButton;
     }
 
     public TextArea statusTextArea() {
@@ -137,22 +71,5 @@ public class UIElements {
             statusCheck.setText(statusCheck.getText() + "[INFO]: All necessary dependencies are installed. You can now convert MP3s to timing maps.\n\n");
 
         return statusCheck;
-    }
-
-    public JButton mapChecks() {
-        JButton mapChecks = new JButton("Map Checks");
-        mapChecks.setBounds(850, 200, 190, 30);
-        mapChecks.setVisible(false);
-        userInterface.add(mapChecks);
-
-        return mapChecks;
-    }
-
-    public JButton loadPatternsButton() {
-        JButton loadPatternButton = new JButton("Load Patterns File");
-        loadPatternButton.setBounds(270, 70, 200, 30);
-        userInterface.add(loadPatternButton);
-
-        return loadPatternButton;
     }
 }
