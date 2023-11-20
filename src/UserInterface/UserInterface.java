@@ -126,6 +126,9 @@ public class UserInterface extends JFrame {
                     toTimingNotes.setVisible(true);
                     utilsMapUtilsButton.setVisible(true);
                     waveGeneratorButton.setVisible(true);
+
+                    saveMapButton.setVisible(true);
+                    openMapInBrowserButton.setVisible(true);
                 }
                 try {
                     Thread.sleep(1000); // Check for changes every second

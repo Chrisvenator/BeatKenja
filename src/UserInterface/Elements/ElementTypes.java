@@ -37,8 +37,8 @@ public class ElementTypes {
     public static final ButtonType MAP_CHECKS_MAP_CHECKS = new ButtonType("Map Checks", 850, 200, 190, 30, false);
 
     //Global Button Types
-    public static final ButtonType GLOBAL_SAVE_MAP_AS = new ButtonType("SAVE MAP AS", 750, 50, 150, 50, true);
-    public static final ButtonType GLOBAL_OPEN_MAP_IN_BROWSER = new ButtonType("Open Map in Browser", 975, 70, 150, 50, true);
+    public static final ButtonType GLOBAL_SAVE_MAP_AS = new ButtonType("SAVE MAP AS", 750, 50, 150, 50, false);
+    public static final ButtonType GLOBAL_OPEN_MAP_IN_BROWSER = new ButtonType("Open Map in Browser", 975, 70, 150, 50, false);
     public static final ButtonType GLOBAL_OPEN_MAP = new ButtonType("click here and select your desired difficulty", 200, 20, 100, 30, true);
     public static final ButtonType GLOBAL_CONVERT_MP3s = new ButtonType("Convert MP3s to timing maps", 500, 20, 200, 30, true);
     public static final ButtonType GLOBAL_OPEN_FOLDER = new ButtonType("open folder", 705, 22, 110, 26, true);
