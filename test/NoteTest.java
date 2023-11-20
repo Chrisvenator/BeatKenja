@@ -1159,27 +1159,27 @@ class NoteTest {
     @Test
     void testHashCode() {
 
-        Assertions.assertEquals(2037698752, note01.hashCode());
-        Assertions.assertEquals(185992480, note02.hashCode());
-        Assertions.assertEquals(383188289, note03.hashCode());
-        Assertions.assertEquals(580293764, note04.hashCode());
-        Assertions.assertEquals(777489573, note05.hashCode());
-        Assertions.assertEquals(974684421, note06.hashCode());
-        Assertions.assertEquals(1171787974, note07.hashCode());
-        Assertions.assertEquals(1368982822, note08.hashCode());
-        Assertions.assertEquals(1566178623, note09.hashCode());
-        Assertions.assertEquals(1763284098, note10.hashCode());
-        Assertions.assertEquals(1763314882, note11.hashCode());
-        Assertions.assertEquals(1763344674, note12.hashCode());
-        Assertions.assertEquals(1763283171, note13.hashCode());
-        Assertions.assertEquals(1763312963, note14.hashCode());
-        Assertions.assertEquals(1763343716, note15.hashCode());
-        Assertions.assertEquals(1763284135, note16.hashCode());
-        Assertions.assertEquals(1763314880, note17.hashCode());
-        Assertions.assertEquals(1763344672, note18.hashCode());
-        Assertions.assertEquals(1763283169, note19.hashCode());
-        Assertions.assertEquals(1763312961, note20.hashCode());
-        Assertions.assertEquals(1763343714, note21.hashCode());
+        Assertions.assertEquals(-143370080 , note01.hashCode());
+        Assertions.assertEquals(-821749599 , note02.hashCode());
+        Assertions.assertEquals(-1177708382, note03.hashCode());
+        Assertions.assertEquals(-593094493 , note04.hashCode());
+        Assertions.assertEquals(1281267876 , note05.hashCode());
+        Assertions.assertEquals(-82372443  , note06.hashCode());
+        Assertions.assertEquals(-1009280858, note07.hashCode());
+        Assertions.assertEquals(361240743  , note08.hashCode());
+        Assertions.assertEquals(5281952    , note09.hashCode());
+        Assertions.assertEquals(589895841  , note10.hashCode());
+        Assertions.assertEquals(-2027874111, note11.hashCode());
+        Assertions.assertEquals(706287810  , note12.hashCode());
+        Assertions.assertEquals(-417785661 , note13.hashCode());
+        Assertions.assertEquals(755570884  , note14.hashCode());
+        Assertions.assertEquals(202447045  , note15.hashCode());
+        Assertions.assertEquals(589895878  , note16.hashCode());
+        Assertions.assertEquals(-2027874113, note17.hashCode());
+        Assertions.assertEquals(706287808  , note18.hashCode());
+        Assertions.assertEquals(-417785663 , note19.hashCode());
+        Assertions.assertEquals(755570882  , note20.hashCode());
+        Assertions.assertEquals(202447043  , note21.hashCode());
     }
 
     @Test

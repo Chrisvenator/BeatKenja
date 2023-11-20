@@ -122,8 +122,8 @@ public class Note implements Comparable<Note> {
     @Override
     public String toString() {
         return "{" + "\"_time\":" + _time +
-                ",\"_lineIndex\":" + (_lineIndex % 10 != 0 ? _lineIndex : (String.valueOf(_lineIndex).substring(0, String.valueOf(_lineIndex).lastIndexOf(".")))) +
-                ",\"_lineLayer\":" + (_lineLayer % 10 != 0 ? _lineLayer : (String.valueOf(_lineLayer).substring(0, String.valueOf(_lineLayer).lastIndexOf(".")))) +
+                ",\"_lineIndex\":" + ((String.valueOf(_lineIndex)).indexOf(".") != (String.valueOf(_lineIndex)).length() - 2 ? _lineIndex : (String.valueOf(_lineIndex).substring(0, String.valueOf(_lineIndex).lastIndexOf(".")))) +
+                ",\"_lineLayer\":" + ((String.valueOf(_lineLayer)).indexOf(".") != (String.valueOf(_lineLayer)).length() - 2 ? _lineLayer : (String.valueOf(_lineLayer).substring(0, String.valueOf(_lineLayer).lastIndexOf(".")))) +
                 ",\"_type\":" + _type +
                 ",\"_cutDirection\":" + _cutDirection +
                 "}\n";
