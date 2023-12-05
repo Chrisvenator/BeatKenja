@@ -8,10 +8,10 @@ import MapGeneration.GenerationElements.*;
 import static DataManager.Parameters.*;
 
 import UserInterface.Elements.Buttons.*;
-import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.*;
+import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons.*;
 import UserInterface.Elements.Buttons.ButtonTypes.MapChecks.*;
-import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.*;
 import UserInterface.Elements.Buttons.ButtonTypes.*;
+import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.Button.*;
 import UserInterface.Elements.Buttons.ButtonTypes.MapUtilities.*;
 import UserInterface.Elements.Buttons.ButtonTypes.TimingNoteGenerator.*;
 import UserInterface.Elements.Buttons.ButtonTypes.WaveGeneration.WaveGenerationGenerateWave;
