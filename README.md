@@ -188,3 +188,4 @@ TODO: Explain what load patterns does<br>
 - [ ] mouse over support
 - [x] Aim of the tool?
 - [x] Error message: "No audio files found in '/OnsetGeneration/wavFiles'"
+- [ ] Max length Path for Windows users
