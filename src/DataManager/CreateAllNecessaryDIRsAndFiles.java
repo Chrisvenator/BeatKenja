@@ -206,7 +206,7 @@ public class CreateAllNecessaryDIRsAndFiles {
 
 
             if (exitCode == exitCode2 && exitCode == 0) {
-                System.out.println("dependencies has been installed.");
+                System.out.println("Dependencies has been installed.");
                 return true;
             } else {
                 System.err.println("Failed to install dependencies. Are they already installed?");
