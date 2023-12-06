@@ -1,4 +1,4 @@
-package BeatSaberObjects;
+package BeatSaberObjects.Objects;
 
 import static DataManager.Parameters.*;
 
@@ -27,6 +27,8 @@ public class Note implements Comparable<Note> {
     public int _type;
     public int _cutDirection;
     public int amountOfStackedNotes = 0;
+
+    // <editor-fold desc="constructor">
 
     public Note(float time) {
         this._time = time;
@@ -61,22 +63,7 @@ public class Note implements Comparable<Note> {
         this.amountOfStackedNotes = n.amountOfStackedNotes;
     }
 
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || o.getClass() != Note.class && o.getClass() != TimingNote.class) return false;
-
-        Note note;
-        if (o.getClass() == TimingNote.class) {
-            note = (TimingNote) o;
-            System.out.println(Float.compare(note._time, _time) == 0);
-            return Float.compare(note._time, _time) == 0;
-        } else {
-            note = (Note) o;
-            return Float.compare(note._time, _time) == 0 && _lineIndex == note._lineIndex && _lineLayer == note._lineLayer && _type == note._type && _cutDirection == note._cutDirection;
-        }
-    }
+    // </editor-fold>
 
     public boolean isDD(Note previous) {
         if (ignoreDDs) return false;
@@ -100,10 +87,31 @@ public class Note implements Comparable<Note> {
         return _lineIndex == note._lineIndex && _lineLayer == note._lineLayer;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(_time, _lineIndex, _lineLayer, _type, _cutDirection);
+    public Note[] createStackedNote() {
+        if (amountOfStackedNotes == 0) return new Note[]{this};
+
+        List<Note> notes = new ArrayList<>();
+        switch (_cutDirection) {
+            case 0, 1 -> {
+                if (_lineIndex == 2) {
+                    notes.add(new Note(_time, _lineIndex, 0, _type, _cutDirection));
+                    notes.add(new Note(_time, _lineIndex, 2, _type, _cutDirection));
+                } else if (_lineIndex == 3) {
+                    if (amountOfStackedNotes >= 3) notes.add(new Note(_time, _lineIndex, 0, _type, _cutDirection));
+                    notes.add(new Note(_time, _lineIndex, 1, _type, _cutDirection));
+                    notes.add(new Note(_time, _lineIndex, 2, _type, _cutDirection));
+                } else notes.add(new Note(this._time, this._lineIndex, this._lineLayer, this._type, this._cutDirection));
+            }
+            case 5, 6 -> {
+                notes.add(new Note(_time, 2, 0, _type, _cutDirection));
+                notes.add(new Note(_time, 3, 1, _type, _cutDirection));
+            }
+            case 2, 3, 4, 7, 8 -> notes.add(new Note(this._time, this._lineIndex, this._lineLayer, this._type, this._cutDirection));
+        }
+
+        return notes.toArray(new Note[0]);
     }
+
 
     /*
     Red: 0
@@ -119,15 +127,7 @@ public class Note implements Comparable<Note> {
     |---|---|---|---|       |---|---|---|
      */
 
-    @Override
-    public String toString() {
-        return "{" + "\"_time\":" + _time +
-                ",\"_lineIndex\":" + ((String.valueOf(_lineIndex)).indexOf(".") != (String.valueOf(_lineIndex)).length() - 2 ? _lineIndex : (String.valueOf(_lineIndex).substring(0, String.valueOf(_lineIndex).lastIndexOf(".")))) +
-                ",\"_lineLayer\":" + ((String.valueOf(_lineLayer)).indexOf(".") != (String.valueOf(_lineLayer)).length() - 2 ? _lineLayer : (String.valueOf(_lineLayer).substring(0, String.valueOf(_lineLayer).lastIndexOf(".")))) +
-                ",\"_type\":" + _type +
-                ",\"_cutDirection\":" + _cutDirection +
-                "}\n";
-    }
+    // <editor-fold desc="Invert functions">
 
     public Note invertNote() {
         invertColor();
@@ -171,29 +171,40 @@ public class Note implements Comparable<Note> {
         return n;
     }
 
-    public Note[] createStackedNote() {
-        if (amountOfStackedNotes == 0) return new Note[]{this};
+    // </editor-fold>
 
-        List<Note> notes = new ArrayList<>();
-        switch (_cutDirection) {
-            case 0, 1 -> {
-                if (_lineIndex == 2) {
-                    notes.add(new Note(_time, _lineIndex, 0, _type, _cutDirection));
-                    notes.add(new Note(_time, _lineIndex, 2, _type, _cutDirection));
-                } else if (_lineIndex == 3) {
-                    if (amountOfStackedNotes >= 3) notes.add(new Note(_time, _lineIndex, 0, _type, _cutDirection));
-                    notes.add(new Note(_time, _lineIndex, 1, _type, _cutDirection));
-                    notes.add(new Note(_time, _lineIndex, 2, _type, _cutDirection));
-                } else notes.add(new Note(this._time, this._lineIndex, this._lineLayer, this._type, this._cutDirection));
-            }
-            case 5, 6 -> {
-                notes.add(new Note(_time, 2, 0, _type, _cutDirection));
-                notes.add(new Note(_time, 3, 1, _type, _cutDirection));
-            }
-            case 2, 3, 4, 7, 8 -> notes.add(new Note(this._time, this._lineIndex, this._lineLayer, this._type, this._cutDirection));
+
+
+    // <editor-fold desc="override methods">
+    @Override
+    public String toString() {
+        return "{" + "\"_time\":" + _time +
+                ",\"_lineIndex\":" + ((String.valueOf(_lineIndex)).indexOf(".") != (String.valueOf(_lineIndex)).length() - 2 ? _lineIndex : (String.valueOf(_lineIndex).substring(0, String.valueOf(_lineIndex).lastIndexOf(".")))) +
+                ",\"_lineLayer\":" + ((String.valueOf(_lineLayer)).indexOf(".") != (String.valueOf(_lineLayer)).length() - 2 ? _lineLayer : (String.valueOf(_lineLayer).substring(0, String.valueOf(_lineLayer).lastIndexOf(".")))) +
+                ",\"_type\":" + _type +
+                ",\"_cutDirection\":" + _cutDirection +
+                "}\n";
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(_time, _lineIndex, _lineLayer, _type, _cutDirection);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || o.getClass() != Note.class && o.getClass() != TimingNote.class) return false;
+
+        Note note;
+        if (o.getClass() == TimingNote.class) {
+            note = (TimingNote) o;
+            System.out.println(Float.compare(note._time, _time) == 0);
+            return Float.compare(note._time, _time) == 0;
+        } else {
+            note = (Note) o;
+            return Float.compare(note._time, _time) == 0 && _lineIndex == note._lineIndex && _lineLayer == note._lineLayer && _type == note._type && _cutDirection == note._cutDirection;
         }
-
-        return notes.toArray(new Note[0]);
     }
 
     @Override
@@ -201,5 +212,20 @@ public class Note implements Comparable<Note> {
         return Float.compare(this._time, o._time);
     }
 
+    // </editor-fold>
 
 }
+
+    /*
+    Red: 0
+    Blue: 1
+
+    Layer - Index:          Cut direction:
+    |---|---|---|---|       |---|---|---|
+    |   |   |   |3-2|       | 4 | 0 | 5 |
+    |---|---|---|---|       |---|---|---|
+    |   |   |   |3-1|       | 2 | 8 | 3 |
+    |---|---|---|---|       |---|---|---|
+    |0-0|1-0|2-0|3-0|       | 6 | 1 | 7 |
+    |---|---|---|---|       |---|---|---|
+     */

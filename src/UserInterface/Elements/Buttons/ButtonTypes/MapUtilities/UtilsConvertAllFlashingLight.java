@@ -1,6 +1,6 @@
 package UserInterface.Elements.Buttons.ButtonTypes.MapUtilities;
 
-import BeatSaberObjects.BeatSaberMap;
+import BeatSaberObjects.Objects.BeatSaberMap;
 import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.Buttons.MySubButton;
 import UserInterface.Elements.ElementTypes;

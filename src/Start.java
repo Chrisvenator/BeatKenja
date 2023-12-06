@@ -1,14 +1,6 @@
-import BeatSaberObjects.Note;
-import BeatSaberObjects.TimingNote;
-import CustomWaveGenerator.CustomWaveGenerator;
-import CustomWaveGenerator.WaveVisualizationFrame;
 import DataManager.CreateAllNecessaryDIRsAndFiles;
 import UserInterface.UserInterface;
-import CustomWaveGenerator.Coordinate;
 
-import javax.swing.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import static DataManager.Parameters.*;

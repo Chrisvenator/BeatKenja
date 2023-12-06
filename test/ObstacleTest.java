@@ -1,4 +1,4 @@
-import BeatSaberObjects.Obstacle;
+import BeatSaberObjects.Objects.Obstacle;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

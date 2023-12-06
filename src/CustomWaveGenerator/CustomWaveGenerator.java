@@ -1,7 +1,6 @@
 package CustomWaveGenerator;
 
-import BeatSaberObjects.Note;
-import BeatSaberObjects.TimingNote;
+import BeatSaberObjects.Objects.Note;
 
 import java.util.ArrayList;
 import java.util.List;

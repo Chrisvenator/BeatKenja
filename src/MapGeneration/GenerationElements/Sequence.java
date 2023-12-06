@@ -1,9 +1,8 @@
 package MapGeneration.GenerationElements;
 
-import BeatSaberObjects.Note;
+import BeatSaberObjects.Objects.Note;
 import DataManager.FileManager;
 import DataManager.Parameters;
-import UserInterface.UserInterface;
 import com.google.gson.Gson;
 
 import java.io.File;

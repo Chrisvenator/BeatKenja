@@ -1,6 +1,6 @@
 package UserInterface.Elements.Buttons;
 
-import BeatSaberObjects.BeatSaberMap;
+import BeatSaberObjects.Objects.BeatSaberMap;
 
 import static DataManager.Parameters.verbose;
 
