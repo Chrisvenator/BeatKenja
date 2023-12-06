@@ -1,4 +1,4 @@
-import BeatSaberObjects.Bookmark;
+import BeatSaberObjects.Objects.Bookmark;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

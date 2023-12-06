@@ -1,5 +1,5 @@
-import BeatSaberObjects.Note;
-import BeatSaberObjects.TimingNote;
+import BeatSaberObjects.Objects.Note;
+import BeatSaberObjects.Objects.TimingNote;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -1351,7 +1351,7 @@ class NoteTest {
 
     @Test
     void compareTo() {
-        //System.out.println("Assertions.assertEquals(" + Float.compare(this._time, o._time) + ", new BeatSaberObjects.Note (" + _time + "f, " + _lineIndex + ", " + _lineLayer + ", " + _type + ", " + _cutDirection + ").compareTo(new BeatSaberObjects.Note (" + o._time + "f, " + o._lineIndex + ", " + o._lineLayer + ", " + o._type + ", " + o._cutDirection + ")));");
+        //System.out.println("Assertions.assertEquals(" + Float.compare(this._time, o._time) + ", new BeatSaberObjects.Objects.Note (" + _time + "f, " + _lineIndex + ", " + _lineLayer + ", " + _type + ", " + _cutDirection + ").compareTo(new BeatSaberObjects.Objects.Note (" + o._time + "f, " + o._lineIndex + ", " + o._lineLayer + ", " + o._type + ", " + o._cutDirection + ")));");
 
         Assertions.assertEquals(1, new Note(1151.0328f, 0, 1, 0, 4).compareTo(new Note(1150.0394f, 3, 0, 1, 7)));
         Assertions.assertEquals(1, new Note(1153.028f, 2, 0, 1, 4).compareTo(new Note(1151.0328f, 0, 1, 0, 4)));
@@ -1516,8 +1516,8 @@ class NoteTest {
     /*
     Boolean test methode:
         int rand = (int) (new Random().nextFloat()*10000);
-        System.out.println("BeatSaberObjects.Note note1_" + rand + " = new BeatSaberObjects.Note (" + _time + "f, " + _lineIndex + ", " + _lineLayer + ", " + _type + ", " + _cutDirection + ");");
-        System.out.println("BeatSaberObjects.Note note2_" + rand + " = new BeatSaberObjects.Note (" + note._time + "f, " + note._lineIndex + ", " + note._lineLayer + ", " + note._type + ", " + note._cutDirection + ");");
+        System.out.println("BeatSaberObjects.Objects.Note note1_" + rand + " = new BeatSaberObjects.Objects.Note (" + _time + "f, " + _lineIndex + ", " + _lineLayer + ", " + _type + ", " + _cutDirection + ");");
+        System.out.println("BeatSaberObjects.Objects.Note note2_" + rand + " = new BeatSaberObjects.Objects.Note (" + note._time + "f, " + note._lineIndex + ", " + note._lineLayer + ", " + note._type + ", " + note._cutDirection + ");");
         if (b) System.out.println("Assertions.assertTrue(note1_" + rand + ".equalNotePlacement(note2_" + rand + "));");
         else System.out.println("Assertions.assertFalse(note1_" + rand + ".equalNotePlacement(note2_" + rand + "));");
 

@@ -1,6 +1,6 @@
 package UserInterface.Elements.Buttons.ButtonTypes.MapCreator.Button;
 
-import BeatSaberObjects.BeatSaberMap;
+import BeatSaberObjects.Objects.BeatSaberMap;
 import MapGeneration.CreatePatterns;
 import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.Exceptions.MapDidntComputeException;
 import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.MapCreatorSubButton;

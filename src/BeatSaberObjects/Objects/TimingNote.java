@@ -1,4 +1,4 @@
-package BeatSaberObjects;
+package BeatSaberObjects.Objects;
 
     /*
     Red: 0

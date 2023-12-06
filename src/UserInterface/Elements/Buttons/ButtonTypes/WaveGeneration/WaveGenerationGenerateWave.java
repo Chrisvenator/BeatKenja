@@ -1,6 +1,6 @@
 package UserInterface.Elements.Buttons.ButtonTypes.WaveGeneration;
 
-import BeatSaberObjects.BeatSaberMap;
+import BeatSaberObjects.Objects.BeatSaberMap;
 import CustomWaveGenerator.CustomWaveGenerator;
 import MapGeneration.CreatePatterns;
 import UserInterface.Elements.Buttons.MyButton;

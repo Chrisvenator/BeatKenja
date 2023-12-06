@@ -1,6 +1,6 @@
 package UserInterface.Elements.Buttons;
 
-import BeatSaberObjects.BeatSaberMap;
+import BeatSaberObjects.Objects.BeatSaberMap;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Exceptions.WrongFileException;
 import UserInterface.Elements.MyElement;
 import UserInterface.UserInterface;

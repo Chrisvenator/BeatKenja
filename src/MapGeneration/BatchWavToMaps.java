@@ -1,7 +1,7 @@
 package MapGeneration;
 
-import BeatSaberObjects.BeatSaberMap;
-import BeatSaberObjects.Note;
+import BeatSaberObjects.Objects.BeatSaberMap;
+import BeatSaberObjects.Objects.Note;
 import DataManager.FileManager;
 
 import static DataManager.Parameters.*;

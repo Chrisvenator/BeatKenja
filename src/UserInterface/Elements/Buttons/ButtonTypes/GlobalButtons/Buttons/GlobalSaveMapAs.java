@@ -1,6 +1,6 @@
 package UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons;
 
-import BeatSaberObjects.BeatSaberMap;
+import BeatSaberObjects.Objects.BeatSaberMap;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.GlobalButton;
 import UserInterface.Elements.ElementTypes;
 import UserInterface.UserInterface;

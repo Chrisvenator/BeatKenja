@@ -1,4 +1,4 @@
-package BeatSaberObjects;
+package BeatSaberObjects.Objects;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -26,5 +26,12 @@ public class Bookmark {
         Bookmark b = (Bookmark) obj;
 
         return b._time == this._time && Objects.equals(b._name, this._name);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(_time, _name);
+        result = 31 * result + Arrays.hashCode(_color);
+        return result;
     }
 }

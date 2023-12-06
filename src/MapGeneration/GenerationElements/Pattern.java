@@ -1,7 +1,7 @@
 package MapGeneration.GenerationElements;
 
-import BeatSaberObjects.BeatSaberMap;
-import BeatSaberObjects.Note;
+import BeatSaberObjects.Objects.BeatSaberMap;
+import BeatSaberObjects.Objects.Note;
 import DataManager.FileManager;
 import com.google.gson.Gson;
 
@@ -57,12 +57,12 @@ public class Pattern implements Iterable {
      * @param pathToPatternFile The path to the pattern file
      */
     public Pattern(String pathToPatternFile) {
-        // Read the pattern file and convert it to BeatSaberObjects.BeatSaberMap
+        // Read the pattern file and convert it to BeatSaberObjects.Objects.BeatSaberMap
         String patternInput = FileManager.readFile(pathToPatternFile).get(0);
         Gson gson = new Gson();
         BeatSaberMap patterns = gson.fromJson(patternInput, BeatSaberMap.class);
 
-        // Create a new MapGeneration.GenerationElements.Pattern object based on the BeatSaberObjects.BeatSaberMap
+        // Create a new MapGeneration.GenerationElements.Pattern object based on the BeatSaberObjects.Objects.BeatSaberMap
         Pattern p = new Pattern(patterns._notes, 1);
 
         // Copy the patterns, count, and probabilities from the created MapGeneration.GenerationElements.Pattern object
@@ -108,9 +108,9 @@ public class Pattern implements Iterable {
             twoDimArr:
             for (int i = 0; i < patterns.length; i++) {
 
-                // If the previous BeatSaberObjects.Note was not found in the pattern list
+                // If the previous BeatSaberObjects.Objects.Note was not found in the pattern list
                 if ((patterns[i][0] == null)) {
-                    // Add the previous BeatSaberObjects.Note and the current BeatSaberObjects.Note to the pattern list
+                    // Add the previous BeatSaberObjects.Objects.Note and the current BeatSaberObjects.Objects.Note to the pattern list
                     patterns[i][0] = prev;
                     patterns[i][1] = n;
                     count[i][1] = 1;
@@ -120,12 +120,12 @@ public class Pattern implements Iterable {
                 } else if (patterns[i][0].equalPlacement(prev)) {
                     for (int j = 1; j < patterns[i].length; j++) {
                         if (patterns[i][j] == null) {
-                            // Add the current BeatSaberObjects.Note to the pattern list
+                            // Add the current BeatSaberObjects.Objects.Note to the pattern list
                             patterns[i][j] = n;
                             count[i][j] = 1;
                             break twoDimArr; // Break out of the outer loop
                         } else if (patterns[i][j].equalPlacement(n)) {
-                            // Increment the count if the current BeatSaberObjects.Note is already saved in the pattern list
+                            // Increment the count if the current BeatSaberObjects.Objects.Note is already saved in the pattern list
                             count[i][j]++;
                             break twoDimArr; // Break out of the outer loop
                         }
@@ -306,7 +306,7 @@ public class Pattern implements Iterable {
      * For each note n in the notes array, it checks if the _type of the note matches the specified type.
      * If the types match, the note is added to the noteList.
      * After iterating over all the notes, the noteList contains only the notes that have the specified type.
-     * Finally, the noteList is converted back to an array using the toArray method, specifying the array type as BeatSaberObjects.Note[], and returned.
+     * Finally, the noteList is converted back to an array using the toArray method, specifying the array type as BeatSaberObjects.Objects.Note[], and returned.
      *
      * @param notes The array of notes to filter.
      * @param type  The type of notes to keep.
@@ -328,7 +328,7 @@ public class Pattern implements Iterable {
     /**
      * Retrieves the probability of a specific note pattern.
      * <p>
-     * The getProbabilityOf method takes a BeatSaberObjects.Note object (n) as a parameter.
+     * The getProbabilityOf method takes a BeatSaberObjects.Objects.Note object (n) as a parameter.
      * It retrieves the probability of the specified note pattern.
      * The method returns a MapGeneration.GenerationElements.PatternProbability object that represents the probability of the note pattern.
      * If the note pattern is not found, the method returns null.

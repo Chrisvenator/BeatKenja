@@ -1,6 +1,9 @@
 package UserInterface;
 
-import BeatSaberObjects.*;
+import BeatSaberObjects.Objects.BeatSaberMap;
+import BeatSaberObjects.Objects.Events;
+import BeatSaberObjects.Objects.Note;
+import BeatSaberObjects.Objects.Obstacle;
 import DataManager.*;
 import MapGeneration.CreatePatterns;
 import MapGeneration.GenerationElements.*;

@@ -1,5 +1,5 @@
-import BeatSaberObjects.BeatSaberMap;
-import BeatSaberObjects.Note;
+import BeatSaberObjects.Objects.BeatSaberMap;
+import BeatSaberObjects.Objects.Note;
 import DataManager.FileManager;
 import MapGeneration.GenerationElements.Pattern;
 import com.google.gson.Gson;

@@ -1,4 +1,4 @@
-import BeatSaberObjects.BeatSaberMap;
+import BeatSaberObjects.Objects.BeatSaberMap;
 import DataManager.FileManager;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Assertions;

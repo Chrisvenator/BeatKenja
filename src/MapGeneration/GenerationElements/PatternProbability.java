@@ -1,6 +1,6 @@
 package MapGeneration.GenerationElements;
 
-import BeatSaberObjects.Note;
+import BeatSaberObjects.Objects.Note;
 
 public class PatternProbability {
     public Note[] notes; // Array of notes

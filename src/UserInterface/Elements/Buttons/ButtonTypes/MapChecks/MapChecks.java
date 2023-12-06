@@ -1,6 +1,6 @@
 package UserInterface.Elements.Buttons.ButtonTypes.MapChecks;
 
-import BeatSaberObjects.Note;
+import BeatSaberObjects.Objects.Note;
 import MapGeneration.CreatePatterns;
 import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.ElementTypes;

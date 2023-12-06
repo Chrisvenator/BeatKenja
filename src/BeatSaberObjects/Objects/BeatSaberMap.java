@@ -1,4 +1,4 @@
-package BeatSaberObjects;
+package BeatSaberObjects.Objects;
 
 import com.google.gson.Gson;
 
@@ -30,6 +30,8 @@ public class BeatSaberMap {
     public List<Bookmark> bookmarks;
     //    private CustomData[] customData; // not working yet
 
+    // <editor-fold desc="constructor methods">
+
     public BeatSaberMap(Note[] notes) {
         this._notes = notes;
     }
@@ -49,6 +51,8 @@ public class BeatSaberMap {
         this.originalJSON = originalJSON;
         calculateBookmarks();
     }
+
+    // </editor-fold desc="constructor methods">
 
     public void convertToDDMap() {
         for (Note n : _notes) {
@@ -109,34 +113,6 @@ public class BeatSaberMap {
         return map;
     }
 
-    @Override
-    public String toString() {
-        return "\"_notes\":" + Arrays.toString(_notes);
-    }
-
-    public String exportAsMap() {
-        String json = "";
-        json += "{";
-        json += "\"_version\":\"" + _version + "\",";
-        json += "\"_notes\":" + (_notes == null ? "[]" : Arrays.toString(_notes)) + ",";
-        json += "\"_obstacles\":" + (_obstacles == null ? "[]" : Arrays.toString(_obstacles)) + ",";
-        json += "\"_events\":" + (_events == null ? "[]" : Arrays.toString(_events)) + ",";
-        json += "\"_waypoints\":[]";
-        if (bookmarks != null && bookmarks.size() > 0) {
-            json += ",\"_customData\":{";
-            json += "\"_bookmarks\":" + bookmarks;
-            json += "}";
-        }
-        json += "}";
-
-        json = json.replaceAll(" ", "")
-                .replaceAll("\\.0,", ",")
-                .replaceAll("\\.0]", "]")
-                .replaceAll("\\.0}", "}")
-                .replace("\n", "");
-
-        return json;
-    }
 
     public BeatSaberMap setOriginalJson(String originalJSON) {
         this.originalJSON = originalJSON;
@@ -193,7 +169,7 @@ public class BeatSaberMap {
      * as a dot on the leftmost lane.
      * If there are more notes on the same beat, then the notes are being converted into stacks
      * Red Notes are only created if there is a blue and a red note on the same beat. They are saved on the second lane
-     * BeatSaberObjects.Note that there can only be a maximum of six Notes in one Beat or else the script will not create a 7th note;
+     * BeatSaberObjects.Objects.Note that there can only be a maximum of six Notes in one Beat or else the script will not create a 7th note;
      *
      * @param notes The notes of the map
      * @return A List of all Notes. If there are more notes on the same beat, then they are being saved in a List inside the List
@@ -307,6 +283,62 @@ public class BeatSaberMap {
         this.bookmarks = l;
         return l;
     }
+
+    // <editor-fold desc="override methods">
+
+    @Override
+    public String toString() {
+        return "\"_notes\":" + Arrays.toString(_notes);
+    }
+
+    public String exportAsMap() {
+        String json = "";
+        json += "{";
+        json += "\"_version\":\"" + _version + "\",";
+        json += "\"_notes\":" + (_notes == null ? "[]" : Arrays.toString(_notes)) + ",";
+        json += "\"_obstacles\":" + (_obstacles == null ? "[]" : Arrays.toString(_obstacles)) + ",";
+        json += "\"_events\":" + (_events == null ? "[]" : Arrays.toString(_events)) + ",";
+        json += "\"_waypoints\":[]";
+        if (bookmarks != null && bookmarks.size() > 0) {
+            json += ",\"_customData\":{";
+            json += "\"_bookmarks\":" + bookmarks;
+            json += "}";
+        }
+        json += "}";
+
+        json = json.replaceAll(" ", "")
+                .replaceAll("\\.0,", ",")
+                .replaceAll("\\.0]", "]")
+                .replaceAll("\\.0}", "}")
+                .replace("\n", "");
+
+        return json;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BeatSaberMap that = (BeatSaberMap) o;
+
+        return (originalJSON.equals(that.originalJSON) || originalJSON.equals("") || that.originalJSON.equals("")) &&
+                _version.equals(that._version) &&
+                Arrays.equals(_events, that._events) &&
+                Arrays.equals(_notes, that._notes) &&
+                Arrays.equals(_obstacles, that._obstacles) &&
+                Objects.equals(bookmarks, that.bookmarks);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(originalJSON, _version, bookmarks);
+        result = 31 * result + Arrays.hashCode(_events);
+        result = 31 * result + Arrays.hashCode(_notes);
+        result = 31 * result + Arrays.hashCode(_obstacles);
+        return result;
+    }
+    // </editor-fold desc="override methods">
+
 }
 
     /*
