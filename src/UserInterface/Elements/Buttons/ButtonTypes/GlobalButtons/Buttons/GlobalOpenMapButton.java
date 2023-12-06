@@ -1,12 +1,15 @@
-package UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons;
+package UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons;
 
 import BeatSaberObjects.BeatSaberMap;
+import DataManager.Parameters;
+import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.GlobalButton;
 import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.ElementTypes;
 import UserInterface.UserInterface;
 import com.google.gson.Gson;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
@@ -14,7 +17,7 @@ import java.util.Scanner;
 import static DataManager.Parameters.*;
 import static DataManager.Parameters.darkMode;
 
-public class GlobalOpenMapButton extends MyButton {
+public class GlobalOpenMapButton extends GlobalButton {
     public GlobalOpenMapButton(UserInterface ui) {
         super(ElementTypes.GLOBAL_OPEN_MAP, ui);
         setBackground(Color.cyan);
@@ -22,28 +25,19 @@ public class GlobalOpenMapButton extends MyButton {
 
     @Override
     public void onClick() {
-        JFileChooser fileChooser = new JFileChooser(DEFAULT_PATH.trim());
-        if (darkMode) fileChooser.setForeground(Color.white);
-        int option = fileChooser.showOpenDialog(this);
+        int option = FILE_CHOOSER.showOpenDialog(this);
 
-        if (option == JFileChooser.APPROVE_OPTION) {
-            filePath = fileChooser.getCurrentDirectory().toString();
-            try {
-                Scanner scanner = new Scanner(fileChooser.getSelectedFile());
+        if (!approveFileloading(option)) return;
+        filePath = FILE_CHOOSER.getCurrentDirectory().toString();
+        try {
+            ui.map = this.convertToMap(FILE_CHOOSER.getSelectedFile());
 
-                String mapAsString = scanner.nextLine();
-
-                ui.map = new Gson().fromJson(mapAsString, BeatSaberMap.class);
-                ui.map.originalJSON = mapAsString;
-
-                ui.statusCheck.setText("Successfully loaded difficulty: \"" + fileChooser.getSelectedFile().getAbsolutePath() + "\"");
-                ui.mapSuccessfullyLoaded = true;
-                successfullyLoaded();
-            } catch (FileNotFoundException e) {
-                System.err.println(e.getMessage());
-            } catch (Exception e) {
-                errorWhileLoading(e);
-            }
+            ui.statusCheck.setText("Successfully loaded difficulty: \"" + FILE_CHOOSER.getSelectedFile().getAbsolutePath() + "\"");
+            ui.mapSuccessfullyLoaded = true;
+            successfullyLoaded();
+        } catch (Exception e) {
+            errorWhileLoading(e);
+            printException(e);
         }
     }
 

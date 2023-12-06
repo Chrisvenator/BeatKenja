@@ -14,8 +14,6 @@ public class ToBlueOnlyTimingNotes extends MySubButton {
 
     @Override
     public void onClick() {
-        System.out.println("MAP_CREATOR_TO_BLUE_ONLY_TIMING_NOTES clicked");
-
         ui.map = new BeatSaberMap(ui.map._notes);
         System.out.println("Normal timing notes: " + ui.map.exportAsMap());
         ui.statusCheck.setText(ui.statusCheck.getText() + "\n[INFO]: Successfully converted Map to only blue timing notes");

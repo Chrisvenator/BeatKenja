@@ -13,8 +13,6 @@ public class UtilsMakeIntoNoArrowMap extends MySubButton {
 
     @Override
     public void onClick() {
-        System.out.println("MAP_UTILITIES_MAKE_NO_ARROW_MAP_BUTTON clicked");
-
         ui.map.makeNoArrows();
         ui.statusCheck.setText(ui.statusCheck.getText() + "\n[INFO]: Map is now a no arrows map");
         System.out.println("No Arrow Map: " + ui.map.exportAsMap());

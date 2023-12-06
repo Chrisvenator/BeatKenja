@@ -13,8 +13,6 @@ public class ToTwoColorTimingNotes extends MySubButton {
 
     @Override
     public void onClick() {
-        System.out.println("MAP_CREATOR_TO_2_COLOR_TIMING_NOTES clicked");
-
         ui.map.toTimingNotes();
         System.out.println();
         ui.statusCheck.setText(ui.statusCheck.getText() + "\nNOTE: It is very likely that this feature is broken! Use at your own risk!");
