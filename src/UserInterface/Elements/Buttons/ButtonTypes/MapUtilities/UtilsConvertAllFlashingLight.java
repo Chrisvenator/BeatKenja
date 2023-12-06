@@ -14,8 +14,6 @@ public class UtilsConvertAllFlashingLight extends MySubButton {
 
     @Override
     public void onClick() {
-        System.out.println("MAP_UTILITIES_CONVERT_ALL_FLASHING_LIGHTS_BUTTON clicked");
-
         ui.map.convertAllFlashLightsToOnLights();
         ui.statusCheck.setText(ui.statusCheck.getText() + "\n[INFO]: Removed flashing lights");
         System.out.println("flashing lights removed: " + new BeatSaberMap(ui.map._notes).exportAsMap());

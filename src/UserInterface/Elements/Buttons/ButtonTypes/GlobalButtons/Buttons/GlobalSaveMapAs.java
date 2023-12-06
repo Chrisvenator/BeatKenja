@@ -1,7 +1,7 @@
-package UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons;
+package UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons;
 
 import BeatSaberObjects.BeatSaberMap;
-import UserInterface.Elements.Buttons.MyButton;
+import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.GlobalButton;
 import UserInterface.Elements.ElementTypes;
 import UserInterface.UserInterface;
 
@@ -12,9 +12,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import static DataManager.Parameters.*;
-import static DataManager.Parameters.filePath;
 
-public class GlobalSaveMapAs extends MyButton {
+public class GlobalSaveMapAs extends GlobalButton {
     public GlobalSaveMapAs(UserInterface ui) {
         super(ElementTypes.GLOBAL_SAVE_MAP_AS, ui);
         setBackground(Color.green);
@@ -22,23 +21,22 @@ public class GlobalSaveMapAs extends MyButton {
 
     @Override
     public void onClick() {
-        JFileChooser fileChooser = new JFileChooser(filePath);
-        int option = fileChooser.showSaveDialog(this);
-        if (option != 0) return;
+        int option = FILE_CHOOSER.showSaveDialog(this);
+
+        if (!approveFileloading(option)) return;
         try {
-            String filePath = fileChooser.getSelectedFile().getAbsolutePath();
+            String filePath = FILE_CHOOSER.getSelectedFile().getAbsolutePath();
             filePath += filePath.contains(".dat") ? "" : ".dat";
 
             BufferedWriter bw = new BufferedWriter(new FileWriter(filePath));
             bw.write(new BeatSaberMap(ui.map._notes).exportAsMap());
             bw.close();
 
-            ui.statusCheck.setText(ui.statusCheck.getText() + "\n[INFO]: Map saved successfully: " + filePath);
+            ui.statusCheck.append("\n[INFO]: Map saved successfully: " + filePath);
             System.out.println("Map saved successfully: " + ui.map.exportAsMap());
             if (verbose) ui.statusCheck.setText(ui.statusCheck.getText() + "\n" + "VERBOSE: " + "Map saved successfully: " + ui.map.exportAsMap());
-        } catch (IOException ioException) {
-            ui.statusCheck.setText(ui.statusCheck.getText() + "\n[ERROR]: There was an error while saving the map " + filePath + "!");
-            ioException.printStackTrace();
+        } catch (IOException e) {
+            printException(new IOException("There was an error while saving the map " + filePath + "!"));
         }
     }
 }

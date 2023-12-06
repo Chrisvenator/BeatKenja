@@ -13,7 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static DataManager.Parameters.SEED;
-import static DataManager.Parameters.verbose;
 
 public class WaveGenerationGenerateWave extends MySubButton {
     public WaveGenerationGenerateWave(MyButton parent) {
@@ -22,21 +21,15 @@ public class WaveGenerationGenerateWave extends MySubButton {
 
     @Override
     public void onClick() {
-        System.out.println("WAVE_GENERATOR_Generate_WAVE_BUTTON clicked");
 
 
         CustomWaveGenerator waveGenerator = new CustomWaveGenerator(SEED);
         List<Coordinate> coordinates = waveGenerator.getCoordinates(Arrays.stream(ui.map._notes).toList());
 
 
-        String ogJson = ui.map.originalJSON;
         ui.map.toBlueLeftBottomRowDotTimings();
-        ui.map = new BeatSaberMap(CreatePatterns.createMapFromWaves(coordinates));
-        ui.map.originalJSON = ogJson;
-        ui.statusCheck.setText(ui.statusCheck.getText() + "\nMap creation finished");
-        System.out.println("Created Map: " + ui.map.exportAsMap());
-        if (verbose) ui.statusCheck.setText(ui.statusCheck.getText() + "\n" + "VERBOSE: " + "Created Map: " + ui.map.exportAsMap());
-        ui.checkMap();
+        BeatSaberMap map = new BeatSaberMap(CreatePatterns.createMapFromWaves(coordinates));
+        loadNewlyCreatedMap(map);
 
         SwingUtilities.invokeLater(() -> {
             WaveVisualizationFrame frame = new WaveVisualizationFrame(coordinates);
