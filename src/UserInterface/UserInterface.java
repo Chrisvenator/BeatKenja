@@ -9,15 +9,7 @@ import static DataManager.Parameters.*;
 
 import UserInterface.Elements.Buttons.*;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons.*;
-import UserInterface.Elements.Buttons.ButtonTypes.MapChecks.*;
 import UserInterface.Elements.Buttons.ButtonTypes.*;
-import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.Button.*;
-import UserInterface.Elements.Buttons.ButtonTypes.MapUtilities.*;
-import UserInterface.Elements.Buttons.ButtonTypes.TimingNoteGenerator.*;
-import UserInterface.Elements.Buttons.ButtonTypes.WaveGeneration.WaveGenerationGenerateWave;
-import UserInterface.Elements.TextFields.*;
-import UserInterface.Elements.TextFields.GlobalTextFields.*;
-import UserInterface.Elements.TextFields.TextFieldTypes.MapUtils.*;
 import com.google.gson.Gson;
 
 import javax.swing.*;
@@ -27,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@SuppressWarnings("ALL")
 public class UserInterface extends JFrame {
 
     public BeatSaberMap map;
@@ -50,71 +43,40 @@ public class UserInterface extends JFrame {
         loadConfig();
         if (verbose) System.setErr(ERROR_PRINT_STREAM);
 
+
+        //<editor-fold desc="Initialize UI Elements">
         //////////////////////////////
         //  Initialize UI Elements  //
         //////////////////////////////
 
-        //Global Elements
         final UIElements uiElements = new UIElements(darkMode, this);
-
         uiElements.initialize();
 
         labelMapDiff = uiElements.labelMapDiff();
         statusCheck = uiElements.statusTextArea();
         JCheckBox ignoreDDsCheckBox = uiElements.ignoreDDsCheckbox();
 
+        new GlobalButton(this);
+        GlobalSaveMapAs saveMapButton = new GlobalSaveMapAs(this);
+        GlobalOpenMapInBrowser openMapInBrowserButton = new GlobalOpenMapInBrowser(this);
 
-        //Global Buttons
-        MyButton saveMapButton = new GlobalSaveMapAs(this);
-        MyButton openMapInBrowserButton = new GlobalOpenMapInBrowser(this);
-        MyButton openMapButton = new GlobalOpenMapButton(this);
-        MyButton convertMP3ToMapsButton = new GlobalConvertMP3ToMaps(this);
-        MyButton openSongFolderButton = new GlobalOpenFolder(this);
-        MyButton loadPatternsButton = new GlobalLoadPatterns(this);
-        MyButton openMapChecksButton = new MapChecks(this);
-        MyGlobalTextField globalSeedFrame = new GlobalSeedFrame(this);
-
-
-        //Map Creator
-        MyButton showMapCreatorButton = new MapCreatorButton(this);
-        MyButton createMapButton = new CreateMapButton(showMapCreatorButton);
-        MyButton createComplexMapButton = new CreateComplexMap(showMapCreatorButton);
-        MyButton createRandomV2MapButton = new CreateRandomV2Map(showMapCreatorButton);
-        MyButton createLinearMapButton = new CreateLinearMap(showMapCreatorButton);
-        MyButton createBlueLinearMap = new CreateBlueLinearMap(showMapCreatorButton);
-        MyButton createBlueComplexMap = new CreateBlueComplexMap(showMapCreatorButton);
-        MyButton createRandomMap = new CreateRandomMap(showMapCreatorButton);
-
-        //Timing Note Generator
+        MapCreatorButton showMapCreatorButton = new MapCreatorButton(this);
         MyButton toTimingNotes = new ToTimingNotesButton(this);
-        MyButton toBlueOnlyTimingNotes = new ToBlueOnlyTimingNotes(toTimingNotes);
-        MyButton toTwoColorTimingNotes = new ToTwoColorTimingNotes(toTimingNotes);
-
-        //Map Utilities
         MyButton utilsMapUtilsButton = new MapUtilitiesButton(this);
-        MyTextField utilsFixPlacementTextField = new UtilsFixPlacementsTextField(utilsMapUtilsButton);
-        MyButton utilsFixPlacementButton = new UtilsFixPlacements(utilsMapUtilsButton, utilsFixPlacementTextField);
-        MyButton utilsDeleteNoteTypeButton = new UtilsDeleteNoteType(utilsMapUtilsButton, utilsFixPlacementTextField);
-        MyButton utilsConvertAllFlashingLightButton = new UtilsConvertAllFlashingLight(utilsMapUtilsButton);
-        MyTextField utilsDeleteNoteTypeTextField = new UtilsDeleteNoteTypeTextField(utilsMapUtilsButton);
-        MyButton utilsMakeNoArrowMapButton = new UtilsMakeIntoNoArrowMap(utilsMapUtilsButton);
-
-        //Wave Generator
         MyButton waveGeneratorButton = new WaveGenerationButton(this);
-        MyButton waveGeneratorCreateWaveButton = new WaveGenerationGenerateWave(waveGeneratorButton);
+        //</editor-fold desc="Initialize UI Elements">
 
+        //<editor-fold desc="Event Listener">
         /////////////////////
         //  Event Listener //
         /////////////////////
 
         //global
-        statusCheck.setText(statusCheck.getText() + "config: \nverbose: " + verbose + "\npath: " + DEFAULT_PATH + "\ndark mode:" + darkMode + "\nsave new maps to WIP folder (default path): " + saveNewMapsToDefaultPath + "\n\n");
-        ignoreDDsCheckBox.addActionListener(e -> {
-            ignoreDDs = ignoreDDsCheckBox.isSelected();
-            ignoreDDs = ignoreDDsCheckBox.isSelected();
-            statusCheck.setText(statusCheck.getText() + "\n[INFO]: ignore DDs: " + ignoreDDs);
-        });
+        statusCheck.append("config: \nverbose: " + verbose + "\npath: " + DEFAULT_PATH + "\ndark mode:" + darkMode + "\nsave new maps to WIP folder (default path): " + saveNewMapsToDefaultPath + "\n\n");
+        ignoreDDsCheckBox.addActionListener(e -> statusCheck.append("\n[INFO]: ignore DDs: " + (ignoreDDs = ignoreDDsCheckBox.isSelected())));
+        //</editor-fold desc="Event Listener">
 
+        //<editor-fold desc="Thread">
         new Thread(() -> {
             while (true) {
                 if (mapSuccessfullyLoaded) {
@@ -138,9 +100,15 @@ public class UserInterface extends JFrame {
                 }
             }
         }).start();
+        //</editor-fold desc="Thread">
     }
 
 
+    /**
+     * Redirects the error stream to the statusCheck text area, <br>
+     * Removes all Obstacles and Events from the map, <br>
+     * Checks if the pattern is set and if not, loads the default pattern.<br>
+     */
     public void manageMap() {
 
         PrintStream ORIGINAL_ERR = System.err;
@@ -164,9 +132,12 @@ public class UserInterface extends JFrame {
 
         System.setErr(ORIGINAL_ERR);
         System.err.println(errorOutput);
-        statusCheck.setText(statusCheck.getText() + "\n" + errorOutput);
+        statusCheck.append("\n" + errorOutput);
     }
 
+    /**
+     * Checks the map for errors and prints them to the statusCheck text area.
+     */
     public void checkMap() {
         List<Note> notes = new ArrayList<>();
         Collections.addAll(notes, map._notes);
@@ -176,16 +147,18 @@ public class UserInterface extends JFrame {
         changeBackOutput();
     }
 
+    /**
+     * Changes the error stream back to the original one and prints the error output to the statusCheck text area.
+     */
     public void changeBackOutput() {
         String errorOutput = OUTPUT_STREAM.toString();
-
         ERROR_PRINT_STREAM.close();
-
         System.setErr(ORIGINAL_ERR);
+
         System.err.println(errorOutput);
         errorOutput = errorOutput.replaceAll("\n\n", "\n");
-        if (errorOutput.length() == 0) statusCheck.setText(statusCheck.getText() + "[INFO]: No Errors detected");
-        statusCheck.setText(statusCheck.getText() + "\n" + errorOutput + "\n");
+        if (errorOutput.length() == 0) statusCheck.append("[INFO]: No Errors detected");
+        statusCheck.append("\n" + errorOutput + "\n");
         if (verbose) System.setErr(ERROR_PRINT_STREAM);
     }
 
