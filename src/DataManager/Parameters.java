@@ -1,8 +1,7 @@
 package DataManager;
 
-import BeatSaberObjects.BeatSaberMap;
-import MapGeneration.GenerationElements.Pattern;
-
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.util.Random;
 
@@ -51,4 +50,12 @@ public class Parameters {
     public static final Color darkModeForegroundColor = Color.white;
     public static final String mapViewerURL = "https://skystudioapps.com/bs-viewer/"; //https://skystudioapps.com/bs-viewer/  or  https://skystudioapps.com/bs-viewer/
     public static final int WAVE_NOTE_GENERATION_SAMPLING_POINTS = 1000;
+    public static final JFileChooser FILE_CHOOSER = new JFileChooser(DEFAULT_PATH.trim());
+    public static final FileNameExtensionFilter MAP_FILE_FORMAT = new FileNameExtensionFilter("DAT files (*.dat)", "dat");
+
+    static {
+        FILE_CHOOSER.setFileFilter(MAP_FILE_FORMAT);
+        if (darkMode) FILE_CHOOSER.setForeground(Color.white);
+
+    }
 }
