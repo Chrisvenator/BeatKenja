@@ -27,7 +27,7 @@ public abstract class GlobalButton extends MyButton {
     }
 
     protected void printException(Exception e) {
-        String errorMessage = "Unknown Error!";
+        String errorMessage;
         if (e instanceof FileNotFoundException) errorMessage = "File Not found!";
         else if (e instanceof NullPointerException) errorMessage = "NullPointerException!";
         else if (e instanceof NumberFormatException) errorMessage = "NumberFormatException!";

@@ -1,21 +1,11 @@
 package UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons;
 
-import BeatSaberObjects.BeatSaberMap;
-import DataManager.Parameters;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.GlobalButton;
-import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.ElementTypes;
 import UserInterface.UserInterface;
-import com.google.gson.Gson;
-
-import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.io.FileNotFoundException;
-import java.util.Scanner;
 
 import static DataManager.Parameters.*;
-import static DataManager.Parameters.darkMode;
 
 public class GlobalOpenMapButton extends GlobalButton {
     public GlobalOpenMapButton(UserInterface ui) {

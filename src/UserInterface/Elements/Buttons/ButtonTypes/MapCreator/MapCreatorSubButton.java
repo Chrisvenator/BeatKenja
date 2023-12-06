@@ -10,26 +10,25 @@ public class MapCreatorSubButton extends MySubButton {
         super(button, parent);
     }
 
-    //TODO: exception handling
-
     protected void printException(Exception e) {
-        String errorMessage = "Unknown Error!";
-        if (e instanceof NullPointerException) errorMessage = "NullPointerException!";
+        String errorMessage;
         if (e instanceof TookTooLongException) errorMessage = "An infinite loop occurred! Please try again.";
         else errorMessage = e.getMessage();
 
         printErrorMessage(e, errorMessage);
     }
 
-    //DO NOT QUESTION THIS SECTION
-    //IT WAS NECESSARY TO ENSURE THAT THERE IS NO INFINITE LOOP
 
     /**
      * This method watches over a thread and interrupts it if it takes too long.
      * In essence, it prevents infinite loops.
+     *
      * @param thread The thread to watch over
      */
     protected void watchOverThread(Thread thread) {
+        //DO NOT QUESTION THIS SECTION
+        //IT WAS NECESSARY TO ENSURE THAT THERE IS NO INFINITE LOOP
+
         Thread watchForInfiniteLoop = new Thread(() -> {
             try {
                 Thread.sleep(5000);
