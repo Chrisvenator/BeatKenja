@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@SuppressWarnings("ALL")
+@SuppressWarnings("BusyWait")
 public class UserInterface extends JFrame {
 
     public BeatSaberMap map;
