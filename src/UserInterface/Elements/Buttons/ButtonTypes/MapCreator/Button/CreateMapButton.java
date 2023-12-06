@@ -23,7 +23,6 @@ public class CreateMapButton extends MapCreatorSubButton {
             // Redirect the standard error stream to the custom PrintStream so that errors can be printed to the UI
             System.setErr(ui.ERROR_PRINT_STREAM);
 
-            //TODO: More editor folds
             //<editor-fold desc="Debug Information">
             System.out.println("og: " + ui.map.exportAsMap());
             if (verbose) ui.statusCheck.append("\nVERBOSE: og: " + ui.map.exportAsMap());
