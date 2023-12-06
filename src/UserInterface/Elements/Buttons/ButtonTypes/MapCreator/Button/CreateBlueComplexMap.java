@@ -13,7 +13,7 @@ public class CreateBlueComplexMap extends MapCreatorSubButton {
 
     @Override
     public void onClick() {
-        ui.manageMap(); //TODO: DO I need this? This is a bit of a hacky solution. I should probably make a better one
+        ui.manageMap();
         ui.map.toBlueLeftBottomRowDotTimings();
 
         try {

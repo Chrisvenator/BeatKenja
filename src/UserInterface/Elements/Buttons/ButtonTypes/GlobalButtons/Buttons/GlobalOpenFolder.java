@@ -1,7 +1,6 @@
 package UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons;
 
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.GlobalButton;
-import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.ElementTypes;
 import UserInterface.UserInterface;
 
