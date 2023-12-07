@@ -5,17 +5,19 @@ import BeatSaberObjects.Objects.Note;
 import DataManager.FileManager;
 import com.google.gson.Gson;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 public class Pattern implements Iterable<PatternProbability> {
+    private final int MAX_ARRAY_SIZE = 108; // lines * layers * cut directions = 4 * 3 * 9 = 108
 
     // In this variable, all the possible notes are stored as patterns
     public Note[][] patterns;
 
     // This array stores how often a certain block follows another block. It contains the values of "patterns" array.
-    public int[][] count;
+    public int[][] count; //for example, the Note from patterns[0][0] is followed by patterns[0][1] count[0][1] times
     public float[][] probabilities;
 
     public static void main(String[] args) {
@@ -37,9 +39,9 @@ public class Pattern implements Iterable<PatternProbability> {
         if (type != 0 && type != 1) return;
 
         // Initialize arrays to store patterns, count, and probabilities
-        count = new int[108][108];
-        patterns = new Note[108][108];
-        probabilities = new float[108][108];
+        count = new int[MAX_ARRAY_SIZE][MAX_ARRAY_SIZE];
+        patterns = new Note[MAX_ARRAY_SIZE][MAX_ARRAY_SIZE];
+        probabilities = new float[MAX_ARRAY_SIZE][MAX_ARRAY_SIZE];
 
         // Analyze the patterns based on the provided notes and type
         analyzePattern(notes, type);
@@ -51,12 +53,31 @@ public class Pattern implements Iterable<PatternProbability> {
         for (Note n : notes) n._time = 0;
     }
 
+    // Default constructor that creates a MapGeneration.GenerationElements.Pattern object based on a predefined template file
+    public Pattern() {
+        // Create a new MapGeneration.GenerationElements.Pattern object based on a predefined template file
+        Pattern p = new Pattern("MapTemplates/Template--ISeeFire.txt");
+
+        // Copy the patterns, count, and probabilities from the created MapGeneration.GenerationElements.Pattern object
+        this.count = p.count;
+        this.patterns = p.patterns;
+        this.probabilities = p.probabilities;
+    }
+
     /**
      * Create a new pattern object based on a pattern file.
+     * If the file is a .pat file or a folder, then It will be processed as a .pat file. Otherwise, it will be processed as a .json file (standard BeatSaberV2 format).
      *
      * @param pathToPatternFile The path to the pattern file
      */
     public Pattern(String pathToPatternFile) {
+        File f = new File(pathToPatternFile);
+        if (f.exists() && (f.isDirectory() || pathToPatternFile.endsWith(".pat"))) {
+            readFromPatFile(pathToPatternFile);
+            return;
+        }
+
+
         // Read the pattern file and convert it to BeatSaberObjects.Objects.BeatSaberMap
         String patternInput = FileManager.readFile(pathToPatternFile).get(0);
         Gson gson = new Gson();
@@ -71,15 +92,77 @@ public class Pattern implements Iterable<PatternProbability> {
         this.probabilities = p.probabilities;
     }
 
-    // Default constructor that creates a MapGeneration.GenerationElements.Pattern object based on a predefined template file
-    public Pattern() {
-        // Create a new MapGeneration.GenerationElements.Pattern object based on a predefined template file
-        Pattern p = new Pattern("MapTemplates/Template--ISeeFire.txt");
 
-        // Copy the patterns, count, and probabilities from the created MapGeneration.GenerationElements.Pattern object
-        this.count = p.count;
-        this.patterns = p.patterns;
-        this.probabilities = p.probabilities;
+    /**
+     * Create a new pattern object based on a pattern file.
+     * a pattern file is a file that contains a list of patterns in the .pat file format.
+     * A line always represents the probabilities that a certain note will follow a given note.<br>
+     * All notes are separated by a semicolon (;).
+     * The pat format is as follows: <br>
+     * <br>
+     * _time,_lineIndex,_lineLayer,_type,_cutDirection ; _time,_lineIndex,_lineLayer,_type,_cutDirection,count ; ... (If there are more than one notes in the pattern) <br>
+     * Example: 0.0,2.0,2.0,1,0;0.0,2.0,0.0,1,1,2
+     *
+     * @param pathToPatternFile The path to the pattern file
+     */
+    private void readFromPatFile(String pathToPatternFile) {
+        count = new int[MAX_ARRAY_SIZE][MAX_ARRAY_SIZE];
+        patterns = new Note[MAX_ARRAY_SIZE][MAX_ARRAY_SIZE];
+        probabilities = new float[MAX_ARRAY_SIZE][MAX_ARRAY_SIZE];
+
+        List<String> lines = FileManager.readFile(pathToPatternFile);
+        for (int i = 0; i < lines.size(); i++) {
+            String[] split = lines.get(i).split(";");
+            patterns[i][0] = new Note(Float.parseFloat(split[0].split(",")[0]), Float.parseFloat(split[0].split(",")[1]), Float.parseFloat(split[0].split(",")[2]), Integer.parseInt(split[0].split(",")[3]), Integer.parseInt(split[0].split(",")[4]));
+
+            for (int j = 1; j < split.length; j++) {
+                if (split[j] == null) break;
+                int count = Integer.parseInt(split[j].split(",")[5]);
+                patterns[i][j] = new Note(Float.parseFloat(split[j].split(",")[0]), Float.parseFloat(split[j].split(",")[1]), Float.parseFloat(split[j].split(",")[2]), Integer.parseInt(split[j].split(",")[3]), Integer.parseInt(split[j].split(",")[4]));
+                this.count[i][j] = count;
+            }
+        }
+
+        computeProbabilities();
+    }
+
+    /**
+     * Exports the pattern analysis results in a .pat file format.
+     * A line always represents the probabilities that a certain note will follow a given note.
+     * All notes are separated by a semicolon (;).
+     * The pat format is as follows: <br>
+     * <br>
+     * _time,_lineIndex,_lineLayer,_type,_cutDirection ; _time,_lineIndex,_lineLayer,_type,_cutDirection,count ; ... (If there are more than one notes in the pattern) <br>
+     * Example: 0.0,2.0,2.0,1,0;0.0,2.0,0.0,1,1,2
+     *
+     * @return a Pattern in the .pat file format.
+     */
+    public String exportInPatFormat() {
+        StringBuilder s = new StringBuilder();
+        int counter = 0;
+
+        // Iterate over the pattern array
+        for (Note[] notes : this.patterns) {
+            if (notes[0] == null) continue;
+            // Append the string representation of the first note in the pattern
+            s.append(notes[0]._time).append(",").append(notes[0]._lineIndex).append(",").append(notes[0]._lineLayer).append(",").append(notes[0]._type).append(",").append(notes[0]._cutDirection).append(";");
+
+            // Iterate over the remaining notes in the pattern
+            for (int i = 1; i < notes.length; i++) {
+                if (notes[i] != null) {
+                    // Append the string representation of the note, its count, and probability
+                    s.append(notes[i]._time).append(",").append(notes[i]._lineIndex).append(",").append(notes[i]._lineLayer).append(",").append(notes[i]._type).append(",").append(notes[i]._cutDirection).append(",").append(this.count[counter][i]).append(";");
+                }
+            }
+
+            // Append the closing bracket for the pattern
+            s.append("\n");
+            s.delete(s.length() - 2, s.length() - 1);
+
+            counter++;
+        }
+
+        return s.toString();
     }
 
 
@@ -192,7 +275,6 @@ public class Pattern implements Iterable<PatternProbability> {
      */
     public void removeXTimes(int threshold) {
         String s = this.toString();
-        String result = "";
         String[] strings = s.split("\n");
         List<String> split = new ArrayList<>();
 
@@ -379,7 +461,7 @@ public class Pattern implements Iterable<PatternProbability> {
     @Override
     public Iterator<PatternProbability> iterator() {
         // Create a new iterator object
-        return new Iterator<PatternProbability>() {
+        return new Iterator<>() {
             int i = 0; // Iterator index
 
             /**
@@ -423,4 +505,61 @@ public class Pattern implements Iterable<PatternProbability> {
 
         return list;
     }
+
+    public void mergePatterns(Pattern p) {
+        int lastKey = 0;
+        for (; lastKey < patterns.length; lastKey++) if (patterns[lastKey][0] == null) break;
+
+        for (int i = 0; i < p.patterns.length; i++) {
+            if (p.patterns[i][0] == null) break;
+
+            int key = containsKey(patterns, p.patterns[i][0]); //This contains they key where the Note is saved in this.patterns
+            if (key == -1) {
+                patterns[lastKey] = p.patterns[i];
+                probabilities[lastKey] = p.probabilities[i];
+                for (int j = 0; j < p.patterns[i].length; j++) {
+                    if (p.patterns[i][j] == null) break;
+                    patterns[lastKey][j] = p.patterns[i][j];
+                    count[lastKey][j] = p.count[i][j];
+                }
+                lastKey++;
+
+            } else {
+                for (int j = 1; j < p.patterns[i].length; j++) {
+
+                    int value = containsValue(patterns[key], p.patterns[i][j]); //This contains the index where the Note is saved in this.patterns[key]
+                    if (value == -1) {
+                        for (int k = 1; k < patterns[key].length; k++) {
+                            if (patterns[key][k] == null) {
+                                patterns[key][k] = p.patterns[i][j];
+                                count[key][k] = p.count[i][j];
+                                break;
+                            }
+                        }
+                    } else {
+                        count[key][value] += p.count[i][j];
+                    }
+                }
+            }
+        }
+
+        computeProbabilities();
+    }
+
+    private int containsKey(Note[][] patterns, Note n) {
+        for (int i = 0; i < patterns.length; i++) {
+            if (patterns[i][0] == null) return -1;
+            if (patterns[i][0].equalPlacement(n)) return i;
+        }
+        return -1;
+    }
+
+    private int containsValue(Note[] values, Note n) {
+        for (int i = 1; i < values.length; i++) {
+            if (values[i] == null) return -1;
+            if (values[i].equalPlacement(n)) return i;
+        }
+        return -1;
+    }
+
 }
