@@ -506,6 +506,26 @@ public class Pattern implements Iterable<PatternProbability> {
         return list;
     }
 
+
+    /**
+     * Merges the patterns from the specified {@code Pattern} object into this {@code Pattern} object.
+     *
+     * @param p the {@code Pattern} object to merge into this pattern. It should not be {@code null}.
+     */
+    //This method integrates the notes, counts, and probabilities from the given pattern into the current pattern.
+    //It follows these rules:
+    //- If a note pattern in the given pattern does not exist in this pattern, it is added.
+    //- If a note pattern exists, the counts for each note are updated. If a note in the given pattern is not present in the existing pattern, it is added.
+    //- After merging, the probabilities are recalculated for the entire pattern.
+    //<p>
+    //The merging process involves checking each note pattern in the given {@code Pattern} object:
+    //- If the key (first note in a pattern) does not exist in this pattern, the entire note pattern is added.
+    //- If the key exists, the method checks each subsequent note in the pattern.
+    //- If the note exists, its count is incremented by the count from the given pattern.
+    //- If the note does not exist, it is added along with its count.
+    //<P>
+    //The method ensures that the merged patterns are properly integrated without duplication,
+    //maintaining the integrity of the pattern sequences and their respective counts and probabilities.
     public void mergePatterns(Pattern p) {
         int lastKey = 0;
         for (; lastKey < patterns.length; lastKey++) if (patterns[lastKey][0] == null) break;
