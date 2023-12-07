@@ -23,6 +23,7 @@ public class Sequence implements Iterable<Note> {
     public final String tag;
     public final String genre;
     public final float nps;
+    public final float bpm;
 
 
     /**
@@ -33,13 +34,14 @@ public class Sequence implements Iterable<Note> {
      * @param genre The genre associated with the sequence.
      * @param nps   The notes per second for the sequence.
      */
-    public Sequence(List<Note> notes, String tag, String genre, float nps) {
+    public Sequence(List<Note> notes, String tag, String genre, float nps, float bpm) {
         for (Note n : notes) {
             addNote(n);
         }
         this.tag = tag;
         this.genre = genre;
         this.nps = nps;
+        this.bpm = bpm;
     }
 
     /**
@@ -58,11 +60,12 @@ public class Sequence implements Iterable<Note> {
         Gson gson = new Gson();
         List<String> notes = FileManager.readFile(path);
         String[] header = notes.get(0).replaceAll(" ", "").split(",");
-        if (header.length != 3) throw new MalformedSequenceException("Header of sequence file is not valid!");
+        if (header.length != 4) throw new MalformedSequenceException("Header of sequence file is not valid!");
 
         tag = header[0];
         genre = header[1];
         nps = Float.parseFloat(header[2]);
+        bpm = Float.parseFloat(header[3]);
 
         for (int i = 1; i < notes.size(); i++) {
             try {
@@ -94,6 +97,7 @@ public class Sequence implements Iterable<Note> {
     @Override
     public String toString() {
         StringBuilder s = new StringBuilder();
+        s.append("tag:").append(tag).append(",genre:").append(genre).append(",nps:").append(nps).append(",bpm:").append(bpm).append("\n");
 
         List<Float> keys = new ArrayList<>(notes.keySet());
         Collections.sort(keys);
