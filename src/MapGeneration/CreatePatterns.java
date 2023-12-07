@@ -4,12 +4,9 @@ import BeatSaberObjects.Objects.*;
 import DataManager.*;
 import MapGeneration.GenerationElements.*;
 import CustomWaveGenerator.*;
-
 import static DataManager.Parameters.*;
-
 import com.google.gson.Gson;
 
-import java.nio.file.NoSuchFileException;
 import java.util.*;
 
 public class CreatePatterns {
@@ -129,8 +126,6 @@ public class CreatePatterns {
                 case "jumps", "normal jumps", "normal_jumps", "normal-jumps" -> notes.addAll(createJumps(currentNotes, false, prevBlue, prevRed));
                 case "big-jumps", "bigjumps", "big_jumps", "big jumps" -> notes.addAll(createBigJumps(currentNotes, false, prevBlue, prevRed));
                 case "doubles", "double-handed" -> notes.addAll(createDoubles(currentNotes.toArray(new Note[0]), prevBlue, prevRed));
-                case "sequence", "seq", "s", "pattern", "pat", "rand-seq", "random-sequence" ->
-                        notes.addAll(createPatternSequence(currentNotes.toArray(new Note[0]), prevBlue, prevRed, "jumps.txt"));
 
                 default -> {
                     System.err.println("There is no such flag as: \"" + bookmarks.get(i)._name + "\" with " + currentNotes.size() + " notes. Please have a look at the supported ones in the README");
@@ -224,61 +219,6 @@ public class CreatePatterns {
             } else notes.add(n);
         }
         return notes;
-    }
-
-    /**
-     * WARNING! CURRENTLY NOT FILTERING DDs!!
-     * This function reads a saved pattern and repeatedly places it as long as there are elements in timings[]
-     * If you want multiple saved sequences (patterns), you can call this function multiple times without a sequenceName
-     *
-     * @param timings      where the notes should be placed
-     * @param prevBlue     What the previous blue note was
-     * @param prevRed      What the previous red note was
-     * @param sequenceName Name of the sequence (or more commonly known as pattern). If it is null, then a random one is chosen
-     * @return A List of all notes that have been generated
-     */
-    public static List<Note> createPatternSequence(Note[] timings, Note prevBlue, Note prevRed, String sequenceName) {
-        List<Note> pattern = new ArrayList<>();
-        Sequence sequence;
-        if (sequenceName == null || sequenceName.equals("")) {
-            try {
-                sequence = new Sequence();
-            } catch (NoSuchFileException e) {
-                return Arrays.stream(linearSlowPattern(timings, false, prevBlue, prevRed)).toList();
-            }
-        } else sequence = new Sequence(sequenceName);
-        Note firstBlue = sequence.getFirstBlue();
-        Note firstRed = sequence.getFirstRed();
-
-        Note timingTemp = timings[0];
-
-        if (firstBlue != null && prevBlue != null && prevBlue.isDD(firstBlue) && !ignoreDDs) {
-//            int pos = sequence.getPosition(firstBlue);
-            prevBlue = nextLinearNote(prevBlue, timings[0]._time);
-            pattern.add(prevBlue);
-            timings[0] = null;
-        }
-
-        if (firstRed != null && prevRed != null && prevRed.isDD(firstRed)) {
-//            int pos = sequence.getPosition(firstRed);
-            prevRed = prevRed.invertNote();
-            prevRed = nextLinearNote(prevRed, timingTemp._time);
-            prevRed.invertNote();
-            pattern.add(prevRed);
-            timings[0] = null;
-        }
-
-        Iterator iter = sequence.iterator();
-        for (Note timing : timings) {
-            if (timing == null) continue;
-
-            Note n = (Note) iter.next();
-
-            n._time = timing._time;
-            pattern.add(new Note(n));
-        }
-
-        return pattern;
     }
 
     public static List<Note> createDoubles(Note[] timings, Note prevBlue, Note prevRed) {

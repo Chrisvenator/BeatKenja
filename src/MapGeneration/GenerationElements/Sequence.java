@@ -2,108 +2,140 @@ package MapGeneration.GenerationElements;
 
 import BeatSaberObjects.Objects.Note;
 import DataManager.FileManager;
-import DataManager.Parameters;
+import MapGeneration.GenerationElements.Exceptions.MalformedFileExtensionException;
+import MapGeneration.GenerationElements.Exceptions.MalformedSequenceException;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
-import java.io.File;
-import java.nio.file.NoSuchFileException;
 import java.util.*;
 
 /**
- * MapGeneration.GenerationElements.Sequence is a pre-made sequence of notes.
- * MapGeneration.GenerationElements.Sequence is what normal people call pattern in the Beat Saber community.
- * <p>
- * But since there is already a class named MapGeneration.GenerationElements.Pattern, I named it MapGeneration.GenerationElements.Sequence.
+ * The Sequence class represents a sequence of notes for a Beat Saber map.
+ * It allows for iterating over these notes, and provides functionality to parse
+ * a sequence from a file and manage notes within the sequence.
  */
-public class Sequence implements Iterable {
+public class Sequence implements Iterable<Note> {
 
-    private final List<Note> notes = new ArrayList<>();
+    // Map to store notes based on their time
+    private final Map<Float, List<Note>> notes = new HashMap<>();
 
-    public static void main(String[] args) {
-//        MapGeneration.GenerationElements.Sequence s = new MapGeneration.GenerationElements.Sequence("Patterns/test.txt");
-//        new MapGeneration.GenerationElements.Sequence();
-    }
+    // Metadata for the sequence
+    public final String tag;
+    public final String genre;
+    public final float nps;
 
-    public Sequence() throws NoSuchFileException {
-        File[] files = new File("Patterns").listFiles();
 
-        Random rand = new Random(Parameters.SEED);
-
-        if (files != null && files.length != 0) {
-            File file = files[rand.nextInt(files.length)];
-            loadSequence(file.getAbsolutePath());
-            System.out.println("MapGeneration.GenerationElements.Sequence File chosen: " + file);
-        } else throw new NoSuchFileException("There is no sequence template");
-    }
-
-    public Sequence(String pathToSequenceFile) {
-        if (!pathToSequenceFile.contains("/")) pathToSequenceFile = "Patterns/" + pathToSequenceFile;
-        System.out.println("MapGeneration.GenerationElements.Sequence File chosen: " + pathToSequenceFile);
-        loadSequence(pathToSequenceFile);
-    }
-
-    public Note getFirstBlue() {
+    /**
+     * Constructs a Sequence object with a list of notes, tag, genre, and notes per second (nps).
+     *
+     * @param notes The list of notes to initialize the sequence with.
+     * @param tag   The tag associated with the sequence.
+     * @param genre The genre associated with the sequence.
+     * @param nps   The notes per second for the sequence.
+     */
+    public Sequence(List<Note> notes, String tag, String genre, float nps) {
         for (Note n : notes) {
-            if (n._type == 1) return n;
+            addNote(n);
         }
-        return null;
+        this.tag = tag;
+        this.genre = genre;
+        this.nps = nps;
     }
 
-    public Note getFirstRed() {
-        for (Note n : notes) {
-            if (n._type == 0) return n;
-        }
-        return null;
-    }
-
-    private void loadSequence(String pathToSequenceFile) {
-        List<String> content = FileManager.readFile(pathToSequenceFile);
-        if (!checkIfStringIsAValidSequenceFile(content))
-            throw new InputMismatchException("Error in MapGeneration.GenerationElements.Sequence: MapGeneration.GenerationElements.Sequence File has wrong format!");
+    /**
+     * Constructs a Sequence object by reading data from a file.<br>
+     * In the first line, the file must contain a header with the tag, genre, and nps all separated by commas.<br>
+     * The path must lead to a .seq file.<br>
+     *
+     * @param path The path to the sequence file to be read.
+     * @throws NumberFormatException           If there is an issue parsing the file contents.
+     * @throws MalformedSequenceException      If the sequence file is not formatted correctly.
+     * @throws MalformedFileExtensionException If the sequence file extension is correct (.seq file).
+     */
+    public Sequence(String path) throws NumberFormatException, MalformedSequenceException, MalformedFileExtensionException {
+        if (!path.endsWith(".seq")) throw new MalformedFileExtensionException("Sequence file is not a .seq file!");
 
         Gson gson = new Gson();
-        for (String s : content) notes.add(gson.fromJson(s.replace(",{", "{"), Note.class));
-        for (Note n : notes) n._time = 0;
+        List<String> notes = FileManager.readFile(path);
+        String[] header = notes.get(0).replaceAll(" ", "").split(",");
+        if (header.length != 3) throw new MalformedSequenceException("Header of sequence file is not valid!");
+
+        tag = header[0];
+        genre = header[1];
+        nps = Float.parseFloat(header[2]);
+
+        for (int i = 1; i < notes.size(); i++) {
+            try {
+                Note n = gson.fromJson(notes.get(i), Note.class);
+                addNote(n);
+            } catch (JsonSyntaxException e) {
+                throw new MalformedSequenceException("Note in sequence file is not valid!");
+            }
+        }
     }
 
-    private static boolean checkIfStringIsAValidSequenceFile(List<String> content) {
-        if (content == null || content.size() == 0) return false;
-        for (String s : content) {
-            if (!s.contains("_lineIndex") ||
-                    !s.contains("_lineLayer") ||
-                    !s.contains("_type") ||
-                    !s.contains("_cutDirection") ||
-                    !s.contains("{") ||
-                    !s.contains("}"))
-                return false;
+    /**
+     * Adds a note to the sequence.
+     * The notes will be stored in a list so that there may be multiple notes at the same beat.
+     *
+     * @param n The note to be added.
+     */
+    public void addNote(Note n) {
+        float time = n._time;
+        if (notes.containsKey(time)) {
+            notes.get(time).add(n);
+        } else {
+            List<Note> list = new ArrayList<>();
+            list.add(n);
+            notes.put(time, list);
         }
-        return true;
     }
 
     @Override
-    public Iterator iterator() {
-        return new Iterator() {
-            int i = -1;
-            int iterations = 0;
+    public String toString() {
+        StringBuilder s = new StringBuilder();
+
+        List<Float> keys = new ArrayList<>(notes.keySet());
+        Collections.sort(keys);
+
+        for (Float f : keys) {
+            for (Note n : notes.get(f)) {
+                s.append(n.toString().replace("\n", "")).append(",");
+            }
+            s = new StringBuilder(s.substring(0, s.length() - 1));
+            s.append("\n");
+        }
+
+        return s.toString();
+    }
+
+    /**
+     * Retrieves a list of all notes in the sequence.
+     *
+     * @return A list of all notes in the sequence.
+     */
+    public List<Note> getNotes() {
+        List<Note> list = new ArrayList<>();
+        for (List<Note> notes : this.notes.values()) {
+            list.addAll(notes);
+        }
+        Collections.sort(list);
+        return list;
+    }
+
+    @Override
+    public Iterator<Note> iterator() {
+        return new Iterator<>() {
+            private final Iterator<Note> iter = getNotes().iterator();
 
             @Override
             public boolean hasNext() {
-                //preventing an infinite loop
-                if (iterations <= 100) {
-                    iterations = 0;
-                    return false;
-                }
-                return true;
+                return iter.hasNext();
             }
 
             @Override
             public Note next() {
-                if (i >= notes.size() - 1) {
-                    i = -1;
-                    iterations++;
-                }
-                i++;
-                return notes.get(i);
+                return iter.next();
             }
         };
     }

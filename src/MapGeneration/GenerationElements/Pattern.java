@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class Pattern implements Iterable {
+public class Pattern implements Iterable<PatternProbability> {
 
     // In this variable, all the possible notes are stored as patterns
     public Note[][] patterns;
@@ -377,9 +377,9 @@ public class Pattern implements Iterable {
      * @return An iterator that allows iterating over the pattern probabilities.
      */
     @Override
-    public Iterator iterator() {
+    public Iterator<PatternProbability> iterator() {
         // Create a new iterator object
-        return new Iterator() {
+        return new Iterator<PatternProbability>() {
             int i = 0; // Iterator index
 
             /**
@@ -424,7 +424,3 @@ public class Pattern implements Iterable {
         return list;
     }
 }
-
-/**
- * The MapGeneration.GenerationElements.PatternProbability class represents a pattern probability consisting of an array of notes and corresponding probabilities.
- */
