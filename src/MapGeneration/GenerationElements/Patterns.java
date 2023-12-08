@@ -6,9 +6,7 @@ import MapGeneration.GenerationElements.Exceptions.MalformedSequenceException;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
 public class Patterns {
     public static void main(String[] args) {
@@ -25,12 +23,31 @@ public class Patterns {
     private final List<Sequence> sequences = new ArrayList<>();
     private final List<Pattern> patterns = new ArrayList<>();
 
-    public Patterns() {
-        initializeSequences("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\_SongsToTimings\\Patterns\\sequences", Sequence.class);
-        initializeSequences("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\_SongsToTimings\\Patterns\\PatternProbabilities", Pattern.class);
+
+    public Patterns(HashMap<String, String> type) {
+        for (String path : type.keySet()) {
+            initialize(path, type.get(path));
+        }
     }
 
-    public <T> void initializeSequences(String folderPath, Class<T> type) {
+    public Patterns() {
+        HashMap<String, String> map = new HashMap<>();
+        map.put("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\_SongsToTimings\\Patterns\\sequences", Sequence.class.toString());
+        map.put("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\_SongsToTimings\\Patterns\\PatternProbabilities", Pattern.class.toString());
+
+        Patterns p = new Patterns(map);
+        this.sequences.addAll(p.sequences);
+        this.patterns.addAll(p.patterns);
+    }
+
+    /**
+     * Initializes the sequences or patterns list with the files in the given folder path.
+     * The type parameter is used to determine whether to initialize sequences or patterns.
+     *
+     * @param folderPath The path to the folder containing the sequences or patterns.
+     * @param type       The type of the files in the folder. This will determine which list to initialize.
+     */
+    public void initialize(String folderPath, String type) {
         try {
             Path start = Paths.get(folderPath);
 
@@ -40,9 +57,9 @@ public class Patterns {
                         @Override
                         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
                             try {
-                                if (type.equals(Sequence.class)) {
+                                if (type.equals(Sequence.class.toString())) {
                                     sequences.add(new Sequence(file.toString()));
-                                } else if (type.equals(Pattern.class)) {
+                                } else if (type.equals(Pattern.class.toString())) {
                                     patterns.add(new Pattern(file.toString()));
                                 }
                             } catch (MalformedSequenceException | MalformedFileExtensionException e) {
