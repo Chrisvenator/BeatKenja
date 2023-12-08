@@ -3,6 +3,7 @@ package MapGeneration.GenerationElements;
 import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Note;
 import DataManager.FileManager;
+import MapGeneration.GenerationElements.Exceptions.MalformattedFileException;
 import com.google.gson.Gson;
 
 import java.io.File;
@@ -73,7 +74,11 @@ public class Pattern implements Iterable<PatternProbability> {
     public Pattern(String pathToPatternFile) {
         File f = new File(pathToPatternFile);
         if (f.exists() && (f.isDirectory() || pathToPatternFile.endsWith(".pat"))) {
-            readFromPatFile(pathToPatternFile);
+            try {
+                readFromPatFile(pathToPatternFile);
+            } catch (MalformattedFileException e) {
+                throw new RuntimeException(e);
+            }
             return;
         }
 
@@ -105,20 +110,30 @@ public class Pattern implements Iterable<PatternProbability> {
      *
      * @param pathToPatternFile The path to the pattern file
      */
-    private void readFromPatFile(String pathToPatternFile) {
+    private void readFromPatFile(String pathToPatternFile) throws MalformattedFileException {
         count = new int[MAX_ARRAY_SIZE][MAX_ARRAY_SIZE];
         patterns = new Note[MAX_ARRAY_SIZE][MAX_ARRAY_SIZE];
         probabilities = new float[MAX_ARRAY_SIZE][MAX_ARRAY_SIZE];
 
         List<String> lines = FileManager.readFile(pathToPatternFile);
         for (int i = 0; i < lines.size(); i++) {
+            if (lines.get(i).contains(".")) throw new MalformattedFileException("The file contains a dot (.) in line " + i + ". This is not allowed in the .pat file format.");
+
             String[] split = lines.get(i).split(";");
-            patterns[i][0] = new Note(Float.parseFloat(split[0].split(",")[0]), Float.parseFloat(split[0].split(",")[1]), Float.parseFloat(split[0].split(",")[2]), Integer.parseInt(split[0].split(",")[3]), Integer.parseInt(split[0].split(",")[4]));
+            patterns[i][0] = new Note(0,
+                    Integer.parseInt(String.valueOf(split[0].charAt(0))),
+                    Integer.parseInt(String.valueOf(split[0].charAt(1))),
+                    Integer.parseInt(String.valueOf(split[0].charAt(2))),
+                    Integer.parseInt(String.valueOf(split[0].charAt(3))));
 
             for (int j = 1; j < split.length; j++) {
                 if (split[j] == null) break;
-                int count = Integer.parseInt(split[j].split(",")[5]);
-                patterns[i][j] = new Note(Float.parseFloat(split[j].split(",")[0]), Float.parseFloat(split[j].split(",")[1]), Float.parseFloat(split[j].split(",")[2]), Integer.parseInt(split[j].split(",")[3]), Integer.parseInt(split[j].split(",")[4]));
+                int count = Integer.parseInt(split[j].substring(4));
+                patterns[i][j] = new Note(0,
+                        Integer.parseInt(String.valueOf(split[j].charAt(0))),
+                        Integer.parseInt(String.valueOf(split[j].charAt(1))),
+                        Integer.parseInt(String.valueOf(split[j].charAt(2))),
+                        Integer.parseInt(String.valueOf(split[j].charAt(3))));
                 this.count[i][j] = count;
             }
         }
@@ -145,13 +160,23 @@ public class Pattern implements Iterable<PatternProbability> {
         for (Note[] notes : this.patterns) {
             if (notes[0] == null) continue;
             // Append the string representation of the first note in the pattern
-            s.append(notes[0]._time).append(",").append(notes[0]._lineIndex).append(",").append(notes[0]._lineLayer).append(",").append(notes[0]._type).append(",").append(notes[0]._cutDirection).append(";");
+            int lineIndex = (int) Math.round(notes[0]._lineIndex);
+            int lineLayer = (int) Math.round(notes[0]._lineLayer);
+            int type = notes[0]._type;
+            int cutDirection = notes[0]._cutDirection;
+
+            s.append(lineIndex).append(lineLayer).append(type).append(cutDirection).append(";");
 
             // Iterate over the remaining notes in the pattern
             for (int i = 1; i < notes.length; i++) {
                 if (notes[i] != null) {
                     // Append the string representation of the note, its count, and probability
-                    s.append(notes[i]._time).append(",").append(notes[i]._lineIndex).append(",").append(notes[i]._lineLayer).append(",").append(notes[i]._type).append(",").append(notes[i]._cutDirection).append(",").append(this.count[counter][i]).append(";");
+                    lineIndex = (int) notes[i]._lineIndex;
+                    lineLayer = (int) notes[i]._lineLayer;
+                    type = notes[i]._type;
+                    cutDirection = notes[i]._cutDirection;
+
+                    s.append(lineIndex).append(lineLayer).append(type).append(cutDirection).append(this.count[counter][i]).append(";");
                 }
             }
 
