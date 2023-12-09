@@ -37,7 +37,7 @@ public class MyButton extends JButton implements MyElement {
     }
 
     public void onClick() {
-        childElements.forEach(button -> button.setVisible(!button.isVisible()));
+        childElements.forEach(element -> element.setVisible(!element.isVisible()));
     }
 
     protected BeatSaberMap convertToMap(File path) throws FileNotFoundException, WrongFileException {
