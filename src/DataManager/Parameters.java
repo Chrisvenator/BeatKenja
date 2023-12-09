@@ -22,7 +22,7 @@ public class Parameters {
 
     //Note Generator settings:
     public static final double BPM = 120;
-    public static final double PLACEMENT_PRECISION = (double) 1 / 32; //Placement Precision
+    public static final double PLACEMENT_PRECISION = (double) 1 / 8; //Placement Precision
     public static final boolean FIX_PLACEMENTS = true; //should the timings be fixed so that SS doesn't flag it as AI made?
 
     //Try to load the config. If it doesn't exist, then use the default values
@@ -43,6 +43,7 @@ public class Parameters {
     public static final String ONSET_GENERATION_FOLDER_PATH_INPUT = "./OnsetGeneration/mp3Files/";
     public static final String ONSET_GENERATION_FOLDER_PATH_OUTPUT = saveNewMapsToDefaultPath ? DEFAULT_PATH : "./OnsetGeneration/output/";
     public static final String DEFAULT_SEQUENCE_TEMPLATE_FOLDER = "./Patterns/";
+    public static final String DEFAULT_BEATSAVER_MAPS_PATH = "./BeatSaverMaps/";
     public static final String DEFAULT_EXPORT_PATH = "./";
     public static final Color lightModeBackgroundColor = Color.white;
     public static final Color lightModeForegroundColor = Color.BLACK;
