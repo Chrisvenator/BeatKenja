@@ -19,8 +19,11 @@ public class MapUtilitiesButton extends MyButton {
 
     private void initChildren() {
         MyTextField utilsFixPlacementTextField = new UtilsFixPlacementsTextField(this);
+        MyTextField utilsDeleteNoteTypeTextField = new UtilsDeleteNoteTypeTextField(this);
 
         this.addChild(utilsFixPlacementTextField);
+        this.addChild(utilsDeleteNoteTypeTextField);
+
         this.addChild(new UtilsFixPlacements(this, utilsFixPlacementTextField));
         this.addChild(new UtilsDeleteNoteType(this, utilsFixPlacementTextField));
         this.addChild(new UtilsConvertAllFlashingLight(this));
