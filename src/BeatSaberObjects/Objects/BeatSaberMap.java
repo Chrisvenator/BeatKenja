@@ -24,10 +24,10 @@ import java.util.*;
 public class BeatSaberMap {
     public String originalJSON;
     public String _version = "2.2.0";
-    public Events[] _events;
+    public Events[] _events = new Events[0];
     public Note[] _notes;
-    public Obstacle[] _obstacles;
-    public List<Bookmark> bookmarks;
+    public Obstacle[] _obstacles = new Obstacle[0];
+    public List<Bookmark> bookmarks = new ArrayList<>();
     //    private CustomData[] customData; // not working yet
 
     // <editor-fold desc="constructor methods">
