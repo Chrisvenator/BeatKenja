@@ -17,7 +17,7 @@ public class JsonFileMerger {
 //            throw new RuntimeException(e);
 //        }
 
-        merger.mergeAll("src/DataManager/merged.json", 1, 300);
+        merger.mergeAll("src/DataManager/merged.json", 200000, 201000);
     }
 
 
@@ -33,20 +33,23 @@ public class JsonFileMerger {
 
 
     /**
+     * Merges all files in the download directory from start to end into one json file.
+     *
      * @param outputFile path of the output file
      * @param start      beginning of the range (inclusive) in decimal (will be converted to hexadecimal)
      * @param end        end of the range (exclusive) in decimal (will be converted to hexadecimal)
      */
     public void mergeAll(String outputFile, int start, int end) {
-        assert start - end >= 2;
+        assert start - end >= 1;
         StringBuilder output = new StringBuilder("{\n");
 
         for (int i = start; i < end; i++) {
-            File f = new File(DOWNLOAD_DIRECTORY + Integer.toHexString(i) + ".json");
-            if (!f.exists() || !f.isFile()) continue;
+            if (i % 1000 == 0) System.out.println("Merging map " + i + "...");
+            File file = new File(DOWNLOAD_DIRECTORY + Integer.toHexString(i) + ".json");
+            if (!file.exists() || !file.isFile()) continue;
 
             try {
-                output.append("\"").append(f.getName().replace(".json", "")).append("\": ").append(new String(Files.readAllBytes(Paths.get(f.getAbsolutePath())))).append(",\n");
+                output.append("\"").append(file.getName().replace(".json", "")).append("\": ").append(new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())))).append(",\n");
             } catch (IOException ignored) {
             }
 
@@ -60,9 +63,8 @@ public class JsonFileMerger {
             writer.write(output.toString());
             writer.close();
         } catch (IOException e) {
-            System.out.println("Could not write to file " + outputFile + "!. So it will be outputted here: ");
+            System.err.println("Could not write to file " + outputFile + "!. So it will be outputted here: ");
             System.out.println(output);
-            throw new RuntimeException(e);
         }
     }
 
