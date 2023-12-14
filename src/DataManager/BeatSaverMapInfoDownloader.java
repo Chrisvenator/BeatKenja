@@ -1,4 +1,4 @@
-package MapAnalysation;
+package DataManager;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -9,7 +9,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.concurrent.TimeUnit;
 
-import DataManager.Parameters;
 import org.json.JSONException;
 import org.json.JSONObject;
 
