@@ -67,7 +67,6 @@ public class BPListInfoRetriever {
         Path mapInfoInputPath = Path.of(MAPS_INFO_FOLDER + mapID + ".json");
         Path mapInfoOutputFolderPath = Path.of(MAPS_OUTPUT_FOLDER + mapID);
 
-        Path mapInfoOutputPath = Path.of(mapInfoOutputFolderPath + ".json");
         Path mapOutputPath = Path.of(mapInfoOutputFolderPath + "/" + mapID + ".json");
 
         try {
