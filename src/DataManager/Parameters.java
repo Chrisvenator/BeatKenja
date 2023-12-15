@@ -5,6 +5,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.util.Random;
 
+@SuppressWarnings("unused")
 public class Parameters {
 
 
@@ -43,7 +44,8 @@ public class Parameters {
     public static final String ONSET_GENERATION_FOLDER_PATH_INPUT = "./OnsetGeneration/mp3Files/";
     public static final String ONSET_GENERATION_FOLDER_PATH_OUTPUT = saveNewMapsToDefaultPath ? DEFAULT_PATH : "./OnsetGeneration/output/";
     public static final String DEFAULT_SEQUENCE_TEMPLATE_FOLDER = "./Patterns/";
-    public static final String DEFAULT_BEATSAVER_MAPS_PATH = "./BeatSaverMaps/";
+    public static final String DEFAULT_BEATSAVER_MAP_INFO_PATH = "./BeatSaberMaps/MapInfos/";
+    public static final String DEFAULT_BEATSAVER_MAPS_PATH = "./BeatSaberMaps/Maps/";
     public static final String DEFAULT_EXPORT_PATH = "./";
     public static final Color lightModeBackgroundColor = Color.white;
     public static final Color lightModeForegroundColor = Color.BLACK;

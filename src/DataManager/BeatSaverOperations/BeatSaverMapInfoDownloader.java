@@ -1,7 +1,5 @@
-package DataManager;
+package DataManager.BeatSaverOperations;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -9,6 +7,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.concurrent.TimeUnit;
 
+import DataManager.FileManager;
+import DataManager.Parameters;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -23,12 +23,7 @@ public class BeatSaverMapInfoDownloader {
     }
 
     public BeatSaverMapInfoDownloader() {
-        this.DOWNLOAD_DIRECTORY = Parameters.DEFAULT_BEATSAVER_MAPS_PATH;
-    }
-
-    public BeatSaverMapInfoDownloader(String outputDirectory) {
-        if (!outputDirectory.endsWith("/")) outputDirectory += "/";
-        this.DOWNLOAD_DIRECTORY = outputDirectory;
+        this.DOWNLOAD_DIRECTORY = Parameters.DEFAULT_BEATSAVER_MAP_INFO_PATH;
     }
 
     public void downloadAllMaps() throws InterruptedException {
@@ -46,6 +41,11 @@ public class BeatSaverMapInfoDownloader {
         System.out.println("Finished downloading all maps. Last Map: " + i);
     }
 
+    /**
+     * Downloads map information from the BeatSaver API.
+     *
+     * @param mapID The ID of the map to download.
+     */
     public void downloadMap(String mapID) {
         try {
             String BEATSAVER_API_URL = "https://api.beatsaver.com/maps/id/";
@@ -62,22 +62,11 @@ public class BeatSaverMapInfoDownloader {
             JSONObject jsonResponse = new JSONObject(response.body());
             jsonResponse.put("description", "");
 
-            if (!jsonResponse.has("error")) saveToFile(jsonResponse.toString(4), (DOWNLOAD_DIRECTORY + mapID + ".json").toLowerCase());
+            if (!jsonResponse.has("error")) FileManager.overwriteFile((DOWNLOAD_DIRECTORY + mapID + ".json").toLowerCase(), jsonResponse.toString(4));
             else System.out.println("Map " + mapID + " not found");
         } catch (IOException | InterruptedException | JSONException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
-        }
-    }
-
-    private static void saveToFile(String jsonContent, String filePath) {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(filePath))) {
-            bw.write(jsonContent);
-            bw.flush();
-            bw.close();
-            System.out.println("Saved to " + filePath);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }

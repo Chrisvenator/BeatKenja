@@ -24,13 +24,8 @@ public class JsonFileMerger {
     private final String DOWNLOAD_DIRECTORY;
 
     public JsonFileMerger() {
-        this.DOWNLOAD_DIRECTORY = Parameters.DEFAULT_BEATSAVER_MAPS_PATH;
+        this.DOWNLOAD_DIRECTORY = Parameters.DEFAULT_BEATSAVER_MAP_INFO_PATH;
     }
-
-    public JsonFileMerger(String downloadDirectory) {
-        this.DOWNLOAD_DIRECTORY = downloadDirectory;
-    }
-
 
     /**
      * Merges all files in the download directory from start to end into one json file.
