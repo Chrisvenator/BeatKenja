@@ -34,6 +34,10 @@ public class BeatSaverMapDownloader {
         try {
             JSONObject mapInfoJson = new JSONObject(String.join("", FileManager.readFile(mapInfo.getAbsolutePath())));
             downloadURL = new JSONObject(mapInfoJson.getJSONArray("versions").get(0).toString()).getString("downloadURL");
+
+            //checking the url, so that no malicious entity can download something unwanted.
+            if (!downloadURL.contains("https://r2cdn.beatsaver.com/")) throw new MalformedURLException("wrong URL");
+
             String path = downloadDir + "/" + mapID + ".zip";
             System.out.println("Started downloading " + mapID + ": " + downloadURL);
 
@@ -44,12 +48,11 @@ public class BeatSaverMapDownloader {
 
         } catch (JSONException e) {
             System.err.println(mapID + ".json was in the wrong format! " + mapInfo.getName());
-        } catch (MalformedURLException | URISyntaxException e) {
+        } catch (MalformedURLException | URISyntaxException | FileNotFoundException e) {
             System.err.println("URL was not found. Does this map still exist? skipping " + mapID + ". URL: " + downloadURL);
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("Failed to download the file.");
         }
     }
-
 }

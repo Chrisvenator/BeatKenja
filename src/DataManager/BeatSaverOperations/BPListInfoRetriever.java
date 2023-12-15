@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 public class BPListInfoRetriever {
     public static void main(String[] args) throws WrongFileExtensionException, IOException, JSONException {
         BPListInfoRetriever retriever = new BPListInfoRetriever();
-        retriever.retrieveBPLIST(new File("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\Playlists\\BeatSaver - Bookmarks.bplist"));
+        retriever.retrieveBPLIST(new File("C:\\Users\\chris\\Documents\\_Uni\\a (1).bplist"));
     }
 
     private final String MAPS_INFO_FOLDER;
@@ -58,10 +58,10 @@ public class BPListInfoRetriever {
      * "retrieve()" copies the map info into the output folder and then downloads the map into its own folder.<br>
      * Important: only the necessary files are kept in the output folder. The rest will be deleted (like mp3 and images).<br>
      * Important: the map will be downloaded into its own folder, so the output folder will contain a folder with the map ID as its name.<br>
-     * @warning This method can create up to 1000 requests before it has to wait 60 seconds. THE 60-SECOND WAIT IS NOT IMPLEMENTED HERE!
      *
      * @param mapID The ID of the map to retrieve in hexadecimal.
      * @return Whether the map was successfully retrieved or not.
+     * @warning This method can create up to 1000 requests before it has to wait 60 seconds. THE 60-SECOND WAIT IS NOT IMPLEMENTED HERE!
      */
     public boolean retrieve(String mapID) {
         Path mapInfoInputPath = Path.of(MAPS_INFO_FOLDER + mapID + ".json");
@@ -74,8 +74,7 @@ public class BPListInfoRetriever {
             File folder = new File(mapInfoOutputFolderPath.toString());
             if (!folder.exists()) folder.mkdir();
 
-            Files.copy(mapInfoInputPath, mapInfoOutputPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            Files.copy(mapInfoOutputPath, mapOutputPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(mapInfoInputPath, mapOutputPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 
             BeatSaverMapDownloader mapDownloader = new BeatSaverMapDownloader();
 
