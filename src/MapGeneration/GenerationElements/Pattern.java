@@ -3,6 +3,8 @@ package MapGeneration.GenerationElements;
 import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Note;
 import DataManager.FileManager;
+import DataManager.Parameters;
+import DataManager.Records.PatMetadata;
 import MapGeneration.GenerationElements.Exceptions.MalformattedFileException;
 import com.google.gson.Gson;
 
@@ -21,6 +23,8 @@ public class Pattern implements Iterable<PatternProbability> {
     public int[][] count; //for example, the Note from patterns[0][0] is followed by patterns[0][1] count[0][1] times
     public float[][] probabilities;
 
+    public PatMetadata metadata = new PatMetadata(-1.0, -1.0, "NULL", new ArrayList<String>(), new ArrayList<String>());
+
     public static void main(String[] args) {
         String inputPath = "Input.txt";
 
@@ -37,12 +41,13 @@ public class Pattern implements Iterable<PatternProbability> {
 
     // Constructor that analyzes the patterns based on the provided notes and type
     public Pattern(Note[] notes, int type) {
-        if (type != 0 && type != 1) return;
+        if (type != 0 && type != 1 || notes == null) return;
 
         // Initialize arrays to store patterns, count, and probabilities
         count = new int[MAX_ARRAY_SIZE][MAX_ARRAY_SIZE];
         patterns = new Note[MAX_ARRAY_SIZE][MAX_ARRAY_SIZE];
         probabilities = new float[MAX_ARRAY_SIZE][MAX_ARRAY_SIZE];
+
 
         // Analyze the patterns based on the provided notes and type
         analyzePattern(notes, type);
@@ -116,7 +121,21 @@ public class Pattern implements Iterable<PatternProbability> {
         probabilities = new float[MAX_ARRAY_SIZE][MAX_ARRAY_SIZE];
 
         List<String> lines = FileManager.readFile(pathToPatternFile);
-        for (int i = 0; i < lines.size(); i++) {
+
+        String[] metadata = lines.get(0).split(";");
+
+        this.metadata = new PatMetadata(
+                Float.parseFloat(metadata[0]),
+                Float.parseFloat(metadata[1]),
+                metadata[2],
+                metadata[3].contains(",") ? List.of(metadata[3].split(",")) : List.of(metadata[3]),
+                metadata[4].contains(",") ? List.of(metadata[4].split(",")) : List.of(metadata[4])
+        );
+
+        this.metadata.tags().stream().filter(tag -> !Parameters.MAP_TAGS.contains(tag)).forEach(tag -> System.err.println("Unknown tag: " + tag));
+        this.metadata.genre().stream().filter(genre -> !Parameters.MUSIC_GENRE.contains(genre)).forEach(genre -> System.err.println("Unknown genre: " + genre));
+
+        for (int i = 1; i < lines.size(); i++) {
             if (lines.get(i).contains(".")) throw new MalformattedFileException("The file contains a dot (.) in line " + i + ". This is not allowed in the .pat file format.");
 
             String[] split = lines.get(i).split(";");
@@ -155,6 +174,7 @@ public class Pattern implements Iterable<PatternProbability> {
     public String exportInPatFormat() {
         StringBuilder s = new StringBuilder();
         int counter = 0;
+        s.append(metadata.toString());
 
         // Iterate over the pattern array
         for (Note[] notes : this.patterns) {
