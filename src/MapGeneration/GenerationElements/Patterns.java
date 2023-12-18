@@ -3,10 +3,8 @@ package MapGeneration.GenerationElements;
 import DataManager.FileManager;
 import DataManager.Parameters;
 import DataManager.Records.PatMetadata;
-import MapGeneration.GenerationElements.Exceptions.MalformattedFileException;
 import MapGeneration.GenerationElements.Exceptions.MalformedFileExtensionException;
 import MapGeneration.GenerationElements.Exceptions.MalformedSequenceException;
-import UserInterface.UserInterface;
 import com.google.gson.JsonSyntaxException;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,7 +19,7 @@ import java.util.*;
 
 public class Patterns {
     public static void main(String[] args) {
-        Patterns patterns = new Patterns();
+//        Patterns patterns = new Patterns();
 //        System.out.println(patterns.sequences);
 //        System.out.println(patterns.patterns);
 //        System.out.println(patterns.patterns.get(0).exportInPatFormat());
@@ -31,8 +29,14 @@ public class Patterns {
 //        System.out.println(p.exportInPatFormat());
 
 
-        Patterns patterns2 = new Patterns(new File("./BeatSaberMaps/good/"));
+        String patFilePath = "./BeatSaberMaps/good_pat/";
 
+        Patterns patterns2 = new Patterns();
+        patterns2.folderToPat(new File("./BeatSaberMaps/good/"), patFilePath);
+        Pattern p = patterns2.mergePatternsInFolder(new File(patFilePath));
+
+        System.out.println(p);
+        FileManager.overwriteFile(patFilePath + "_merged.pat", p.exportInPatFormat());
     }
 
     private final List<Sequence> sequences = new ArrayList<>();
@@ -55,6 +59,16 @@ public class Patterns {
         this.patterns.addAll(p.patterns);
     }
 
+
+    public Pattern mergePatternsInFolder(File folder) {
+        Pattern p = new Pattern();
+
+        for (File file : Objects.requireNonNull(folder.listFiles()))
+            p.merge(new Pattern(file.getPath()));
+
+        return p;
+    }
+
     /**
      * Converts all difficulties of all folders in the given folder to .pat files.
      *
@@ -62,15 +76,14 @@ public class Patterns {
      * @warning V3 FILES ARE NOT SUPPORTED YET!
      * @warning This method is very slow. It is recommended to use the other constructor instead.
      */
-    public Patterns(File folder) {
-        String patFilePath = "./BeatSaberMaps/good_pat/";
-
+    public void folderToPat(File folder, String patFilePath) {
         int i = 0;
         for (File subFolder : Objects.requireNonNull(folder.listFiles())) {
             System.out.println("Processing " + subFolder.getName() + " (" + ++i + "/" + Objects.requireNonNull(folder.listFiles()).length + ")");
-            Thread t = new Thread(() -> folderToPat(subFolder, patFilePath));
+            Thread t = new Thread(() -> mapFolderToPat(subFolder, patFilePath));
             t.start();
         }
+
     }
 
     /**
@@ -82,7 +95,7 @@ public class Patterns {
      * @param patFilePath The path to the folder where the .pat files will be saved
      * @warning This method is very slow. It is recommended to use the other constructor instead.
      */
-    public void folderToPat(File subFolder, String patFilePath) {
+    public void mapFolderToPat(File subFolder, String patFilePath) {
 
         if (!subFolder.isDirectory()) return;
         File jsonFile = new File(subFolder, subFolder.getName() + ".json");
