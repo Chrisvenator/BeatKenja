@@ -58,8 +58,8 @@ public class Parameters {
     public static final int WAVE_NOTE_GENERATION_SAMPLING_POINTS = 1000;
     public static final JFileChooser FILE_CHOOSER = new JFileChooser(DEFAULT_PATH.trim());
     public static final FileNameExtensionFilter MAP_FILE_FORMAT = new FileNameExtensionFilter("DAT files (*.dat)", "dat");
-    public static final List<String> MAP_TAGS = List.of("Accuracy", "Balanced", "Challenge", "Dance", "Fitness", "Speed", "Tech");
-    public static final List<String> MUSIC_GENRE = List.of("Alternative", "Ambient", "Anime", "Classical-Orchestral", "Comedy-Meme", "Dance", "Drum and Bass", "Dubstep", "Electronic", "Folk-Acoustic", "Funk-Disco", "Hardcore", "Hip Hop-Rap", "Holiday", "House", "Indie", "Instrumental", "J-Pop", "J-Rock", "Jazz", "K-Pop", "Kids-Family", "Metal", "Nightcore", "Pop", "Punk", "R&B", "Rock", "Soul", "Speedcore", "Swing", "TV-Film", "Techno", "Trance", "Video Game", "Vocaloid");
+    public static final List<String> MAP_TAGS = List.of("NULL", "Accuracy", "Balanced", "Challenge", "Dance", "Fitness", "Speed", "Tech");
+    public static final List<String> MUSIC_GENRE = List.of("NULL", "Alternative", "Ambient", "Anime", "Classical-Orchestral", "Comedy-Meme", "Dance", "Drum and Bass", "Dubstep", "Electronic", "Folk-Acoustic", "Funk-Disco", "Hardcore", "Hip Hop-Rap", "Holiday", "House", "Indie", "Instrumental", "J-Pop", "J-Rock", "Jazz", "K-Pop", "Kids-Family", "Metal", "Nightcore", "Pop", "Punk", "R&B", "Rock", "Soul", "Speedcore", "Swing", "TV-Film", "Techno", "Trance", "Video Game", "Vocaloid");
 
     static {
         FILE_CHOOSER.setFileFilter(MAP_FILE_FORMAT);

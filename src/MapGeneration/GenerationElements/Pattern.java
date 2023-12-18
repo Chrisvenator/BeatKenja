@@ -14,7 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class Pattern implements Iterable<PatternProbability> {
-    private final int MAX_ARRAY_SIZE = 108; // lines * layers * cut directions = 4 * 3 * 9 = 108
+    private final int MAX_ARRAY_SIZE = 109; // lines * layers * cut directions = 4 * 3 * 9 = 108 + 1 (just to be safe)
 
     // In this variable, all the possible notes are stored as patterns
     public Note[][] patterns;
@@ -23,7 +23,7 @@ public class Pattern implements Iterable<PatternProbability> {
     public int[][] count; //for example, the Note from patterns[0][0] is followed by patterns[0][1] count[0][1] times
     public float[][] probabilities;
 
-    public PatMetadata metadata = new PatMetadata(-1.0, -1.0, "NULL", new ArrayList<String>(), new ArrayList<String>());
+    public PatMetadata metadata = new PatMetadata(-1.0, -1.0, "NULL", new ArrayList<>(), new ArrayList<>());
 
     public static void main(String[] args) {
         String inputPath = "Input.txt";
@@ -544,7 +544,7 @@ public class Pattern implements Iterable<PatternProbability> {
                 if (n == null) break;
                 l.add(n);
             }
-            if (l.size() == 0) break;
+            if (l.isEmpty()) break;
             list.add(l);
         }
 
@@ -571,11 +571,11 @@ public class Pattern implements Iterable<PatternProbability> {
     //<P>
     //The method ensures that the merged patterns are properly integrated without duplication,
     //maintaining the integrity of the pattern sequences and their respective counts and probabilities.
-    public void mergePatterns(Pattern p) {
+    public void merge(Pattern p) {
         int lastKey = 0;
         for (; lastKey < patterns.length; lastKey++) if (patterns[lastKey][0] == null) break;
 
-        for (int i = 0; i < p.patterns.length; i++) {
+        for (int i = 1; i < p.patterns.length; i++) {
             if (p.patterns[i][0] == null) break;
 
             int key = containsKey(patterns, p.patterns[i][0]); //This contains they key where the Note is saved in this.patterns

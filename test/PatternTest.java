@@ -132,7 +132,7 @@ class PatternTest {
         BeatSaberMap map = new Gson().fromJson(FileManager.readFile("test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
         Pattern p1 = new Pattern(map._notes, 1);
         Pattern p2 = new Pattern(map._notes, 1);
-        p1.mergePatterns(p2);
+        p1.merge(p2);
 
         for (int i = 0; i < p2.count.length; i++) {
             if (p2.count[i] == null) break;
@@ -146,7 +146,7 @@ class PatternTest {
         Pattern pattern2 = new Pattern("./test/resources/patterns/test2.pat");
         Pattern pattern3 = new Pattern("./test/resources/patterns/test3.pat");
 
-        pattern1.mergePatterns(pattern2);
+        pattern1.merge(pattern2);
         for (int i = 0; i < pattern2.count.length; i++) {
             if (pattern2.count[i] == null) break;
             for (int j = 0; j < pattern2.count[i].length; j++) {
@@ -164,7 +164,7 @@ class PatternTest {
                 """);
 
 
-        pattern1.mergePatterns(pattern3);
+        pattern1.merge(pattern3);
         assertEquals(pattern1.toString(), """
                 {"_time":0.0,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":6}: [
                   {"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":0}: 3 times = 75.0% ,\s
