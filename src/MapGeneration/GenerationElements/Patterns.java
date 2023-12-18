@@ -1,8 +1,19 @@
 package MapGeneration.GenerationElements;
 
+import DataManager.FileManager;
+import DataManager.Parameters;
+import DataManager.Records.PatMetadata;
+import MapGeneration.GenerationElements.Exceptions.MalformattedFileException;
 import MapGeneration.GenerationElements.Exceptions.MalformedFileExtensionException;
 import MapGeneration.GenerationElements.Exceptions.MalformedSequenceException;
+import UserInterface.UserInterface;
+import com.google.gson.JsonSyntaxException;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.EOFException;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -13,11 +24,15 @@ public class Patterns {
         Patterns patterns = new Patterns();
 //        System.out.println(patterns.sequences);
 //        System.out.println(patterns.patterns);
-        System.out.println(patterns.patterns.get(0).exportInPatFormat());
+//        System.out.println(patterns.patterns.get(0).exportInPatFormat());
 //        System.out.println(patterns.patterns.get(1).exportInPatFormat());
 //        Pattern p = new Pattern("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\_SongsToTimings\\Patterns\\PatternProbabilities\\test1.pat");
 //        System.out.println(p);
 //        System.out.println(p.exportInPatFormat());
+
+
+        Patterns patterns2 = new Patterns(new File("./BeatSaberMaps/good/"));
+
     }
 
     private final List<Sequence> sequences = new ArrayList<>();
@@ -32,12 +47,122 @@ public class Patterns {
 
     public Patterns() {
         HashMap<String, String> map = new HashMap<>();
-        map.put("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\_SongsToTimings\\Patterns\\sequences", Sequence.class.toString());
-        map.put("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\_SongsToTimings\\Patterns\\PatternProbabilities", Pattern.class.toString());
+        map.put(Parameters.DEFAULT_SEQUENCES_FOLDER, Sequence.class.toString());
+        map.put(Parameters.DEFAULT_PATTERN_PROBABILITIES_FOLDER, Pattern.class.toString());
 
         Patterns p = new Patterns(map);
         this.sequences.addAll(p.sequences);
         this.patterns.addAll(p.patterns);
+    }
+
+    /**
+     * Converts all difficulties of all folders in the given folder to .pat files.
+     *
+     * @param folder The path to the folder containing the folders
+     * @warning V3 FILES ARE NOT SUPPORTED YET!
+     * @warning This method is very slow. It is recommended to use the other constructor instead.
+     */
+    public Patterns(File folder) {
+        String patFilePath = "./BeatSaberMaps/good_pat/";
+
+        int i = 0;
+        for (File subFolder : Objects.requireNonNull(folder.listFiles())) {
+            System.out.println("Processing " + subFolder.getName() + " (" + ++i + "/" + Objects.requireNonNull(folder.listFiles()).length + ")");
+            Thread t = new Thread(() -> folderToPat(subFolder, patFilePath));
+            t.start();
+        }
+    }
+
+    /**
+     * Converts a folder containing a .json files and .dat files to a .pat file.
+     * The .pat file will be saved in the patFilePath.
+     * The folder must contain a .json file with the same name as the folder itself. You can get the json file from the beatsaver api
+     *
+     * @param subFolder   The folder containing the .json file and the .dat files
+     * @param patFilePath The path to the folder where the .pat files will be saved
+     * @warning This method is very slow. It is recommended to use the other constructor instead.
+     */
+    public void folderToPat(File subFolder, String patFilePath) {
+
+        if (!subFolder.isDirectory()) return;
+        File jsonFile = new File(subFolder, subFolder.getName() + ".json");
+        if (!jsonFile.exists()) return;
+
+        try {
+            String content = new String(Files.readAllBytes(Paths.get(jsonFile.getPath())));
+            JSONObject jsonObject = new JSONObject(content);
+
+            // Extract tags and bpm
+//                        System.out.println(jsonObject.toString(4));
+            String tags;
+            try {
+                tags = jsonObject.getJSONArray("tags").toString()
+                        .replace("[", "")
+                        .replace("]", "")
+                        .replaceAll("\"", "")
+                        .replace(" ", "")
+                        .replace("&", "-");
+            } catch (JSONException e) {
+                tags = "NULL";
+            }
+
+
+            int bpm = jsonObject.getJSONObject("metadata").getInt("bpm");
+
+            // Extract label-nps pairs from diffs
+//                System.out.println(new JSONObject(jsonObject.getJSONArray("versions").get(0).toString()).getJSONArray("diffs"));
+            JSONArray diffs = new JSONObject(jsonObject.getJSONArray("versions").get(0).toString()).getJSONArray("diffs");
+            for (int i = 0; i < diffs.length(); i++) {
+                JSONObject diff = diffs.getJSONObject(i);
+
+                String characteristic = diff.getString("characteristic"); //Maybe use this in the future for analyzing different characteristics
+                String label = diff.getString("difficulty");
+
+                if (diff.getBoolean("me") || diff.getBoolean("ne") || !characteristic.equals("Standard")) {
+                    System.err.println("Found noodles, mapping extension or non standard map. Skipping...");
+                    continue;
+                }
+
+
+                double nps = diff.getDouble("nps");
+
+                Pattern p;
+
+                if (!new File(subFolder.getPath() + "/" + label + ".dat").exists()) label += characteristic;
+                if (!new File(subFolder.getPath() + "/" + label + ".dat").exists()) {
+                    System.err.println("No .dat file found in " + subFolder.getPath() + ". Skipping...");
+                }
+
+                if (!FileManager.readFile(subFolder.getPath() + "/" + label + ".dat").stream().filter(e -> e.contains("\"version\":\"3.")).toList().isEmpty()) {
+                    System.err.println("Found a .dat file with version 3. Skipping...");
+                    continue;
+                }
+
+                try {
+                    p = new Pattern(subFolder.getPath() + "/" + label + ".dat");
+                    if (diff.getBoolean("me")) throw new EOFException("test"); //I don't know why, but this is the only way to skip the rest of the code and continue the loop
+                } catch (EOFException | JsonSyntaxException ex) {
+                    continue;
+                }
+
+                ArrayList<String> metaGenre = new ArrayList<>();
+                ArrayList<String> metaTags = new ArrayList<>();
+
+                // Add genre & tags. But only those specified in Parameters.MUSIC_GENRE and Parameters.MAP_TAGS
+                Arrays.stream(tags.split(",")).forEach(tag -> Parameters.MUSIC_GENRE.stream().filter(genre -> genre.equalsIgnoreCase(tag)).forEach(metaGenre::add));
+                Arrays.stream(tags.split(",")).forEach(tag -> Parameters.MAP_TAGS.stream().filter(genre -> genre.equalsIgnoreCase(tag)).forEach(metaTags::add));
+
+                p.metadata = new PatMetadata(bpm, nps, label, metaTags, metaGenre);
+
+                FileManager.overwriteFile(patFilePath + (!label.contains("Standard") ? label + "Standard" : label) + "_" + jsonFile.getName().replace(".json", "") + ".pat", p.exportInPatFormat());
+            }
+
+
+        } catch (IOException | NoSuchElementException e) {
+            System.err.println("Error reading file: " + jsonFile.getPath() + ". Doesn't exist. Skipping...");
+        } catch (JSONException e) {
+            System.err.println("Error reading file: " + jsonFile.getPath() + ". JSON exception. Skipping...");
+        }
     }
 
     /**
