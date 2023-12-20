@@ -2,7 +2,10 @@ package UserInterface.Elements;
 
 import DataManager.Parameters;
 import UserInterface.Elements.Buttons.ButtonType;
+import UserInterface.Elements.JSlider.SliderTypes;
 import UserInterface.Elements.TextFields.TextFieldType;
+
+import javax.swing.*;
 
 public class ElementTypes {
     //Button Types
@@ -46,4 +49,5 @@ public class ElementTypes {
 
     //Global Text Field Types
     public static final TextFieldType GLOBAL_SEED_FRAME = new TextFieldType(String.valueOf(Parameters.SEED), 1000, 20, 100, 20, true);
+    public static final SliderTypes GLOBAL_PATTERN_VARIANCE_SLIDER = new SliderTypes(JSlider.HORIZONTAL, 50, 70, 200, 50, false, 0, 100, 0);
 }

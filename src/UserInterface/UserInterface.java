@@ -13,6 +13,8 @@ import static DataManager.Parameters.*;
 import UserInterface.Elements.Buttons.*;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons.*;
 import UserInterface.Elements.Buttons.ButtonTypes.*;
+import UserInterface.Elements.JSlider.GlobalJSlider.GlobalPatternVarianceJSlider;
+import UserInterface.Elements.JSlider.MyGlobalJSlider;
 import com.google.gson.Gson;
 
 import javax.swing.*;
@@ -34,6 +36,7 @@ public class UserInterface extends JFrame {
     public final JLabel labelMapDiff;
     public final TextArea statusCheck; //essentially the log
     public boolean mapSuccessfullyLoaded = false;
+    public float patternVariance = 0f;
 
 
     // Redirect the standard error stream to the custom PrintStream
@@ -62,6 +65,7 @@ public class UserInterface extends JFrame {
         new GlobalButton(this);
         GlobalSaveMapAs saveMapButton = new GlobalSaveMapAs(this);
         GlobalOpenMapInBrowser openMapInBrowserButton = new GlobalOpenMapInBrowser(this);
+        MyGlobalJSlider globalPatternVarianceJSlider = new GlobalPatternVarianceJSlider(this);
 
         MapCreatorButton showMapCreatorButton = new MapCreatorButton(this);
         MyButton toTimingNotes = new ToTimingNotesButton(this);
@@ -94,6 +98,7 @@ public class UserInterface extends JFrame {
 
                     saveMapButton.setVisible(true);
                     openMapInBrowserButton.setVisible(true);
+                    globalPatternVarianceJSlider.setVisible(true);
                 }
                 try {
                     Thread.sleep(1000); // Check for changes every second
