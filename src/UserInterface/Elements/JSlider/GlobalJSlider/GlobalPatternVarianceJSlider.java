@@ -2,13 +2,10 @@ package UserInterface.Elements.JSlider.GlobalJSlider;
 
 import UserInterface.Elements.ElementTypes;
 import UserInterface.Elements.JSlider.MyGlobalJSlider;
-import UserInterface.Elements.JSlider.SliderTypes;
 import UserInterface.UserInterface;
 
 import javax.swing.*;
-import java.util.EventObject;
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
