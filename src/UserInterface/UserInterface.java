@@ -165,7 +165,7 @@ public class UserInterface extends JFrame {
 
         System.err.println(errorOutput);
         errorOutput = errorOutput.replaceAll("\n\n", "\n");
-        if (errorOutput.length() == 0) statusCheck.append("[INFO]: No Errors detected");
+        if (errorOutput.isEmpty()) statusCheck.append("[INFO]: No Errors detected");
         statusCheck.append("\n" + errorOutput + "\n");
         if (verbose) System.setErr(ERROR_PRINT_STREAM);
     }
@@ -173,7 +173,7 @@ public class UserInterface extends JFrame {
     //If you want to add more configs:
     public static void loadConfig() {
         List<String> config = FileManager.readFile(CONFIG_FILE_LOCATION);
-        if (config != null && config.size() >= 1) {
+        if (config != null && !config.isEmpty()) {
             for (String s : config) {
                 String[] splits = s.split(":");
                 if (s.contains("defaultPath")) DEFAULT_PATH = splits[1] + ":" + splits[2].trim();
