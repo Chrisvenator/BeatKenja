@@ -169,7 +169,7 @@ public class BeatSaberMap {
      * as a dot on the leftmost lane.
      * If there are more notes on the same beat, then the notes are being converted into stacks
      * Red Notes are only created if there is a blue and a red note on the same beat. They are saved on the second lane
-     * BeatSaberObjects.Objects.Note that there can only be a maximum of six Notes in one Beat or else the script will not create a 7th note;
+     * BeatSaberObjects.Objects.Note that there can only be a maximum of six Notes in one Beat or else the script will not create a seventh note;
      *
      * @param notes The notes of the map
      * @return A List of all Notes. If there are more notes on the same beat, then they are being saved in a List inside the List
@@ -183,10 +183,10 @@ public class BeatSaberMap {
             if (notes[0] == n) continue;
 
             //retrieving the grid
-            List<Note> grid = timings.get(timings.size() - 1);
+            List<Note> grid = timings.getLast();
 
             //if grid exists
-            if (grid.get(0)._time == n._time) {
+            if (grid.getFirst()._time == n._time) {
                 int ctBlue = 0;
                 int ctRed = 0;
                 for (Note note : grid) {
@@ -209,8 +209,8 @@ public class BeatSaberMap {
         // (It makes copying someone else's map way harder.)
         for (List<Note> l : timings) {
             if (l.size() == 1) {
-                l.get(0)._lineIndex = 0;
-                l.get(0)._type = 1;
+                l.getFirst()._lineIndex = 0;
+                l.getFirst()._type = 1;
             }
         }
         return timings;
@@ -299,7 +299,7 @@ public class BeatSaberMap {
         json += "\"_obstacles\":" + (_obstacles == null ? "[]" : Arrays.toString(_obstacles)) + ",";
         json += "\"_events\":" + (_events == null ? "[]" : Arrays.toString(_events)) + ",";
         json += "\"_waypoints\":[]";
-        if (bookmarks != null && bookmarks.size() > 0) {
+        if (bookmarks != null && !bookmarks.isEmpty()) {
             json += ",\"_customData\":{";
             json += "\"_bookmarks\":" + bookmarks;
             json += "}";
@@ -321,7 +321,7 @@ public class BeatSaberMap {
         if (o == null || getClass() != o.getClass()) return false;
         BeatSaberMap that = (BeatSaberMap) o;
 
-        return (originalJSON.equals(that.originalJSON) || originalJSON.equals("") || that.originalJSON.equals("")) &&
+        return (originalJSON.equals(that.originalJSON) || originalJSON.isEmpty() || that.originalJSON.isEmpty()) &&
                 _version.equals(that._version) &&
                 Arrays.equals(_events, that._events) &&
                 Arrays.equals(_notes, that._notes) &&

@@ -12,12 +12,17 @@ import com.google.gson.Gson;
 import java.util.*;
 
 public class CreatePatterns {
+
+    /**
+     * This function creates a BeatSaberObjects.Objects.BeatSaberMap from a timings-map.<br>
+     * This function is a test function and should not be used in production!
+     * @param args the arguments. They are not used
+     */
     public static void main(String[] args) {
         String filename = "Input.txt";
         String patternFilename = "MapTemplates/Template--ISeeFire.txt";
-        String outPath = "";
-        String input = FileManager.readFile(filename).get(0);
-        String patternInput = FileManager.readFile(patternFilename).get(0);
+        String input = FileManager.readFile(filename).getFirst();
+        String patternInput = FileManager.readFile(patternFilename).getFirst();
 
         Gson gson = new Gson();
         BeatSaberMap timings = gson.fromJson(input, BeatSaberMap.class);
@@ -30,19 +35,12 @@ public class CreatePatterns {
         Pattern p = new Pattern(patterns._notes, 1);
         timings.toBlueLeftBottomRowDotTimings();
 
-//        System.out.println(new BeatSaberObjects.Objects.BeatSaberMap(complexPatternFromTemplate(timings._notes, p, true, null, null)).exportAsMap());
-//        System.out.println(new BeatSaberObjects.Objects.BeatSaberMap(linearSlowPattern(timings._notes)).exportAsMap());
-//        System.out.println(new BeatSaberObjects.Objects.BeatSaberMap(twoRightOneLeft(timings._notes, p, null, null, true)).exportAsMap());
-
         System.out.println("Creating map... ");
         BeatSaberMap b = createMap(timings, p, false, false);
         System.out.println("Finished creating map... ");
         System.out.println("Length of the map: " + timings._notes.length);
 
         System.out.println(new BeatSaberMap(b._notes).exportAsMap());
-
-
-//        System.out.println(createDoubles(timings._notes, null, null));
     }
 
     //TODO: stack placement is breaking everything. YAY
@@ -77,19 +75,19 @@ public class CreatePatterns {
         //If the map is one-handed or there are no bookmarks, then there is not that much to do
         if (oneHanded)
             return new BeatSaberMap(complexPatternFromTemplate(map._notes, p, true, stacks, null, null), map.originalJSON);
-        if (bookmarks.size() == 0) {
+        if (bookmarks.isEmpty()) {
             Random random = new Random(Parameters.SEED);
             int min = 10;
             int max = 40;
 
             int randomNumber = random.nextInt(max - min + 1) + min;
             for (int i = 0; i < randomNumber; i++) {
-                bookmarks.add(new Bookmark(timings.get(i * (int) (timings.size() / randomNumber))._time, supportedTypes[random.nextInt(supportedTypes.length - 1)], null));
-                if (bookmarks.get(bookmarks.size() - 1)._name.contains("jumps")) i--;
+                bookmarks.add(new Bookmark(timings.get(i * (timings.size() / randomNumber))._time, supportedTypes[random.nextInt(supportedTypes.length - 1)], null));
+                if (bookmarks.getLast()._name.contains("jumps")) i--;
             }
 //            return new BeatSaberObjects.Objects.BeatSaberMap(complexPatternFromTemplate(map._notes, p, oneHanded, stacks, null, null), map.originalJSON);
         }
-        bookmarks.add(new Bookmark(timings.get(timings.size() - 1)._time + 10, "end", new float[]{(float) 0.0, (float) 0.0, (float) 0.0}));
+        bookmarks.add(new Bookmark(timings.getLast()._time + 10, "end", new float[]{(float) 0.0, (float) 0.0, (float) 0.0}));
 
 
         Note prevBlue = null;
@@ -203,7 +201,7 @@ public class CreatePatterns {
             //nextInt(5) --> [INCLUSIVE 0, EXCLUSIVE 5)
             n._lineIndex = random.nextInt(4);
             n._lineLayer = random.nextInt(3);
-            n._type = random.nextInt(2);
+            n._type = oneHanded ? 2 : random.nextInt(2);
             n._cutDirection = random.nextInt(8);
 
             if (i < timings.length - 1) {
@@ -231,8 +229,8 @@ public class CreatePatterns {
 
         notes.add(prevBlue != null ? nextLinearNote(prevBlue, timings[0]._time) : firstNotePlacement(timings[0]._time));
         int counter = 0;
-        while (notes.get(0).isDD(prevBlue) && counter <= 300) {
-            notes.remove(0);
+        while (notes.getFirst().isDD(prevBlue) && counter <= 300) {
+            notes.removeFirst();
             notes.add(nextLinearNote(prevBlue, timings[0]._time));
             counter++;
         }
@@ -265,7 +263,7 @@ public class CreatePatterns {
             } else if (invalidPlacementsInARow >= 500)
                 throw new IllegalArgumentException("Infinite Loop while creating map! Please try again. (Error occured in \"doubles\"");
             //Place a BeatSaberObjects.Objects.Note that doesn't break parity after the error:
-            if (i >= 1 && notes.get(notes.size() - 1)._cutDirection == 8) {
+            if (i >= 1 && notes.getLast()._cutDirection == 8) {
                 notes.add(nextNoteAfterTimingNote(notes.toArray(notes.toArray(new Note[0])), timings[i]._time, notes.size(), 2));
                 notes.add(nextNoteAfterTimingNote(notes.toArray(notes.toArray(new Note[0])), timings[i]._time, notes.size() - 1, 2));
                 continue;
@@ -273,7 +271,7 @@ public class CreatePatterns {
 
 
             Note blue = nextLinearNote(notes.get(notes.size() - 2), timings[i]._time);
-            Note red = nextLinearNote(notes.get(notes.size() - 1), timings[i]._time);
+            Note red = nextLinearNote(notes.getLast(), timings[i]._time);
 
             if (blue.equalNotePlacement(red)) {
                 red._lineIndex -= 1;
@@ -284,7 +282,7 @@ public class CreatePatterns {
             }
 
 
-            if (blue.isDD(notes.get(notes.size() - 2)) || red.isDD(notes.get(notes.size() - 1))) {
+            if (blue.isDD(notes.get(notes.size() - 2)) || red.isDD(notes.getLast())) {
                 i--;
                 invalidPlacementsInARow++;
                 continue;
@@ -308,14 +306,14 @@ public class CreatePatterns {
 
         notes.add(prevBlue != null ? nextLinearNote(prevBlue, timings[0]._time) : firstNotePlacement(timings[0]._time));
         int counter = 0;
-        while (notes.get(0).isDD(prevBlue) && counter <= 300) {
-            notes.remove(0);
+        while (notes.getFirst().isDD(prevBlue) && counter <= 300) {
+            notes.removeFirst();
             notes.add(nextLinearNote(prevBlue, timings[0]._time));
             counter++;
         }
         if (counter >= 300)
             System.err.println("[ERROR] at beat: " + timings[0]._time + " infinite loop in create doubles");
-        notes.add(nextLinearNote(notes.get(0), timings[1]._time));
+        notes.add(nextLinearNote(notes.getFirst(), timings[1]._time));
 
         notes.add(prevRed != null ? nextLinearNote(prevRed, timings[2]._time) : firstNotePlacement(timings[2]._time));
         counter = 0;
@@ -343,7 +341,7 @@ public class CreatePatterns {
                 continue;
             } else if (invalidPlacementsInARow >= 500)
                 throw new IllegalArgumentException("Infinite Loop while creating map! Please try again. (Error occured in \"2-2\")");
-            if (i >= 2 && notes.get(notes.size() - 1)._cutDirection == 8) {
+            if (i >= 2 && notes.getLast()._cutDirection == 8) {
                 notes.add(nextNoteAfterTimingNote(notes.toArray(notes.toArray(new Note[0])), timings[i]._time, notes.size(), i < 4 ? 2 : 4));
                 continue;
             }
@@ -352,7 +350,7 @@ public class CreatePatterns {
             if (i % 4 == 0) {
                 Note blue1 = nextLinearNote(notes.get(notes.size() - 3), timings[i]._time);
                 if (i >= timings.length - 1) continue;
-                Note blue2 = nextLinearNote(notes.get(notes.size() - 1), timings[i + 1]._time);
+                Note blue2 = nextLinearNote(notes.getLast(), timings[i + 1]._time);
                 if (blue1.isDD(notes.get(notes.size() - 3)) || blue2.isDD(blue1)) {
                     i--;
                     invalidPlacementsInARow++;
@@ -363,7 +361,7 @@ public class CreatePatterns {
             } else {
                 Note red1 = nextLinearNote(notes.get(notes.size() - 3), timings[i]._time);
                 if (i >= timings.length - 1) continue;
-                Note red2 = nextLinearNote(notes.get(notes.size() - 1), timings[i + 1]._time);
+                Note red2 = nextLinearNote(notes.getLast(), timings[i + 1]._time);
                 if (red1.isDD(notes.get(notes.size() - 3)) || red2.isDD(red1)) {
                     i--;
                     invalidPlacementsInARow++;
@@ -414,7 +412,6 @@ public class CreatePatterns {
         if (counter >= 300)
             System.err.println("[ERROR] at beat: " + timings[0]._time + "infinite loop in create complex (red)");
 
-//        if (oneHanded) System.out.println("DEBUG blue: " + pattern[0]._time + ": " + (prevBlue == null ? "" : prevBlue._cutDirection) + " -> " + pattern[0]._cutDirection);
         int blueHorizontalsInARow = 0; //prevent parity breaks for red notes
         int redHorizontalsInARow = 0; //prevent parity breaks for red notes
         int invalidPlacesInARow = 0; //prevent infinite loops
@@ -431,7 +428,7 @@ public class CreatePatterns {
                 continue;
             } else if (invalidPlacesInARow >= 500)
                 throw new IllegalArgumentException("Infinite Loop while creating map! Please try again.(Error occured in \"complex\")");
-            if ((oneHanded && i >= 2 || i >= 4) && pattern[i - j]._cutDirection == 8) {
+            if ((oneHanded && i >= 2 || i >= 4) && Objects.requireNonNull(pattern[i - j])._cutDirection == 8) {
                 pattern[i] = nextNoteAfterTimingNote(pattern, timings[i]._time, i, j);
                 continue;
             } //<-- next note after the error
@@ -587,8 +584,8 @@ public class CreatePatterns {
 
         //Ensure that there is no DD when creating the first note!
         for (int i = 0; i < 100 && prevRed != null; i++) {
-            if (prevRed.isDD(redNotes.get(0))) {
-                redNotes.remove(0);
+            if (prevRed.isDD(redNotes.getFirst())) {
+                redNotes.removeFirst();
                 redNotes.add(nextLinearNote(prevRed, timings[0]._time));
             }
         }
@@ -617,7 +614,7 @@ public class CreatePatterns {
 //                throw new IllegalArgumentException("Infinite Loop while creating map! Please try again.(Error occured in \"1-2 or 2-1\")");
 
             //Place a BeatSaberObjects.Objects.Note that doesn't break parity after the error:
-            if (redNotes.get(redNotes.size() - 1)._cutDirection == 8) {
+            if (redNotes.getLast()._cutDirection == 8) {
                 if (i >= 4) {
                     redNotes.add(nextNoteAfterTimingNote(redNotes.toArray(redNotes.toArray(new Note[0])), timings[i]._time, redNotes.size(), 1));
                 } else redNotes.add(new Note(complexPattern[i]._time, 2, 0, 1, (i % 2 == 0 ? 1 : 0)));
@@ -627,7 +624,7 @@ public class CreatePatterns {
 
 
             //create note:
-            Note n = nextLinearNote(redNotes.get(redNotes.size() - 1), complexPattern[i]._time);
+            Note n = nextLinearNote(redNotes.getLast(), complexPattern[i]._time);
 
             //If the Notes are placed inside each other or too close to one another, then try again
             if (i >= 2 && (complexPattern[i]._lineIndex == n.getInverted()._lineIndex && complexPattern[i]._lineLayer == n._lineLayer || complexPattern[i - 1]._lineIndex == n.getInverted()._lineIndex && complexPattern[i - 1]._lineLayer == n._lineLayer)) {
@@ -691,7 +688,6 @@ public class CreatePatterns {
 
         int invalidPlacesInARow = 0;
         for (int i = j; i < timings.length; i++) {
-            boolean inValidPlacement = false;
 
             //manual error handling:
             //When there exists an infinite loop:
@@ -755,7 +751,7 @@ public class CreatePatterns {
                 else notes.add(new TimingNote(timings.get(i)._time));
 
 
-                prevBlue = notes.get(notes.size() - 1);
+                prevBlue = notes.getLast();
 
             } else {
                 //Every second note should be red
@@ -771,10 +767,10 @@ public class CreatePatterns {
 
 
                 //Setting the previous note:
-                prevRed = notes.get(notes.size() - 1);
+                prevRed = notes.getLast();
 
                 //making the previous note red:
-                notes.get(notes.size() - 1).invertNote();
+                notes.getLast().invertNote();
             }
         }
         return notes;
@@ -844,7 +840,7 @@ public class CreatePatterns {
         //ignore the rest, if the map is a no-arrow-map
         for (Note n : notes) {
             if (n._cutDirection != 8) break;
-            if (n.equals(notes.get(notes.size() - 1))) return;
+            if (n.equals(notes.getLast())) return;
         }
 
         for (Note n : notes) {
@@ -1449,22 +1445,5 @@ public class CreatePatterns {
         //If one-handed it true, then we can just skip this step.
         if (oneHanded) return false;
         return notes[i - 1]._lineIndex == notes[i].getInverted()._lineIndex && notes[i - 1]._lineLayer == notes[i]._lineLayer;
-    }
-
-    /**
-     * Removes every null element in the array notes[]
-     *
-     * @param notes notes[] is the array, where the notes are saved.
-     * @return BeatSaberObjects.Objects.Note [] without nulls
-     */
-    public static Note[] removeAllNulls(Note[] notes) {
-        List<Note> list = new ArrayList<>();
-        Collections.addAll(list, notes);
-
-        while (list.remove(null)) {
-            System.out.print("");
-        }
-
-        return list.toArray(new Note[0]);
     }
 }

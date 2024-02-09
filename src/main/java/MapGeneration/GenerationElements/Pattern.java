@@ -30,7 +30,7 @@ public class Pattern implements Iterable<PatternProbability> {
     public static void main(String[] args) {
         String inputPath = "Input.txt";
 
-        BeatSaberMap map = new Gson().fromJson(FileManager.readFile(inputPath).get(0), BeatSaberMap.class);
+        BeatSaberMap map = new Gson().fromJson(FileManager.readFile(inputPath).getFirst(), BeatSaberMap.class);
         Pattern p = new Pattern(map._notes, 1);
 
         // Remove patterns that occur less than 8 times
@@ -91,7 +91,7 @@ public class Pattern implements Iterable<PatternProbability> {
 
 
         // Read the pattern file and convert it to BeatSaberObjects.Objects.BeatSaberMap
-        String patternInput = FileManager.readFile(pathToPatternFile).get(0);
+        String patternInput = FileManager.readFile(pathToPatternFile).getFirst();
         Gson gson = new Gson();
         BeatSaberMap patterns = gson.fromJson(patternInput, BeatSaberMap.class);
 
@@ -124,7 +124,7 @@ public class Pattern implements Iterable<PatternProbability> {
 
         List<String> lines = FileManager.readFile(pathToPatternFile);
 
-        String[] metadata = lines.get(0).split(";");
+        String[] metadata = lines.getFirst().split(";");
 
         this.metadata = new PatMetadata(
                 Float.parseFloat(metadata[0]),
@@ -322,26 +322,7 @@ public class Pattern implements Iterable<PatternProbability> {
      */
     public void removeXTimes(int threshold) {
         String s = this.toString();
-        String[] strings = s.split("\n");
-        List<String> split = new ArrayList<>();
-
-        // Iterates over each string in the array
-        for (String ss : strings) {
-            boolean contains = false;
-
-            // Checks if the string contains the occurrence count within the threshold
-            for (int i = 0; i <= threshold; i++) {
-                if (ss.contains(" " + i + " time")) {
-                    contains = true;
-                    break;
-                }
-            }
-
-            // If the string does not contain the occurrence count within the threshold, adds it to the split list
-            if (!contains) {
-                split.add(ss + "\n");
-            }
-        }
+        List<String> split = getStrings(threshold, s);
 
         try {
             // Iterates over the split list to remove unnecessary patterns and closing brackets
@@ -398,6 +379,31 @@ public class Pattern implements Iterable<PatternProbability> {
 
         // Recalculates the probabilities for the updated patterns
         computeProbabilities();
+    }
+
+    //Helper method for removeXTimes
+    private static List<String> getStrings(int threshold, String s) {
+        String[] strings = s.split("\n");
+        List<String> split = new ArrayList<>();
+
+        // Iterates over each string in the array
+        for (String ss : strings) {
+            boolean contains = false;
+
+            // Checks if the string contains the occurrence count within the threshold
+            for (int i = 0; i <= threshold; i++) {
+                if (ss.contains(" " + i + " time")) {
+                    contains = true;
+                    break;
+                }
+            }
+
+            // If the string does not contain the occurrence count within the threshold, adds it to the split list
+            if (!contains) {
+                split.add(ss + "\n");
+            }
+        }
+        return split;
     }
 
 
@@ -473,7 +479,7 @@ public class Pattern implements Iterable<PatternProbability> {
      * @return A MapGeneration.GenerationElements.PatternProbability object that represents the probability of the note pattern, or null if the note pattern is not found.
      */
     public PatternProbability getProbabilityOf(Note n) {
-        Pattern p = clone();
+        Pattern p = clonePattern();
         p.adjustVariance(UserInterface.patternVariance);
 
         // Iterate over the patterns array and check for a matching note pattern
@@ -501,7 +507,7 @@ public class Pattern implements Iterable<PatternProbability> {
         computeProbabilities();
     }
 
-    public Pattern clone() {
+    public Pattern clonePattern() {
         Pattern p = new Pattern();
         p.patterns = patterns;
         p.count = count;
