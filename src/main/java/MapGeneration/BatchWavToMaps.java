@@ -93,21 +93,9 @@ public class BatchWavToMaps {
                     for (int i = 0; i < fileName.length() - 2; i++)
                         if (fileName.charAt(i) == ' ') fileName = fileName.substring(0, i) + (String.valueOf(fileName.charAt(i + 1))).toUpperCase() + fileName.substring(i + 2);
 
-                    String sanitizedFileName = "";
-                    if (file.getName().contains(".wav")) {
-                        sanitizedFileName = fileName
-                                .replaceAll(".wav", "")
-                                .replaceAll("[^a-zA-Z0-9-_]", "")
-                                + ".wav";
-                    } else if (file.getName().contains(".mp3")) {
-                        sanitizedFileName = fileName
-                                .replaceAll(".mp3", "")
-                                .replaceAll("[^a-zA-Z0-9-_]", "")
-                                + ".mp3";
-                    }
-                    if (sanitizedFileName.equals("")) sanitizedFileName = "UNDEFINED";
+                    String sanitizedFileName = sanitizeFilename(file, fileName);
 
-                    if (!fileName.equals("") && !fileName.equals(sanitizedFileName)) {
+                    if (!fileName.isEmpty() && !fileName.equals(sanitizedFileName)) {
                         String newFilePath = file.getParent() + File.separator + sanitizedFileName;
                         File newFile = new File(newFilePath);
 
@@ -120,6 +108,31 @@ public class BatchWavToMaps {
                 }
             }
         }
+    }
+
+    /**
+     * Renames the file to remove illegal characters and add the correct file extension.<br>
+     * Helper Method for renameAllIllegalFileNames
+     *
+     * @param file     The File object representing the file to be renamed.
+     * @param fileName The name of the current file.
+     * @return The sanitized file name.
+     */
+    private static String sanitizeFilename(File file, String fileName) {
+        String sanitizedFileName = "";
+        if (file.getName().contains(".wav")) {
+            sanitizedFileName = fileName
+                    .replaceAll(".wav", "")
+                    .replaceAll("[^a-zA-Z0-9-_]", "")
+                    + ".wav";
+        } else if (file.getName().contains(".mp3")) {
+            sanitizedFileName = fileName
+                    .replaceAll(".mp3", "")
+                    .replaceAll("[^a-zA-Z0-9-_]", "")
+                    + ".mp3";
+        }
+        if (sanitizedFileName.isEmpty()) sanitizedFileName = "UNDEFINED";
+        return sanitizedFileName;
     }
 
     /**

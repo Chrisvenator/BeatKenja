@@ -10,13 +10,6 @@ import java.nio.file.Paths;
 public class JsonFileMerger {
     public static void main(String[] args) {
         JsonFileMerger merger = new JsonFileMerger();
-//        try {
-//            merger.mergeAll("merged.json", 1, 3);
-//        merger.merge(new File("BeatSaverMaps/1.json"), new File("BeatSaverMaps/2.json"));
-//        } catch (IOException | JSONException e) {
-//            throw new RuntimeException(e);
-//        }
-
         merger.mergeAll("src/DataManager/merged.json", 200000, 201000);
     }
 
@@ -81,7 +74,7 @@ public class JsonFileMerger {
                 merged = content1.substring(0, content1.lastIndexOf("}")) + "," + f2Name + ":[" + content2.substring(1) + "]}";
 
 
-            assert merged.length() > 0;
+            assert !merged.isEmpty();
 
             BufferedWriter writer = new BufferedWriter(new FileWriter(f1));
             writer.write(merged);
