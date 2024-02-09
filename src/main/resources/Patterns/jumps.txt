@@ -1,0 +1,4 @@
+{"_time":0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":1}
+,{"_time":0.5,"_lineIndex":1,"_lineLayer":0,"_type":0,"_cutDirection":1}
+,{"_time":1,"_lineIndex":3,"_lineLayer":2,"_type":1,"_cutDirection":5}
+,{"_time":1.5,"_lineIndex":0,"_lineLayer":2,"_type":0,"_cutDirection":4}

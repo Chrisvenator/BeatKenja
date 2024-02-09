@@ -121,7 +121,7 @@ When you click on Map creator you will then have a few options:<br>
   meantime.
 
   | **bookmark name & description**                                                                                                                                                                                                                                                                                | **GIF**                                        |
-  |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------|
+    |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------|
   | **`linear`**<br>Linear quite boring pattern                                                                                                                                                                                                                                                                    | ![linear gif](./assets/linear.gif)             |
   | **`complex`**<br>A little bit more complex patterns. But nothing too complex.<br>**THERE MAY BE RESETS AND DDs**. So always check the map!                                                                                                                                                                     | ![complex gif](./assets/complex.gif)           |
   | **`1-2`**<br>Twice as many blue notes as red notes.<br>The red note will always spawn at the same beat as the blue one.<br>In between red notes there will always be a blue note.<br><br>Red notes generate like "linear" and blue notes generate like "complex".                                              | ![1 2 gif](./assets/1-2.gif)                   |
@@ -167,19 +167,19 @@ TODO: Explain what load patterns does<br>
   choice and open and save every difficulty. That should fix it.
 + **The map I generated doesn't show up in the editor:** TBD
 + **The map didn't change after generating a new one:** There may be 2 possibilities:
-    1. The Program didn't feel like generating something
-    2. Chromapper caches difficulties. If this is the case, then exit and reopen the diff. that should fix it.
+  1. The Program didn't feel like generating something
+  2. Chromapper caches difficulties. If this is the case, then exit and reopen the diff. that should fix it.
 
 ----
 
 ## TODOs:
 
 - [ ] creating new pattern types:
-    - [x] doubles
-    - [x] (small, normal big) jumps
-    - [ ] saving and loading patterns (or Sequences as I called them because me dumb)
-    - [ ] more variation
-    - [ ] stacks
+  - [x] doubles
+  - [x] (small, normal big) jumps
+  - [ ] saving and loading patterns (or Sequences as I called them because me dumb)
+  - [ ] more variation
+  - [ ] stacks
 - [ ] Better music onsets
 - [x] Dark Mode
 - [x] Finish README.MD
