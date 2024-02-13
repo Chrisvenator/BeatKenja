@@ -189,3 +189,14 @@ TODO: Explain what load patterns does<br>
 - [x] Aim of the tool?
 - [x] Error message: "No audio files found in '/OnsetGeneration/wavFiles'"
 - [ ] Max length Path for Windows users
+
+## Future Ideas:
+Features that may or may not be implemented in the future
+- [ ] **Deep Learning Models:** Train a model on a large dataset of Beat Saber maps and their corresponding audio files. The model could learn to predict sequences of moves that not only follow the beat but also the mood and style of different parts of a song.
+- [ ] **Dynamic Probability Adjustments:** Instead of static probabilities, adjust them dynamically based on certain triggers or sections in the music. For example, increase the complexity during a chorus or a bridge.
+- [ ] **Pattern Variation:** Instead of focusing solely on the next note's probability, consider sequences of moves or introducing special patterns that can occur under certain conditions, like rapid sequences or alternating patterns that match the music's intensity.
+- [ ] **Difficulty Scaling:** Scale the map's difficulty based on the song's progression or introduce difficulty spikes that correspond to climactic moments in the music.
+- [ ] **Customizable Parameters:** Allow users to adjust the probabilities and patterns used by the algorithm to create maps that match their preferences or the style of a particular song.
+- [ ] **Real-Time Feedback:** Provide real-time feedback on the generated map, such as visualizations of the note placements and patterns, to help users understand how the algorithm is interpreting the music and make adjustments as needed.
+- [ ] **Customization Options:** Let users set preferences for map characteristics, like favoring certain patterns, complexity levels, or even specific movements, and use these preferences to tailor the map generation.
+
