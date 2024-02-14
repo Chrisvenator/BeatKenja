@@ -80,3 +80,8 @@ libs/*
 /target/classes/main/resources/All_Maps_Merged.json
 /target/classes/META-INF/persistence.xml
 /target/classes/All_Maps_Merged.json
+/database/.idea/.gitignore
+/database/.idea/database.iml
+/database/.idea/dataSources.xml
+/database/.idea/modules.xml
+/database/.idea/vcs.xml
