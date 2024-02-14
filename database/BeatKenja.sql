@@ -50,6 +50,8 @@ create table note_probabilities
     count                    int   default 1   not null,
     Tags_FK_ID               int               not null,
     Genre_FK_ID              int               not null,
+    constraint note_probabilities_UniqueKey2
+        unique (Followed_By_Note_FK_ID, Genre_FK_ID, Tags_FK_ID, Difficulty_FK_ID, BPM, NPS, Note_FK_ID),
     constraint note_probabilities_difficulty_fk
         foreign key (Difficulty_FK_ID) references difficulty (Difficulty_PK),
     constraint note_probabilities_followed_by_note_fk
@@ -62,3 +64,4 @@ create table note_probabilities
         foreign key (Tags_FK_ID) references tag (Tag_pk)
 )
     comment 'Note_Probabilities contains the proabability that a Note x follows a note y';
+
