@@ -59,7 +59,7 @@ public class Sequence implements Iterable<Note> {
 
         Gson gson = new Gson();
         List<String> notes = FileManager.readFile(path);
-        String[] header = notes.getFirst().replaceAll(" ", "").split(";");
+        String[] header = notes.get(0).replaceAll(" ", "").split(";");
         if (header.length != 4) throw new MalformedSequenceException("Header of sequence file is not valid!");
 
         tags = header[0].split(",");
