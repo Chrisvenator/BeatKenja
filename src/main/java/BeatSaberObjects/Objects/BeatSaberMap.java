@@ -183,10 +183,10 @@ public class BeatSaberMap {
             if (notes[0] == n) continue;
 
             //retrieving the grid
-            List<Note> grid = timings.getLast();
+            List<Note> grid = timings.get(timings.size() - 1);
 
             //if grid exists
-            if (grid.getFirst()._time == n._time) {
+            if (grid.get(0)._time == n._time) {
                 int ctBlue = 0;
                 int ctRed = 0;
                 for (Note note : grid) {
@@ -209,8 +209,8 @@ public class BeatSaberMap {
         // (It makes copying someone else's map way harder.)
         for (List<Note> l : timings) {
             if (l.size() == 1) {
-                l.getFirst()._lineIndex = 0;
-                l.getFirst()._type = 1;
+                l.get(0)._lineIndex = 0;
+                l.get(0)._type = 1;
             }
         }
         return timings;

@@ -30,7 +30,7 @@ public class Pattern implements Iterable<PatternProbability> {
     public static void main(String[] args) {
         String inputPath = "Input.txt";
 
-        BeatSaberMap map = new Gson().fromJson(FileManager.readFile(inputPath).getFirst(), BeatSaberMap.class);
+        BeatSaberMap map = new Gson().fromJson(FileManager.readFile(inputPath).get(0), BeatSaberMap.class);
         Pattern p = new Pattern(map._notes, 1);
 
         // Remove patterns that occur less than 8 times
@@ -91,7 +91,7 @@ public class Pattern implements Iterable<PatternProbability> {
 
 
         // Read the pattern file and convert it to BeatSaberObjects.Objects.BeatSaberMap
-        String patternInput = FileManager.readFile(pathToPatternFile).getFirst();
+        String patternInput = FileManager.readFile(pathToPatternFile).get(0);
         Gson gson = new Gson();
         BeatSaberMap patterns = gson.fromJson(patternInput, BeatSaberMap.class);
 
@@ -124,7 +124,7 @@ public class Pattern implements Iterable<PatternProbability> {
 
         List<String> lines = FileManager.readFile(pathToPatternFile);
 
-        String[] metadata = lines.getFirst().split(";");
+        String[] metadata = lines.get(0).split(";");
 
         this.metadata = new PatMetadata(
                 Float.parseFloat(metadata[0]),

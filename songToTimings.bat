@@ -1,1 +1,0 @@
-aubioonset song.wav > timings.txt

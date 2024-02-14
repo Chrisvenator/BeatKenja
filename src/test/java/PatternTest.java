@@ -130,7 +130,7 @@ class PatternTest {
 
     @Test
     void testMergePatterns() {
-        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").getFirst(), BeatSaberMap.class);
+        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
         Pattern p1 = new Pattern(map._notes, 1);
         Pattern p2 = new Pattern(map._notes, 1);
         assertEquals(p1.toString(), p2.toString());
