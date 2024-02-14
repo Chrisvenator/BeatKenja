@@ -1,7 +1,6 @@
 package DataManager.Database;
 
 import DataManager.Database.DatabaseEntities.*;
-import DataManager.Parameters;
 
 import javax.persistence.*;
 
