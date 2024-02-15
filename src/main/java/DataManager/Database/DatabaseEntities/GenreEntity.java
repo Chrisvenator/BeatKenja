@@ -1,8 +1,15 @@
 package DataManager.Database.DatabaseEntities;
 
+import DataManager.Database.PersistEntities;
+
 import javax.persistence.*;
+import java.util.ArrayList;
+import static DataManager.Parameters.entityManager;
+
 
 @Entity
+@NamedQuery(name = "GenreEntity.findAll", query = "SELECT d FROM GenreEntity d")
+@NamedQuery(name = "GenreEntity.findGenres", query = "SELECT d FROM GenreEntity d where d.genreName = :genreName")
 @Table(name = "genre", schema = "beatkenja", catalog = "")
 public class GenreEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,4 +55,27 @@ public class GenreEntity {
         result = 31 * result + (genreName != null ? genreName.hashCode() : 0);
         return result;
     }
+
+    public static GenreEntity getGenre(String genreName) {
+        try {
+            return (GenreEntity) entityManager.createNamedQuery("GenreEntity.findGenres").setParameter("genreName", genreName).getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
+
+    public static ArrayList<GenreEntity> getAllGenres() {
+        TypedQuery<GenreEntity> query = entityManager.createNamedQuery("GenreEntity.findAll", GenreEntity.class);
+        ArrayList<GenreEntity> difficulties = new ArrayList<>(query.getResultList());
+
+        difficulties.addAll(query.getResultList());
+
+        return difficulties;
+    }
+
+    public boolean persist() {
+        return PersistEntities.persistEntity(this);
+    }
+
+
 }

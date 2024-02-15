@@ -33,6 +33,9 @@ public class NoteProbabilitiesEntity {
     @Basic
     @Column(name = "Genre_FK_ID")
     private int genreFkId;
+    @Basic
+    @Column(name = "Pattern_FK")
+    private int patternFk;
 
     public int getNoteProbabilitiesPkId() {
         return noteProbabilitiesPkId;
@@ -106,6 +109,14 @@ public class NoteProbabilitiesEntity {
         this.genreFkId = genreFkId;
     }
 
+    public int getPatternFk() {
+        return patternFk;
+    }
+
+    public void setPatternFk(int patternFk) {
+        this.patternFk = patternFk;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -122,6 +133,7 @@ public class NoteProbabilitiesEntity {
         if (count != that.count) return false;
         if (tagsFkId != that.tagsFkId) return false;
         if (genreFkId != that.genreFkId) return false;
+        if (patternFk != that.patternFk) return false;
 
         return true;
     }
@@ -140,6 +152,7 @@ public class NoteProbabilitiesEntity {
         result = 31 * result + count;
         result = 31 * result + tagsFkId;
         result = 31 * result + genreFkId;
+        result = 31 * result + patternFk;
         return result;
     }
 }

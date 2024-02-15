@@ -172,6 +172,9 @@ TODO: Explain what load patterns does<br>
 
 ----
 
+## Currently under construction:
+- [ ] Migrate to Database instead of using files
+
 ## TODOs:
 
 - [ ] creating new pattern types:

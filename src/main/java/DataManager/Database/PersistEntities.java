@@ -1,15 +1,20 @@
 package DataManager.Database;
 
-import DataManager.Database.DatabaseEntities.*;
+import DataManager.Database.DatabaseEntities.DifficultyEntity;
 
 import javax.persistence.*;
+import java.util.logging.Level;
 
+/**
+ * This class is an example class to show how to add entities to the database
+ * This class is used to persist entities to the database.
+ */
 public class PersistEntities {
     public static void main(String[] args) {
-        persistEntities();
+        java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
     }
 
-    public static void persistEntities() {
+    public static boolean persistEntity(Object entity) {
         EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("default");
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         EntityTransaction transaction = entityManager.getTransaction();
@@ -17,14 +22,11 @@ public class PersistEntities {
         try {
             transaction.begin();
 
-
-            GenreEntity genre = new GenreEntity();
-            genre.setGenreName("Pop");
-            entityManager.persist(genre);
-            //https://www.youtube.com/watch?v=QJddHc41xrM
-
+            entityManager.persist(entity);
 
             transaction.commit();
+        } catch (PersistenceException e) {
+            return false;
         } finally {
             if (transaction.isActive()) {
                 transaction.rollback();
@@ -32,5 +34,7 @@ public class PersistEntities {
             entityManager.close();
             entityManagerFactory.close();
         }
+        return true;
     }
+
 }

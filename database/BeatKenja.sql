@@ -29,6 +29,15 @@ create table note
         unique (LineIndex, LineLayer, CutDirection, Type, Color)
 );
 
+create table pattern
+(
+    Pattern_PK_ID int auto_increment
+        primary key,
+    Pattern_Name  varchar(50) not null,
+    constraint Pattern_UniqueName
+        unique (Pattern_Name)
+);
+
 create table tag
 (
     Tag_pk   int auto_increment
@@ -50,8 +59,9 @@ create table note_probabilities
     count                    int   default 1   not null,
     Tags_FK_ID               int               not null,
     Genre_FK_ID              int               not null,
-    constraint note_probabilities_UniqueKey2
-        unique (Followed_By_Note_FK_ID, Genre_FK_ID, Tags_FK_ID, Difficulty_FK_ID, BPM, NPS, Note_FK_ID),
+    Pattern_FK               int   default 1   not null,
+    constraint note_probabilities_UniqueKey
+        unique (Followed_By_Note_FK_ID, Genre_FK_ID, Tags_FK_ID, Difficulty_FK_ID, BPM, NPS, Note_FK_ID, Pattern_FK),
     constraint note_probabilities_difficulty_fk
         foreign key (Difficulty_FK_ID) references difficulty (Difficulty_PK),
     constraint note_probabilities_followed_by_note_fk
@@ -60,6 +70,8 @@ create table note_probabilities
         foreign key (Genre_FK_ID) references genre (Genre_pk),
     constraint note_probabilities_note_fk
         foreign key (Note_FK_ID) references note (Note_PK),
+    constraint note_probabilities_pattern_fk
+        foreign key (Pattern_FK) references pattern (Pattern_PK_ID),
     constraint note_probabilities_tag_Tag_pk_fk
         foreign key (Tags_FK_ID) references tag (Tag_pk)
 )
