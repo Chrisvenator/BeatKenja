@@ -1,5 +1,7 @@
 package DataManager;
 
+import javax.persistence.EntityManager;
+import javax.persistence.Persistence;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
@@ -66,4 +68,6 @@ public class Parameters {
         if (darkMode) FILE_CHOOSER.setForeground(Color.white);
 
     }
+
+    public static final EntityManager entityManager = Persistence.createEntityManagerFactory("default").createEntityManager();
 }
