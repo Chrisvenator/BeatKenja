@@ -1,9 +1,12 @@
 package DataManager.Database.DatabaseEntities;
 
+import BeatSaberObjects.Objects.Note;
+
 import javax.persistence.*;
 
 @Entity
 @NamedQuery(name = "NoteEntity.findAllNotes", query = "SELECT d FROM NoteEntity d")
+@NamedQuery(name = "NoteEntity.findById", query = "SELECT d FROM NoteEntity d WHERE d.id = :id")
 @Table(name = "note", schema = "beatkenja", catalog = "")
 public class NoteEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -102,5 +105,9 @@ public class NoteEntity {
                 ", cutDirection=" + cutDirection +
                 ", type=" + type +
                 '}';
+    }
+
+    public Note toNote() {
+        return new Note(0, lineIndex, lineLayer, cutDirection, type);
     }
 }

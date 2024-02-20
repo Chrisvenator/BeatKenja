@@ -27,6 +27,16 @@ public class NoteEntityOperations extends NoteEntity {
         }
     }
 
+    public static NoteEntity getNoteById(int id) {
+        try {
+            return (NoteEntity) entityManager.createNamedQuery("NoteEntity.findById")
+                    .setParameter("id", id)
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
+
     public static ArrayList<NoteEntity> getAllNotes() {
         try {
             ArrayList<NoteEntity> noteEntities = (ArrayList<NoteEntity>) entityManager.createNamedQuery("NoteEntity.findAllNotes").getResultList();
