@@ -5,10 +5,9 @@ import DataManager.Parameters;
 import DataManager.Records.PatMetadata;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.logging.Level;
 
 import static DataManager.Parameters.entityManager;
+
 
 public class PatternDescriptionEntityOperations extends PatternDescriptionEntity {
 
