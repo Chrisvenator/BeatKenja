@@ -162,10 +162,10 @@ public class Patterns {
                 ArrayList<String> metaTags = new ArrayList<>();
 
                 // Add genre & tags. But only those specified in Parameters.MUSIC_GENRE and Parameters.MAP_TAGS
-                Arrays.stream(tags.split(",")).forEach(tag -> Parameters.MUSIC_GENRE.stream().filter(genre -> genre.equalsIgnoreCase(tag)).forEach(metaGenre::add));
+                Arrays.stream(tags.split(",")).forEach(tag -> Parameters.MUSIC_GENRES.stream().filter(genre -> genre.equalsIgnoreCase(tag)).forEach(metaGenre::add));
                 Arrays.stream(tags.split(",")).forEach(tag -> Parameters.MAP_TAGS.stream().filter(genre -> genre.equalsIgnoreCase(tag)).forEach(metaTags::add));
 
-                p.metadata = new PatMetadata(bpm, nps, label, metaTags, metaGenre);
+                p.metadata = new PatMetadata("default", bpm, nps, Collections.singletonList(label), metaTags, metaGenre);
 
                 FileManager.overwriteFile(patFilePath + (!label.contains("Standard") ? label + "Standard" : label) + "_" + jsonFile.getName().replace(".json", "") + ".pat", p.exportInPatFormat());
             }

@@ -1,5 +1,12 @@
 package DataManager;
 
+import DataManager.Database.DatabaseEntities.DifficultyEntity;
+import DataManager.Database.DatabaseEntities.GenreEntity;
+import DataManager.Database.DatabaseEntities.TagEntity;
+import DataManager.Database.DatabaseOperations.DifficultyEntityOperations;
+import DataManager.Database.DatabaseOperations.GenreEntityOperations;
+import DataManager.Database.DatabaseOperations.TagEntityOperations;
+
 import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
 import javax.swing.*;
@@ -38,6 +45,9 @@ public class Parameters {
         }
     }
 
+    //Definitions:
+    public static final EntityManager entityManager = Persistence.createEntityManagerFactory("default").createEntityManager();
+
     //General Config:
     public static final String CONFIG_FILE_LOCATION = "./config.txt";
     public static final String README_FILE_LOCATION = "README.md";
@@ -60,8 +70,9 @@ public class Parameters {
     public static final int WAVE_NOTE_GENERATION_SAMPLING_POINTS = 1000;
     public static final JFileChooser FILE_CHOOSER = new JFileChooser(DEFAULT_PATH.trim());
     public static final FileNameExtensionFilter MAP_FILE_FORMAT = new FileNameExtensionFilter("BeatSaber Maps (*.dat) or Pattern files (*.pat)", "dat", "pat");
-    public static final List<String> MAP_TAGS = List.of("NULL", "Accuracy", "Balanced", "Challenge", "Dance", "Fitness", "Speed", "Tech");
-    public static final List<String> MUSIC_GENRE = List.of("NULL", "Alternative", "Ambient", "Anime", "Classical-Orchestral", "Comedy-Meme", "Dance", "Drum and Bass", "Dubstep", "Electronic", "Folk-Acoustic", "Funk-Disco", "Hardcore", "Hip Hop-Rap", "Holiday", "House", "Indie", "Instrumental", "J-Pop", "J-Rock", "Jazz", "K-Pop", "Kids-Family", "Metal", "Nightcore", "Pop", "Punk", "R&B", "Rock", "Soul", "Speedcore", "Swing", "TV-Film", "Techno", "Trance", "Video Game", "Vocaloid");
+    public static final List<String> MAP_TAGS = TagEntityOperations.getAllTags().stream().map(TagEntity::getName).toList();
+    public static final List<String> MUSIC_GENRES = GenreEntityOperations.getAllGenres().stream().map(GenreEntity::getName).toList();
+    public static final List<String> DIFFICULTIES = DifficultyEntityOperations.getAllDifficulties().stream().map(DifficultyEntity::getName).toList();
 
     static {
         FILE_CHOOSER.setFileFilter(MAP_FILE_FORMAT);
@@ -69,5 +80,4 @@ public class Parameters {
 
     }
 
-    public static final EntityManager entityManager = Persistence.createEntityManagerFactory("default").createEntityManager();
 }

@@ -3,49 +3,47 @@ package DataManager.Database.DatabaseEntities;
 import javax.persistence.*;
 
 @Entity
+@NamedQuery(name = "NoteEntity.findAllNotes", query = "SELECT d FROM NoteEntity d")
 @Table(name = "note", schema = "beatkenja", catalog = "")
 public class NoteEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    @Column(name = "Note_PK")
-    private int notePk;
+    @Column(name = "id")
+    private int id;
     @Basic
-    @Column(name = "LineIndex")
-    private int lineIndex;
+    @Column(name = "line_index")
+    private double lineIndex;
     @Basic
-    @Column(name = "LineLayer")
-    private int lineLayer;
+    @Column(name = "line_layer")
+    private double lineLayer;
     @Basic
-    @Column(name = "CutDirection")
+    @Column(name = "cut_direction")
     private int cutDirection;
     @Basic
-    @Column(name = "Type")
+    @Column(name = "type")
     private int type;
-    @Basic
-    @Column(name = "Color")
-    private int color;
 
-    public int getNotePk() {
-        return notePk;
+    public int getId() {
+        return id;
     }
 
-    public void setNotePk(int notePk) {
-        this.notePk = notePk;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public int getLineIndex() {
+    public double getLineIndex() {
         return lineIndex;
     }
 
-    public void setLineIndex(int lineIndex) {
+    public void setLineIndex(double lineIndex) {
         this.lineIndex = lineIndex;
     }
 
-    public int getLineLayer() {
+    public double getLineLayer() {
         return lineLayer;
     }
 
-    public void setLineLayer(int lineLayer) {
+    public void setLineLayer(double lineLayer) {
         this.lineLayer = lineLayer;
     }
 
@@ -65,14 +63,6 @@ public class NoteEntity {
         this.type = type;
     }
 
-    public int getColor() {
-        return color;
-    }
-
-    public void setColor(int color) {
-        this.color = color;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -80,24 +70,37 @@ public class NoteEntity {
 
         NoteEntity that = (NoteEntity) o;
 
-        if (notePk != that.notePk) return false;
-        if (lineIndex != that.lineIndex) return false;
-        if (lineLayer != that.lineLayer) return false;
+        if (id != that.id) return false;
+        if (Double.compare(lineIndex, that.lineIndex) != 0) return false;
+        if (Double.compare(lineLayer, that.lineLayer) != 0) return false;
         if (cutDirection != that.cutDirection) return false;
         if (type != that.type) return false;
-        if (color != that.color) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = notePk;
-        result = 31 * result + lineIndex;
-        result = 31 * result + lineLayer;
+        int result;
+        long temp;
+        result = id;
+        temp = Double.doubleToLongBits(lineIndex);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(lineLayer);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
         result = 31 * result + cutDirection;
         result = 31 * result + type;
-        result = 31 * result + color;
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "NoteEntity{" +
+                "id=" + id +
+                ", lineIndex=" + lineIndex +
+                ", lineLayer=" + lineLayer +
+                ", cutDirection=" + cutDirection +
+                ", type=" + type +
+                '}';
     }
 }

@@ -1,39 +1,34 @@
 package DataManager.Database.DatabaseEntities;
 
-import DataManager.Database.PersistEntities;
-
 import javax.persistence.*;
-import java.util.ArrayList;
-
-import static DataManager.Parameters.entityManager;
 
 @Entity
-@NamedQuery(name = "TagEntity.findAll", query = "SELECT d FROM TagEntity d")
-@NamedQuery(name = "TagEntity.findTags", query = "SELECT d FROM TagEntity d where d.tagName = :tagName")
+@NamedQuery(name = "TagEntity.findAllTags", query = "SELECT d FROM TagEntity d")
+@NamedQuery(name = "TagEntity.findTag", query = "SELECT d FROM TagEntity d where d.name = :TagName")
 @Table(name = "tag", schema = "beatkenja", catalog = "")
 public class TagEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    @Column(name = "Tag_pk")
-    private int tagPk;
+    @Column(name = "id")
+    private int id;
     @Basic
-    @Column(name = "Tag_Name")
-    private String tagName;
+    @Column(name = "name")
+    private String name;
 
-    public int getTagPk() {
-        return tagPk;
+    public int getId() {
+        return id;
     }
 
-    public void setTagPk(int tagPk) {
-        this.tagPk = tagPk;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public String getTagName() {
-        return tagName;
+    public String getName() {
+        return name;
     }
 
-    public void setTagName(String tagName) {
-        this.tagName = tagName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
@@ -43,39 +38,24 @@ public class TagEntity {
 
         TagEntity tagEntity = (TagEntity) o;
 
-        if (tagPk != tagEntity.tagPk) return false;
-        if (tagName != null ? !tagName.equals(tagEntity.tagName) : tagEntity.tagName != null) return false;
+        if (id != tagEntity.id) return false;
+        if (name != null ? !name.equals(tagEntity.name) : tagEntity.name != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = tagPk;
-        result = 31 * result + (tagName != null ? tagName.hashCode() : 0);
+        int result = id;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         return result;
     }
 
-    public static TagEntity getGenre(String genreName) {
-        try {
-            return (TagEntity) entityManager.createNamedQuery("TagEntity.findTags").setParameter("tagName", genreName).getSingleResult();
-        } catch (NoResultException e) {
-            return null;
-        }
+    @Override
+    public String toString() {
+        return "TagEntity{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
     }
-
-    public static ArrayList<TagEntity> getAllGenres() {
-        TypedQuery<TagEntity> query = entityManager.createNamedQuery("TagEntity.findAll", TagEntity.class);
-        ArrayList<TagEntity> difficulties = new ArrayList<>(query.getResultList());
-
-        difficulties.addAll(query.getResultList());
-
-        return difficulties;
-    }
-
-    public boolean persist() {
-        return PersistEntities.persistEntity(this);
-    }
-
-
 }

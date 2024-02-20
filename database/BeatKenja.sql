@@ -1,79 +1,106 @@
 create table difficulty
 (
-    Difficulty_PK   int auto_increment
+    id   int auto_increment
         primary key,
-    Difficulty_Name varchar(50) not null,
-    constraint difficulty_uk
-        unique (Difficulty_Name)
+    name varchar(50) null,
+    constraint Difficulty_unique_name
+        unique (name)
 );
 
 create table genre
 (
-    Genre_pk   int auto_increment
+    id   int auto_increment
         primary key,
-    Genre_Name varchar(50) not null,
-    constraint genre_uk
-        unique (Genre_Name)
+    name varchar(50) not null,
+    constraint name_quinque__key
+        unique (name)
 );
 
 create table note
 (
-    Note_PK      int auto_increment comment 'Primary Key of Column Note'
+    id            int auto_increment
         primary key,
-    LineIndex    int           not null,
-    LineLayer    int           not null,
-    CutDirection int           not null,
-    Type         int default 1 not null,
-    Color        int default 1 not null,
-    constraint note_uniqueKey
-        unique (LineIndex, LineLayer, CutDirection, Type, Color)
+    line_index    double not null,
+    line_layer    double not null,
+    cut_direction int    not null,
+    type          int    not null,
+    constraint note_unique_key
+        unique (line_index, line_layer, cut_direction, type)
 );
 
 create table pattern
 (
-    Pattern_PK_ID int auto_increment
+    id                     int auto_increment
         primary key,
-    Pattern_Name  varchar(50) not null,
-    constraint Pattern_UniqueName
-        unique (Pattern_Name)
+    note_id                int not null,
+    followed_by_note_id    int not null,
+    count                  int not null,
+    pattern_description_id int not null,
+    constraint pattern_unique_key
+        unique (note_id, followed_by_note_id, pattern_description_id),
+    constraint fk_followed_by_note_id
+        foreign key (followed_by_note_id) references note (id),
+    constraint fk_note_id
+        foreign key (note_id) references note (id)
+);
+
+create table pattern_description
+(
+    id   int                not null
+        primary key,
+    name varchar(100)       not null,
+    bpm  double default 120 not null,
+    nps  double default 5   not null
+);
+
+create table difficulty_assignment
+(
+    id                        int auto_increment
+        primary key,
+    fk_difficulty_id          int not null,
+    fk_pattern_description_id int not null,
+    constraint difficulty_assignment_unique_key
+        unique (fk_pattern_description_id, fk_difficulty_id),
+    constraint fk_difficulty_assignment_pattern_description_id
+        foreign key (fk_pattern_description_id) references pattern_description (id),
+    constraint fk_difficulty_id_fk
+        foreign key (fk_difficulty_id) references difficulty (id)
+);
+
+create table genre_assignment
+(
+    id                        int auto_increment
+        primary key,
+    fk_genre_id               int not null,
+    fk_pattern_description_id int null,
+    constraint genre_assignment_unique_key
+        unique (fk_pattern_description_id, fk_genre_id),
+    constraint fk_genre_assignment_pattern_description_id
+        foreign key (fk_pattern_description_id) references pattern_description (id),
+    constraint fk_genre_id
+        foreign key (fk_genre_id) references genre (id)
 );
 
 create table tag
 (
-    Tag_pk   int auto_increment
+    id   int auto_increment
         primary key,
-    Tag_Name varchar(50) not null,
-    constraint Tag_uk
-        unique (Tag_Name)
+    name varchar(50) not null,
+    constraint name_unique_key
+        unique (name)
 );
 
-create table note_probabilities
+create table tag_assignment
 (
-    Note_Probabilities_PK_ID int auto_increment
+    id                        int auto_increment
         primary key,
-    BPM                      int   default 120 not null,
-    NPS                      float default 5   not null,
-    Difficulty_FK_ID         int               not null,
-    Note_FK_ID               int               not null,
-    Followed_By_Note_FK_ID   int               not null,
-    count                    int   default 1   not null,
-    Tags_FK_ID               int               not null,
-    Genre_FK_ID              int               not null,
-    Pattern_FK               int   default 1   not null,
-    constraint note_probabilities_UniqueKey
-        unique (Followed_By_Note_FK_ID, Genre_FK_ID, Tags_FK_ID, Difficulty_FK_ID, BPM, NPS, Note_FK_ID, Pattern_FK),
-    constraint note_probabilities_difficulty_fk
-        foreign key (Difficulty_FK_ID) references difficulty (Difficulty_PK),
-    constraint note_probabilities_followed_by_note_fk
-        foreign key (Followed_By_Note_FK_ID) references note (Note_PK),
-    constraint note_probabilities_genre_Genre_pk_fk
-        foreign key (Genre_FK_ID) references genre (Genre_pk),
-    constraint note_probabilities_note_fk
-        foreign key (Note_FK_ID) references note (Note_PK),
-    constraint note_probabilities_pattern_fk
-        foreign key (Pattern_FK) references pattern (Pattern_PK_ID),
-    constraint note_probabilities_tag_Tag_pk_fk
-        foreign key (Tags_FK_ID) references tag (Tag_pk)
-)
-    comment 'Note_Probabilities contains the proabability that a Note x follows a note y';
+    fk_tag_id                 int not null,
+    fk_pattern_description_id int not null,
+    constraint tag_assignment_unique_key
+        unique (fk_pattern_description_id, fk_tag_id),
+    constraint fk_tag_assignment_pattern_description_id
+        foreign key (fk_pattern_description_id) references pattern_description (id),
+    constraint fk_tag_id
+        foreign key (fk_tag_id) references tag (id)
+);
 
