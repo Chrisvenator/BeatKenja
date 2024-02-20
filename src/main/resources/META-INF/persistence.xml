@@ -8,9 +8,12 @@
         <class>DataManager.Database.DatabaseEntities.NoteEntity</class>
         <class>DataManager.Database.DatabaseEntities.DifficultyEntity</class>
         <class>DataManager.Database.DatabaseEntities.GenreEntity</class>
-        <class>DataManager.Database.DatabaseEntities.NoteProbabilitiesEntity</class>
         <class>DataManager.Database.DatabaseEntities.TagEntity</class>
         <class>DataManager.Database.DatabaseEntities.PatternEntity</class>
+        <class>DataManager.Database.DatabaseEntities.DifficultyAssignmentEntity</class>
+        <class>DataManager.Database.DatabaseEntities.GenreAssignmentEntity</class>
+        <class>DataManager.Database.DatabaseEntities.PatternDescriptionEntity</class>
+        <class>DataManager.Database.DatabaseEntities.TagAssignmentEntity</class>
         <properties>
             <property name="hibernate.connection.url" value="jdbc:mysql://localhost:3306/beatkenja"/>
             <property name="hibernate.connection.driver_class" value="com.mysql.cj.jdbc.Driver"/>

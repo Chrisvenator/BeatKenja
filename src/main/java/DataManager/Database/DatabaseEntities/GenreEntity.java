@@ -1,39 +1,34 @@
 package DataManager.Database.DatabaseEntities;
 
-import DataManager.Database.PersistEntities;
-
 import javax.persistence.*;
-import java.util.ArrayList;
-import static DataManager.Parameters.entityManager;
-
 
 @Entity
-@NamedQuery(name = "GenreEntity.findAll", query = "SELECT d FROM GenreEntity d")
-@NamedQuery(name = "GenreEntity.findGenres", query = "SELECT d FROM GenreEntity d where d.genreName = :genreName")
+@NamedQuery(name = "GenreEntity.findAllGenres", query = "SELECT d FROM GenreEntity d")
+@NamedQuery(name = "GenreEntity.findGenre", query = "SELECT d FROM GenreEntity d where d.name = :GenreName")
 @Table(name = "genre", schema = "beatkenja", catalog = "")
 public class GenreEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    @Column(name = "Genre_pk")
-    private int genrePk;
+    @Column(name = "id")
+    private int id;
     @Basic
-    @Column(name = "Genre_Name")
-    private String genreName;
+    @Column(name = "name")
+    private String name;
 
-    public int getGenrePk() {
-        return genrePk;
+    public int getId() {
+        return id;
     }
 
-    public void setGenrePk(int genrePk) {
-        this.genrePk = genrePk;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public String getGenreName() {
-        return genreName;
+    public String getName() {
+        return name;
     }
 
-    public void setGenreName(String genreName) {
-        this.genreName = genreName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
@@ -43,39 +38,24 @@ public class GenreEntity {
 
         GenreEntity that = (GenreEntity) o;
 
-        if (genrePk != that.genrePk) return false;
-        if (genreName != null ? !genreName.equals(that.genreName) : that.genreName != null) return false;
+        if (id != that.id) return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = genrePk;
-        result = 31 * result + (genreName != null ? genreName.hashCode() : 0);
+        int result = id;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         return result;
     }
 
-    public static GenreEntity getGenre(String genreName) {
-        try {
-            return (GenreEntity) entityManager.createNamedQuery("GenreEntity.findGenres").setParameter("genreName", genreName).getSingleResult();
-        } catch (NoResultException e) {
-            return null;
-        }
+    @Override
+    public String toString() {
+        return "GenreEntity{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
     }
-
-    public static ArrayList<GenreEntity> getAllGenres() {
-        TypedQuery<GenreEntity> query = entityManager.createNamedQuery("GenreEntity.findAll", GenreEntity.class);
-        ArrayList<GenreEntity> difficulties = new ArrayList<>(query.getResultList());
-
-        difficulties.addAll(query.getResultList());
-
-        return difficulties;
-    }
-
-    public boolean persist() {
-        return PersistEntities.persistEntity(this);
-    }
-
-
 }

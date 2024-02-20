@@ -1,39 +1,66 @@
 package DataManager.Database.DatabaseEntities;
 
-import DataManager.Database.PersistEntities;
-
 import javax.persistence.*;
-import java.util.ArrayList;
-
-import static DataManager.Parameters.entityManager;
 
 @Entity
-@NamedQuery(name = "PatternEntity.findAll", query = "SELECT d FROM PatternEntity d")
-@NamedQuery(name = "PatternEntity.findPatterns", query = "SELECT d FROM PatternEntity d where d.patternName = :patternName")
+@NamedQuery(name = "PatternEntity.findByPatternDescription", query = "SELECT p FROM PatternEntity p WHERE patternDescriptionId = :id")
 @Table(name = "pattern", schema = "beatkenja", catalog = "")
 public class PatternEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    @Column(name = "Pattern_PK_ID")
-    private int patternPkId;
+    @Column(name = "id")
+    private int id;
     @Basic
-    @Column(name = "Pattern_Name")
-    private String patternName;
+    @Column(name = "note_id")
+    private int noteId;
+    @Basic
+    @Column(name = "followed_by_note_id")
+    private int followedByNoteId;
+    @Basic
+    @Column(name = "count")
+    private int count;
+    @Basic
+    @Column(name = "pattern_description_id")
+    private int patternDescriptionId;
 
-    public int getPatternPkId() {
-        return patternPkId;
+    public int getId() {
+        return id;
     }
 
-    public void setPatternPkId(int patternPkId) {
-        this.patternPkId = patternPkId;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public String getPatternName() {
-        return patternName;
+    public int getNoteId() {
+        return noteId;
     }
 
-    public void setPatternName(String patternName) {
-        this.patternName = patternName;
+    public void setNoteId(int noteId) {
+        this.noteId = noteId;
+    }
+
+    public int getFollowedByNoteId() {
+        return followedByNoteId;
+    }
+
+    public void setFollowedByNoteId(int followedByNoteId) {
+        this.followedByNoteId = followedByNoteId;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+    public int getPatternDescriptionId() {
+        return patternDescriptionId;
+    }
+
+    public void setPatternDescriptionId(int patternDescriptionId) {
+        this.patternDescriptionId = patternDescriptionId;
     }
 
     @Override
@@ -43,38 +70,33 @@ public class PatternEntity {
 
         PatternEntity that = (PatternEntity) o;
 
-        if (patternPkId != that.patternPkId) return false;
-        if (patternName != null ? !patternName.equals(that.patternName) : that.patternName != null) return false;
+        if (id != that.id) return false;
+        if (noteId != that.noteId) return false;
+        if (followedByNoteId != that.followedByNoteId) return false;
+        if (count != that.count) return false;
+        if (patternDescriptionId != that.patternDescriptionId) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = patternPkId;
-        result = 31 * result + (patternName != null ? patternName.hashCode() : 0);
+        int result = id;
+        result = 31 * result + noteId;
+        result = 31 * result + followedByNoteId;
+        result = 31 * result + count;
+        result = 31 * result + patternDescriptionId;
         return result;
     }
 
-    public static PatternEntity getGenre(String genreName) {
-        try {
-            return (PatternEntity) entityManager.createNamedQuery("PatternEntity.findPatterns").setParameter("patternName", genreName).getSingleResult();
-        } catch (NoResultException e) {
-            return null;
-        }
+    @Override
+    public String toString() {
+        return "PatternEntity{" +
+                "id=" + id +
+                ", noteId=" + noteId +
+                ", followedByNoteId=" + followedByNoteId +
+                ", count=" + count +
+                ", patternDescriptionId=" + patternDescriptionId +
+                '}';
     }
-
-    public static ArrayList<PatternEntity> getAllGenres() {
-        TypedQuery<PatternEntity> query = entityManager.createNamedQuery("PatternEntity.findAll", PatternEntity.class);
-        ArrayList<PatternEntity> difficulties = new ArrayList<>(query.getResultList());
-
-        difficulties.addAll(query.getResultList());
-
-        return difficulties;
-    }
-
-    public boolean persist() {
-        return PersistEntities.persistEntity(this);
-    }
-
 }

@@ -10,10 +10,7 @@ import UserInterface.UserInterface;
 import com.google.gson.Gson;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class Pattern implements Iterable<PatternProbability> {
     private final int MAX_ARRAY_SIZE = 109; // lines * layers * cut directions = 4 * 3 * 9 = 108 + 1 (just to be safe)
@@ -25,7 +22,7 @@ public class Pattern implements Iterable<PatternProbability> {
     public int[][] count; //for example, the Note from patterns[0][0] is followed by patterns[0][1] count[0][1] times
     public float[][] probabilities;
 
-    public PatMetadata metadata = new PatMetadata(-1.0, -1.0, "NULL", new ArrayList<>(), new ArrayList<>());
+    public PatMetadata metadata = new PatMetadata("default", -1.0, -1.0, Collections.singletonList("NULL"), new ArrayList<>(), new ArrayList<>());
 
     public static void main(String[] args) {
         String inputPath = "Input.txt";
@@ -62,6 +59,7 @@ public class Pattern implements Iterable<PatternProbability> {
     }
 
     // Default constructor that creates a MapGeneration.GenerationElements.Pattern object based on a predefined template file
+    //TODO: Change change the default constructor to a method that reads from the Database
     public Pattern() {
         // Create a new MapGeneration.GenerationElements.Pattern object based on a predefined template file
         Pattern p = new Pattern("MapTemplates/Template--ISeeFire.txt");
@@ -79,6 +77,13 @@ public class Pattern implements Iterable<PatternProbability> {
      * @param pathToPatternFile The path to the pattern file
      */
     public Pattern(String pathToPatternFile) {
+        //Search for the pattern in the database
+//        if (PatternEntity.getPattern(pathToPatternFile) != null && NoteProbabilitiesEntity.getProbabilitiesByPatternName(pathToPatternFile) != null) {
+//            readFromDatabase(pathToPatternFile);
+//            return;
+//        }
+
+        //If it's not in the database, then check if it's a .pat file
         File f = new File(pathToPatternFile);
         if (f.exists() && (f.isDirectory() || pathToPatternFile.endsWith(".pat"))) {
             try {
@@ -89,7 +94,7 @@ public class Pattern implements Iterable<PatternProbability> {
             return;
         }
 
-
+        //If it's not a .pat file, then it's a .json file which is the standard BeatSaberV2 format
         // Read the pattern file and convert it to BeatSaberObjects.Objects.BeatSaberMap
         String patternInput = FileManager.readFile(pathToPatternFile).get(0);
         Gson gson = new Gson();
@@ -102,6 +107,19 @@ public class Pattern implements Iterable<PatternProbability> {
         this.count = p.count;
         this.patterns = p.patterns;
         this.probabilities = p.probabilities;
+    }
+
+    /**
+     * Loads the pattern from the database
+     *
+     * @param metadata
+     */
+    public Pattern(PatMetadata metadata) {
+        this.metadata = metadata;
+        //HashSet has better performance than a default list
+        if (!new HashSet<>(Parameters.MAP_TAGS).containsAll(metadata.tags())) throw new IllegalArgumentException("Invalid Tag(s): " + metadata.tags());
+        if (!new HashSet<>(Parameters.MUSIC_GENRES).containsAll(metadata.genre())) throw new IllegalArgumentException("Invalid Genre(s): " + metadata.genre());
+        if (!new HashSet<>(Parameters.DIFFICULTIES).contains(metadata.difficulty())) throw new IllegalArgumentException("Invalid Difficulty: " + metadata.difficulty());
     }
 
 
@@ -127,15 +145,16 @@ public class Pattern implements Iterable<PatternProbability> {
         String[] metadata = lines.get(0).split(";");
 
         this.metadata = new PatMetadata(
+                pathToPatternFile.contains("/") ? pathToPatternFile.substring(pathToPatternFile.lastIndexOf("/")) : pathToPatternFile, //set the filename as the name of the Pattern
                 Float.parseFloat(metadata[0]),
                 Float.parseFloat(metadata[1]),
-                metadata[2],
+                Collections.singletonList(metadata[2]),
                 metadata[3].contains(",") ? List.of(metadata[3].split(",")) : List.of(metadata[3]),
                 metadata[4].contains(",") ? List.of(metadata[4].split(",")) : List.of(metadata[4])
         );
 
         this.metadata.tags().stream().filter(tag -> !Parameters.MAP_TAGS.contains(tag)).forEach(tag -> System.err.println("Unknown tag: " + tag));
-        this.metadata.genre().stream().filter(genre -> !Parameters.MUSIC_GENRE.contains(genre)).forEach(genre -> System.err.println("Unknown genre: " + genre));
+        this.metadata.genre().stream().filter(genre -> !Parameters.MUSIC_GENRES.contains(genre)).forEach(genre -> System.err.println("Unknown genre: " + genre));
 
         for (int lineIndex = 1, i = 0; lineIndex < lines.size(); lineIndex++, i++) {
             if (lines.get(lineIndex).contains(".")) throw new MalformattedFileException("The file contains a dot (.) in line " + lineIndex + ". This is not allowed in the .pat file format.");

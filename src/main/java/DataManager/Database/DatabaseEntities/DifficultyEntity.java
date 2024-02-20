@@ -1,40 +1,34 @@
 package DataManager.Database.DatabaseEntities;
 
-
-import DataManager.Database.PersistEntities;
-
 import javax.persistence.*;
-import java.util.ArrayList;
-
-import static DataManager.Parameters.entityManager;
 
 @Entity
-@NamedQuery(name = "DifficultyEntity.findAll", query = "SELECT d FROM DifficultyEntity d")
-@NamedQuery(name = "DifficultyEntity.findDifficulty", query = "SELECT d FROM DifficultyEntity d where d.difficultyName = :difficultyName")
+@NamedQuery(name = "DifficultyEntity.findAllDifficulties", query = "SELECT d FROM DifficultyEntity d")
+@NamedQuery(name = "DifficultyEntity.findDifficulty", query = "SELECT d FROM DifficultyEntity d where d.name = :difficultyName")
 @Table(name = "difficulty", schema = "beatkenja", catalog = "")
 public class DifficultyEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    @Column(name = "Difficulty_PK")
-    private int difficultyPk;
+    @Column(name = "id")
+    private int id;
     @Basic
-    @Column(name = "Difficulty_Name")
-    private String difficultyName;
+    @Column(name = "name")
+    private String name;
 
-    public int getDifficultyPk() {
-        return difficultyPk;
+    public int getId() {
+        return id;
     }
 
-    public void setDifficultyPk(int difficultyPk) {
-        this.difficultyPk = difficultyPk;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public String getDifficultyName() {
-        return difficultyName;
+    public String getName() {
+        return name;
     }
 
-    public void setDifficultyName(String difficultyName) {
-        this.difficultyName = difficultyName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
@@ -44,41 +38,24 @@ public class DifficultyEntity {
 
         DifficultyEntity that = (DifficultyEntity) o;
 
-        if (difficultyPk != that.difficultyPk) return false;
-        if (difficultyName != null ? !difficultyName.equals(that.difficultyName) : that.difficultyName != null) return false;
+        if (id != that.id) return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = difficultyPk;
-        result = 31 * result + (difficultyName != null ? difficultyName.hashCode() : 0);
+        int result = id;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         return result;
     }
 
-    public static DifficultyEntity getDifficulty(String difficultyName) {
-
-        try {
-            return (DifficultyEntity) entityManager.createNamedQuery("DifficultyEntity.findDifficulty").setParameter("difficultyName", difficultyName).getSingleResult();
-        } catch (NoResultException e) {
-            entityManager.close();
-            return null;
-        }
-    }
-
-
-    public static ArrayList<DifficultyEntity> getAllDifficulties() {
-        TypedQuery<DifficultyEntity> query = entityManager.createNamedQuery("DifficultyEntity.findAll", DifficultyEntity.class);
-        ArrayList<DifficultyEntity> difficulties = new ArrayList<>(query.getResultList());
-
-        difficulties.addAll(query.getResultList());
-
-        entityManager.close();
-        return difficulties;
-    }
-
-    public boolean persist() {
-        return PersistEntities.persistEntity(this);
+    @Override
+    public String toString() {
+        return "DifficultyEntity{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
     }
 }
