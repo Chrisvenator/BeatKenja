@@ -61,4 +61,13 @@ public class TagAssignmentEntity {
         result = 31 * result + fkPatternDescriptionId;
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "TagAssignmentEntity{" +
+                "id=" + id +
+                ", fkTagId=" + fkTagId +
+                ", fkPatternDescriptionId=" + fkPatternDescriptionId +
+                '}';
+    }
 }

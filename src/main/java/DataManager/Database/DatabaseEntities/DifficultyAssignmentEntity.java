@@ -61,4 +61,13 @@ public class DifficultyAssignmentEntity {
         result = 31 * result + fkPatternDescriptionId;
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "DifficultyAssignmentEntity{" +
+                "id=" + id +
+                ", fkDifficultyId=" + fkDifficultyId +
+                ", fkPatternDescriptionId=" + fkPatternDescriptionId +
+                '}';
+    }
 }
