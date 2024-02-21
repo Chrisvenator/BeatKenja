@@ -3,7 +3,7 @@ package DataManager.Database.DatabaseEntities;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "difficulty_assignment", schema = "beatkenja", catalog = "")
+@Table(name = "assignment_difficulty", schema = "beatkenja", catalog = "")
 public class DifficultyAssignmentEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
