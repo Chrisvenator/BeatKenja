@@ -61,4 +61,13 @@ public class GenreAssignmentEntity {
         result = 31 * result + (fkPatternDescriptionId != null ? fkPatternDescriptionId.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "GenreAssignmentEntity{" +
+                "id=" + id +
+                ", fkGenreId=" + fkGenreId +
+                ", fkPatternDescriptionId=" + fkPatternDescriptionId +
+                '}';
+    }
 }
