@@ -3,7 +3,7 @@ package DataManager.Database.DatabaseEntities;
 import javax.persistence.*;
 
 @Entity
-@NamedQuery(name = "PatternEntity.findByPatternDescription", query = "SELECT p FROM PatternEntity p WHERE patternDescriptionId = :id")
+@NamedQuery(name = "PatternEntity.findByPatternDescriptionId", query = "SELECT p FROM PatternEntity p WHERE patternDescriptionId = :patternDescriptionId")
 @NamedQuery(name = "PatternEntity.findById", query = "SELECT p FROM PatternEntity p WHERE p.id = :id")
 @NamedQuery(name = "PatternEntity.find", query = "SELECT p FROM PatternEntity p WHERE p.patternDescriptionId = :patternDescriptionId AND p.noteId = :noteId AND p.followedByNoteId = :followedByNoteId")
 @Table(name = "pattern", schema = "beatkenja", catalog = "")
