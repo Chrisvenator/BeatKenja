@@ -108,6 +108,6 @@ public class NoteEntity {
     }
 
     public Note toNote() {
-        return new Note(0, lineIndex, lineLayer, cutDirection, type);
+        return new Note(0, lineIndex, lineLayer, type, cutDirection);
     }
 }
