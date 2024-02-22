@@ -55,8 +55,6 @@ public class Parameters {
     public static final String README_FILE_LOCATION = "README.md";
     public static final PatMetadata DEFAULT_PATTERN_METADATA = new PatMetadata("ISeeFire", 170, 5.91, Collections.singletonList("StandardExpertPlus"), Collections.singletonList("Balanced"), Collections.singletonList("Metal"));
     public static final String DEFAULT_ONSET_GENERATION_FOLDER = "./OnsetGeneration/";
-    public static final String DEFAULT_PATTERN_PROBABILITIES_FOLDER = "./Patterns/PatternProbabilities/";
-    public static final String DEFAULT_SEQUENCES_FOLDER = "./Patterns/sequences/";
     public static final String ONSET_GENERATION_FOLDER_PATH_INPUT = "./OnsetGeneration/mp3Files/";
     public static final String ONSET_GENERATION_FOLDER_PATH_OUTPUT = saveNewMapsToDefaultPath ? DEFAULT_PATH : "./OnsetGeneration/output/";
     public static final String DEFAULT_BEATSAVER_MAP_INFO_PATH = "./BeatSaberMaps/MapInfos/";
