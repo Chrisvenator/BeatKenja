@@ -17,18 +17,9 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 
+@Deprecated
 public class Patterns {
     public static void main(String[] args) {
-//        Patterns patterns = new Patterns();
-//        System.out.println(patterns.sequences);
-//        System.out.println(patterns.patterns);
-//        System.out.println(patterns.patterns.get(0).exportInPatFormat());
-//        System.out.println(patterns.patterns.get(1).exportInPatFormat());
-//        Pattern p = new Pattern("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\_SongsToTimings\\Patterns\\PatternProbabilities\\test1.pat");
-//        System.out.println(p);
-//        System.out.println(p.exportInPatFormat());
-
-
         String patFilePath = "./BeatSaberMaps/good_pat/";
 
         Patterns patterns2 = new Patterns();
