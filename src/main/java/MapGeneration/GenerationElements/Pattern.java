@@ -2,6 +2,8 @@ package MapGeneration.GenerationElements;
 
 import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Note;
+import DataManager.Database.DatabaseEntities.*;
+import DataManager.Database.DatabaseOperations.*;
 import DataManager.FileManager;
 import DataManager.Parameters;
 import DataManager.Records.PatMetadata;
@@ -9,47 +11,36 @@ import MapGeneration.GenerationElements.Exceptions.MalformattedFileException;
 import UserInterface.UserInterface;
 import com.google.gson.Gson;
 
+import javax.persistence.NoResultException;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.logging.Level;
 
 public class Pattern implements Iterable<PatternProbability> {
     private final int MAX_ARRAY_SIZE = 109; // lines * layers * cut directions = 4 * 3 * 9 = 108 + 1 (just to be safe)
 
     // In this variable, all the possible notes are stored as patterns
-    public Note[][] patterns;
+    public Note[][] patterns = new Note[MAX_ARRAY_SIZE][MAX_ARRAY_SIZE];
 
     // This array stores how often a certain block follows another block. It contains the values of "patterns" array.
-    public int[][] count; //for example, the Note from patterns[0][0] is followed by patterns[0][1] count[0][1] times
-    public float[][] probabilities;
+    public int[][] count = new int[MAX_ARRAY_SIZE][MAX_ARRAY_SIZE]; //for example, the Note from patterns[0][0] is followed by patterns[0][1] count[0][1] times
+    public float[][] probabilities = new float[MAX_ARRAY_SIZE][MAX_ARRAY_SIZE];
 
-    public PatMetadata metadata = new PatMetadata(-1.0, -1.0, "NULL", new ArrayList<>(), new ArrayList<>());
+    public PatMetadata metadata = new PatMetadata("default", -1.0, -1.0, Collections.singletonList("NULL"), new ArrayList<>(), new ArrayList<>());
 
     public static void main(String[] args) {
-        String inputPath = "Input.txt";
+        java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
 
-        BeatSaberMap map = new Gson().fromJson(FileManager.readFile(inputPath).getFirst(), BeatSaberMap.class);
-        Pattern p = new Pattern(map._notes, 1);
-
-        // Remove patterns that occur less than 8 times
-        p.removeXTimes(2);
-        System.out.println(p);
-
-        // Get the probability of a specific note sequence and print it
+        Pattern p = new Pattern(Parameters.DEFAULT_PATTERN_METADATA);
+        System.out.println(p.exportInPatFormat());
         System.out.println(p.getProbabilityOf(new Note(0, 2, 0, 1, 1)));
+        System.out.println("saved successfully: " + p.saveOrUpdateInDatabase());
     }
+
 
     // Constructor that analyzes the patterns based on the provided notes and type
     public Pattern(Note[] notes, int type) {
         if (type != 0 && type != 1 || notes == null) return;
-
-        // Initialize arrays to store patterns, count, and probabilities
-        count = new int[MAX_ARRAY_SIZE][MAX_ARRAY_SIZE];
-        patterns = new Note[MAX_ARRAY_SIZE][MAX_ARRAY_SIZE];
-        probabilities = new float[MAX_ARRAY_SIZE][MAX_ARRAY_SIZE];
-
 
         // Analyze the patterns based on the provided notes and type
         analyzePattern(notes, type);
@@ -61,15 +52,12 @@ public class Pattern implements Iterable<PatternProbability> {
         for (Note n : notes) n._time = 0;
     }
 
-    // Default constructor that creates a MapGeneration.GenerationElements.Pattern object based on a predefined template file
+    /**
+     * Create a default empty pattern object. This can be further modified
+     *
+     * @implNote keep in mind to update the metadata variable!
+     */
     public Pattern() {
-        // Create a new MapGeneration.GenerationElements.Pattern object based on a predefined template file
-        Pattern p = new Pattern("MapTemplates/Template--ISeeFire.txt");
-
-        // Copy the patterns, count, and probabilities from the created MapGeneration.GenerationElements.Pattern object
-        this.count = p.count;
-        this.patterns = p.patterns;
-        this.probabilities = p.probabilities;
     }
 
     /**
@@ -78,7 +66,9 @@ public class Pattern implements Iterable<PatternProbability> {
      *
      * @param pathToPatternFile The path to the pattern file
      */
+    @Deprecated
     public Pattern(String pathToPatternFile) {
+        //If it's not in the database, then check if it's a .pat file
         File f = new File(pathToPatternFile);
         if (f.exists() && (f.isDirectory() || pathToPatternFile.endsWith(".pat"))) {
             try {
@@ -89,16 +79,16 @@ public class Pattern implements Iterable<PatternProbability> {
             return;
         }
 
-
-        // Read the pattern file and convert it to BeatSaberObjects.Objects.BeatSaberMap
-        String patternInput = FileManager.readFile(pathToPatternFile).getFirst();
+        //If it's not a .pat file, then it's a .json file that is the standard BeatSaberV2 format
+        // Read the pattern file and convert it to a BeatSaberMap object
+        String patternInput = FileManager.readFile(pathToPatternFile).get(0);
         Gson gson = new Gson();
         BeatSaberMap patterns = gson.fromJson(patternInput, BeatSaberMap.class);
 
-        // Create a new MapGeneration.GenerationElements.Pattern object based on the BeatSaberObjects.Objects.BeatSaberMap
+        // Create a new Pattern object based on the BeatSaberObjects.Objects.BeatSaberMap
         Pattern p = new Pattern(patterns._notes, 1);
 
-        // Copy the patterns, count, and probabilities from the created MapGeneration.GenerationElements.Pattern object
+        // Copy the patterns, count, and probabilities from the created Pattern object
         this.count = p.count;
         this.patterns = p.patterns;
         this.probabilities = p.probabilities;
@@ -106,10 +96,88 @@ public class Pattern implements Iterable<PatternProbability> {
 
 
     /**
+     * Loads the pattern from the database<br>
+     * Metadata must be checked wherever it is being changed!
+     *
+     * @param metadata The PatMetadata record of the pattern
+     */
+    public Pattern(PatMetadata metadata) {
+        this.metadata = metadata;
+        //HashSet has better performance than a default list
+        if (!new HashSet<>(Parameters.MAP_TAGS).containsAll(metadata.tags())) throw new IllegalArgumentException("Tag(s) not found in database: " + metadata.tags());
+        if (!new HashSet<>(Parameters.MUSIC_GENRES).containsAll(metadata.genre())) throw new IllegalArgumentException("Genre(s) not found in database: " + metadata.genre());
+        if (!new HashSet<>(Parameters.DIFFICULTIES).containsAll(metadata.difficulty())) throw new IllegalArgumentException("Difficulty not found in database: " + metadata.difficulty());
+
+        PatternDescriptionEntity desc;
+        try {
+            desc = PatternDescriptionEntityOperations.getPatternDescription(metadata);
+            if (desc == null) throw new NoResultException("Pattern not found in the database");
+        } catch (NoResultException e) {
+            //The Pattern has not been found in the database, so we create a new one:
+            System.out.println("Pattern not found in the database. Creating new Pattern...");
+            PatternDescriptionEntityOperations.savePatternDescription(metadata);
+            return;
+        }
+
+        List<PatternEntity> databasePatterns = PatternEntityOperations.getPatternByDescription(desc);
+        for (PatternEntity p : databasePatterns) {
+            Note base = Objects.requireNonNull(NoteEntityOperations.getNoteById(p.getNoteId())).toNote();
+            Note follower = Objects.requireNonNull(NoteEntityOperations.getNoteById(p.getFollowedByNoteId())).toNote();
+            int count = p.getCount();
+
+            Pattern pattern = new Pattern();
+            pattern.patterns[0][0] = base;
+            pattern.patterns[0][1] = follower;
+            pattern.count[0][1] = count;
+
+            this.merge(pattern);
+        }
+    }
+
+
+    public boolean saveOrUpdateInDatabase() {
+        PatternDescriptionEntity description = PatternDescriptionEntityOperations.savePatternDescription(metadata);
+        System.out.println(description);
+
+        for (int i = 0; i < patterns.length; i++) {
+            Note base = patterns[i][0];
+            if (base == null) break;
+            for (int j = 1; j < patterns[i].length; j++) {
+                Note follower = patterns[i][j];
+                if (follower == null) break;
+                int count = this.count[i][j];
+
+                NoteEntity baseEntity;
+                NoteEntity followerEntity;
+                try {
+                    baseEntity = NoteEntityOperations.getNote(base);
+                    followerEntity = NoteEntityOperations.getNote(follower);
+                    if (baseEntity == null || followerEntity == null) throw new NoResultException("Note not found in database: " + base + " or " + follower);
+                } catch (NoResultException e) {
+                    System.err.println("Note not found in database: " + base + " or " + follower);
+                    continue;
+                }
+
+                PatternEntity pattern = new PatternEntity();
+                pattern.setPatternDescriptionId(description.getId());
+                pattern.setNoteId(baseEntity.getId());
+                pattern.setFollowedByNoteId(followerEntity.getId());
+                pattern.setCount(count);
+
+                if (PatternEntityOperations.saveOrUpdatePattern(pattern) && Parameters.verbose) System.out.println("saved: " + pattern);
+                else if (Parameters.verbose) System.err.println("failed to save: " + pattern);
+            }
+        }
+
+        return true;
+    }
+
+
+    /**
      * Create a new pattern object based on a pattern file.
      * A pattern file is a file that contains a list of patterns in the .pat file format.
      * A line always represents the probabilities that a certain note will follow a given note.<br>
-     * All notes are separated by a semicolon (;).
+     * All notes are separated by a semicolon;<br>
      * The pat format is as follows: <br>
      * <br>
      * _time,_lineIndex,_lineLayer,_type,_cutDirection ; _time,_lineIndex,_lineLayer,_type,_cutDirection,count ; ... (If there are more than one notes in the pattern) <br>
@@ -118,24 +186,21 @@ public class Pattern implements Iterable<PatternProbability> {
      * @param pathToPatternFile The path to the pattern file
      */
     private void readFromPatFile(String pathToPatternFile) throws MalformattedFileException {
-        count = new int[MAX_ARRAY_SIZE][MAX_ARRAY_SIZE];
-        patterns = new Note[MAX_ARRAY_SIZE][MAX_ARRAY_SIZE];
-        probabilities = new float[MAX_ARRAY_SIZE][MAX_ARRAY_SIZE];
-
         List<String> lines = FileManager.readFile(pathToPatternFile);
 
-        String[] metadata = lines.getFirst().split(";");
+        String[] metadata = lines.get(0).split(";");
 
         this.metadata = new PatMetadata(
+                pathToPatternFile.contains("/") ? pathToPatternFile.substring(pathToPatternFile.lastIndexOf("/")) : pathToPatternFile, //set the filename as the name of the Pattern
                 Float.parseFloat(metadata[0]),
                 Float.parseFloat(metadata[1]),
-                metadata[2],
+                Collections.singletonList(metadata[2]),
                 metadata[3].contains(",") ? List.of(metadata[3].split(",")) : List.of(metadata[3]),
                 metadata[4].contains(",") ? List.of(metadata[4].split(",")) : List.of(metadata[4])
         );
 
         this.metadata.tags().stream().filter(tag -> !Parameters.MAP_TAGS.contains(tag)).forEach(tag -> System.err.println("Unknown tag: " + tag));
-        this.metadata.genre().stream().filter(genre -> !Parameters.MUSIC_GENRE.contains(genre)).forEach(genre -> System.err.println("Unknown genre: " + genre));
+        this.metadata.genre().stream().filter(genre -> !Parameters.MUSIC_GENRES.contains(genre)).forEach(genre -> System.err.println("Unknown genre: " + genre));
 
         for (int lineIndex = 1, i = 0; lineIndex < lines.size(); lineIndex++, i++) {
             if (lines.get(lineIndex).contains(".")) throw new MalformattedFileException("The file contains a dot (.) in line " + lineIndex + ". This is not allowed in the .pat file format.");
@@ -165,7 +230,7 @@ public class Pattern implements Iterable<PatternProbability> {
     /**
      * Exports the pattern analysis results in a .pat file format.
      * A line always represents the probabilities that a certain note will follow a given note.
-     * All notes are separated by a semicolon (;).
+     * All notes are separated by a semicolon;<br>
      * The pat format is as follows: <br>
      * <br>
      * _time,_lineIndex,_lineLayer,_type,_cutDirection ; _time,_lineIndex,_lineLayer,_type,_cutDirection,count ; ... (If there are more than one notes in the pattern) <br>
@@ -276,7 +341,7 @@ public class Pattern implements Iterable<PatternProbability> {
         StringBuilder s = new StringBuilder();
         int counter = 0;
 
-        // Iterate over the patterns array
+        // Iterate over the pattern array
         for (Note[] notes : this.patterns) {
             if (notes[0] != null) {
                 // Append the string representation of the first note in the pattern
@@ -465,18 +530,18 @@ public class Pattern implements Iterable<PatternProbability> {
      * <p>
      * The getProbabilityOf method takes a BeatSaberObjects.Objects.Note object (n) as a parameter.
      * It retrieves the probability of the specified note pattern.
-     * The method returns a MapGeneration.GenerationElements.PatternProbability object that represents the probability of the note pattern.
+     * The method returns a PatternProbability object that represents the probability of the note pattern.
      * If the note pattern is not found, the method returns null.
      * Inside the method, a loop iterates over the patterns array.
      * The loop condition checks if the loop index is within the bounds of the patterns array and if the current pattern is not null.
      * Within the loop, three checks are performed:
      * - If the pattern array is unexpectedly null, the method returns null.
      * - If the first note in the pattern is unexpectedly null, the method returns null.
-     * - If the placement of the first note in the pattern matches the placement of the specified note (n), a new MapGeneration.GenerationElements.PatternProbability object is created using the current pattern and its corresponding probability. This object is then returned.
+     * - If the placement of the first note in the pattern matches the placement of the specified note (n), a new PatternProbability object is created using the current pattern and its corresponding probability. This object is then returned.
      * - If no matching note pattern is found after iterating over all patterns, the method returns null.
      *
      * @param n The note for which to retrieve the probability.
-     * @return A MapGeneration.GenerationElements.PatternProbability object that represents the probability of the note pattern, or null if the note pattern is not found.
+     * @return A PatternProbability object that represents the probability of the note pattern, or null if the note pattern is not found.
      */
     public PatternProbability getProbabilityOf(Note n) {
         Pattern p = clonePattern();
@@ -528,9 +593,9 @@ public class Pattern implements Iterable<PatternProbability> {
      * It verifies if the iterator index i is beyond the bounds of the patterns array or if the current pattern is null.
      * If the conditions are met, it returns false to indicate that there are no more elements to iterate; otherwise, it returns true.
      * The next method retrieves the next pattern probability.
-     * It creates a new MapGeneration.GenerationElements.PatternProbability object using the current pattern (patterns[i]) and its corresponding probability (probabilities[i]).
+     * It creates a new PatternProbability object using the current pattern (patterns[i]) and its corresponding probability (probabilities[i]).
      * It increments the iterator index i to move to the next position.
-     * It returns the created MapGeneration.GenerationElements.PatternProbability object.
+     * It returns the created PatternProbability object.
      *
      * @return An iterator that allows iterating over the pattern probabilities.
      */
@@ -555,14 +620,14 @@ public class Pattern implements Iterable<PatternProbability> {
             /**
              * Retrieves the next pattern probability.
              *
-             * @return The next MapGeneration.GenerationElements.PatternProbability object.
+             * @return The next PatternProbability object.
              */
             @Override
             public PatternProbability next() {
-                // Create a new MapGeneration.GenerationElements.PatternProbability object using the current pattern and its corresponding probability
+                // Create a new PatternProbability object using the current pattern and its corresponding probability
                 PatternProbability p = new PatternProbability(patterns[i], probabilities[i]);
                 i++; // Increment the iterator index
-                return p; // Return the MapGeneration.GenerationElements.PatternProbability object
+                return p; // Return the PatternProbability object
             }
         };
     }
@@ -588,20 +653,20 @@ public class Pattern implements Iterable<PatternProbability> {
      *
      * @param p the {@code Pattern} object to merge into this pattern. It should not be {@code null}.
      */
-    //This method integrates the notes, counts, and probabilities from the given pattern into the current pattern.
-    //It follows these rules:
-    //- If a note pattern in the given pattern does not exist in this pattern, it is added.
-    //- If a note pattern exists, the counts for each note are updated. If a note in the given pattern is not present in the existing pattern, it is added.
-    //- After merging, the probabilities are recalculated for the entire pattern.
-    //<p>
-    //The merging process involves checking each note pattern in the given {@code Pattern} object:
-    //- If the key (first note in a pattern) does not exist in this pattern, the entire note pattern is added.
-    //- If the key exists, the method checks each subsequent note in the pattern.
-    //- If the note exists, its count is incremented by the count from the given pattern.
-    //- If the note does not exist, it is added along with its count.
-    //<P>
-    //The method ensures that the merged patterns are properly integrated without duplication,
-    //maintaining the integrity of the pattern sequences and their respective counts and probabilities.
+//This method integrates the notes, counts, and probabilities from the given pattern into the current pattern.
+//It follows these rules:
+//- If a note pattern in the given pattern does not exist in this pattern, it is added.
+//- If a note pattern exists, the counts for each note are updated. If a note in the given pattern is not present in the existing pattern, it is added.
+//- After merging, the probabilities are recalculated for the entire pattern.
+//<p>
+//The merging process involves checking each note pattern in the given {@code Pattern} object:
+//- If the key (first note in a pattern) does not exist in this pattern, the entire note pattern is added.
+//- If the key exists, the method checks each subsequent note in the pattern.
+//- If the note exists, its count is incremented by the count from the given pattern.
+//- If the note does not exist, it is added along with its count.
+//<P>
+//The method ensures that the merged patterns are properly integrated without duplication,
+//maintaining the integrity of the pattern sequences and their respective counts and probabilities.
     public void merge(Pattern p) {
         int lastKey = 0;
         for (; lastKey < patterns.length; lastKey++) if (patterns[lastKey][0] == null) break;

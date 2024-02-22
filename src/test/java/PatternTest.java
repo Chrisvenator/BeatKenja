@@ -1,6 +1,7 @@
 import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Note;
 import DataManager.FileManager;
+import DataManager.Parameters;
 import MapGeneration.GenerationElements.Pattern;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,13 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PatternTest {
+
+    @Test
+    void testConstructor() {
+        Pattern p = new Pattern(Parameters.DEFAULT_PATTERN_METADATA);
+        assertEquals(Parameters.DEFAULT_PATTERN_METADATA, p.metadata);
+        assertTrue(p.exportInPatFormat().length() >= 200);
+    }
 
     @Test
     void analyzePattern() {
@@ -130,7 +138,7 @@ class PatternTest {
 
     @Test
     void testMergePatterns() {
-        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").getFirst(), BeatSaberMap.class);
+        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
         Pattern p1 = new Pattern(map._notes, 1);
         Pattern p2 = new Pattern(map._notes, 1);
         assertEquals(p1.toString(), p2.toString());

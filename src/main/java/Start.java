@@ -2,6 +2,7 @@ import DataManager.CreateAllNecessaryDIRsAndFiles;
 import UserInterface.UserInterface;
 
 import java.util.Random;
+import java.util.logging.Level;
 
 import static DataManager.Parameters.*;
 
@@ -23,6 +24,8 @@ public class Start {
 
 
     public static void main(String[] args) {
+        java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
+
         SEED = (long) (new Random().nextDouble() * 1000000000);
         RANDOM = new Random(SEED);
         System.out.println("Current seed is: " + SEED);

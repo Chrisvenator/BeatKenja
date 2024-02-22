@@ -8,21 +8,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class CreateAllNecessaryDIRsAndFiles {
-    public static String[] templateFilesToCopy = {
-            DEFAULT_PATTERN_TEMPLATE
-    };
     public static String[] preMadePatternsFilesToCopy = {
-            DEFAULT_SEQUENCE_TEMPLATE_FOLDER + "jumps.txt",           //Default value: "Patterns/jumps.txt",
-            DEFAULT_SEQUENCE_TEMPLATE_FOLDER + "test.txt",            //Default value: "Patterns/test.txt",
-            DEFAULT_SEQUENCE_TEMPLATE_FOLDER + "umapyoi-test.txt",    //Default value: "Patterns/umapyoi-test.txt",
             DEFAULT_ONSET_GENERATION_FOLDER + "SongToOnsets.py",      //Default value: "OnsetGeneration/SongToOnsets.py",
             DEFAULT_ONSET_GENERATION_FOLDER + "ConvertSong.py",       //Default value: "OnsetGeneration/ConvertSong.py",
             README_FILE_LOCATION                                      //Default value: "README.md"
     };
 
     public static String[] directories = {
-            DEFAULT_PATTERN_TEMPLATE_FOLDER,
-            DEFAULT_SEQUENCE_TEMPLATE_FOLDER,
             DEFAULT_ONSET_GENERATION_FOLDER,
             ONSET_GENERATION_FOLDER_PATH_INPUT,
             ONSET_GENERATION_FOLDER_PATH_OUTPUT
@@ -42,10 +34,8 @@ public class CreateAllNecessaryDIRsAndFiles {
 
         //Checking if the directories exist.
         //If yes, then don't create them again
-        File f1 = new File(DEFAULT_PATTERN_TEMPLATE_FOLDER);  //Default Value: "./MapTemplates"
-        File f2 = new File(DEFAULT_SEQUENCE_TEMPLATE_FOLDER); //Default Value: "./Patterns"
         File f3 = new File(CONFIG_FILE_LOCATION);             //Default Value: "./config.txt"
-        if (f1.exists() && f1.isDirectory() && f2.exists() && f2.isDirectory() && f3.exists() && f3.isFile()) {
+        if (f3.exists() && f3.isFile()) {
             return;
         }
         System.out.println("Creating all necessary directories and files.");
@@ -54,7 +44,6 @@ public class CreateAllNecessaryDIRsAndFiles {
         createConfigFile();
         createDirectories(CreateAllNecessaryDIRsAndFiles.directories);
 
-        extractFilesFromJar(CreateAllNecessaryDIRsAndFiles.templateFilesToCopy);
         extractFilesFromJar(CreateAllNecessaryDIRsAndFiles.preMadePatternsFilesToCopy);
     }
 
