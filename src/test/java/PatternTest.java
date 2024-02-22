@@ -1,6 +1,7 @@
 import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Note;
 import DataManager.FileManager;
+import DataManager.Parameters;
 import MapGeneration.GenerationElements.Pattern;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,13 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PatternTest {
+
+    @Test
+    void testConstructor() {
+        Pattern p = new Pattern(Parameters.DEFAULT_PATTERN_METADATA);
+        assertEquals(Parameters.DEFAULT_PATTERN_METADATA, p.metadata);
+        assertTrue(p.exportInPatFormat().length() >= 200);
+    }
 
     @Test
     void analyzePattern() {
