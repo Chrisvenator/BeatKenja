@@ -1,3 +1,4 @@
+id,name
 12,Alternative
 13,Ambient
 14,Anime
@@ -22,7 +23,7 @@
 33,Kids-Family
 34,Metal
 35,Nightcore
-11,NULL
+0,NULL
 36,Pop
 37,Punk
 38,R&B

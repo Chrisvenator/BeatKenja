@@ -1,0 +1,4 @@
+id,fk_difficulty_id,fk_pattern_description_id
+3,70,1
+1,71,1
+5,71,10
