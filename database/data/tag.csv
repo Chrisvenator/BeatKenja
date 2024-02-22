@@ -1,7 +1,9 @@
+id,name
 1,Accuracy
 2,Balanced
 3,Challenge
 4,Dance
 5,Fitness
+0,NULL
 6,Speed
 7,Tech
