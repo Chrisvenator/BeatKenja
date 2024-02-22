@@ -30,6 +30,14 @@ public class Note implements Comparable<Note> {
 
     // <editor-fold desc="constructor">
 
+    public Note() {
+        this._time = 0;
+        this._lineIndex = 0;
+        this._lineLayer = 0;
+        this._type = 1;
+        this._cutDirection = 8;
+    }
+
     public Note(float time) {
         this._time = time;
         this._lineIndex = 0;
@@ -172,7 +180,6 @@ public class Note implements Comparable<Note> {
     }
 
     // </editor-fold>
-
 
 
     // <editor-fold desc="override methods">

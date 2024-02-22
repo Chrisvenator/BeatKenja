@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd"
+             version="2.2">
+    <persistence-unit name="default">
+
+        <class>DataManager.Database.DatabaseEntities.NoteEntity</class>
+        <class>DataManager.Database.DatabaseEntities.DifficultyEntity</class>
+        <class>DataManager.Database.DatabaseEntities.GenreEntity</class>
+        <class>DataManager.Database.DatabaseEntities.TagEntity</class>
+        <class>DataManager.Database.DatabaseEntities.PatternEntity</class>
+        <class>DataManager.Database.DatabaseEntities.DifficultyAssignmentEntity</class>
+        <class>DataManager.Database.DatabaseEntities.GenreAssignmentEntity</class>
+        <class>DataManager.Database.DatabaseEntities.PatternDescriptionEntity</class>
+        <class>DataManager.Database.DatabaseEntities.TagAssignmentEntity</class>
+        <properties>
+            <property name="hibernate.connection.url" value="jdbc:mysql://localhost:3306/beatkenja"/>
+            <property name="hibernate.connection.driver_class" value="com.mysql.cj.jdbc.Driver"/>
+            <property name="hibernate.connection.username" value="root"/>
+            <property name="hibernate.connection.password" value="root"/>
+            <property name="hibernate.show_sql" value="false"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL8Dialect"/>
+        </properties>
+    </persistence-unit>
+</persistence>

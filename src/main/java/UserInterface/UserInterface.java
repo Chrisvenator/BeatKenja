@@ -15,7 +15,6 @@ import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons.*;
 import UserInterface.Elements.Buttons.ButtonTypes.*;
 import UserInterface.Elements.JSlider.GlobalJSlider.GlobalPatternVarianceJSlider;
 import UserInterface.Elements.JSlider.MyGlobalJSlider;
-import com.google.gson.Gson;
 
 import javax.swing.*;
 import java.awt.*;
@@ -127,8 +126,7 @@ public class UserInterface extends JFrame {
 
         if (pattern == null) {
             statusCheck.setText(statusCheck.getText() + "\n[INFO]: Patterns have not been specified. Proceeding with default patterns");
-            BeatSaberMap patterMap = new Gson().fromJson(FileManager.readFile(DEFAULT_PATTERN_TEMPLATE).get(0), BeatSaberMap.class);
-            pattern = new Pattern(patterMap._notes, 1);
+            pattern = new Pattern(DEFAULT_PATTERN_METADATA);
             if (verbose) statusCheck.setText(statusCheck.getText() + "\n patterns: " + pattern.toString());
         }
         map._obstacles = new Obstacle[0];

@@ -20,13 +20,6 @@ class CreateAllNecessaryDIRsAndFilesTest {
             }
         }
 
-        for (String s : CreateAllNecessaryDIRsAndFiles.templateFilesToCopy) {
-            File f = new File(s);
-            if (f.exists()) {
-                assertTrue(f.isFile());
-            }
-        }
-
         for (String s : CreateAllNecessaryDIRsAndFiles.preMadePatternsFilesToCopy) {
             File f = new File(s);
             if (f.exists()) {
