@@ -7,8 +7,6 @@ import CustomWaveGenerator.*;
 
 import static DataManager.Parameters.*;
 
-import com.google.gson.Gson;
-
 import java.util.*;
 
 public class CreatePatterns {
@@ -452,7 +450,6 @@ public class CreatePatterns {
 
         return pattern;
     }
-
 
     public static List<Note> randomV2FromTemplate(Note[] timings, Pattern p, boolean stacks, Note prevBlue, Note prevRed) throws IllegalArgumentException {
         List<Note> notes = new ArrayList<>();

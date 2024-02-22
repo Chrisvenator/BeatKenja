@@ -16,6 +16,7 @@ import java.awt.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Level;
 
 @SuppressWarnings("unused")
 public class Parameters {
@@ -41,6 +42,7 @@ public class Parameters {
     //Try to load the config. If it doesn't exist, then use the default values
     static {
         try {
+            java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
             UserInterface.UserInterface.loadConfig();
         } catch (Exception e) {
             System.err.println("Couldn't find config.txt. Is it created yet? Using default values...");
