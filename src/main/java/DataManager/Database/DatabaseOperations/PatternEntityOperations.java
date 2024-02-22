@@ -21,8 +21,8 @@ public class PatternEntityOperations extends PatternEntity {
 
     public static List<PatternEntity> getPatternByDescription(PatternDescriptionEntity description) {
 
-        return (List<PatternEntity>) entityManager.createNamedQuery("PatternEntity.findByPatternDescription")
-                .setParameter("id", description.getId())
+        return (List<PatternEntity>) entityManager.createNamedQuery("PatternEntity.findByPatternDescriptionId")
+                .setParameter("patternDescriptionId", description.getId())
                 .getResultList();
     }
 
