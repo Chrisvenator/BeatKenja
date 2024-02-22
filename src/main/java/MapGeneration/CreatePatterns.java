@@ -12,38 +12,6 @@ import com.google.gson.Gson;
 import java.util.*;
 
 public class CreatePatterns {
-
-    /**
-     * This function creates a BeatSaberObjects.Objects.BeatSaberMap from a timings-map.<br>
-     * This function is a test function and should not be used in production!
-     *
-     * @param args the arguments. They are not used
-     */
-    public static void main(String[] args) {
-        String filename = "Input.txt";
-        String patternFilename = "MapTemplates/Template--ISeeFire.txt";
-        String input = FileManager.readFile(filename).get(0);
-        String patternInput = FileManager.readFile(patternFilename).get(0);
-
-        Gson gson = new Gson();
-        BeatSaberMap timings = gson.fromJson(input, BeatSaberMap.class);
-        BeatSaberMap patterns = gson.fromJson(patternInput, BeatSaberMap.class);
-        timings._events = new Events[0];
-        timings._obstacles = new Obstacle[0];
-        timings.originalJSON = input;
-
-        //create pattern from the map:
-        Pattern p = new Pattern(patterns._notes, 1);
-        timings.toBlueLeftBottomRowDotTimings();
-
-        System.out.println("Creating map... ");
-        BeatSaberMap b = createMap(timings, p, false, false);
-        System.out.println("Finished creating map... ");
-        System.out.println("Length of the map: " + timings._notes.length);
-
-        System.out.println(new BeatSaberMap(b._notes).exportAsMap());
-    }
-
     //TODO: stack placement is breaking everything. YAY
     /*
     Red: 0
