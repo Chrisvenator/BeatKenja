@@ -6,12 +6,14 @@ import DataManager.Database.DatabaseEntities.TagEntity;
 import DataManager.Database.DatabaseOperations.DifficultyEntityOperations;
 import DataManager.Database.DatabaseOperations.GenreEntityOperations;
 import DataManager.Database.DatabaseOperations.TagEntityOperations;
+import DataManager.Records.PatMetadata;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -51,14 +53,12 @@ public class Parameters {
     //General Config:
     public static final String CONFIG_FILE_LOCATION = "./config.txt";
     public static final String README_FILE_LOCATION = "README.md";
-    public static final String DEFAULT_PATTERN_TEMPLATE_FOLDER = "./MapTemplates/";
-    public static final String DEFAULT_PATTERN_TEMPLATE = "./MapTemplates/Template--ISeeFire.txt";
+    public static final PatMetadata DEFAULT_PATTERN_METADATA = new PatMetadata("ISeeFire", 170, 5.91, Collections.singletonList("StandardExpertPlus"), Collections.singletonList("Balanced"), Collections.singletonList("Metal"));
     public static final String DEFAULT_ONSET_GENERATION_FOLDER = "./OnsetGeneration/";
     public static final String DEFAULT_PATTERN_PROBABILITIES_FOLDER = "./Patterns/PatternProbabilities/";
     public static final String DEFAULT_SEQUENCES_FOLDER = "./Patterns/sequences/";
     public static final String ONSET_GENERATION_FOLDER_PATH_INPUT = "./OnsetGeneration/mp3Files/";
     public static final String ONSET_GENERATION_FOLDER_PATH_OUTPUT = saveNewMapsToDefaultPath ? DEFAULT_PATH : "./OnsetGeneration/output/";
-    public static final String DEFAULT_SEQUENCE_TEMPLATE_FOLDER = "./Patterns/";
     public static final String DEFAULT_BEATSAVER_MAP_INFO_PATH = "./BeatSaberMaps/MapInfos/";
     public static final String DEFAULT_BEATSAVER_MAPS_PATH = "./BeatSaberMaps/Maps/";
     public static final String DEFAULT_EXPORT_PATH = "./";

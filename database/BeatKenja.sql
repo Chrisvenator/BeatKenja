@@ -46,14 +46,16 @@ create table pattern
 
 create table pattern_description
 (
-    id   int                not null
+    id   int auto_increment
         primary key,
     name varchar(100)       not null,
     bpm  double default 120 not null,
-    nps  double default 5   not null
+    nps  double default 5   not null,
+    constraint pattern_description_pk
+        unique (name, nps, bpm)
 );
 
-create table difficulty_assignment
+create table assignment_difficulty
 (
     id                        int auto_increment
         primary key,
@@ -67,7 +69,7 @@ create table difficulty_assignment
         foreign key (fk_difficulty_id) references difficulty (id)
 );
 
-create table genre_assignment
+create table assignment_genre
 (
     id                        int auto_increment
         primary key,
@@ -90,7 +92,7 @@ create table tag
         unique (name)
 );
 
-create table tag_assignment
+create table assignment_tag
 (
     id                        int auto_increment
         primary key,
