@@ -14,6 +14,7 @@ import java.util.*;
  * It allows for iterating over these notes, and provides functionality to parse
  * a sequence from a file and manage notes within the sequence.
  */
+@Deprecated
 public class Sequence implements Iterable<Note> {
 
     // Map to store notes based on their time
