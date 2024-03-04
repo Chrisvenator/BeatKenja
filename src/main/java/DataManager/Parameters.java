@@ -73,11 +73,20 @@ public class Parameters {
     public static final List<String> MAP_TAGS = TagEntityOperations.getAllTags().stream().map(TagEntity::getName).toList();
     public static final List<String> MUSIC_GENRES = GenreEntityOperations.getAllGenres().stream().map(GenreEntity::getName).toList();
     public static final List<String> DIFFICULTIES = DifficultyEntityOperations.getAllDifficulties().stream().map(DifficultyEntity::getName).toList();
+    public static final java.util.Map<String, String> databaseSettings = new java.util.HashMap<>();
+    public static final boolean exportDatabase = true;
+
 
     static {
         FILE_CHOOSER.setFileFilter(MAP_FILE_FORMAT);
         if (darkMode) FILE_CHOOSER.setForeground(Color.white);
 
+        //Database settings:
+        databaseSettings.put("connection.driver_class", "com.mysql.cj.jdbc.Driver");
+        databaseSettings.put("dialect", "org.hibernate.dialect.MySQLDialect");
+        databaseSettings.put("hibernate.connection.url", "jdbc:mysql://localhost:3306/beatKenja");
+        databaseSettings.put("hibernate.connection.username", "root");
+        databaseSettings.put("hibernate.connection.password", "root");
     }
 
 }
