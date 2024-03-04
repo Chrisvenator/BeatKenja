@@ -1,4 +1,5 @@
 import DataManager.CreateAllNecessaryDIRsAndFiles;
+import DataManager.Database.DatabaseExport;
 import UserInterface.UserInterface;
 
 import java.util.Random;
@@ -35,5 +36,12 @@ public class Start {
 
         UserInterface ui = new UserInterface();
         ui.setVisible(true);
+
+        ui.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                if (exportDatabase) DatabaseExport.exportDatabase("./database");
+            }
+        });
     }
 }
