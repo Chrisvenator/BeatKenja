@@ -34,7 +34,7 @@ public class DatabaseExport {
         if (!path.endsWith("/")) path += "/";
         System.out.println("[INFO]: Dumping database...");
 
-        exportSchema(path + "schema.sql");
+        exportSchema(path + "exported_schema.sql");
         exportGenre(path + "data/genre.csv");
         exportDifficulty(path + "data/difficulty.csv");
         exportTag(path + "data/tag.csv");
@@ -45,7 +45,7 @@ public class DatabaseExport {
         exportPatternDescription(path + "data/pattern_description.csv");
         exportPattern(path + "data/pattern.csv");
 
-        System.out.println("[INFO]: Dumped database to " + path);
+        System.out.println("[INFO]: Dumped database to " + path + "exported_schema.sql");
     }
 
     /**
