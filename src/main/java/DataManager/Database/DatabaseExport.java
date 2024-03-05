@@ -1,6 +1,7 @@
 package DataManager.Database;
 
 import DataManager.Database.DatabaseEntities.*;
+import DataManager.FileManager;
 import DataManager.Parameters;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.boot.Metadata;
@@ -34,7 +35,9 @@ public class DatabaseExport {
         if (!path.endsWith("/")) path += "/";
         System.out.println("[INFO]: Dumping database...");
 
+        FileManager.overwriteFile(path + "exported_schema.sql", "");
         exportSchema(path + "exported_schema.sql");
+
         exportGenre(path + "data/genre.csv");
         exportDifficulty(path + "data/difficulty.csv");
         exportTag(path + "data/tag.csv");
