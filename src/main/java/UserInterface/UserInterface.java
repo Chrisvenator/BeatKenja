@@ -47,6 +47,8 @@ public class UserInterface extends JFrame {
         //loading config:
         loadConfig();
         if (verbose) System.setErr(ERROR_PRINT_STREAM);
+        pattern = new Pattern(DEFAULT_PATTERN_METADATA);
+        System.out.println(pattern);
 
 
         //<editor-fold desc="Initialize UI Elements">

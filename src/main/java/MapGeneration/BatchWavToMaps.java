@@ -13,14 +13,25 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class is used to generate Beat Saber maps from .wav files. It is used to generate maps in bulk.
+ */
 public class BatchWavToMaps {
+    public static void main(String[] args) {
+        // If madmom onset generation may be used, uncomment the following line:
+//        generateOnsets(ONSET_GENERATION_FOLDER_PATH_INPUT, ONSET_GENERATION_FOLDER_PATH_OUTPUT, true, "madmom_onset_generation.py");
+        // If the default onset generation may be used, uncomment the following line:
+//        generateOnsets(ONSET_GENERATION_FOLDER_PATH_INPUT, ONSET_GENERATION_FOLDER_PATH_OUTPUT, true, null);
+    }
+
     /**
      * Generates Beat Saber maps based on .wav files located in the specified input path. The generated maps will be located in the specified output path.
      *
      * @param inputPath Path to where the .wav files are located.
      * @param out       Path to where the outputted maps will be located. This can be the WIP folder.
      */
-    public static boolean generateOnsets(String inputPath, String out, boolean verbose) {
+    public static boolean generateOnsets(String inputPath, String out, boolean verbose, String pythonScript) {
+        if (pythonScript == null) pythonScript = "SongToOnsets.py";
         PrintStream originalOut = System.out;
         PrintStream printStream = new PrintStream(new NullOutputStream());
 
@@ -56,7 +67,7 @@ public class BatchWavToMaps {
                         createFolderAndMoveItems(filename, file, destinationFolderPath, verbose);
 
                         //Try to execute the python script. If unsuccessful, try installing all dependencies
-                        if (!executePythonScript(filename, file, inputPath, destinationFolderPath)) return false;
+                        if (!executePythonScript(filename, file, inputPath, destinationFolderPath, pythonScript)) return false;
 
                         createDiffFromTimings(destinationFolderPath, filename);
                     } catch (IOException | InterruptedException e) {
@@ -206,21 +217,28 @@ public class BatchWavToMaps {
     }
 
     /**
-     * This function executes a Python script to create timings from a .wav file.
+     * This function executes a Python script to create timings from a .wav file. <br>
+     * If the option madmom is being used, then the madmom_certainty and madmom_proximity flags can be set in the Parameters class.
      *
      * @param inputPath             The path where the input file is located.
      * @param filename              The name of the current file.
      * @param file                  The File object representing the input file.
      * @param destinationFolderPath The destination folder where everything will be saved. It does not have to exist.
+     * @param pythonScript          The name of the Python script that will be executed. It must be located in the DEFAULT_ONSET_GENERATION_FOLDER.
      * @throws IOException          If there is an issue with input/output operations or missing folders.
      * @throws InterruptedException If the execution of the Python script is interrupted.
      */
-    private static boolean executePythonScript(String filename, File file, String inputPath, String destinationFolderPath) throws IOException, InterruptedException {
-        ProcessBuilder processBuilder = new ProcessBuilder("python", DEFAULT_ONSET_GENERATION_FOLDER + "SongToOnsets.py", inputPath + "/" + file.getName(), "--output", destinationFolderPath + "/" + filename + ".txt");
+    private static boolean executePythonScript(String filename, File file, String inputPath, String destinationFolderPath, String pythonScript) throws IOException, InterruptedException {
+        File pythonScriptFile = new File(DEFAULT_ONSET_GENERATION_FOLDER + pythonScript);
+        File songFIle = new File(inputPath + "/" + file.getName());
+        ProcessBuilder processBuilder = new ProcessBuilder("python",
+                pythonScriptFile.getAbsolutePath(), songFIle.getAbsolutePath(),
+                "--output", destinationFolderPath + "/" + filename + ".txt",
+                "--madmom_certainty", MADMOM_ONSET_GENERATION_ONSET_CERTAINTY + "",
+                "--madmom_proximity", MADMOM_ONSET_GENERATION_MINIMUM_PROXIMITY + "");
         Process process = processBuilder.start();
 
         int exitCode = process.waitFor();
-        System.out.println("Python script execution finished with exit code: " + exitCode);
 
         if (exitCode != 0) {
             System.out.println("Fehler beim Ausführen des Skripts. Exit-Code: " + exitCode);
@@ -231,6 +249,8 @@ public class BatchWavToMaps {
             while ((line = errorReader.readLine()) != null) {
                 System.out.println(line);
             }
+        } else {
+            System.out.println("Python script execution finished with exit code: " + exitCode);
         }
         return exitCode != -4;
     }
