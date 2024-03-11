@@ -187,14 +187,21 @@ public class CreateAllNecessaryDIRsAndFiles {
         try {
             ProcessBuilder processBuilder = new ProcessBuilder("pip", "install", "pydub");
             ProcessBuilder processBuilder2 = new ProcessBuilder("pip", "install", "librosa");
+            ProcessBuilder processBuilder3 = new ProcessBuilder("pip", "install", "numpy");
+            ProcessBuilder processBuilder4 = new ProcessBuilder("pip", "install", "--upgrade", "git+https://github.com/CPJKU/madmom.git", "--user");
+            //pip install --upgrade --no-deps --force-reinstall 'git+https://github.com/CPJKU/madmom.git' --user
             Process p = processBuilder.start();
             Process p2 = processBuilder2.start();
+            Process p3 = processBuilder3.start();
+            Process p4 = processBuilder4.start();
 
             int exitCode = p.waitFor();
             int exitCode2 = p2.waitFor();
+            int exitCode3 = p3.waitFor();
+            int exitCode4 = p4.waitFor();
 
 
-            if (exitCode == exitCode2 && exitCode == 0) {
+            if (exitCode2 == 0 && exitCode == 0 && exitCode3 == 0 && exitCode4 == 0) {
                 System.out.println("Dependencies has been installed.");
                 return true;
             } else {
