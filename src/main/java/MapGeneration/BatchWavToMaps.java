@@ -3,6 +3,9 @@ package MapGeneration;
 import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Note;
 import DataManager.FileManager;
+import AudioAnalysis.AudioAnalysis;
+
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 import static DataManager.Parameters.*;
 
@@ -67,11 +70,22 @@ public class BatchWavToMaps {
                         createFolderAndMoveItems(filename, file, destinationFolderPath, verbose);
 
                         //Try to execute the python script. If unsuccessful, try installing all dependencies
-                        if (!executePythonScript(filename, file, inputPath, destinationFolderPath, pythonScript)) return false;
+//                        if (!executePythonScript(filename, file, inputPath, destinationFolderPath, pythonScript)) return false;
+//                        List<String> timings = FileManager.readFile(destinationFolderPath + "/" + filename + ".txt");
 
-                        createDiffFromTimings(destinationFolderPath, filename);
-                    } catch (IOException | InterruptedException e) {
+                        ArrayList<ArrayList<Double>> timings = AudioAnalysis.getPeaksFromAudio(file.getAbsolutePath());
+                        String[] difficulties = {"EasyNoArrows", "NormalNoArrows", "HardNoArrows", "ExpertNoArrows", "ExpertPlusNoArrows"};
+
+                        int i = 0;
+                        for (ArrayList<Double> timingsDiff : timings) {
+                            if (i == 5) throw new IllegalArgumentException("Too many difficulties. Please adjust the difficulties array in the code.");
+                            createDiffFromTimings(destinationFolderPath, difficulties[i], timingsDiff);
+                            i++;
+                        }
+                    } catch (IOException e) {
                         e.printStackTrace();
+                    } catch (UnsupportedAudioFileException e) {
+                        System.err.println("Error while generating the map: " + file.getName() + "\n" + e.getMessage());
                     }
 
                     // Enable prints after the generation
@@ -228,6 +242,7 @@ public class BatchWavToMaps {
      * @throws IOException          If there is an issue with input/output operations or missing folders.
      * @throws InterruptedException If the execution of the Python script is interrupted.
      */
+    @Deprecated
     private static boolean executePythonScript(String filename, File file, String inputPath, String destinationFolderPath, String pythonScript) throws IOException, InterruptedException {
         File pythonScriptFile = new File(DEFAULT_ONSET_GENERATION_FOLDER + pythonScript);
         File songFIle = new File(inputPath + "/" + file.getName());
@@ -259,15 +274,12 @@ public class BatchWavToMaps {
      * This function creates the timings for a song.
      *
      * @param destinationFolderPath The destination folder where everything will be saved. It does not have to exist.
-     * @param filename              The name of the current file.
+     * @param difficultyName        The name of the current file.
      */
-    private static void createDiffFromTimings(String destinationFolderPath, String filename) {
-        List<String> timings = FileManager.readFile(destinationFolderPath + "/" + filename + ".txt");
+    private static void createDiffFromTimings(String destinationFolderPath, String difficultyName, ArrayList<Double> timings) {
         List<Note> notes = new ArrayList<>();
 
-        for (String s : timings) {
-
-            float t = Float.parseFloat(s);
+        for (double t : timings) {
             double beat = t * BPM / 60;
             System.out.println(beat);
 
@@ -277,7 +289,7 @@ public class BatchWavToMaps {
         BeatSaberMap map = new BeatSaberMap(notes);
         if (FIX_PLACEMENTS) map.fixPlacements(PLACEMENT_PRECISION);
 
-        FileManager.overwriteFile(destinationFolderPath + "/" + "ExpertPlusNoArrows.dat", map.exportAsMap());
+        FileManager.overwriteFile(destinationFolderPath + "/" + difficultyName + ".dat", map.exportAsMap());
     }
 
 
@@ -306,23 +318,61 @@ public class BatchWavToMaps {
                 "  \"_allDirectionsEnvironmentName\" : \"GlassDesertEnvironment\",\n" +
                 "  \"_customData\" : {\n" +
                 "  },\n" +
-                "  \"_difficultyBeatmapSets\" : [\n" +
+                "\"_difficultyBeatmapSets\" : [\n" +
                 "    {\n" +
                 "      \"_beatmapCharacteristicName\" : \"NoArrows\",\n" +
                 "      \"_difficultyBeatmaps\" : [\n" +
+                "        {\n" +
+                "          \"_difficulty\" : \"Easy\",\n" +
+                "          \"_difficultyRank\" : 1,\n" +
+                "          \"_beatmapFilename\" : \"EasyNoArrows.dat\",\n" +
+                "          \"_noteJumpMovementSpeed\" : 16,\n" +
+                "          \"_noteJumpStartBeatOffset\" : 0,\n" +
+                "          \"_beatmapColorSchemeIdx\" : 0,\n" +
+                "          \"_environmentNameIdx\" : 0\n" +
+                "        },\n" +
+                "        {\n" +
+                "          \"_difficulty\" : \"Normal\",\n" +
+                "          \"_difficultyRank\" : 3,\n" +
+                "          \"_beatmapFilename\" : \"NormalNoArrows.dat\",\n" +
+                "          \"_noteJumpMovementSpeed\" : 16,\n" +
+                "          \"_noteJumpStartBeatOffset\" : 0,\n" +
+                "          \"_beatmapColorSchemeIdx\" : 0,\n" +
+                "          \"_environmentNameIdx\" : 0\n" +
+                "        },\n" +
+                "        {\n" +
+                "          \"_difficulty\" : \"Hard\",\n" +
+                "          \"_difficultyRank\" : 5,\n" +
+                "          \"_beatmapFilename\" : \"HardNoArrows.dat\",\n" +
+                "          \"_noteJumpMovementSpeed\" : 16,\n" +
+                "          \"_noteJumpStartBeatOffset\" : 0,\n" +
+                "          \"_beatmapColorSchemeIdx\" : 0,\n" +
+                "          \"_environmentNameIdx\" : 0\n" +
+                "        },\n" +
+                "        {\n" +
+                "          \"_difficulty\" : \"Expert\",\n" +
+                "          \"_difficultyRank\" : 7,\n" +
+                "          \"_beatmapFilename\" : \"ExpertNoArrows.dat\",\n" +
+                "          \"_noteJumpMovementSpeed\" : 16,\n" +
+                "          \"_noteJumpStartBeatOffset\" : 0,\n" +
+                "          \"_beatmapColorSchemeIdx\" : 0,\n" +
+                "          \"_environmentNameIdx\" : 0\n" +
+                "        },\n" +
                 "        {\n" +
                 "          \"_difficulty\" : \"ExpertPlus\",\n" +
                 "          \"_difficultyRank\" : 9,\n" +
                 "          \"_beatmapFilename\" : \"ExpertPlusNoArrows.dat\",\n" +
                 "          \"_noteJumpMovementSpeed\" : 16,\n" +
                 "          \"_noteJumpStartBeatOffset\" : 0,\n" +
+                "          \"_beatmapColorSchemeIdx\" : 0,\n" +
+                "          \"_environmentNameIdx\" : 0,\n" +
                 "          \"_customData\" : {\n" +
                 "            \"_difficultyLabel\" : \"Timings\"\n" +
                 "          }\n" +
                 "        }\n" +
                 "      ]\n" +
                 "    }\n" +
-                "  ]\n" +
+                "  ]  " +
                 "}";
     }
 
