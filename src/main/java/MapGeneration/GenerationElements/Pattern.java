@@ -549,8 +549,12 @@ public class Pattern implements Iterable<PatternProbability> {
 
         // Iterate over the patterns array and check for a matching note pattern
         for (int i = 0; i < p.patterns.length && p.patterns[i] != null; i++) {
-            if (p.patterns[i] == null) return null; // Check if the pattern array is null (unexpected)
-            if (p.patterns[i][0] == null) return null; // Check if the first note in the pattern is null (unexpected)
+
+            // Check if the pattern array is null (unexpected)
+            if (p.patterns[i] == null) return null;
+
+            // Check if the first note in the pattern is null (unexpected)
+            if (p.patterns[i][0] == null) return null;
 
             // Check if the placement of the first note in the pattern matches the specified note
             if (p.patterns[i][0].equalPlacement(n))
