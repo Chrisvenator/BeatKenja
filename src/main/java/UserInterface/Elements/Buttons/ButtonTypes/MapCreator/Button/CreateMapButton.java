@@ -30,7 +30,9 @@ public class CreateMapButton extends MapCreatorSubButton {
 
             BeatSaberMap map = CreatePatterns.createMap(ui.map, ui.pattern, false, false);
 
-            if (map.equals(ui.map) || ui.map.exportAsMap().split("\"_cutDirection\":8").length >= 20) throw new MapDidntComputeException("Something went wrong Map didn't compute...");
+            if (ui.map.exportAsMap().split("\"_cutDirection\":8").length >= 20) ui.statusCheck.append("There are a lot of errors. Do you really want to continue? It is recommended to try again\n");
+
+            if (map.equals(ui.map)) throw new MapDidntComputeException("Something went wrong Map didn't compute...");
             else loadNewlyCreatedMap(map);
 
             //change back the error outputs

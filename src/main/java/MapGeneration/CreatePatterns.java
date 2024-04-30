@@ -114,7 +114,10 @@ public class CreatePatterns {
 
         checkIfEveryNoteIsPlaced(notes, timings);
 
-        return new BeatSaberMap(notes, map.originalJSON);
+        BeatSaberMap newMap = new BeatSaberMap(notes, map.originalJSON);
+        newMap.bookmarks = bookmarks;
+
+        return newMap;
     }
 
     public static List<Note> createMapFromWaves(List<Coordinate> coordinates) {
@@ -221,7 +224,7 @@ public class CreatePatterns {
             // Try 100 times to place a normal note. If this doesn't work, then place a Timing-BeatSaberObjects.Objects.Note.
             // If this still doesn't work, then throw an exception
             if (i >= 4 && invalidPlacementsInARow >= 100) {
-                System.err.println("_ERROR at beat:   " + timings[i]._time + " Timing BeatSaberObjects.Objects.Note");
+                System.err.println("_ERROR at beat:   " + timings[i]._time + " Timing note");
                 Note errorNote = new TimingNote(timings[i]._time);
                 notes.add(errorNote); //Adding blue BeatSaberObjects.Objects.Note
                 notes.add(errorNote); //Adding red BeatSaberObjects.Objects.Note
@@ -301,7 +304,7 @@ public class CreatePatterns {
             // If this still doesn't work, then throw an exception
             //Place a BeatSaberObjects.Objects.Note that doesn't break parity after the error:
             if (i >= 4 && invalidPlacementsInARow >= 100) {
-                System.err.println("_ERROR at beat:   " + timings[i]._time + " Timing BeatSaberObjects.Objects.Note");
+                System.err.println("_ERROR at beat:   " + timings[i]._time + " Timing note");
                 Note errorNote = new TimingNote(timings[i]._time);
                 notes.add(errorNote); //Adding BeatSaberObjects.Objects.Note
                 invalidPlacementsInARow = 0;
@@ -924,7 +927,7 @@ public class CreatePatterns {
             }
 
             if (n._lineIndex < 0 || n._lineIndex >= 4 || n._lineLayer < 0 || n._lineLayer >= 3)
-                if (!quiet) System.err.println("WARNING at beat: " + n._time + " BeatSaberObjects.Objects.Note outside the grid!");
+                if (!quiet) System.err.println("WARNING at beat: " + n._time + " note outside the grid!");
 
         }
 
@@ -932,7 +935,7 @@ public class CreatePatterns {
         for (int i = 0; i < allNotes.size() - 1; i++) {
             if (allNotes.get(i)._time == allNotes.get(i + 1)._time && allNotes.get(i).equalNotePlacement(allNotes.get(i + 1))) {
                 if (!quiet)
-                    System.err.println("[ERROR] at beat:   " + allNotes.get(i)._time + ": BeatSaberObjects.Objects.Note inside another BeatSaberObjects.Objects.Note!");
+                    System.err.println("[ERROR] at beat:   " + allNotes.get(i)._time + ": note inside another BeatSaberObjects.Objects.Note!");
             }
         }
 

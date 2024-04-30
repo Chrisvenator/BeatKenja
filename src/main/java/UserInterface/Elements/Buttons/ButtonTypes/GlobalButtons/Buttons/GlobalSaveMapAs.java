@@ -28,7 +28,8 @@ public class GlobalSaveMapAs extends GlobalButton {
             filePath += filePath.contains(".dat") ? "" : ".dat";
 
             BufferedWriter bw = new BufferedWriter(new FileWriter(filePath));
-            bw.write(new BeatSaberMap(ui.map._notes).exportAsMap());
+//            bw.write(new BeatSaberMap(ui.map._notes).exportAsMap());
+            bw.write(ui.map.exportAsMap());
             bw.close();
 
             ui.statusCheck.append("\n[INFO]: Map saved successfully: " + filePath);
