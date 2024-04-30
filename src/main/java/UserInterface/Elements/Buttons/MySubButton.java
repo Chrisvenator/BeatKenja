@@ -14,6 +14,7 @@ public abstract class MySubButton extends MyButton {
         String ogJson = ui.map.originalJSON;
         ui.map = map;
         ui.map.originalJSON = ogJson;
+        ui.map.bookmarks = ui.map.calculateBookmarks();
         ui.statusCheck.append("\nMap creation finished");
         System.out.println("Created Map: " + ui.map.exportAsMap());
         if (verbose) ui.statusCheck.append("\nVERBOSE: Created Map: " + ui.map.exportAsMap());
