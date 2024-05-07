@@ -6,6 +6,7 @@ import DataManager.FileManager;
 import AudioAnalysis.AudioAnalysis;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.swing.*;
 
 import static DataManager.Parameters.*;
 
@@ -15,6 +16,9 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+
+import AudioAnalysis.SpectrogramCalculator;
+import AudioAnalysis.SpectrogramDisplay;
 
 /**
  * This class is used to generate Beat Saber maps from .wav files. It is used to generate maps in bulk.
@@ -71,15 +75,25 @@ public class BatchWavToMaps {
 
                         //Try to execute the python script. If unsuccessful, try installing all dependencies
 //                        if (!executePythonScript(filename, file, inputPath, destinationFolderPath, pythonScript)) return false;
-//                        List<String> timings = FileManager.readFile(destinationFolderPath + "/" + filename + ".txt");
+//                        List<String> peaks = FileManager.readFile(destinationFolderPath + "/" + filename + ".txt");
 
-                        ArrayList<ArrayList<Double>> timings = AudioAnalysis.getPeaksFromAudio(file.getAbsolutePath());
+                        ArrayList<ArrayList<Double>> peaks = AudioAnalysis.getPeaksFromAudio(file.getAbsolutePath());
                         String[] difficulties = {"EasyNoArrows", "NormalNoArrows", "HardNoArrows", "ExpertNoArrows", "ExpertPlusNoArrows"};
 
                         int i = 0;
-                        for (ArrayList<Double> timingsDiff : timings) {
+                        for (ArrayList<Double> timingsDiff : peaks) {
                             if (i == 5) throw new IllegalArgumentException("Too many difficulties. Please adjust the difficulties array in the code.");
                             createDiffFromTimings(destinationFolderPath, difficulties[i], timingsDiff);
+
+
+                            double duration = peaks.get(i).get(peaks.get(0).size() - 1); // Assuming the last peak time gives approximate duration
+                            double[][] spectrogram = SpectrogramCalculator.calculateSpectrogram(file.getAbsolutePath(), 1024, 512);
+                            final int finalI = i;
+                            SwingUtilities.invokeLater(() -> {
+                                SpectrogramDisplay frame = new SpectrogramDisplay(spectrogram, peaks.get(finalI), duration, difficulties[finalI], true); // Example uses the first difficulty level
+                                frame.setVisible(true);
+                            });
+
                             i++;
                         }
                     } catch (IOException e) {
