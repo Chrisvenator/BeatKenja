@@ -32,7 +32,7 @@ public class ImportDownloadedMapsIntoDatabase {
         }
 
         for (Pattern p : patterns) {
-
+//to be done
         }
 
     }
@@ -46,17 +46,12 @@ public class ImportDownloadedMapsIntoDatabase {
     }
 
     private static boolean shouldItMerge(PatMetadata m1, PatMetadata m2) {
+        //TODO: should I also group by bpm?
         return m1.name().equals(m2.name()) &&
                 (int) Math.round(m1.nps()) == (int) Math.round(m2.nps()) &&
                 new HashSet<>(m1.difficulty()).containsAll(m2.difficulty()) &&
                 new HashSet<>(m1.genre()).containsAll(m2.genre()) &&
                 new HashSet<>(m1.tags()).containsAll(m2.tags());
-    }
-
-    public static boolean importMap(File mapDir, String patternName) {
-        List<Pattern> patterns = createPatternFromMapDirectory(mapDir, patternName);
-
-        return false;
     }
 
     /**

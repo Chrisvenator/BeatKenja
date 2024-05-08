@@ -177,7 +177,7 @@ public class BeatSaverMapDownloader {
         String downloadURL = "NULL";
         File downloadDir = new File(this.DOWNLOAD_DIRECTORY + mapID);
 //        noinspection ResultOfMethodCallIgnored
-        System.out.println(downloadDir.mkdirs());
+        downloadDir.mkdirs();
 
 
         try {
