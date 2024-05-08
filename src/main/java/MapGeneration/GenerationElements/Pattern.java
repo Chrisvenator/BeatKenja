@@ -2,6 +2,7 @@ package MapGeneration.GenerationElements;
 
 import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Note;
+import DataManager.BeatSaverOperations.ImportDownloadedMapsIntoDatabase;
 import DataManager.Database.DatabaseEntities.*;
 import DataManager.Database.DatabaseOperations.*;
 import DataManager.FileManager;
@@ -17,7 +18,7 @@ import java.util.*;
 import java.util.logging.Level;
 
 public class Pattern implements Iterable<PatternProbability> {
-    private final int MAX_ARRAY_SIZE = 109; // lines * layers * cut directions = 4 * 3 * 9 = 108 + 1 (just to be safe)
+    private final int MAX_ARRAY_SIZE = 109; // lines * layers * cut directions = 4 * 3 * 9 = 108 + 1 (base note)
 
     // In this variable, all the possible notes are stored as patterns
     public Note[][] patterns = new Note[MAX_ARRAY_SIZE][MAX_ARRAY_SIZE];
@@ -58,6 +59,23 @@ public class Pattern implements Iterable<PatternProbability> {
      * @implNote keep in mind to update the metadata variable!
      */
     public Pattern() {
+    }
+
+    /**
+     * Create a new pattern object based on a pattern file.
+     * If the file is a .pat file or a folder, then It will be processed as a .pat file. Otherwise, it will be processed as a .json file (standard BeatSaberV2 format).
+     * This is used for importing maps into patterns to be saved in the database.
+     *
+     * @param pathToPatternFile The path to the pattern file
+     * @param metadata          The PatMetadata record of the pattern
+     * @see ImportDownloadedMapsIntoDatabase#createPatternFromMapDirectory(File, String)
+     */
+    public Pattern(String pathToPatternFile, PatMetadata metadata) {
+        Pattern p = new Pattern(pathToPatternFile);
+        this.metadata = metadata;
+        this.patterns = p.patterns;
+        this.count = p.count;
+        this.probabilities = p.probabilities;
     }
 
     /**

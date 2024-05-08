@@ -26,11 +26,12 @@ public class BeatSaverMapDownloader {
 //        downloader.downloadMap("1a8", true);
 //        downloader.downloadBPLIST(new File("C:\\Users\\chris\\Documents\\_Uni\\a (1).bplist"), true);
 
-        BeatSaverMapDownloader downloader = new BeatSaverMapDownloader("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\_SongsToTimings\\BeatSaberMaps\\bad\\");
+        BeatSaverMapDownloader downloader = new BeatSaverMapDownloader("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\_toAdd\\");
         Map<String, Predicate<Object>> filter = Map.of(
-                "score", value -> value instanceof Number && ((Number) value).doubleValue() < 0.5,
+                "score", value -> value instanceof Number && ((Number) value).doubleValue() >= 0.5,
+                "upvotes", value -> value instanceof Number && ((Number) value).doubleValue() >= 6,
 //                "tags", "anime"::equals,
-                "automapper", value -> value instanceof Boolean && (Boolean) value
+                "automapper", value -> value instanceof Boolean && !((Boolean) value)
         );
 
         downloader.downloadFilteredMaps(filter, true);
@@ -68,8 +69,7 @@ public class BeatSaverMapDownloader {
      *
      * @param filter                 The filter.
      * @param deleteUnnecessaryFiles Whether to delete unnecessary files after downloading.
-     * @example:
-     * JSONObject jsonObject = new JSONObject();<br>
+     * @example: JSONObject jsonObject = new JSONObject();<br>
      * jsonObject.put("numericKey", 0.4); // Example numeric value<br>
      * jsonObject.put("tags", new JSONArray(java.util.List.of("anime", "dance")));<br>
      * <br>
@@ -120,15 +120,14 @@ public class BeatSaverMapDownloader {
      * @param filter     The filter.
      * @return True if the map matches the filter, false otherwise.
      */
-    public static boolean checkFilters(JSONObject jsonObject, Map<String, Predicate<Object>> filter) {
+    private static boolean checkFilters(JSONObject jsonObject, Map<String, Predicate<Object>> filter) {
         Iterator<String> keys = jsonObject.keys();
 
         try {
             while (keys.hasNext()) {
                 String key = keys.next();
                 Object value = jsonObject.get(key);
-
-                if (filter.containsKey(key)) {
+                 if (filter.containsKey(key)) {
                     Predicate<Object> condition = filter.get(key);
 
                     if (value instanceof JSONArray array) {
@@ -165,14 +164,20 @@ public class BeatSaverMapDownloader {
         return true; // All conditions met
     }
 
+    /**
+     * Downloads the map with the given ID.
+     *
+     * @param mapID                  The ID of the map to download.
+     * @param deleteUnnecessaryFiles Whether to delete unnecessary files after downloading.
+     */
     public void downloadMap(String mapID, boolean deleteUnnecessaryFiles) {
         File mapInfo = new File(MAP_INFO_DIRECTORY + mapID + ".json");
         if (!mapInfo.exists()) return;
 
         String downloadURL = "NULL";
         File downloadDir = new File(this.DOWNLOAD_DIRECTORY + mapID);
-        //noinspection ResultOfMethodCallIgnored
-        downloadDir.mkdir();
+//        noinspection ResultOfMethodCallIgnored
+        System.out.println(downloadDir.mkdirs());
 
 
         try {
