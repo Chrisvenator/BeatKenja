@@ -59,7 +59,7 @@ public class Parameters {
     public static final String DEFAULT_ONSET_GENERATION_FOLDER = "./OnsetGeneration/";
     public static final String ONSET_GENERATION_FOLDER_PATH_INPUT = "./OnsetGeneration/mp3Files/";
     public static final String ONSET_GENERATION_FOLDER_PATH_OUTPUT = saveNewMapsToDefaultPath ? DEFAULT_PATH : "./OnsetGeneration/output/";
-    public static final String DEFAULT_BEATSAVER_MAP_INFO_PATH = "./BeatSaberMaps/MapInfos/";
+    public static final String DEFAULT_BEATSAVER_MAP_INFO_PATH = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\MapInfos\\";
     public static final String DEFAULT_BEATSAVER_MAPS_PATH = "./BeatSaberMaps/Maps/";
     public static final String DEFAULT_EXPORT_PATH = "./";
     public static final Color lightModeBackgroundColor = Color.white;
