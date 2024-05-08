@@ -1088,6 +1088,7 @@ public class CreatePatterns {
             currentProbability += pattern.probabilities[i];
             if (placement <= currentProbability) {
                 Note n = pattern.notes[i];
+                //TODO: Don't return a new note. Return: pattern.probabilities[i]. TEST THIS! This could help with fixing stack placements
                 return new Note(time, n._lineIndex, n._lineLayer, n._type, n._cutDirection);
             }
 
