@@ -1,19 +1,12 @@
 package UserInterface.Elements.Buttons;
 
-import BeatSaberObjects.Objects.BeatSaberMap;
-import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Exceptions.WrongFileException;
 import UserInterface.Elements.MyElement;
 import UserInterface.UserInterface;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
-
-import static DataManager.Parameters.FILE_CHOOSER;
 
 public class MyButton extends JButton implements MyElement {
     public UserInterface ui;
@@ -38,15 +31,6 @@ public class MyButton extends JButton implements MyElement {
 
     public void onClick() {
         childElements.forEach(element -> element.setVisible(!element.isVisible()));
-    }
-
-    protected BeatSaberMap convertToMap(File path) throws FileNotFoundException, WrongFileException {
-        if (path.isDirectory() || path.getAbsolutePath().contains("Info.dat")) throw new WrongFileException(path.getName(), "Wrong file type!");
-
-        Scanner scanner = new Scanner(FILE_CHOOSER.getSelectedFile());
-        String mapAsString = scanner.nextLine();
-
-        return BeatSaberMap.newMapFromJSON(mapAsString);
     }
 
     protected void printErrorMessage(Exception e, String errorMessage) {

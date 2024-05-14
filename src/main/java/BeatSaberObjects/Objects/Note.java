@@ -193,6 +193,10 @@ public class Note implements Comparable<Note> {
                 "}\n";
     }
 
+    public String toV3String() {
+        return "{\"b\":" + _time + ",\"x\":" + _lineIndex + ",\"y\":" + _lineLayer + ",\"a\":" + 0 + ",\"c\":" + _type + ",\"d\":" + _cutDirection + "}";
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(_time, _lineIndex, _lineLayer, _type, _cutDirection);
