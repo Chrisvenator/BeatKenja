@@ -10,9 +10,9 @@ import javax.persistence.*;
         "JOIN DifficultyEntity d ON da.fkDifficultyId = d.id " +
         "JOIN GenreEntity g ON ga.fkGenreId = g.id " +
         "JOIN TagEntity t ON  ta.fkTagId = t.id " +
-        "WHERE p.name = :name AND p.bpm = :bpm AND p.nps = :nps " +
+        "WHERE p.name = :name  AND p.nps = :nps " + // "AND p.bpm = :bpm" +
         "AND d.name IN :difficultyNames " +
-        "AND g.name IN :genreNames " +
+//        "AND g.name IN :genreNames " +
         "AND t.name IN :tagNames")
 @Table(name = "pattern_description", schema = "beatkenja", catalog = "")
 public class PatternDescriptionEntity {

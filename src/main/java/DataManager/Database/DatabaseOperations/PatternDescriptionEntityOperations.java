@@ -13,6 +13,19 @@ import static DataManager.Parameters.entityManager;
 
 public class PatternDescriptionEntityOperations extends PatternDescriptionEntity {
 
+    /**
+     * Retrieves a pattern description entity from the database based on the provided metadata.
+     *
+     * @param name       The name of the pattern description.
+     * @param bpm        The BPM of the pattern description.
+     * @param nps        The NPS of the pattern description.
+     * @param difficulty The list of difficulties associated with the pattern description.
+     * @param genres     The list of genres associated with the pattern description.
+     * @param tags       The list of tags associated with the pattern description.
+     * @return A {@link PatternDescriptionEntity} instance that matches the provided metadata.
+     * @warning This method is not safe to use with metadata that may not exist in the database.
+     * @warning bpm and genres are not used in the query, and are commented out.
+     */
     public static PatternDescriptionEntity getPatternDescription(String name, double bpm, double nps, List<String> difficulty, List<String> genres, List<String> tags) {
         if (difficulty == null || difficulty.isEmpty()) difficulty = Parameters.DIFFICULTIES;
         if (genres == null || genres.isEmpty()) genres = Parameters.MUSIC_GENRES;
@@ -20,10 +33,10 @@ public class PatternDescriptionEntityOperations extends PatternDescriptionEntity
 
         return (PatternDescriptionEntity) entityManager.createNamedQuery("DifficultyEntity.findPatternDescription")
                 .setParameter("name", name)
-                .setParameter("bpm", bpm)
+//                .setParameter("bpm", bpm)
                 .setParameter("nps", nps)
                 .setParameter("difficultyNames", difficulty)
-                .setParameter("genreNames", genres)
+//                .setParameter("genreNames", genres)
                 .setParameter("tagNames", tags)
                 .getSingleResult();
     }
