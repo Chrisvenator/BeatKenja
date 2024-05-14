@@ -94,11 +94,9 @@ public class Pattern implements Iterable<PatternProbability> {
             return;
         }
 
-        //If it's not a .pat file, then it's a .json file that is the standard BeatSaberV2 format
+        //If it's not a .pat file, then it's a .json (V2) or a .dat(V3+) file that is the standard BeatSaberV2 format
         // Read the pattern file and convert it to a BeatSaberMap object
-        String patternInput = FileManager.readFile(pathToPatternFile).get(0);
-        Gson gson = new Gson();
-        BeatSaberMap patterns = gson.fromJson(patternInput, BeatSaberMap.class);
+        BeatSaberMap patterns = BeatSaberMap.newMapFromJSON(pathToPatternFile);
 
         // Create a new Pattern object based on the BeatSaberObjects.Objects.BeatSaberMap
         Pattern p = new Pattern(patterns._notes, 1);
