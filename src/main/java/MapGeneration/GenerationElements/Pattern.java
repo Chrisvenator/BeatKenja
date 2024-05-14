@@ -2,7 +2,6 @@ package MapGeneration.GenerationElements;
 
 import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Note;
-import DataManager.BeatSaverOperations.ImportDownloadedMapsIntoDatabase;
 import DataManager.Database.DatabaseEntities.*;
 import DataManager.Database.DatabaseOperations.*;
 import DataManager.FileManager;
@@ -68,7 +67,6 @@ public class Pattern implements Iterable<PatternProbability> {
      *
      * @param pathToPatternFile The path to the pattern file
      * @param metadata          The PatMetadata record of the pattern
-     * @see ImportDownloadedMapsIntoDatabase#createPatternFromMapDirectory(File, String)
      */
     public Pattern(String pathToPatternFile, PatMetadata metadata) {
         Pattern p = new Pattern(pathToPatternFile);
@@ -84,7 +82,6 @@ public class Pattern implements Iterable<PatternProbability> {
      *
      * @param pathToPatternFile The path to the pattern file
      */
-    @Deprecated
     public Pattern(String pathToPatternFile) {
         //If it's not in the database, then check if it's a .pat file
         File f = new File(pathToPatternFile);
