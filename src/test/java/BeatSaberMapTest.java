@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -281,8 +280,7 @@ class BeatSaberMapTest {
 
     @Test
     void newMapFromJSON() {
-        String json = FileManager.readFile("src/test/resources/BookmarksExample.txt").get(0);
-        BeatSaberMap map = BeatSaberMap.newMapFromJSON(json);
+        BeatSaberMap map = BeatSaberMap.newMapFromJSON("src/test/resources/BookmarksExample.txt");
 
         Assertions.assertEquals(887, map._notes.length);
         Assertions.assertEquals(49, map.bookmarks.size());
