@@ -1,11 +1,18 @@
 package DataManager.BeatSaverOperations;
 
+import BeatSaberObjects.Objects.Note;
 import DataManager.FileManager;
 import DataManager.Parameters;
 import DataManager.Records.PatMetadata;
 import MapGeneration.GenerationElements.Pattern;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.*;
+import java.util.concurrent.*;
+import java.io.File;
+import java.util.List;
+import java.util.ArrayList;
 
 import java.io.File;
 import java.util.*;
@@ -14,8 +21,8 @@ import java.util.stream.IntStream;
 public class ImportDownloadedMapsIntoDatabase {
     public static void main(String[] args) {
 //        ImportDownloadedMapsIntoDatabase.importAllMaps("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\_toAdd\\", "test");
-        ImportDownloadedMapsIntoDatabase.importAllMaps("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\test\\", "testPattern");
-//        System.out.println("successful: " + ImportDownloadedMapsIntoDatabase.importMap(new File("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\_toAdd\\1"), "test"));
+        ImportDownloadedMapsIntoDatabase.importAllMaps("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\good\\", "testPattern123");
+//        System.out.println("successful: " + ImportDownloadedMapsIntoDatabase.createPatternsFromMapDirectory(new File("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\_toAdd\\270e0"), "test"));
 //        System.out.println("successful: " + ImportDownloadedMapsIntoDatabase.createPatternFromMapDirectory(new File("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\_toAdd\\11300"), "test"));
     }
 
@@ -25,20 +32,27 @@ public class ImportDownloadedMapsIntoDatabase {
         List<File> maps = Arrays.stream(Objects.requireNonNull(new File(MAPS_DIRECTORY).listFiles())).toList();
         List<Pattern> patterns = new ArrayList<>();
 
+        int i = 0;
         for (File map : maps) {
+            i++;
+            if (i < 0) continue;
             if (map.isDirectory()) {
+                System.out.println(i + "/" + maps.size() + " Importing map: " + map.getName());
                 mergeIntoPattern(patterns,
                         createPatternsFromMapDirectory(map, patternName));
             } else
                 throw new IllegalArgumentException("Map is not a directory: " + map);
-        }
-        patterns.forEach(p -> System.out.println(p.exportInPatFormat()));
 
-        patterns.forEach(pattern -> {
-            Pattern databasePattern = new Pattern(pattern.metadata);
-            databasePattern.merge(pattern);
-            databasePattern.saveOrUpdateInDatabase();
-        });
+        }
+        sortPattern(patterns);
+        patterns.forEach(p -> System.out.println(p.metadata.toString().replaceAll("\n", "")));
+
+
+//        patterns.forEach(pattern -> {
+//            Pattern databasePattern = new Pattern(pattern.metadata);
+//            databasePattern.merge(pattern);
+//            databasePattern.saveOrUpdateInDatabase();
+//        });
 
         //TODO: Use a lot of different patterns to fill the database
     }
@@ -51,6 +65,7 @@ public class ImportDownloadedMapsIntoDatabase {
      */
     private static void mergeIntoPattern(List<Pattern> patterns, List<Pattern> newPatterns) {
         for (Pattern p : newPatterns) {
+            if (p.patterns[0][0] == null) continue;
             if (patterns.stream().noneMatch(pattern -> shouldItMerge(pattern.metadata, p.metadata))) {
                 patterns.add(p);
             } else {
@@ -68,11 +83,11 @@ public class ImportDownloadedMapsIntoDatabase {
      * @return true if it should merge, false if not
      */
     private static boolean shouldItMerge(PatMetadata m1, PatMetadata m2) {
-        //TODO: should I also group by bpm?
+        //TODO: should I also group by bpm or music genre?
         return m1.name().equals(m2.name()) &&
                 (int) Math.round(m1.nps()) == (int) Math.round(m2.nps()) &&
                 new HashSet<>(m1.difficulty()).containsAll(m2.difficulty()) &&
-                new HashSet<>(m1.genre()).containsAll(m2.genre()) &&
+//                new HashSet<>(m1.genre()).containsAll(m2.genre()) &&
                 new HashSet<>(m1.tags()).containsAll(m2.tags());
     }
 
@@ -157,7 +172,9 @@ public class ImportDownloadedMapsIntoDatabase {
             return new ArrayList<>();
         }
         if (difficulties.size() > 5) System.err.println("Too many difficulties for mapDir: " + mapDir + ": " + difficulties);
-        if (tags.size() > 2 || genres.size() > 2) System.err.println("Too many tags or genres for mapDir: " + mapDir + ": " + tags + " " + genres);
+        if (tags.size() > 2 || genres.size() > 2) {
+            System.err.println("[INFO] Too many tags or genres for map: " + mapDir + ": " + tags + " " + genres + ". Please try to limit it to only two.");
+        }
 
 
         List<Pattern> patterns = new ArrayList<>();
@@ -194,4 +211,49 @@ public class ImportDownloadedMapsIntoDatabase {
         }
         return "NULL";
     }
+
+    private static void sortPattern(List<Pattern> noteList) {
+        noteList.sort((p1, p2) -> {
+            // Extract metadata for ease of use
+            PatMetadata meta1 = p1.metadata;
+            PatMetadata meta2 = p2.metadata;
+
+            // First, compare by the first difficulty if available
+            if (!meta1.difficulty().isEmpty() && !meta2.difficulty().isEmpty()) {
+                HashMap<String, Integer> difficultyOrder = new HashMap<>();
+                difficultyOrder.put("StandardEasy", 4);
+                difficultyOrder.put("StandardNormal", 3);
+                difficultyOrder.put("StandardHard", 2);
+                difficultyOrder.put("StandardExpert", 1);
+                difficultyOrder.put("StandardExpertPlus", 0);
+
+                int difficultyCompare = difficultyOrder.get(meta1.difficulty().get(0)) - difficultyOrder.get(meta2.difficulty().get(0));
+                if (difficultyCompare != 0) {
+                    return difficultyCompare;
+                }
+            } else if (meta1.difficulty().isEmpty() && !meta2.difficulty().isEmpty()) {
+                return -1; // No difficulty is considered lesser
+            } else if (!meta1.difficulty().isEmpty() && meta2.difficulty().isEmpty()) {
+                return 1;
+            }
+
+            // Then compare by nps
+            int npsCompare = Double.compare(meta1.nps(), meta2.nps());
+            if (npsCompare != 0) {
+                return npsCompare;
+            }
+
+            // Finally, compare by tags
+            if (!meta1.tags().isEmpty() && !meta2.tags().isEmpty()) {
+                return meta1.tags().get(0).compareTo(meta2.tags().get(0));
+            } else if (meta1.tags().isEmpty() && !meta2.tags().isEmpty()) {
+                return -1; // Empty tags are considered lesser
+            } else if (!meta1.tags().isEmpty() && meta2.tags().isEmpty()) {
+                return 1;
+            }
+
+            return 0; // All fields are equal or both are empty
+        });
+    }
+
 }
