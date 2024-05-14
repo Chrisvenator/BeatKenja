@@ -132,6 +132,7 @@ public class Pattern implements Iterable<PatternProbability> {
             if (desc == null) throw new NoResultException("Pattern not found in the database");
         } catch (NoResultException e) {
             //The Pattern has not been found in the database, so we create a new one:
+            //TODO Uncomment this line to save the metadata in the database
             System.out.println("Pattern not found in the database. Creating new Pattern...");
             PatternDescriptionEntityOperations.savePatternDescription(metadata);
             return;
