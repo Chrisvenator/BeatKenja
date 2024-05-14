@@ -114,14 +114,6 @@ public class BeatSaberMap {
 //        return map;
 //    }
 
-    public static void main(String[] args) {
-        System.out.println(newMapFromJSON("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\_toAdd\\2f0d6\\ExpertPlusStandard.dat"));
-        System.out.println(newMapFromJSON("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\_toAdd\\2f0d6\\ExpertPlusStandard.dat").exportAsV3Map());
-//        System.out.println(newMapFromJSON("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\Beat Saber_Data\\CustomWIPLevels\\V3 Tests\\HardStandard.dat").exportAsMap());
-//        System.out.println(newMapFromJSON("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\Beat Saber_Data\\CustomWIPLevels\\V3 Tests\\HardStandard.dat").exportAsV3Map());
-    }
-
-
     /**
      * Creates a new BeatSaberMap from a JSON file
      * Supported versions: 2.x, 3.x
@@ -475,7 +467,7 @@ public class BeatSaberMap {
     public String exportAsMap() {
         String json = "";
         json += "{";
-        json += "\"_version\":\"2.0.0\",";
+        json += "\"_version\":\"2.2.0\",";
         json += "\"_notes\":" + (_notes == null ? "[]" : Arrays.toString(_notes)) + ",";
         json += "\"_obstacles\":" + (_obstacles == null ? "[]" : Arrays.toString(_obstacles)) + ",";
         json += "\"_events\":" + (_events == null ? "[]" : Arrays.toString(_events)) + ",";
