@@ -105,15 +105,6 @@ public class BeatSaberMap {
         }
     }
 
-//    public static BeatSaberMap newMapFromJSON(String jsonInput) {
-//        Gson gson = new Gson();
-//        BeatSaberMap map = gson.fromJson(jsonInput, BeatSaberMap.class);
-//
-//        map.originalJSON = jsonInput;
-//        map.calculateBookmarks();
-//        return map;
-//    }
-
     /**
      * Creates a new {@link BeatSaberMap} object from a JSON file specified by the file path.
      * The function reads the file, parses the JSON content, and processes the map data based on the version number.
@@ -147,17 +138,17 @@ public class BeatSaberMap {
         // Read and print the JSON content for debugging
         String jsonString = String.join("", FileManager.readFile(diffFile.getAbsolutePath()));
 
-        // Validate JSON before parsing
+        JSONObject mapInfoJson;
+        String versionNumber;
+
         try {
-            new JSONObject(jsonString);
+            mapInfoJson = new JSONObject(jsonString);
         } catch (JSONException e) {
-            System.err.println("[ERROR]: Invalid JSON format for " + diffFile.getParentFile().getName() + "-" + diffFile.getName() + " : " + e.getMessage());
+            System.err.println("[ERROR]: Error parsing BeatSaberMap from Json: Version number not found in the map file!");
             return new BeatSaberMap(new ArrayList<>());
         }
 
 
-        JSONObject mapInfoJson = new JSONObject(jsonString);
-        String versionNumber;
         try {
             versionNumber = mapInfoJson.getString("_version");
         } catch (JSONException e) {
@@ -389,122 +380,105 @@ public class BeatSaberMap {
         List<Bookmark> l = new ArrayList<>();
         JSONObject json = new JSONObject(this.originalJSON);
 
-        /**
-         * BRO WHAT IS HAPPENING HERE???? WHY CANT THEY JUST FOLLOW THEIR OWN CONVENTIONS?????
-         */
-
-        JSONArray bookmarks;
-        try {
-            bookmarks = json.getJSONArray("_bookmarks"); //Try to get bookmarks from the main JSON (V2.2.0 format)
-        } catch (JSONException e) {
-            try {
-                bookmarks = json.getJSONObject("_customData").getJSONArray("_bookmarks"); //If not found, then try to get bookmarks from the customData JSON (V2.6.0 format)
-            } catch (JSONException e1) {
-                try {
-                    bookmarks = json.getJSONObject("customData").getJSONArray("_bookmarks");
-                } catch (JSONException e2) {
-                    try {
-                        bookmarks = json.getJSONObject("_customData").getJSONArray("bookmarks");
-                    } catch (JSONException e3) {
-                        try {
-                            bookmarks = json.getJSONObject("customData").getJSONArray("bookmarks");
-                        } catch (JSONException e4) {
-                            System.err.println("[Warn]: Error calculating Bookmarks: Bookmarks not found in the JSON file! Skipping...");
-                            if (verbose) System.out.println("[INFO]: JSON content: " + this.originalJSON);
-                            return new ArrayList<>();
-                        }
-                    }
-                }
-            }
+        JSONArray bookmarks = getBookmarksArray(json);
+        if (bookmarks == null) {
+            System.err.println("[ERROR]: Error calculating Bookmarks: Bookmarks not found in the JSON. Skipping bookmarks...");
+            return new ArrayList<>();
         }
-
-        //WHY ARE THEY SO INCONSISTENT WITH THEIR OWN FORMATS?????
 
         switch (_version.charAt(0)) {
-            case '1' -> System.err.println("[ERROR]: Error calculating Bookmarks: Map Version format V1 is not supported! Ignoring bookmarks...");
-            case '2' -> {
-                for (int i = 0; i < bookmarks.length(); i++) {
-                    JSONObject bookmark = bookmarks.getJSONObject(i);
-                    try {
-                        JSONArray color = bookmark.getJSONArray("_color");
-                        //Try to get RGBA values
-                        l.add(new Bookmark(
-                                bookmark.getFloat("_time"),
-                                bookmark.getString("_name"),
-                                new float[]{Float.parseFloat(color.get(0) + ""),
-                                        Float.parseFloat(color.get(1) + ""),
-                                        Float.parseFloat(color.get(2) + ""),
-                                        Float.parseFloat(color.get(3) + "")}
-                        ));
-                    } catch (JSONException | IndexOutOfBoundsException e) {
-                        //If RGBA is not available, then get RGB values
-                        try {
-                            JSONArray color = bookmark.getJSONArray("_color");
-                            l.add(new Bookmark(
-                                    bookmark.getFloat("_time"),
-                                    bookmark.getString("_name"),
-                                    new float[]{Float.parseFloat(color.get(0) + ""),
-                                            Float.parseFloat(color.get(1) + ""),
-                                            Float.parseFloat(color.get(2) + "")}
-                            ));
-                        } catch (Exception ex) {
-                            //If there is some other error like missing color, then just add the bookmark without color
-                            try {
-                                l.add(new Bookmark(
-                                        bookmark.getFloat("_time"),
-                                        bookmark.getString("_name"),
-                                        new float[]{0, 0, 0}
-                                ));
-                            }catch (Exception e1){
-                                System.err.println("[ERROR]: Error calculating Bookmarks: Error parsing bookmark color: " + e1.getMessage() + ". Skipping bookmark...");
-                                return new ArrayList<>();
-                            }
-                        }
-                    }
-                }
+            case '1', '4' -> System.err.println("[ERROR]: Error calculating Bookmarks: Map Version format V" + _version.charAt(0) + " is not supported! Ignoring bookmarks...");
+            case '2', '3' -> {
+                for (int i = 0; i < bookmarks.length(); i++)
+                    if (!addBookmarkToList(bookmarks.getJSONObject(i), l)) return new ArrayList<>();
             }
-
-            case '3' -> {
-                for (int i = 0; i < bookmarks.length(); i++) {
-                    JSONObject bookmark = bookmarks.getJSONObject(i);
-                    try {
-                        JSONArray color = bookmark.getJSONArray("c");
-                        l.add(new Bookmark(
-                                bookmark.getFloat("b"),
-                                bookmark.getString("n"),
-                                new float[]{Float.parseFloat(color.get(0) + ""),
-                                        Float.parseFloat(color.get(1) + ""),
-                                        Float.parseFloat(color.get(2) + ""),
-                                        Float.parseFloat(color.get(3) + "")}
-                        ));
-                    } catch (JSONException e) {
-                        try {
-                            JSONArray color = bookmark.getJSONArray("_color");
-                            l.add(new Bookmark(
-                                    bookmark.getFloat("_time"),
-                                    bookmark.getString("_name"),
-                                    new float[]{Float.parseFloat(color.get(0) + ""),
-                                            Float.parseFloat(color.get(1) + ""),
-                                            Float.parseFloat(color.get(2) + "")}
-                            ));
-                        } catch (Exception e1) {
-                            System.err.println("[ERROR]: Error calculating Bookmarks: Error parsing bookmark color: " + e1.getMessage() + ". Skipping bookmark...");
-                            return new ArrayList<>();
-                        }
-                    }
-                }
-
-            }
-            case '4' -> System.err.println("[ERROR]: Error calculating Bookmarks: Map Version format V4 is not supported! Ignoring bookmarks...");
             default -> System.err.println("[ERROR]: Error calculating Bookmarks: Unknown Map Version format: " + _version);
         }
-
-
         this.bookmarks = l;
         return l;
     }
 
-    // <editor-fold desc="override methods">
+    private boolean addBookmarkToList(JSONObject bookmark, List<Bookmark> l) {
+        try {
+            l.add(new Bookmark(bookmark.getFloat("b"), bookmark.getString("n"), extractColor(bookmark)));
+        } catch (JSONException e) {
+            try {
+                l.add(new Bookmark(bookmark.getFloat("_time"), bookmark.getString("_name"), extractColor(bookmark)));
+            } catch (Exception e1) {
+                System.err.println("[ERROR]: Error calculating Bookmarks: Error parsing bookmark color: " + e1.getMessage() + ". Skipping bookmark...");
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private float[] extractColor(JSONObject bookmark) {
+        try {
+            JSONArray color = bookmark.optJSONArray("_color");
+            if (color == null) color = bookmark.optJSONArray("c");
+            if (color == null) return new float[]{0, 0, 0}; // Default color if not found
+
+            float[] colorArray = new float[color.length()];
+            for (int j = 0; j < color.length(); j++) {
+                colorArray[j] = (float) color.getDouble(j);
+            }
+            return colorArray;
+        } catch (JSONException e) {
+            return new float[]{0, 0, 0}; // Default color on error
+        }
+    }
+
+    /**
+     * Retrieves the bookmarks array from a JSONObject by trying multiple possible paths.
+     *
+     * @param json The root JSONObject.
+     * @return The JSONArray containing the bookmarks data, or null if the bookmarks are not found.
+     */
+    private static JSONArray getBookmarksArray(JSONObject json) {
+        // Define possible JSON paths where bookmarks may be stored
+        String[] possiblePaths = new String[]{
+                "_bookmarks", // Direct path for some formats
+                "_customData._bookmarks", // Nested inside _customData
+                "customData._bookmarks",
+                "_customData.bookmarks",
+                "customData.bookmarks"
+        };
+
+        // Attempt to retrieve the JSONArray from one of the specified paths
+        for (String path : possiblePaths) {
+            try {
+                return getJSONArrayByPath(json, path);
+            } catch (JSONException ignore) {
+                // Continue trying other paths
+            }
+        }
+
+        System.err.println("[INFO]: Warning: Bookmarks not found. Skipping... (Path not found in JSON structure.)");
+        return null;
+    }
+
+    /**
+     * Retrieves a JSONArray from a JSONObject following a specified path.
+     *
+     * @param json The root JSONObject.
+     * @param path A dot-separated string specifying the path to the JSONArray.
+     * @return The JSONArray located at the specified path within the JSONObject.
+     * @throws JSONException If the path is invalid or if any segment of the path does not lead to a JSONObject.
+     */
+    private static JSONArray getJSONArrayByPath(JSONObject json, String path) throws JSONException {
+        String[] keys = path.split("\\.");
+        JSONObject current = json;
+
+        // Traverse the JSONObject hierarchy according to the path
+        for (int i = 0; i < keys.length - 1; i++) {
+            current = current.getJSONObject(keys[i]);
+        }
+
+        // Retrieve and return the JSONArray at the final segment of the path
+        return current.getJSONArray(keys[keys.length - 1]);
+    }
+
+// <editor-fold desc="override methods">
 
     @Override
     public String toString() {
@@ -609,7 +583,7 @@ public class BeatSaberMap {
         result = 31 * result + Arrays.hashCode(_obstacles);
         return result;
     }
-    // </editor-fold desc="override methods">
+// </editor-fold desc="override methods">
 
 }
 
@@ -617,7 +591,7 @@ public class BeatSaberMap {
     Red: 0
     Blue: 1
 
-    Layer - Index:          Cut direction:
+    Index - Layer:          Cut direction:
     |---|---|---|---|       |---|---|---|
     |   |   |   |3-2|       | 4 | 0 | 5 |
     |---|---|---|---|       |---|---|---|

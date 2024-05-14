@@ -15,6 +15,7 @@ import javax.persistence.NoResultException;
 import java.io.File;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 public class Pattern implements Iterable<PatternProbability> {
     private final int MAX_ARRAY_SIZE = 109; // lines * layers * cut directions = 4 * 3 * 9 = 108 + 1 (base note)
@@ -116,10 +117,14 @@ public class Pattern implements Iterable<PatternProbability> {
      */
     public Pattern(PatMetadata metadata) {
         this.metadata = metadata;
-        //HashSet has better performance than a default list
-        if (!new HashSet<>(Parameters.MAP_TAGS).containsAll(metadata.tags())) throw new IllegalArgumentException("Tag(s) not found in database: " + metadata.tags());
-        if (!new HashSet<>(Parameters.MUSIC_GENRES).containsAll(metadata.genre())) throw new IllegalArgumentException("Genre(s) not found in database: " + metadata.genre());
-        if (!new HashSet<>(Parameters.DIFFICULTIES).containsAll(metadata.difficulty())) throw new IllegalArgumentException("Difficulty not found in database: " + metadata.difficulty());
+        Set<String> lowerCaseMapTags = Parameters.MAP_TAGS.stream().map(String::toLowerCase).collect(Collectors.toSet());
+        Set<String> lowerCaseMusicGenres = Parameters.MUSIC_GENRES.stream().map(String::toLowerCase).collect(Collectors.toSet());
+        Set<String> lowerCaseDifficulties = Parameters.DIFFICULTIES.stream().map(String::toLowerCase).collect(Collectors.toSet());
+
+        if (!lowerCaseMapTags.containsAll(metadata.tags().stream().map(String::toLowerCase).toList())) throw new IllegalArgumentException("Tag(s) not found in database: " + metadata.tags());
+        if (!lowerCaseMusicGenres.containsAll(metadata.genre().stream().map(String::toLowerCase).toList())) throw new IllegalArgumentException("Genre(s) not found in database: " + metadata.genre());
+        if (!lowerCaseDifficulties.containsAll(metadata.difficulty().stream().map(String::toLowerCase).toList())) throw new IllegalArgumentException("Difficulty not found in database: " + metadata.difficulty());
+
 
         PatternDescriptionEntity desc;
         try {
@@ -667,23 +672,23 @@ public class Pattern implements Iterable<PatternProbability> {
 
     /**
      * Merges the patterns from the specified {@code Pattern} object into this {@code Pattern} object.
-     *
-     * @param p the {@code Pattern} object to merge into this pattern. It should not be {@code null}.
+     * <p>
+     * This method integrates the notes, counts, and probabilities from the given pattern into the current pattern.
+     * It follows these rules:
+     * - If a note pattern in the given pattern does not exist in this pattern, it is added.
+     * - If a note pattern exists, the counts for each note are updated. If a note in the given pattern is not present in the existing pattern, it is added.
+     * - After merging, the probabilities are recalculated for the entire pattern.
+     * <p>
+     * The merging process involves checking each note pattern in the given {@code Pattern} object:
+     * - If the key (first note in a pattern) does not exist in this pattern, the entire note pattern is added.
+     * - If the key exists, the method checks each subsequent note in the pattern.
+     * - If the note exists, its count is incremented by the count from the given pattern.
+     * - If the note does not exist, it is added along with its count.
+     * <p>
+     * The method ensures that the merged patterns are properly integrated without duplication,
+     * maintaining the integrity of the pattern sequences and their respective counts and probabilities.
+     * * @param p the {@code Pattern} object to merge into this pattern. It should not be {@code null}.
      */
-//This method integrates the notes, counts, and probabilities from the given pattern into the current pattern.
-//It follows these rules:
-//- If a note pattern in the given pattern does not exist in this pattern, it is added.
-//- If a note pattern exists, the counts for each note are updated. If a note in the given pattern is not present in the existing pattern, it is added.
-//- After merging, the probabilities are recalculated for the entire pattern.
-//<p>
-//The merging process involves checking each note pattern in the given {@code Pattern} object:
-//- If the key (first note in a pattern) does not exist in this pattern, the entire note pattern is added.
-//- If the key exists, the method checks each subsequent note in the pattern.
-//- If the note exists, its count is incremented by the count from the given pattern.
-//- If the note does not exist, it is added along with its count.
-//<P>
-//The method ensures that the merged patterns are properly integrated without duplication,
-//maintaining the integrity of the pattern sequences and their respective counts and probabilities.
     public void merge(Pattern p) {
         int lastKey = 0;
         for (; lastKey < patterns.length; lastKey++) if (patterns[lastKey][0] == null) break;
