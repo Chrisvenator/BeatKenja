@@ -1,10 +1,13 @@
 package UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons;
 
+import BeatSaberObjects.Objects.BeatSaberMap;
+import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Exceptions.WrongFileException;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.GlobalButton;
 import UserInterface.Elements.ElementTypes;
 import UserInterface.UserInterface;
 
 import java.awt.*;
+import java.io.File;
 
 import static DataManager.Parameters.*;
 
@@ -21,7 +24,10 @@ public class GlobalOpenMapButton extends GlobalButton {
         if (!approveFileloading(option)) return;
         filePath = FILE_CHOOSER.getCurrentDirectory().toString();
         try {
-            ui.map = this.convertToMap(FILE_CHOOSER.getSelectedFile());
+            File path = FILE_CHOOSER.getSelectedFile();
+            if (path.isDirectory() || path.getAbsolutePath().contains("Info.dat")) throw new WrongFileException(path.getName(), "Wrong file type!");
+
+            ui.map = BeatSaberMap.newMapFromJSON(path.getAbsolutePath());
 
             ui.statusCheck.setText("Successfully loaded difficulty: \"" + FILE_CHOOSER.getSelectedFile().getAbsolutePath() + "\"");
             ui.mapSuccessfullyLoaded = true;
