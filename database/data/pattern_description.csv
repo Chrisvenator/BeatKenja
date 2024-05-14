@@ -1,3 +1,4 @@
 id,name,bpm,nps
 1,default,120.0,5.0
 10,ISeeFire,170.0,5.91
+15,testPattern,80.0,2.0
