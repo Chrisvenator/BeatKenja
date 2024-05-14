@@ -1,6 +1,5 @@
 package DataManager.BeatSaverOperations;
 
-import BeatSaberObjects.Objects.Note;
 import DataManager.FileManager;
 import DataManager.Parameters;
 import DataManager.Records.PatMetadata;
@@ -14,8 +13,7 @@ import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
 
-import java.io.File;
-import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ImportDownloadedMapsIntoDatabase {
@@ -29,21 +27,51 @@ public class ImportDownloadedMapsIntoDatabase {
     public static void importAllMaps(String MAPS_DIRECTORY, String patternName) {
         if (!MAPS_DIRECTORY.endsWith("/")) MAPS_DIRECTORY += "/";
 
-        List<File> maps = Arrays.stream(Objects.requireNonNull(new File(MAPS_DIRECTORY).listFiles())).toList();
-        List<Pattern> patterns = new ArrayList<>();
-
-        int i = 0;
-        for (File map : maps) {
-            i++;
-            if (i < 0) continue;
-            if (map.isDirectory()) {
-                System.out.println(i + "/" + maps.size() + " Importing map: " + map.getName());
-                mergeIntoPattern(patterns,
-                        createPatternsFromMapDirectory(map, patternName));
-            } else
-                throw new IllegalArgumentException("Map is not a directory: " + map);
-
+        File[] mapFolders = new File(MAPS_DIRECTORY).listFiles();
+        if (mapFolders == null) {
+            System.err.println("No files found in the directory.");
+            return;
         }
+
+        List<File> maps = Arrays.stream(mapFolders).filter(File::isDirectory).toList();
+        List<Pattern> patterns = Collections.synchronizedList(new ArrayList<>());
+
+        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        List<Future<?>> futures = new ArrayList<>();
+
+        int count = 0;
+        for (File map : maps) {
+            final int index = ++count;  // Use final variable for thread-safe operations
+            futures.add(executor.submit(() -> {
+                System.out.println(index + "/" + maps.size() + " Importing map: " + map.getName());
+                try {
+                    List<Pattern> patternsFromMap = createPatternsFromMapDirectory(map, patternName);
+                    mergeIntoPattern(patterns, patternsFromMap);
+                } catch (Exception e) {
+                    System.err.println("Failed to import map: " + map.getName() + " due to " + e.getMessage());
+                }
+            }));
+        }
+
+        // Wait for all tasks to complete
+        for (Future<?> future : futures) {
+            try {
+                future.get();  // Will block until the task is completed
+            } catch (InterruptedException | ExecutionException e) {
+                System.err.println("Error waiting for map import task to complete: " + e.getMessage());
+            }
+        }
+
+        executor.shutdown();  // Shutdown the executor
+
+        try {
+            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+        }
+
         sortPattern(patterns);
         patterns.forEach(p -> System.out.println(p.metadata.toString().replaceAll("\n", "")));
 
@@ -59,31 +87,36 @@ public class ImportDownloadedMapsIntoDatabase {
 
     /**
      * Merges the new patterns into one of the existing patterns (if it exists).
+     * Optimized to use a single stream operation for checking and merging.
      *
      * @param patterns    the existing patterns
      * @param newPatterns the new patterns
      */
     private static void mergeIntoPattern(List<Pattern> patterns, List<Pattern> newPatterns) {
-        for (Pattern p : newPatterns) {
-            if (p.patterns[0][0] == null) continue;
-            if (patterns.stream().noneMatch(pattern -> shouldItMerge(pattern.metadata, p.metadata))) {
-                patterns.add(p);
+        for (Pattern newPattern : newPatterns) {
+            if (newPattern.patterns[0][0] == null) continue;  // Skip empty initial patterns
+
+            Optional<Pattern> match = patterns.stream()
+                    .filter(existingPattern -> shouldItMerge(existingPattern.metadata, newPattern.metadata))
+                    .findFirst();
+
+            if (match.isPresent()) {
+                match.get().merge(newPattern);  // Merge with the first matching pattern
             } else {
-                Pattern existingPattern = patterns.stream().filter(pattern -> shouldItMerge(pattern.metadata, p.metadata)).findFirst().get();
-                existingPattern.merge(p);
+                patterns.add(newPattern);  // No match found, add as a new pattern
             }
         }
     }
 
     /**
      * Should it merge the two patterns based on their metadata?
+     * Currently only checks if the name, NPS, difficulty, and tags are the same.
      *
      * @param m1 metadata 1
      * @param m2 metadata 2
      * @return true if it should merge, false if not
      */
     private static boolean shouldItMerge(PatMetadata m1, PatMetadata m2) {
-        //TODO: should I also group by bpm or music genre?
         return m1.name().equals(m2.name()) &&
                 (int) Math.round(m1.nps()) == (int) Math.round(m2.nps()) &&
                 new HashSet<>(m1.difficulty()).containsAll(m2.difficulty()) &&
@@ -128,8 +161,19 @@ public class ImportDownloadedMapsIntoDatabase {
 
         // Filter and normalize tags to include only those predefined in Parameters, ignoring case sensitivity.
         final double bpm = info.getDouble("_beatsPerMinute");
-        final List<String> tags = mapTags.stream().filter(tag -> Parameters.MAP_TAGS.stream().anyMatch(acceptedTag -> acceptedTag.equalsIgnoreCase(tag))).toList();
-        final List<String> genres = mapTags.stream().filter(genre -> Parameters.MUSIC_GENRES.stream().anyMatch(acceptedGenre -> acceptedGenre.equalsIgnoreCase(genre))).toList();
+
+        Set<String> lowerCaseMapTags = Parameters.MAP_TAGS.stream().map(String::toLowerCase).collect(Collectors.toSet());
+        Set<String> lowerCaseMusicGenres = Parameters.MUSIC_GENRES.stream().map(String::toLowerCase).collect(Collectors.toSet());
+
+        // Collect to a mutable list to allow removal of unwanted tags.
+        final List<String> tags = mapTags.stream().filter(tag -> Parameters.MAP_TAGS.stream().anyMatch(acceptedTag -> acceptedTag.equalsIgnoreCase(tag))).collect(Collectors.toCollection(ArrayList::new));
+        final List<String> genres = mapTags.stream().filter(genre -> Parameters.MUSIC_GENRES.stream().anyMatch(acceptedGenre -> acceptedGenre.equalsIgnoreCase(genre))).collect(Collectors.toCollection(ArrayList::new));
+
+        //remove tags and genres that are not in the list
+        tags.removeIf(tag -> !lowerCaseMapTags.contains(tag.toLowerCase()));
+        genres.removeIf(genre -> !lowerCaseMusicGenres.contains(genre.toLowerCase()));
+
+
         final HashMap<String, PatMetadata> difficulties = new HashMap<>();
 
         // Iterate through each difficulty, extracting relevant data and constructing metadata objects.
@@ -159,7 +203,7 @@ public class ImportDownloadedMapsIntoDatabase {
             difficultyName = renamePatternDifficulty(difficultyName);
 
             // Create and store metadata for each difficulty.
-            PatMetadata meta = new PatMetadata(patternName, bpm, Math.round(nps), Collections.singletonList(difficultyName),
+            PatMetadata meta = new PatMetadata(patternName, (int) bpm, (int) Math.round(nps), Collections.singletonList(difficultyName),
                     tags.stream().map(name -> Character.toUpperCase(name.charAt(0)) + name.substring(1)).toList(),
                     genres.stream().map(name -> Character.toUpperCase(name.charAt(0)) + name.substring(1)).toList());
             difficulties.put(diffFileName, meta);
@@ -233,7 +277,7 @@ public class ImportDownloadedMapsIntoDatabase {
                 }
             } else if (meta1.difficulty().isEmpty() && !meta2.difficulty().isEmpty()) {
                 return -1; // No difficulty is considered lesser
-            } else if (!meta1.difficulty().isEmpty() && meta2.difficulty().isEmpty()) {
+            } else if (!meta1.difficulty().isEmpty()) {
                 return 1;
             }
 
@@ -248,7 +292,7 @@ public class ImportDownloadedMapsIntoDatabase {
                 return meta1.tags().get(0).compareTo(meta2.tags().get(0));
             } else if (meta1.tags().isEmpty() && !meta2.tags().isEmpty()) {
                 return -1; // Empty tags are considered lesser
-            } else if (!meta1.tags().isEmpty() && meta2.tags().isEmpty()) {
+            } else if (!meta1.tags().isEmpty()) {
                 return 1;
             }
 
