@@ -9,6 +9,9 @@ import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 
 import static DataManager.Parameters.verbose;
 
@@ -22,27 +25,21 @@ public class FileManager {
      * @return Every line of the File in List form
      */
     public static List<String> readFile(String filename, boolean... print) {
-        File file = new File(filename);
-        if (!file.exists()) {
-            //The following if is for testing, so that it doesn't span the console
-            if (print == null || print.length == 0) System.err.println("File not found!");
+        if (!Files.exists(Paths.get(filename))) {
+            if (print == null || print.length == 0) {
+                System.err.println("File not found!");
+            }
             throw new NoSuchElementException("File not found: " + filename + "!");
         }
 
-        List<String> timings = new ArrayList<>();
         try {
-            Scanner scanner = new Scanner(file);
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                timings.add(line);
-            }
-            scanner.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return timings;
+            return Files.readAllLines(Paths.get(filename));
+        } catch (IOException e) {
+            System.err.println("Error reading the file: " + e.getMessage());
+            return Collections.emptyList(); // Return an empty list on failure
         }
-        return timings;
     }
+
 
     /**
      * Overwrites a file with the String data
