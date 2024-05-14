@@ -19,7 +19,7 @@ import java.util.stream.IntStream;
 public class ImportDownloadedMapsIntoDatabase {
     public static void main(String[] args) {
 //        ImportDownloadedMapsIntoDatabase.importAllMaps("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\_toAdd\\", "test");
-        ImportDownloadedMapsIntoDatabase.importAllMaps("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\good\\", "testPattern123");
+        ImportDownloadedMapsIntoDatabase.importAllMaps("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\_toAdd\\", "AllMapsGroupedV1");
 //        System.out.println("successful: " + ImportDownloadedMapsIntoDatabase.createPatternsFromMapDirectory(new File("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\_toAdd\\270e0"), "test"));
 //        System.out.println("successful: " + ImportDownloadedMapsIntoDatabase.createPatternFromMapDirectory(new File("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\_toAdd\\11300"), "test"));
     }
@@ -41,6 +41,7 @@ public class ImportDownloadedMapsIntoDatabase {
 
         int count = 0;
         for (File map : maps) {
+//            if (count > 5000) continue;
             final int index = ++count;  // Use final variable for thread-safe operations
             futures.add(executor.submit(() -> {
                 System.out.println(index + "/" + maps.size() + " Importing map: " + map.getName());
@@ -76,11 +77,11 @@ public class ImportDownloadedMapsIntoDatabase {
         patterns.forEach(p -> System.out.println(p.metadata.toString().replaceAll("\n", "")));
 
 
-//        patterns.forEach(pattern -> {
-//            Pattern databasePattern = new Pattern(pattern.metadata);
-//            databasePattern.merge(pattern);
-//            databasePattern.saveOrUpdateInDatabase();
-//        });
+        patterns.forEach(pattern -> {
+            Pattern databasePattern = new Pattern(pattern.metadata);
+            databasePattern.merge(pattern);
+            databasePattern.saveOrUpdateInDatabase();
+        });
 
         //TODO: Use a lot of different patterns to fill the database
     }
