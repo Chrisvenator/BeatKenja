@@ -9,7 +9,6 @@ import UserInterface.UserInterface;
 
 import java.awt.*;
 import java.io.File;
-import java.io.FileNotFoundException;
 
 import static DataManager.Parameters.*;
 
@@ -29,15 +28,18 @@ public class GlobalLoadPatterns extends GlobalButton {
             if (FILE_CHOOSER.getSelectedFile().getName().endsWith(".pat")) {
                 ui.pattern = new Pattern(FILE_CHOOSER.getSelectedFile().getAbsolutePath());
             } else {
-                BeatSaberMap beatSaberMap = convertToMap(FILE_CHOOSER.getSelectedFile());
+                File f = FILE_CHOOSER.getSelectedFile();
+                if (!f.isFile() || (!f.getName().endsWith(".json") && !f.getName().endsWith(".dat"))) throw new MapHasWrongFormatException("Wrong file type!");
+
+                BeatSaberMap beatSaberMap = BeatSaberMap.newMapFromJSON(f.getAbsolutePath());
                 ui.pattern = new Pattern(beatSaberMap._notes, 1);
+                System.out.println("[INFO]:Pattern loaded: " + ui.pattern.exportInPatFormat());
             }
 
             ui.statusCheck.append("\n[INFO]: Successfully loaded Patterns");
             this.setBackground(Color.green);
-        } catch (FileNotFoundException e) {
-            printException(e);
         } catch (Exception e) {
+            e.printStackTrace();
             printException(new MapHasWrongFormatException("There was an error while importing the patterns! Map probably has the wrong format!"));
         }
 

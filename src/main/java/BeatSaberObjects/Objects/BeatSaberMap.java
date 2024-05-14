@@ -1,10 +1,15 @@
 package BeatSaberObjects.Objects;
 
+import DataManager.FileManager;
 import com.google.gson.Gson;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import static DataManager.Parameters.*;
 
 
+import java.io.File;
 import java.util.*;
 
     /*
@@ -100,17 +105,96 @@ public class BeatSaberMap {
         }
     }
 
-    public static Note[] getNotesFromJSON(String jsonInput) {
-        return newMapFromJSON(jsonInput)._notes;
+//    public static BeatSaberMap newMapFromJSON(String jsonInput) {
+//        Gson gson = new Gson();
+//        BeatSaberMap map = gson.fromJson(jsonInput, BeatSaberMap.class);
+//
+//        map.originalJSON = jsonInput;
+//        map.calculateBookmarks();
+//        return map;
+//    }
+
+    public static void main(String[] args) {
+        System.out.println(newMapFromJSON("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\_toAdd\\2f0d6\\ExpertPlusStandard.dat"));
+        System.out.println(newMapFromJSON("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\_toAdd\\2f0d6\\ExpertPlusStandard.dat").exportAsV3Map());
+//        System.out.println(newMapFromJSON("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\Beat Saber_Data\\CustomWIPLevels\\V3 Tests\\HardStandard.dat").exportAsMap());
+//        System.out.println(newMapFromJSON("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\Beat Saber_Data\\CustomWIPLevels\\V3 Tests\\HardStandard.dat").exportAsV3Map());
     }
 
-    public static BeatSaberMap newMapFromJSON(String jsonInput) {
-        Gson gson = new Gson();
-        BeatSaberMap map = gson.fromJson(jsonInput, BeatSaberMap.class);
 
-        map.originalJSON = jsonInput;
-        map.calculateBookmarks();
-        return map;
+    /**
+     * Creates a new BeatSaberMap from a JSON file
+     * Supported versions: 2.x, 3.x
+     *
+     * @param filePath The path to the JSON file
+     * @return A BeatSaberMap object created from the JSON file
+     */
+    public static BeatSaberMap newMapFromJSON(String filePath) {
+        File diffFile = new File(filePath);
+        if (!diffFile.exists() || !diffFile.isFile()) {
+            System.err.println("[ERROR]: Error parsing BeatSaberMap from Json: File not found: " + filePath);
+            return new BeatSaberMap(new ArrayList<>());
+        }
+        JSONObject mapInfoJson = new JSONObject(String.join("", FileManager.readFile(diffFile.getAbsolutePath())));
+        String versionNumber;
+
+        try {
+            versionNumber = mapInfoJson.getString("_version");
+        } catch (JSONException e) {
+            try {
+                versionNumber = mapInfoJson.getString("version");
+            } catch (JSONException e2) {
+                System.err.println("[ERROR]: Error parsing BeatSaberMap from Json: Version number not found in the map file!");
+                return new BeatSaberMap(new ArrayList<>());
+            }
+        }
+
+        switch (versionNumber.charAt(0)) {
+            case '1' -> {
+                System.err.println("[ERROR]: Error parsing BeatSaberMap from Json: Map Version format V1 is not supported!");
+                return new BeatSaberMap(new ArrayList<>());
+            }
+            case '2' -> {
+                Gson gson = new Gson();
+                BeatSaberMap map = gson.fromJson(mapInfoJson.toString(), BeatSaberMap.class);
+                map.originalJSON = mapInfoJson.toString();
+                map.calculateBookmarks();
+
+                return map;
+            }
+            case '3' -> {
+                System.out.println("Detected version 3 Map file format. Omitting Chains, Arcs, Events, Bombs and obstacles...");
+
+                //Parse Notes
+                JSONArray notes = mapInfoJson.getJSONArray("colorNotes");
+                List<Note> noteList = new ArrayList<>();
+                for (int i = 0; i < notes.length(); i++) {
+                    JSONObject note = notes.getJSONObject(i);
+                    noteList.add(new Note(
+                            note.getFloat("b"),
+                            note.getInt("x"),
+                            note.getInt("y"),
+                            note.getInt("c"),
+                            note.getInt("d")
+                    ));
+                }
+
+                noteList.sort(Comparator.comparingDouble(n -> n._time));
+
+                //Create Map
+                BeatSaberMap map = new BeatSaberMap(noteList);
+                map._version = versionNumber;
+                map.originalJSON = mapInfoJson.toString();
+                map.calculateBookmarks();
+                return map;
+            }
+            case '4' -> {
+                System.err.println("[ERROR]: Error parsing BeatSaberMap from Json: Map Version format V4 is not supported yet!");
+                return new BeatSaberMap(new ArrayList<>());
+            }
+            default -> System.err.println("[ERROR]: Error parsing BeatSaberMap from Json: Unknown Map Version format: " + versionNumber);
+        }
+        return new BeatSaberMap(new ArrayList<>());
     }
 
 
@@ -261,24 +345,69 @@ public class BeatSaberMap {
         if (this.originalJSON == null) return new ArrayList<>();
         if (!this.originalJSON.contains("\"_bookmarks\":[")) return new ArrayList<>();
 
-        String sub = this.originalJSON.substring(this.originalJSON.indexOf("\"_bookmarks\":["));
-
-        if (sub.contains("],")) sub = sub.substring(14, sub.indexOf("],") - 1);
-        else if (sub.contains("]}}")) sub = sub.substring(14, sub.indexOf("]}}") - 1);
-        else if (sub.contains("]}")) sub = sub.substring(14, sub.lastIndexOf("]}") - 2);
-
-
-        String[] arr = sub.split("},");
         List<Bookmark> l = new ArrayList<>();
+        JSONObject json = new JSONObject(this.originalJSON);
 
-        for (String s : arr) {
-            if (!s.contains("{")) s = "{" + s;
-            if (!s.contains("}")) s += "}";
-            if (!s.contains("_name")) break;
-            s = s.replaceAll("]}]", "]}");
-            while (s.contains("}}")) s = s.replaceAll("}}", "}");
-            l.add(new Gson().fromJson(s, Bookmark.class));
+        switch (_version.charAt(0)) {
+            case '1' -> System.err.println("[ERROR]: Error calculating Bookmarks: Map Version format V1 is not supported! Ignoring bookmarks...");
+            case '2' -> {
+                JSONArray bookmarks = json.getJSONObject("_customData").getJSONArray("_bookmarks");
+                for (int i = 0; i < bookmarks.length(); i++) {
+                    JSONObject bookmark = bookmarks.getJSONObject(i);
+                    try {
+                        JSONArray color = bookmark.getJSONArray("_color");
+                        //Try to get RGBA values
+                        l.add(new Bookmark(
+                                bookmark.getFloat("_time"),
+                                bookmark.getString("_name"),
+                                new float[]{Float.parseFloat(color.get(0) + ""),
+                                        Float.parseFloat(color.get(1) + ""),
+                                        Float.parseFloat(color.get(2) + ""),
+                                        Float.parseFloat(color.get(3) + "")}
+                        ));
+                    } catch (JSONException | IndexOutOfBoundsException e) {
+                        //If RGBA is not available, then get RGB values
+                        try {
+                            JSONArray color = bookmark.getJSONArray("_color");
+                            l.add(new Bookmark(
+                                    bookmark.getFloat("_time"),
+                                    bookmark.getString("_name"),
+                                    new float[]{Float.parseFloat(color.get(0) + ""),
+                                            Float.parseFloat(color.get(1) + ""),
+                                            Float.parseFloat(color.get(2) + "")}
+                            ));
+                        } catch (Exception ex) {
+                            //If there is some other error like missing color, then just add the bookmark without color
+                            l.add(new Bookmark(
+                                    bookmark.getFloat("_time"),
+                                    bookmark.getString("_name"),
+                                    new float[]{0, 0, 0}
+                            ));
+                        }
+                    }
+                }
+            }
+
+            case '3' -> {
+                JSONArray bookmarks = json.getJSONObject("customData").getJSONArray("bookmarks");
+                for (int i = 0; i < bookmarks.length(); i++) {
+                    JSONObject bookmark = bookmarks.getJSONObject(i);
+                    JSONArray color = bookmark.getJSONArray("c");
+                    l.add(new Bookmark(
+                            bookmark.getFloat("b"),
+                            bookmark.getString("n"),
+                            new float[]{Float.parseFloat(color.get(0) + ""),
+                                    Float.parseFloat(color.get(1) + ""),
+                                    Float.parseFloat(color.get(2) + ""),
+                                    Float.parseFloat(color.get(3) + "")}
+                    ));
+                }
+
+            }
+            case '4' -> System.err.println("[ERROR]: Error calculating Bookmarks: Map Version format V4 is not supported! Ignoring bookmarks...");
+            default -> System.err.println("[ERROR]: Error calculating Bookmarks: Unknown Map Version format: " + _version);
         }
+
 
         this.bookmarks = l;
         return l;
@@ -291,10 +420,62 @@ public class BeatSaberMap {
         return "\"_notes\":" + Arrays.toString(_notes);
     }
 
+    public String exportAsV3Map() {
+        StringBuilder json = new StringBuilder();
+        json.append("{");
+        json.append("\"version\":\"3.3.0\",");
+        json.append("\"bpmEvents\":[],");
+        json.append("\"rotationEvents\":[],");
+
+
+        //Notes
+        json.append("\"colorNotes\":[");
+        for (Note n : _notes) {
+            json.append(n.toV3String()).append(",");
+        }
+        if (_notes.length > 0) json = new StringBuilder(json.substring(0, json.length() - 1));
+        json.append("],");
+
+        json.append("\"bombNotes\":[],");
+        json.append("\"obstacles\":[],");
+        json.append("\"sliders\":[],");
+        json.append("\"burstSliders\":[],");
+        json.append("\"waypoints\":[],");
+        json.append("\"basicBeatmapEvents\":[],");
+        json.append("\"colorBoostBeatmapEvents\":[],");
+        json.append("\"lightColorEventBoxGroups\":[],");
+        json.append("\"lightRotationEventBoxGroups\":[],");
+        json.append("\"lightTranslationEventBoxGroups\":[],");
+        json.append("\"vfxEventBoxGroups\":[],");
+        json.append("\"_fxEventsCollection\":{\"_il\":[],\"_fl\":[]},");
+        json.append("\"basicEventTypesWithKeywords\":{\"d\":[]},");
+        json.append("\"useNormalEventsAsCompatibleEvents\":true,");
+
+
+        //Bookmarks
+        json.append("\"customData\":{\"bookmarks\":[");
+        for (Bookmark b : bookmarks) {
+            json.append("{\"b\":").append(b._time).append(",\"n\":\"").append(b._name).append("\",\"c\":").append(Arrays.toString(b._color)).append("},");
+        }
+        if (!bookmarks.isEmpty()) json = new StringBuilder(json.substring(0, json.length() - 1));
+        json.append("]},");
+
+        json.append("}");
+
+        json = new StringBuilder(json.toString().replaceAll(" ", "")
+                .replaceAll("\\.0,", ",")
+                .replaceAll("\\.0]", "]")
+                .replaceAll("\\.0}", "}")
+                .replace("\n", ""));
+
+
+        return json.toString();
+    }
+
     public String exportAsMap() {
         String json = "";
         json += "{";
-        json += "\"_version\":\"" + _version + "\",";
+        json += "\"_version\":\"2.0.0\",";
         json += "\"_notes\":" + (_notes == null ? "[]" : Arrays.toString(_notes)) + ",";
         json += "\"_obstacles\":" + (_obstacles == null ? "[]" : Arrays.toString(_obstacles)) + ",";
         json += "\"_events\":" + (_events == null ? "[]" : Arrays.toString(_events)) + ",";
