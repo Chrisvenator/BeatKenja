@@ -14,7 +14,7 @@ import java.util.stream.IntStream;
 public class ImportDownloadedMapsIntoDatabase {
     public static void main(String[] args) {
 //        ImportDownloadedMapsIntoDatabase.importAllMaps("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\_toAdd\\", "test");
-        ImportDownloadedMapsIntoDatabase.importAllMaps("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\test\\", "test");
+        ImportDownloadedMapsIntoDatabase.importAllMaps("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\test\\", "testPattern");
 //        System.out.println("successful: " + ImportDownloadedMapsIntoDatabase.importMap(new File("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\_toAdd\\1"), "test"));
 //        System.out.println("successful: " + ImportDownloadedMapsIntoDatabase.createPatternFromMapDirectory(new File("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\_toAdd\\11300"), "test"));
     }
@@ -27,24 +27,46 @@ public class ImportDownloadedMapsIntoDatabase {
 
         for (File map : maps) {
             if (map.isDirectory()) {
-                patterns.addAll(createPatternFromMapDirectory(map, patternName));
-            } else throw new IllegalArgumentException("Map is not a directory: " + map);
+                mergeIntoPattern(patterns,
+                        createPatternsFromMapDirectory(map, patternName));
+            } else
+                throw new IllegalArgumentException("Map is not a directory: " + map);
         }
+        patterns.forEach(p -> System.out.println(p.exportInPatFormat()));
 
-        for (Pattern p : patterns) {
-//to be done
-        }
+        patterns.forEach(pattern -> {
+            Pattern databasePattern = new Pattern(pattern.metadata);
+            databasePattern.merge(pattern);
+            databasePattern.saveOrUpdateInDatabase();
+        });
 
+        //TODO: Use a lot of different patterns to fill the database
     }
 
+    /**
+     * Merges the new patterns into one of the existing patterns (if it exists).
+     *
+     * @param patterns    the existing patterns
+     * @param newPatterns the new patterns
+     */
     private static void mergeIntoPattern(List<Pattern> patterns, List<Pattern> newPatterns) {
         for (Pattern p : newPatterns) {
-            if (patterns.stream().noneMatch(pattern -> pattern.metadata.equals(p.metadata))) {
+            if (patterns.stream().noneMatch(pattern -> shouldItMerge(pattern.metadata, p.metadata))) {
                 patterns.add(p);
+            } else {
+                Pattern existingPattern = patterns.stream().filter(pattern -> shouldItMerge(pattern.metadata, p.metadata)).findFirst().get();
+                existingPattern.merge(p);
             }
         }
     }
 
+    /**
+     * Should it merge the two patterns based on their metadata?
+     *
+     * @param m1 metadata 1
+     * @param m2 metadata 2
+     * @return true if it should merge, false if not
+     */
     private static boolean shouldItMerge(PatMetadata m1, PatMetadata m2) {
         //TODO: should I also group by bpm?
         return m1.name().equals(m2.name()) &&
@@ -58,13 +80,15 @@ public class ImportDownloadedMapsIntoDatabase {
      * Creates a list of patterns based on the map files located in a specified directory.
      * Each pattern corresponds to a difficulty level in the rhythm game map, containing metadata
      * like BPM, tags, and NPS (notes per second).
+     * <br>
+     * !The nps has been rounded to an integer value!
      *
      * @param mapDir      The directory containing map files.
      * @param patternName The name of how it should be saved in the database.
      * @return A list of patterns for each difficulty found in the map directory.
      * @throws IllegalArgumentException If the provided mapDir is not a directory.
      */
-    public static List<Pattern> createPatternFromMapDirectory(File mapDir, String patternName) {
+    private static List<Pattern> createPatternsFromMapDirectory(File mapDir, String patternName) {
         if (!mapDir.isDirectory()) throw new IllegalArgumentException("Map is not a directory: " + mapDir);
 
         // Define files for map information and metadata.
@@ -116,8 +140,13 @@ public class ImportDownloadedMapsIntoDatabase {
                 }
             }
 
+            // Rename difficulty names to match the naming convention.
+            difficultyName = renamePatternDifficulty(difficultyName);
+
             // Create and store metadata for each difficulty.
-            PatMetadata meta = new PatMetadata(patternName, bpm, nps, Collections.singletonList(difficultyName), tags, genres);
+            PatMetadata meta = new PatMetadata(patternName, bpm, Math.round(nps), Collections.singletonList(difficultyName),
+                    tags.stream().map(name -> Character.toUpperCase(name.charAt(0)) + name.substring(1)).toList(),
+                    genres.stream().map(name -> Character.toUpperCase(name.charAt(0)) + name.substring(1)).toList());
             difficulties.put(diffFileName, meta);
         }
 
@@ -137,12 +166,32 @@ public class ImportDownloadedMapsIntoDatabase {
         for (String diff : difficulties.keySet()) {
             File f = new File(mapDir.getAbsolutePath() + "/" + diff);
             Pattern p = new Pattern(f.getAbsolutePath(), difficulties.get(diff));
-            System.out.println(p.exportInPatFormat());
             patterns.add(p);
         }
 
         if (Parameters.verbose) System.out.println("Analyzed Difficulties: " + difficulties);
 
         return patterns;
+    }
+
+    public static String renamePatternDifficulty(String diffName) {
+        switch (diffName.toLowerCase()) {
+            case "easy", "easystandard" -> {
+                return "StandardEasy";
+            }
+            case "normal", "normalstandard" -> {
+                return "StandardNormal";
+            }
+            case "hard", "hardstandard" -> {
+                return "StandardHard";
+            }
+            case "expert", "expertstandard" -> {
+                return "StandardExpert";
+            }
+            case "expertplus", "expertplusstandard" -> {
+                return "StandardExpertPlus";
+            }
+        }
+        return "NULL";
     }
 }
