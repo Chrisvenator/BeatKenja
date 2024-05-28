@@ -4,6 +4,7 @@ import javax.persistence.*;
 
 @Entity
 @NamedQuery(name = "GenreAssignment.findGenreAssignment", query = "SELECT ga FROM GenreAssignmentEntity ga WHERE fkGenreId = :fkGenreId AND fkPatternDescriptionId = :fkPatternDescriptionId")
+@NamedQuery(name = "GenreAssignment.findGenreAssignmentByFkPatternDescriptionId", query = "SELECT ga FROM GenreAssignmentEntity ga WHERE fkPatternDescriptionId = :fkPatternDescriptionId")
 @Table(name = "assignment_genre", schema = "beatkenja", catalog = "")
 public class GenreAssignmentEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)

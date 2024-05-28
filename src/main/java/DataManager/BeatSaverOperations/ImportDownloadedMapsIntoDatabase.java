@@ -97,8 +97,6 @@ public class ImportDownloadedMapsIntoDatabase {
 
     private static boolean savePatternsIntoDatabase(Pattern pattern) {
         Pattern databasePattern = new Pattern(pattern.metadata);
-        System.out.println(pattern.exportInPatFormat());
-        System.out.println("\n\n\n\n\n" + databasePattern.exportInPatFormat());
         databasePattern.merge(pattern);
         return databasePattern.saveOrUpdateInDatabase();
     }
@@ -129,12 +127,12 @@ public class ImportDownloadedMapsIntoDatabase {
         for (File patFile : patFiles) {
             try {
                 if (savePatternsIntoDatabase(new Pattern(patFile.getAbsolutePath())))
-                    System.out.println("Successfully saved pattern from file into database: " + patFile.getName());
-                else System.err.println("Failed to import pattern from file: " + patFile.getName());
+                    System.out.println("[INFO]: Successfully saved pattern from file into database: " + patFile.getName() + "\n");
+                else System.err.println("[ERROR]: Failed to import pattern from file: " + patFile.getName());
 
-                break;
+//                break;
             } catch (Exception e) {
-                System.err.println("Failed to import pattern from file: " + patFile.getName() + " due to " + e.getMessage());
+                System.err.println("[ERROR]: Failed to import pattern from file: " + patFile.getName() + " due to " + e.getMessage());
                 e.printStackTrace();
             }
         }
