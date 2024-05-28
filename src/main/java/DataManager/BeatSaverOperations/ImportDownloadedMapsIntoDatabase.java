@@ -102,7 +102,8 @@ public class ImportDownloadedMapsIntoDatabase {
     }
 
     public static void main(String[] args) {
-        savePatternIntoDatabaseFromFolder("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\testPat\\");
+//        savePatternIntoDatabaseFromFolder("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\testPat\\");
+        savePatternIntoDatabaseFromFolder("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\_toAddPat\\");
     }
 
     /**
