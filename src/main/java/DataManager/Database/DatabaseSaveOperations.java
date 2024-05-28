@@ -10,8 +10,7 @@ import javax.persistence.*;
  */
 public class DatabaseSaveOperations {
     public static boolean persistEntity(Object entity) {
-        EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("default");
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        EntityManager entityManager = Parameters.entityManager;
         EntityTransaction transaction = entityManager.getTransaction();
 
         try {
@@ -30,11 +29,8 @@ public class DatabaseSaveOperations {
             if (transaction.isActive()) {
                 transaction.rollback();
             }
-            entityManager.close();
-            entityManagerFactory.close();
         }
         return true;
     }
-
 
 }

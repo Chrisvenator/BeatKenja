@@ -3,6 +3,7 @@ package DataManager.BeatSaverOperations;
 import DataManager.FileManager;
 import DataManager.Parameters;
 import DataManager.Records.PatMetadata;
+import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
 import MapGeneration.GenerationElements.Pattern;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -13,16 +14,16 @@ import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ImportDownloadedMapsIntoDatabase {
-    public static void main(String[] args) {
-//        ImportDownloadedMapsIntoDatabase.importAllMaps("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\_toAdd\\", "test");
-        ImportDownloadedMapsIntoDatabase.importAllMaps("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\_toAdd\\", "AllMapsGroupedV1");
-//        System.out.println("successful: " + ImportDownloadedMapsIntoDatabase.createPatternsFromMapDirectory(new File("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\_toAdd\\270e0"), "test"));
-//        System.out.println("successful: " + ImportDownloadedMapsIntoDatabase.createPatternFromMapDirectory(new File("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\_toAdd\\11300"), "test"));
-    }
+//    public static void main(String[] args) {
+//        ImportDownloadedMapsIntoDatabase.importAllMaps("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\test\\", "AllMapsGroupedV1");
+//        ImportDownloadedMapsIntoDatabase.importAllMaps("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\" +
+//                "test\\", "test123");
+//    }
 
     public static void importAllMaps(String MAPS_DIRECTORY, String patternName) {
         if (!MAPS_DIRECTORY.endsWith("/")) MAPS_DIRECTORY += "/";
@@ -41,7 +42,7 @@ public class ImportDownloadedMapsIntoDatabase {
 
         int count = 0;
         for (File map : maps) {
-//            if (count > 5000) continue;
+//            if (count > 0) break;
             final int index = ++count;  // Use final variable for thread-safe operations
             futures.add(executor.submit(() -> {
                 System.out.println(index + "/" + maps.size() + " Importing map: " + map.getName());
@@ -50,6 +51,8 @@ public class ImportDownloadedMapsIntoDatabase {
                     mergeIntoPattern(patterns, patternsFromMap);
                 } catch (Exception e) {
                     System.err.println("Failed to import map: " + map.getName() + " due to " + e.getMessage());
+                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
             }));
         }
@@ -62,7 +65,6 @@ public class ImportDownloadedMapsIntoDatabase {
                 System.err.println("Error waiting for map import task to complete: " + e.getMessage());
             }
         }
-
         executor.shutdown();  // Shutdown the executor
 
         try {
@@ -73,17 +75,99 @@ public class ImportDownloadedMapsIntoDatabase {
             executor.shutdownNow();
         }
 
-        sortPattern(patterns);
-        patterns.forEach(p -> System.out.println(p.metadata.toString().replaceAll("\n", "")));
+        if (Parameters.verbose) sortPattern(patterns);
+        if (Parameters.verbose) patterns.forEach(p -> System.out.println(p.metadata.toString().replaceAll("\n", "")));
 
+        String patFolderName = new File(MAPS_DIRECTORY).getParent() + "\\" + new File(MAPS_DIRECTORY).getName() + "Pat\\";
+        // Save patterns to the _toAddPat folder so that they can be added later to the database if something goes wrong
+        boolean saved = saveAllPatternsIntoFolder(patFolderName, patterns);
+        if (!saved) System.err.println("[ERROR] Couldn't save .pat Files! ");
 
+//        savePatternsIntoDatabase(patterns);
+    }
+
+    private static void savePatternsIntoDatabase(List<Pattern> patterns) {
+        AtomicInteger i = new AtomicInteger();
         patterns.forEach(pattern -> {
-            Pattern databasePattern = new Pattern(pattern.metadata);
-            databasePattern.merge(pattern);
-            databasePattern.saveOrUpdateInDatabase();
+            savePatternsIntoDatabase(pattern);
+            System.out.println("[INFO]: saved " + i.getAndIncrement() + "/" + patterns.size() + " " + pattern.metadata.toString());
         });
+    }
 
-        //TODO: Use a lot of different patterns to fill the database
+
+    private static boolean savePatternsIntoDatabase(Pattern pattern) {
+        Pattern databasePattern = new Pattern(pattern.metadata);
+        System.out.println(pattern.exportInPatFormat());
+        System.out.println("\n\n\n\n\n" + databasePattern.exportInPatFormat());
+        databasePattern.merge(pattern);
+        return databasePattern.saveOrUpdateInDatabase();
+    }
+
+    public static void main(String[] args) {
+        savePatternIntoDatabaseFromFolder("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\testPat\\");
+    }
+
+    /**
+     * Saves all patterns from the specified folder into the database.
+     * The folder should contain .pat files.
+     * This function is used, for example, to save patterns that were not successfully imported into the database.
+     *
+     * @param path the path to the folder containing .pat files
+     */
+    private static void savePatternIntoDatabaseFromFolder(String path) {
+        File folder = new File(path);
+        if (!folder.isDirectory()) throw new IllegalArgumentException("Path is not a directory: " + path);
+
+        File[] files = folder.listFiles();
+        if (files == null) {
+            System.err.println("No files found in the directory.");
+            return;
+        }
+
+        List<File> patFiles = Arrays.stream(files).filter(file -> file.getName().endsWith(".pat")).toList();
+
+        for (File patFile : patFiles) {
+            try {
+                if (savePatternsIntoDatabase(new Pattern(patFile.getAbsolutePath())))
+                    System.out.println("Successfully saved pattern from file into database: " + patFile.getName());
+                else System.err.println("Failed to import pattern from file: " + patFile.getName());
+
+                break;
+            } catch (Exception e) {
+                System.err.println("Failed to import pattern from file: " + patFile.getName() + " due to " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Saves all patterns into the specified folder.
+     *
+     * @param path     the path to the folder where the patterns should be saved
+     * @param patterns the patterns to save
+     * @return true if all patterns were saved successfully. False, if the folder could not be created.
+     */
+    private static boolean saveAllPatternsIntoFolder(String path, List<Pattern> patterns) {
+        File folder = new File(path);
+        if (!folder.exists() && !folder.mkdirs()) return false;
+        int threadCount = Runtime.getRuntime().availableProcessors(); // Use a thread pool based on available processors
+        ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+        for (Pattern pattern : patterns) {
+            executorService.submit(() -> FileManager.overwriteFile(
+                    path + pattern.metadata.toString().replaceAll("\n", "") + ".pat",
+                    pattern.exportInPatFormat()));
+        }
+        executorService.shutdown();
+
+        try {
+            if (!executorService.awaitTermination(60, TimeUnit.MINUTES)) {
+                executorService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executorService.shutdownNow();
+        }
+
+        return true;
     }
 
     /**
@@ -146,7 +230,7 @@ public class ImportDownloadedMapsIntoDatabase {
 
         // Check if essential map files exist, log error and return empty if not.
         if (!infoFile.exists() || !metadataFile.exists()) {
-            System.err.println("Map is missing info.dat or metadata.json: " + mapDir);
+            System.out.println("[INFO]: Map is missing info.dat or metadata.json: " + mapDir + " Skipping...");
             return new ArrayList<>();
         }
 
@@ -227,8 +311,13 @@ public class ImportDownloadedMapsIntoDatabase {
         // Create pattern objects for each difficulty, include metadata.
         for (String diff : difficulties.keySet()) {
             File f = new File(mapDir.getAbsolutePath() + "/" + diff);
-            Pattern p = new Pattern(f.getAbsolutePath(), difficulties.get(diff));
-            patterns.add(p);
+            try {
+                Pattern p = new Pattern(f.getAbsolutePath(), difficulties.get(diff));
+                patterns.add(p);
+            } catch (NoteNotValidException e) {
+                System.err.println("[INFO]: Failed to create pattern for difficulty because a note is not valid: " + diff + " in map: " + mapDir);
+                continue;
+            }
         }
 
         if (Parameters.verbose) System.out.println("Analyzed Difficulties: " + difficulties);
