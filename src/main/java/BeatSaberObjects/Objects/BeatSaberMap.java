@@ -144,7 +144,7 @@ public class BeatSaberMap {
         try {
             mapInfoJson = new JSONObject(jsonString);
         } catch (JSONException e) {
-            System.err.println("[ERROR]: Error parsing BeatSaberMap from Json: Version number not found in the map file!");
+            System.err.println("[INFO]: Error parsing BeatSaberMap from Json: Version number not found in the map file!");
             return new BeatSaberMap(new ArrayList<>());
         }
 

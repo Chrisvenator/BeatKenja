@@ -8,14 +8,18 @@ import DataManager.FileManager;
 import DataManager.Parameters;
 import DataManager.Records.PatMetadata;
 import MapGeneration.GenerationElements.Exceptions.MalformattedFileException;
+import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
 import UserInterface.UserInterface;
 import com.google.gson.Gson;
+import org.hibernate.Session;
 
-import javax.persistence.NoResultException;
+import javax.persistence.*;
 import java.io.File;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
+
+import static DataManager.Parameters.entityManager;
 
 public class Pattern implements Iterable<PatternProbability> {
     private final int MAX_ARRAY_SIZE = 109; // lines * layers * cut directions = 4 * 3 * 9 = 108 + 1 (base note)
@@ -29,19 +33,21 @@ public class Pattern implements Iterable<PatternProbability> {
 
     public PatMetadata metadata = new PatMetadata("default", -1.0, -1.0, Collections.singletonList("NULL"), new ArrayList<>(), new ArrayList<>());
 
-    public static void main(String[] args) {
-        java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
-
-        Pattern p = new Pattern(Parameters.DEFAULT_PATTERN_METADATA);
-        System.out.println(p.exportInPatFormat());
-        System.out.println(p.getProbabilityOf(new Note(0, 2, 0, 1, 1)));
-        System.out.println("saved successfully: " + p.saveOrUpdateInDatabase());
-    }
+//    public static void main(String[] args) {
+//        java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
+//
+//        Pattern p = new Pattern(Parameters.DEFAULT_PATTERN_METADATA);
+//        System.out.println(p.exportInPatFormat());
+//        System.out.println(p.getProbabilityOf(new Note(0, 2, 0, 1, 1)));
+//        System.out.println("saved successfully: " + p.saveOrUpdateInDatabase());
+//    }
 
 
     // Constructor that analyzes the patterns based on the provided notes and type
-    public Pattern(Note[] notes, int type) {
+    public Pattern(Note[] notes, int type) throws NoteNotValidException {
         if (type != 0 && type != 1 || notes == null) return;
+
+        if (!checkIfNotesAreValid(notes)) throw new NoteNotValidException("The notes are not valid!");
 
         // Analyze the patterns based on the provided notes and type
         analyzePattern(notes, type);
@@ -51,6 +57,18 @@ public class Pattern implements Iterable<PatternProbability> {
 
         //remove all timings to make it look better
         for (Note n : notes) n._time = 0;
+    }
+
+    private boolean checkIfNotesAreValid(Note[] notes) {
+        for (Note n : notes) {
+            if (n == null) return false;
+            if (n._lineIndex < 0 || n._lineIndex > 3) return false;
+            if (n._lineLayer < 0 || n._lineLayer > 2) return false;
+//            if (n._type < 0 || n._type > 1) return false;
+            if (n._cutDirection < 0 || n._cutDirection > 8) return false;
+
+        }
+        return true;
     }
 
     /**
@@ -69,7 +87,7 @@ public class Pattern implements Iterable<PatternProbability> {
      * @param pathToPatternFile The path to the pattern file
      * @param metadata          The PatMetadata record of the pattern
      */
-    public Pattern(String pathToPatternFile, PatMetadata metadata) {
+    public Pattern(String pathToPatternFile, PatMetadata metadata) throws NoteNotValidException {
         Pattern p = new Pattern(pathToPatternFile);
         this.metadata = metadata;
         this.patterns = p.patterns;
@@ -83,7 +101,7 @@ public class Pattern implements Iterable<PatternProbability> {
      *
      * @param pathToPatternFile The path to the pattern file
      */
-    public Pattern(String pathToPatternFile) {
+    public Pattern(String pathToPatternFile) throws NoteNotValidException {
         //If it's not in the database, then check if it's a .pat file
         File f = new File(pathToPatternFile);
         if (f.exists() && (f.isDirectory() || pathToPatternFile.endsWith(".pat"))) {
@@ -132,7 +150,6 @@ public class Pattern implements Iterable<PatternProbability> {
             if (desc == null) throw new NoResultException("Pattern not found in the database");
         } catch (NoResultException e) {
             //The Pattern has not been found in the database, so we create a new one:
-            //TODO Uncomment this line to save the metadata in the database
             System.out.println("Pattern not found in the database. Creating new Pattern...");
             PatternDescriptionEntityOperations.savePatternDescription(metadata);
             return;
@@ -155,8 +172,49 @@ public class Pattern implements Iterable<PatternProbability> {
 
 
     public boolean saveOrUpdateInDatabase() {
-        PatternDescriptionEntity description = PatternDescriptionEntityOperations.savePatternDescription(metadata);
-        System.out.println(description);
+        return databaseOperation("save");
+    }
+
+    public static void main(String[] args) {
+        java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
+
+        List<String> diffs = new ArrayList<>();
+        diffs.add("StandardExpert");
+
+        List<String> tags = new ArrayList<>();
+        tags.add("Dance");
+
+        List<String> genres = new ArrayList<>();
+        genres.add("Dance");
+//        genres.add("Dance");
+        PatMetadata meta = new PatMetadata("AllMapsGroupedV1", 125, 4, diffs, tags, genres);
+//        PatMetadata meta = new PatMetadata("AllMapsGroupedV1", 161, 6, diffs, tags, genres);
+
+        System.out.println("\nCreating new Pattern...");
+        Pattern p = new Pattern(meta);
+        p.deleteFromDatabase();
+    }
+
+    public boolean deleteFromDatabase() {
+        if (databaseOperation("delete")) {
+            System.out.println("[INFO]: Successfully deleted pattern from database: " + metadata);
+            return true;
+        } else {
+            System.err.println("[WARN]: Failed to delete pattern: " + metadata);
+            return false;
+        }
+    }
+
+    private boolean databaseOperation(String operation) {
+        if (operation == null || Objects.equals(operation, "") || Objects.equals(operation, "update") || Objects.equals(operation, "save")) operation = "save";
+        else if (Objects.equals(operation, "delete") || Objects.equals(operation, "remove")) operation = "delete";
+
+        PatternDescriptionEntity description;
+        if (operation.equals("save")) description = PatternDescriptionEntityOperations.savePatternDescription(metadata);
+        else if (operation.equals("delete")) description = PatternDescriptionEntityOperations.getPatternDescription(metadata);
+        else return true;
+
+        System.out.println("Pattern to be " + operation + "d: " + description);
 
         for (int i = 0; i < patterns.length; i++) {
             Note base = patterns[i][0];
@@ -183,9 +241,30 @@ public class Pattern implements Iterable<PatternProbability> {
                 pattern.setFollowedByNoteId(followerEntity.getId());
                 pattern.setCount(count);
 
-                if (PatternEntityOperations.saveOrUpdatePattern(pattern) && Parameters.verbose) System.out.println("saved: " + pattern);
-                else if (Parameters.verbose) System.err.println("failed to save: " + pattern);
+                boolean success = false;
+                if (Objects.equals(operation, "save")) success = PatternEntityOperations.saveOrUpdatePattern(pattern, entityManager);
+                if (Objects.equals(operation, "delete")) {
+                    pattern = PatternEntityOperations.getPattern(description.getId(), baseEntity.getId(), followerEntity.getId());
+                    success = PatternEntityOperations.deletePattern(pattern, entityManager);
+                }
+
+                if (success && Parameters.verbose) System.out.println("Successfully " + operation + "d pattern: " + pattern);
+                if (!success && Parameters.verbose) System.err.println("Failed to " + operation + " pattern: " + pattern);
             }
+        }
+
+        if (operation.equals("delete")) {
+            //<editor-fold desc="Delete Operations">
+
+            boolean success = true;
+            success &= DifficultyAssignmentEntityOperations.deleteAssignmentEntity(metadata, description, entityManager);
+            success &= TagAssignmentEntityOperations.deleteTagAssignmentEntity(metadata, description, entityManager);
+            success &= GenreAssignmentEntityOperations.deleteGenreAssignmentEntity(metadata, description, entityManager);
+            success &= PatternDescriptionEntityOperations.deletePatternDescriptionEntity(metadata, description, entityManager);
+
+            System.out.println("[INFO]: Successfully=" + success + " deleted PatternDescription: " + description);
+
+            //</editor-fold desc="Delete Operations">
         }
 
         return true;
@@ -208,15 +287,32 @@ public class Pattern implements Iterable<PatternProbability> {
         List<String> lines = FileManager.readFile(pathToPatternFile);
 
         String[] metadata = lines.get(0).split(";");
+        for (int i = 0; i < metadata.length; i++) {
+            if (metadata[i].contains("[")) metadata[i] = metadata[i].replaceAll("\\[", "");
+            if (metadata[i].contains("]")) metadata[i] = metadata[i].replaceAll("]", "");
+        }
 
-        this.metadata = new PatMetadata(
-                pathToPatternFile.contains("/") ? pathToPatternFile.substring(pathToPatternFile.lastIndexOf("/")) : pathToPatternFile, //set the filename as the name of the Pattern
-                Float.parseFloat(metadata[0]),
-                Float.parseFloat(metadata[1]),
-                Collections.singletonList(metadata[2]),
-                metadata[3].contains(",") ? List.of(metadata[3].split(",")) : List.of(metadata[3]),
-                metadata[4].contains(",") ? List.of(metadata[4].split(",")) : List.of(metadata[4])
-        );
+        if (metadata.length == 5) {
+            this.metadata = new PatMetadata(
+                    pathToPatternFile.contains("/") ? pathToPatternFile.substring(pathToPatternFile.lastIndexOf("/")) : pathToPatternFile, //set the filename as the name of the Pattern
+                    Float.parseFloat(metadata[0].replaceAll(" ", "")),
+                    Float.parseFloat(metadata[1].replaceAll(" ", "")),
+                    Collections.singletonList(metadata[2]),
+                    metadata[3].contains(",") ? List.of(metadata[3].split(",")) : List.of(metadata[3]),
+                    metadata[4].contains(",") ? List.of(metadata[4].split(",")) : List.of(metadata[4])
+            );
+        } else if (metadata.length == 6) {
+            this.metadata = new PatMetadata(
+                    metadata[0],
+                    Float.parseFloat(metadata[1].replaceAll(" ", "")),
+                    Float.parseFloat(metadata[2].replaceAll(" ", "")),
+                    Collections.singletonList(metadata[3]),
+                    metadata[4].contains(",") ? List.of(metadata[3].split(",")) : List.of(metadata[4]),
+                    metadata[5].contains(",") ? List.of(metadata[4].split(",")) : List.of(metadata[5])
+            );
+        } else {
+            throw new MalformattedFileException("The file is not in the correct format. The metadata is not correct.");
+        }
 
         this.metadata.tags().stream().filter(tag -> !Parameters.MAP_TAGS.contains(tag)).forEach(tag -> System.err.println("Unknown tag: " + tag));
         this.metadata.genre().stream().filter(genre -> !Parameters.MUSIC_GENRES.contains(genre)).forEach(genre -> System.err.println("Unknown genre: " + genre));
@@ -696,6 +792,9 @@ public class Pattern implements Iterable<PatternProbability> {
 
         for (int i = 0; i < p.patterns.length; i++) { //Why did I do i=1 here? I don't know... If something breaks, check this!
             if (p.patterns[i][0] == null) break;
+
+            if (lastKey >= patterns.length) throw new RuntimeException("ja mann"); //If the pattern is full, then stop (this should never happen, but just in case...)
+
 
             int key = containsKey(patterns, p.patterns[i][0]); //This contains they key where the Note is saved in this.patterns
             if (key == -1) {

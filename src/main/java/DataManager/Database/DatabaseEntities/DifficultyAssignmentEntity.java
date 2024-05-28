@@ -3,6 +3,7 @@ package DataManager.Database.DatabaseEntities;
 import javax.persistence.*;
 
 @Entity
+@NamedQuery(name = "DifficultyAssignment.findDifficultyAssignment", query = "SELECT da FROM DifficultyAssignmentEntity da WHERE fkPatternDescriptionId = :fkPatternDescriptionId AND fkDifficultyId = :fkDifficultyId")
 @Table(name = "assignment_difficulty", schema = "beatkenja", catalog = "")
 public class DifficultyAssignmentEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
