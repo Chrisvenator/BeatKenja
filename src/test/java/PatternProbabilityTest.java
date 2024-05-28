@@ -1,6 +1,7 @@
 import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Note;
 import DataManager.FileManager;
+import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
 import MapGeneration.GenerationElements.Pattern;
 import MapGeneration.GenerationElements.PatternProbability;
 import com.google.gson.Gson;
@@ -11,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class PatternProbabilityTest {
 
     @Test
-    void removeNulls() {
+    void removeNulls() throws NoteNotValidException {
         BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
         Pattern p = new Pattern(map._notes, 1);
 
@@ -27,7 +28,7 @@ class PatternProbabilityTest {
     }
 
     @Test
-    void testToString() {
+    void testToString() throws NoteNotValidException {
         BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
         Pattern p = new Pattern(map._notes, 1);
 

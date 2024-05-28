@@ -2,6 +2,7 @@ import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Note;
 import DataManager.FileManager;
 import DataManager.Parameters;
+import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
 import MapGeneration.GenerationElements.Pattern;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,7 @@ class PatternTest {
     }
 
     @Test
-    void analyzePattern() {
+    void analyzePattern() throws NoteNotValidException {
         BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
         Pattern p = new Pattern(map._notes, 2);
 
@@ -46,7 +47,7 @@ class PatternTest {
     }
 
     @Test
-    void testToString() {
+    void testToString() throws NoteNotValidException {
         BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
         Pattern p = new Pattern(map._notes, 1);
 
@@ -62,7 +63,7 @@ class PatternTest {
     }
 
     @Test
-    void TestExportInPatFormatAndReadInPatFormat() {
+    void TestExportInPatFormatAndReadInPatFormat() throws NoteNotValidException {
         String path = "src/test/resources/Template--ISeeFire.txt";
         BeatSaberMap map = new Gson().fromJson(FileManager.readFile(path).get(0), BeatSaberMap.class);
 
@@ -72,7 +73,7 @@ class PatternTest {
     }
 
     @Test
-    void removeXTimes() {
+    void removeXTimes() throws NoteNotValidException {
         BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
         Pattern p = new Pattern(map._notes, 1);
         p.removeXTimes(1);
@@ -101,7 +102,7 @@ class PatternTest {
 
 
     @Test
-    void computeProbabilities() {
+    void computeProbabilities() throws NoteNotValidException {
         BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
         Pattern p = new Pattern(map._notes, 1);
 
@@ -126,7 +127,7 @@ class PatternTest {
     }
 
     @Test
-    void getProbabilityOf() {
+    void getProbabilityOf() throws NoteNotValidException {
         BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
         Pattern p = new Pattern(map._notes, 1);
 
@@ -137,7 +138,7 @@ class PatternTest {
     }
 
     @Test
-    void testMergePatterns() {
+    void testMergePatterns() throws NoteNotValidException {
         BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
         Pattern p1 = new Pattern(map._notes, 1);
         Pattern p2 = new Pattern(map._notes, 1);
@@ -199,7 +200,7 @@ class PatternTest {
     }
 
     @Test
-    void asList() {
+    void asList() throws NoteNotValidException {
         BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
         Pattern p = new Pattern(map._notes, 1);
         assertEquals("""

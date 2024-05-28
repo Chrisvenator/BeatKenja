@@ -41,6 +41,7 @@ public class Start {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
                 if (exportDatabase) DatabaseExport.exportDatabase("./database");
+                entityManager.close();
             }
         });
     }

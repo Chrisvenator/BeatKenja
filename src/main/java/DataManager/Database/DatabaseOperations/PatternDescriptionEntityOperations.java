@@ -5,6 +5,8 @@ import DataManager.Database.DatabaseSaveOperations;
 import DataManager.Parameters;
 import DataManager.Records.PatMetadata;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 import java.util.List;
 
@@ -71,8 +73,6 @@ public class PatternDescriptionEntityOperations extends PatternDescriptionEntity
             if (Parameters.verbose) System.out.println("Persisting " + desc + " to database");
             DatabaseSaveOperations.persistEntity(desc);
 
-            entityManager.getTransaction().begin();
-
             // Persist difficulty assignments for the pattern description
             for (String diff : metadata.difficulty()) {
                 DifficultyAssignmentEntity da = new DifficultyAssignmentEntity();
@@ -96,11 +96,29 @@ public class PatternDescriptionEntityOperations extends PatternDescriptionEntity
                 ta.setFkPatternDescriptionId(desc.getId());
                 DatabaseSaveOperations.persistEntity(ta);
             }
-
-            entityManager.getTransaction().commit();
         }
 
 
         return desc;
     }
+
+    public static boolean deletePatternDescriptionEntity(PatMetadata metadata, PatternDescriptionEntity description, EntityManager entityManager) {
+        EntityTransaction transaction = entityManager.getTransaction();
+
+        try {
+            transaction.begin();
+            PatternDescriptionEntity entity = entityManager.find(PatternDescriptionEntity.class, description.getId());
+            entityManager.remove(entity);
+            transaction.commit();
+            System.out.println("[INFO]: Successfully deleted PatternDescription: " + entity);
+        } catch (NoResultException e) {
+            transaction.rollback();
+            e.printStackTrace();
+            System.out.println("[INFO]: Nothing to delete... PatternDescription not found in database: " + metadata);
+            return false;
+        }
+
+        return true;
+    }
+
 }
