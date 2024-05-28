@@ -11,7 +11,6 @@ import MapGeneration.GenerationElements.Exceptions.MalformattedFileException;
 import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
 import UserInterface.UserInterface;
 import com.google.gson.Gson;
-import org.hibernate.Session;
 
 import javax.persistence.*;
 import java.io.File;
@@ -33,14 +32,23 @@ public class Pattern implements Iterable<PatternProbability> {
 
     public PatMetadata metadata = new PatMetadata("default", -1.0, -1.0, Collections.singletonList("NULL"), new ArrayList<>(), new ArrayList<>());
 
-//    public static void main(String[] args) {
-//        java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
-//
-//        Pattern p = new Pattern(Parameters.DEFAULT_PATTERN_METADATA);
-//        System.out.println(p.exportInPatFormat());
-//        System.out.println(p.getProbabilityOf(new Note(0, 2, 0, 1, 1)));
-//        System.out.println("saved successfully: " + p.saveOrUpdateInDatabase());
-//    }
+    public static void main(String[] args) {
+        java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
+
+        Pattern p = new Pattern(Parameters.DEFAULT_PATTERN_METADATA);
+        System.out.println(p.exportInPatFormat());
+        System.out.println(p.getProbabilityOf(new Note(0, 2, 0, 1, 1)));
+        System.out.println("saved successfully: " + p.saveOrUpdateInDatabase());
+
+        //Example of how to delete a pattern from the database:
+//        List<String> diffs = new ArrayList<>();        diffs.add("StandardExpert");
+//        List<String> tags = new ArrayList<>();        tags.add("Dance");
+//        List<String> genres = new ArrayList<>();        genres.add("Dance");
+//        PatMetadata meta = new PatMetadata("AllMapsGroupedV1", 125, 4, diffs, tags, genres);
+//        Pattern p = new Pattern(meta);
+        p.deleteFromDatabase();
+
+    }
 
 
     // Constructor that analyzes the patterns based on the provided notes and type
@@ -175,26 +183,6 @@ public class Pattern implements Iterable<PatternProbability> {
         return databaseOperation("save");
     }
 
-    public static void main(String[] args) {
-        java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
-
-        List<String> diffs = new ArrayList<>();
-        diffs.add("StandardExpert");
-
-        List<String> tags = new ArrayList<>();
-        tags.add("Dance");
-
-        List<String> genres = new ArrayList<>();
-        genres.add("Dance");
-//        genres.add("Dance");
-        PatMetadata meta = new PatMetadata("AllMapsGroupedV1", 125, 4, diffs, tags, genres);
-//        PatMetadata meta = new PatMetadata("AllMapsGroupedV1", 161, 6, diffs, tags, genres);
-
-        System.out.println("\nCreating new Pattern...");
-        Pattern p = new Pattern(meta);
-        p.deleteFromDatabase();
-    }
-
     public boolean deleteFromDatabase() {
         if (databaseOperation("delete")) {
             System.out.println("[INFO]: Successfully deleted pattern from database: " + metadata);
@@ -263,6 +251,7 @@ public class Pattern implements Iterable<PatternProbability> {
             success &= PatternDescriptionEntityOperations.deletePatternDescriptionEntity(metadata, description, entityManager);
 
             System.out.println("[INFO]: Successfully=" + success + " deleted PatternDescription: " + description);
+            return success;
 
             //</editor-fold desc="Delete Operations">
         }
