@@ -60,13 +60,14 @@ public class PatternEntityOperations extends PatternEntity {
 
         try {
             try {
-                transaction.begin();
 
                 PatternEntity oldEntity = PatternEntityOperations.getPattern(entity.getPatternDescriptionId(), entity.getNoteId(), entity.getFollowedByNoteId());
                 oldEntity.setCount(entity.getCount());
                 oldEntity.setNoteId(entity.getNoteId());
                 oldEntity.setPatternDescriptionId(entity.getPatternDescriptionId());
                 oldEntity.setFollowedByNoteId(entity.getFollowedByNoteId());
+
+                transaction.begin();
 
                 entityManager.merge(oldEntity);
 
