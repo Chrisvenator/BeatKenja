@@ -9,8 +9,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 import java.util.ArrayList;
+import java.util.List;
 
 import static DataManager.Parameters.entityManager;
+import static DataManager.Parameters.verbose;
 
 public class GenreAssignmentEntityOperations extends GenreEntityOperations {
     public static ArrayList<GenreAssignmentEntity> getAssignmentEntity(int fkGenreId, int fkPatternDescriptionId) {
@@ -37,7 +39,7 @@ public class GenreAssignmentEntityOperations extends GenreEntityOperations {
                     GenreAssignmentEntity toRemove = entityManager.find(GenreAssignmentEntity.class, entity.getId());
                     if (toRemove != null) {
                         entityManager.remove(toRemove);
-                        System.out.println("[INFO]: Successfully deleted GenreAssignment: " + toRemove);
+                        if (verbose) System.out.println("[INFO]: Successfully deleted GenreAssignment: " + toRemove);
                     }
                 });
                 transaction.commit();
@@ -51,5 +53,19 @@ public class GenreAssignmentEntityOperations extends GenreEntityOperations {
 
 
         return true;
+    }
+
+    public static List<String> getGenresForPatternID(int id) {
+        try {
+            ArrayList<GenreAssignmentEntity> list = (ArrayList<GenreAssignmentEntity>) entityManager.createNamedQuery("GenreAssignment.findGenreAssignmentByFkPatternDescriptionId")
+                    .setParameter("fkPatternDescriptionId", id)
+                    .getResultList();
+            ArrayList<String> genres = new ArrayList<>();
+            list.forEach(entity -> genres.add(GenreEntityOperations.getGenre(entity.getFkGenreId()).getName()));
+            return genres;
+        } catch (NoResultException e) {
+            System.err.println("[ERROR]: Could not find a genre");
+            return new ArrayList<>();
+        }
     }
 }

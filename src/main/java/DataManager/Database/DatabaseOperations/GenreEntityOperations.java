@@ -21,4 +21,7 @@ public class GenreEntityOperations extends GenreEntity {
         }
     }
 
+    protected static GenreEntity getGenre(int fkGenreId) {
+        return (GenreEntity) entityManager.createNamedQuery("GenreEntity.findGenreById").setParameter("id", fkGenreId).getSingleResult();
+    }
 }

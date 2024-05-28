@@ -5,6 +5,7 @@ import javax.persistence.*;
 @Entity
 @NamedQuery(name = "GenreEntity.findAllGenres", query = "SELECT d FROM GenreEntity d")
 @NamedQuery(name = "GenreEntity.findGenre", query = "SELECT d FROM GenreEntity d where d.name = :GenreName")
+@NamedQuery(name = "GenreEntity.findGenreById", query = "SELECT d FROM GenreEntity d where d.id = :id")
 @Table(name = "genre", schema = "beatkenja", catalog = "")
 public class GenreEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)

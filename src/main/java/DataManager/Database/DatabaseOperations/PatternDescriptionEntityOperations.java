@@ -11,6 +11,7 @@ import javax.persistence.NoResultException;
 import java.util.List;
 
 import static DataManager.Parameters.entityManager;
+import static DataManager.Parameters.verbose;
 
 
 public class PatternDescriptionEntityOperations extends PatternDescriptionEntity {
@@ -45,6 +46,11 @@ public class PatternDescriptionEntityOperations extends PatternDescriptionEntity
 
     public static PatternDescriptionEntity getPatternDescription(PatMetadata metadata) {
         return getPatternDescription(metadata.name(), metadata.bpm(), metadata.nps(), metadata.difficulty(), metadata.genre(), metadata.tags());
+    }
+
+    public static PatternDescriptionEntity getPatternDescription(int id) {
+        return (PatternDescriptionEntity) entityManager.createNamedQuery("DifficultyEntity.findPatternDescriptionById")
+                .setParameter("id", id).getSingleResult();
     }
 
     /**
@@ -110,7 +116,7 @@ public class PatternDescriptionEntityOperations extends PatternDescriptionEntity
             PatternDescriptionEntity entity = entityManager.find(PatternDescriptionEntity.class, description.getId());
             entityManager.remove(entity);
             transaction.commit();
-            System.out.println("[INFO]: Successfully deleted PatternDescription: " + entity);
+            if (verbose) System.out.println("[INFO]: Successfully deleted PatternDescription: " + entity);
         } catch (NoResultException e) {
             transaction.rollback();
             e.printStackTrace();

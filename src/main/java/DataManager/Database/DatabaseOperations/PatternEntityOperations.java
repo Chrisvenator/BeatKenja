@@ -74,7 +74,7 @@ public class PatternEntityOperations extends PatternEntity {
                 entityManager.flush();
                 transaction.commit();
             } catch (NoResultException e) {
-                System.out.println("Count not find pattern to update, creating new pattern...");
+                if (verbose) System.out.println("Count not find pattern to update, creating new pattern...");
                 return DatabaseSaveOperations.persistEntity(entity);
             }
 
