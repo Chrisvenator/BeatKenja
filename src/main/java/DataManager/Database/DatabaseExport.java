@@ -35,7 +35,7 @@ public class DatabaseExport {
         if (!path.endsWith("/")) path += "/";
         System.out.println("[INFO]: Dumping database...");
 
-        FileManager.overwriteFile(path + "exported_schema.sql", "");
+//        FileManager.overwriteFile(path + "exported_schema.sql", ""); // Clear the file if it exists
         exportSchema(path + "exported_schema.sql");
 
         exportGenre(path + "data/genre.csv");
