@@ -1,6 +1,7 @@
 package DataManager.Database.DatabaseOperations;
 
 import DataManager.Database.DatabaseEntities.DifficultyEntity;
+
 import javax.persistence.NoResultException;
 
 import java.util.ArrayList;
@@ -20,4 +21,9 @@ public class DifficultyEntityOperations extends DifficultyEntity {
             return new ArrayList<>();
         }
     }
+
+    public static DifficultyEntity getDifficulty(int id) {
+        return (DifficultyEntity) entityManager.createNamedQuery("DifficultyEntity.findDifficultyById").setParameter("id", id).getSingleResult();
     }
+
+}
