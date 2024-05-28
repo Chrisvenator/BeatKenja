@@ -1,5 +1,4 @@
 import DataManager.CreateAllNecessaryDIRsAndFiles;
-import DataManager.Database.DatabaseExport;
 import UserInterface.UserInterface;
 
 import java.util.Random;
@@ -40,7 +39,7 @@ public class Start {
         ui.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                if (exportDatabase) DatabaseExport.exportDatabase("./database");
+//                If (exportDatabase) DatabaseExport.exportDatabase("./database"); // Export the database if the user wants to. Currently disabled because of bugs.
                 entityManager.close();
             }
         });
