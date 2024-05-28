@@ -53,6 +53,7 @@ public class FileManager {
         try {
             FileOutputStream fos = new FileOutputStream(file, false);
             fos.write(data.getBytes());
+            fos.flush();
             fos.close();
 
             //The following if is for testing, so that it doesn't span the console

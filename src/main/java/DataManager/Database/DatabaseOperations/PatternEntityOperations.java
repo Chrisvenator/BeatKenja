@@ -11,6 +11,9 @@ import java.util.logging.Level;
 import static DataManager.Parameters.entityManager;
 import static DataManager.Parameters.verbose;
 
+/**
+ * This class provides operations to handle Pattern entities in the database.
+ */
 public class PatternEntityOperations extends PatternEntity {
     public static void main(String[] args) {
         java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
@@ -19,6 +22,12 @@ public class PatternEntityOperations extends PatternEntity {
         System.out.println(getPatternByDescription(desc));
     }
 
+    /**
+     * Retrieves a list of PatternEntity by their description.
+     *
+     * @param description The pattern description entity to query by.
+     * @return A list of matching PatternEntity objects.
+     */
     public static List<PatternEntity> getPatternByDescription(PatternDescriptionEntity description) {
 
         return (List<PatternEntity>) entityManager.createNamedQuery("PatternEntity.findByPatternDescriptionId")
@@ -40,15 +49,19 @@ public class PatternEntityOperations extends PatternEntity {
                 .getSingleResult();
     }
 
-    public static boolean saveOrUpdatePattern(PatternEntity entity) {
-        EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("default");
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
+    /**
+     * Saves or updates a PatternEntity in the database.
+     *
+     * @param entity The PatternEntity to save or update.
+     * @return true if the operation was successful, false otherwise.
+     */
+    public static boolean saveOrUpdatePattern(PatternEntity entity, EntityManager entityManager) {
         EntityTransaction transaction = entityManager.getTransaction();
 
         try {
-            transaction.begin();
-
             try {
+                transaction.begin();
+
                 PatternEntity oldEntity = PatternEntityOperations.getPattern(entity.getPatternDescriptionId(), entity.getNoteId(), entity.getFollowedByNoteId());
                 oldEntity.setCount(entity.getCount());
                 oldEntity.setNoteId(entity.getNoteId());
@@ -56,13 +69,47 @@ public class PatternEntityOperations extends PatternEntity {
                 oldEntity.setFollowedByNoteId(entity.getFollowedByNoteId());
 
                 entityManager.merge(oldEntity);
-                entityManager.flush();
 
+                entityManager.flush();
+                transaction.commit();
             } catch (NoResultException e) {
                 System.out.println("Count not find pattern to update, creating new pattern...");
                 return DatabaseSaveOperations.persistEntity(entity);
             }
 
+        } catch (PersistenceException e) {
+            if (verbose) e.printStackTrace();
+            return false;
+        } finally {
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Deletes a PatternEntity from the database.
+     *
+     * @param entity The PatternEntity to delete.
+     * @return true if the operation was successful, false otherwise.
+     */
+    public static boolean deletePattern(PatternEntity entity, EntityManager entityManager) {
+        EntityTransaction transaction = entityManager.getTransaction();
+
+        try {
+            transaction.begin();
+
+            // Retrieve the entity to ensure it exists
+            PatternEntity toDelete = entityManager.find(PatternEntity.class, entity.getId());
+            if (toDelete == null) {
+                System.out.println("Pattern not found, cannot delete.");
+                return false;
+            }
+
+            // Delete the entity
+            entityManager.remove(toDelete);
+            entityManager.flush();
 
             transaction.commit();
         } catch (PersistenceException e) {
@@ -72,10 +119,9 @@ public class PatternEntityOperations extends PatternEntity {
             if (transaction.isActive()) {
                 transaction.rollback();
             }
-            entityManager.close();
-            entityManagerFactory.close();
         }
         return true;
     }
+
 
 }
