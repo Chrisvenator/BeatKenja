@@ -19,6 +19,7 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import static DataManager.Parameters.entityManager;
+import static DataManager.Parameters.verbose;
 
 public class Pattern implements Iterable<PatternProbability> {
     private final int MAX_ARRAY_SIZE = 109; // lines * layers * cut directions = 4 * 3 * 9 = 108 + 1 (base note)
@@ -46,7 +47,12 @@ public class Pattern implements Iterable<PatternProbability> {
 //        List<String> genres = new ArrayList<>();        genres.add("Dance");
 //        PatMetadata meta = new PatMetadata("AllMapsGroupedV1", 125, 4, diffs, tags, genres);
 //        Pattern p = new Pattern(meta);
-        p.deleteFromDatabase();
+//        p.deleteFromDatabase();
+
+        for (int i = 157; i < 195; i++) {
+            Pattern p2 = new Pattern(i);
+            p2.deleteFromDatabase();
+        }
 
     }
 
@@ -178,6 +184,27 @@ public class Pattern implements Iterable<PatternProbability> {
         }
     }
 
+    public Pattern(int patternDescriptionId) {
+        PatternDescriptionEntity description = PatternDescriptionEntityOperations.getPatternDescription(patternDescriptionId);
+        if (description == null) {
+            System.err.println("[WARN]: Pattern not found in database: " + patternDescriptionId);
+            throw new IllegalArgumentException("Pattern not found in database: " + patternDescriptionId);
+        }
+
+        this.metadata = new PatMetadata(
+                description.getName(),
+                description.getBpm(),
+                description.getNps(),
+                DifficultyAssignmentEntityOperations.getDifficultiesForPatternID(description.getId()),
+                TagAssignmentEntityOperations.getTagsForPattern(description.getId()),
+                GenreAssignmentEntityOperations.getGenresForPatternID(description.getId())
+        );
+        Pattern p = new Pattern(metadata);
+        this.patterns = p.patterns;
+        this.count = p.count;
+        this.probabilities = p.probabilities;
+    }
+
 
     public boolean saveOrUpdateInDatabase() {
         return databaseOperation("save");
@@ -185,7 +212,7 @@ public class Pattern implements Iterable<PatternProbability> {
 
     public boolean deleteFromDatabase() {
         if (databaseOperation("delete")) {
-            System.out.println("[INFO]: Successfully deleted pattern from database: " + metadata);
+            if (verbose) System.out.println("[INFO]: Successfully deleted pattern from database: " + metadata);
             return true;
         } else {
             System.err.println("[WARN]: Failed to delete pattern: " + metadata);
@@ -250,7 +277,8 @@ public class Pattern implements Iterable<PatternProbability> {
             success &= GenreAssignmentEntityOperations.deleteGenreAssignmentEntity(metadata, description, entityManager);
             success &= PatternDescriptionEntityOperations.deletePatternDescriptionEntity(metadata, description, entityManager);
 
-            System.out.println("[INFO]: Successfully=" + success + " deleted PatternDescription: " + description);
+            if (success) System.out.println("[INFO]: Successfully deleted PatternDescription: " + description);
+            else System.err.println("[WARN]: Failed to delete PatternDescription: " + description);
             return success;
 
             //</editor-fold desc="Delete Operations">
@@ -296,8 +324,8 @@ public class Pattern implements Iterable<PatternProbability> {
                     Float.parseFloat(metadata[1].replaceAll(" ", "")),
                     Float.parseFloat(metadata[2].replaceAll(" ", "")),
                     Collections.singletonList(metadata[3]),
-                    metadata[4].contains(",") ? List.of(metadata[3].split(",")) : List.of(metadata[4]),
-                    metadata[5].contains(",") ? List.of(metadata[4].split(",")) : List.of(metadata[5])
+                    metadata[4].contains(",") ? List.of(metadata[4].split(",")) : List.of(metadata[4]),
+                    metadata[5].contains(",") ? List.of(metadata[5].split(",")) : List.of(metadata[5])
             );
         } else {
             throw new MalformattedFileException("The file is not in the correct format. The metadata is not correct.");

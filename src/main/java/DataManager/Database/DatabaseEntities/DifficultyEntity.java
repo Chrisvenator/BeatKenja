@@ -5,6 +5,7 @@ import javax.persistence.*;
 @Entity
 @NamedQuery(name = "DifficultyEntity.findAllDifficulties", query = "SELECT d FROM DifficultyEntity d")
 @NamedQuery(name = "DifficultyEntity.findDifficulty", query = "SELECT d FROM DifficultyEntity d where d.name = :difficultyName")
+@NamedQuery(name = "DifficultyEntity.findDifficultyById", query = "SELECT d FROM DifficultyEntity d where d.id = :id")
 @Table(name = "difficulty", schema = "beatkenja", catalog = "")
 public class DifficultyEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)

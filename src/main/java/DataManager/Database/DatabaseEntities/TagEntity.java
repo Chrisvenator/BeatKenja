@@ -5,6 +5,7 @@ import javax.persistence.*;
 @Entity
 @NamedQuery(name = "TagEntity.findAllTags", query = "SELECT d FROM TagEntity d")
 @NamedQuery(name = "TagEntity.findTag", query = "SELECT d FROM TagEntity d where d.name = :TagName")
+@NamedQuery(name = "TagEntity.findTagById", query = "SELECT d FROM TagEntity d where d.id = :id")
 @Table(name = "tag", schema = "beatkenja", catalog = "")
 public class TagEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)

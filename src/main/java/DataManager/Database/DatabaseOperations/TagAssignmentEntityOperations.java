@@ -8,8 +8,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 import java.util.ArrayList;
+import java.util.List;
 
 import static DataManager.Parameters.entityManager;
+import static DataManager.Parameters.verbose;
 
 public class TagAssignmentEntityOperations extends TagAssignmentEntity {
     public static ArrayList<TagAssignmentEntity> getAssignmentEntity(int fkTagId, int fkPatternDescriptionId) {
@@ -36,7 +38,7 @@ public class TagAssignmentEntityOperations extends TagAssignmentEntity {
                     TagAssignmentEntity toRemove = entityManager.find(TagAssignmentEntity.class, entity.getId());
                     if (toRemove != null) {
                         entityManager.remove(toRemove);
-                        System.out.println("[INFO]: Successfully deleted TagAssignment: " + toRemove);
+                        if (verbose) System.out.println("[INFO]: Successfully deleted TagAssignment: " + toRemove);
                     }
                 });
                 transaction.commit();
@@ -49,5 +51,19 @@ public class TagAssignmentEntityOperations extends TagAssignmentEntity {
         }
 
         return true;
+    }
+
+    public static List<String> getTagsForPattern(int id) {
+        try {
+            ArrayList<TagAssignmentEntity> list = (ArrayList<TagAssignmentEntity>) entityManager.createNamedQuery("TagAssignment.findTagAssignmentByFkPatternDescriptionId")
+                    .setParameter("fkPatternDescriptionId", id)
+                    .getResultList();
+            ArrayList<String> tags = new ArrayList<>();
+            list.forEach(entity -> tags.add(TagEntityOperations.getTag(entity.getFkTagId()).getName()));
+            return tags;
+        } catch (NoResultException e) {
+            System.err.println("[ERROR]: Could not find a tag");
+            return new ArrayList<>();
+        }
     }
 }

@@ -8,8 +8,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 import java.util.ArrayList;
+import java.util.List;
 
 import static DataManager.Parameters.entityManager;
+import static DataManager.Parameters.verbose;
 
 public class DifficultyAssignmentEntityOperations extends DifficultyAssignmentEntity {
     public static ArrayList<DifficultyAssignmentEntity> getAssignmentEntity(int fkDifficultyId, int fkPatternDescriptionId) {
@@ -36,7 +38,7 @@ public class DifficultyAssignmentEntityOperations extends DifficultyAssignmentEn
                     DifficultyAssignmentEntity toRemove = entityManager.find(DifficultyAssignmentEntity.class, entity.getId());
                     if (toRemove != null) {
                         entityManager.remove(toRemove);
-                        System.out.println("[INFO]: Successfully deleted DifficultyAssignment: " + toRemove);
+                        if (verbose) System.out.println("[INFO]: Successfully deleted DifficultyAssignment: " + toRemove);
                     }
                 });
                 transaction.commit();
@@ -49,5 +51,24 @@ public class DifficultyAssignmentEntityOperations extends DifficultyAssignmentEn
         }
 
         return true;
+    }
+
+    public static List<String> getDifficultiesForPatternID(int fkPatternDescriptionId) {
+        try {
+            ArrayList<DifficultyAssignmentEntity> list = (ArrayList<DifficultyAssignmentEntity>) entityManager.createNamedQuery("DifficultyAssignment.findDifficultyAssignmentByFkPatternDescriptionId")
+                    .setParameter("fkPatternDescriptionId", fkPatternDescriptionId)
+                    .getResultList();
+
+            ArrayList<String> difficulties = new ArrayList<>();
+            for (DifficultyAssignmentEntity entity : list) {
+                difficulties.add(DifficultyEntityOperations.getDifficulty(entity.getFkDifficultyId()).getName());
+            }
+
+            return difficulties;
+        } catch (NoResultException e) {
+            System.err.println("[ERROR]: Could not find a difficulty");
+            return new ArrayList<>();
+        }
+
     }
 }

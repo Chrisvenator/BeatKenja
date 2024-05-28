@@ -21,4 +21,7 @@ public class TagEntityOperations extends TagEntity {
         }
     }
 
+    public static TagEntity getTag(int fkTagId) {
+        return (TagEntity) entityManager.createNamedQuery("TagEntity.findTagById").setParameter("id", fkTagId).getSingleResult();
+    }
 }
