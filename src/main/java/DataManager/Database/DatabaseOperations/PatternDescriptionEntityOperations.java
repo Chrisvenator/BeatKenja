@@ -44,6 +44,12 @@ public class PatternDescriptionEntityOperations extends PatternDescriptionEntity
                 .getSingleResult();
     }
 
+    public static PatternDescriptionEntity getPatternDescriptionByNameAndNps(String name, double nps, EntityManager entityManager) {
+        return (PatternDescriptionEntity) entityManager.createNamedQuery("DifficultyEntity.findPatternDescriptionByNameAndNps")
+                .setParameter("name", name)
+                .setParameter("nps", nps);
+    }
+
     public static PatternDescriptionEntity getPatternDescription(PatMetadata metadata) {
         return getPatternDescription(metadata.name(), metadata.bpm(), metadata.nps(), metadata.difficulty(), metadata.genre(), metadata.tags());
     }
