@@ -69,6 +69,7 @@ public class UserInterface extends JFrame {
         MyGlobalJSlider globalPatternVarianceJSlider = new GlobalPatternVarianceJSlider(this);
 
         MapCreatorButton showMapCreatorButton = new MapCreatorButton(this);
+        AdvancedMapCreatorButton advancedMapCreatorButton = new AdvancedMapCreatorButton(this);
         MyButton toTimingNotes = new ToTimingNotesButton(this);
         MyButton utilsMapUtilsButton = new MapUtilitiesButton(this);
         MyButton waveGeneratorButton = new WaveGenerationButton(this);
@@ -93,6 +94,7 @@ public class UserInterface extends JFrame {
 
 
                     showMapCreatorButton.setVisible(true);
+                    advancedMapCreatorButton.setVisible(true);
                     toTimingNotes.setVisible(true);
                     utilsMapUtilsButton.setVisible(true);
                     waveGeneratorButton.setVisible(true);

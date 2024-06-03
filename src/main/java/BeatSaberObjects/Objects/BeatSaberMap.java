@@ -567,8 +567,7 @@ public class BeatSaberMap {
         if (o == null || getClass() != o.getClass()) return false;
         BeatSaberMap that = (BeatSaberMap) o;
 
-        return (originalJSON.equals(that.originalJSON) || originalJSON.isEmpty() || that.originalJSON.isEmpty()) &&
-                _version.equals(that._version) &&
+        return _version.equals(that._version) &&
                 Arrays.equals(_events, that._events) &&
                 Arrays.equals(_notes, that._notes) &&
                 Arrays.equals(_obstacles, that._obstacles) &&
