@@ -18,6 +18,19 @@ public class ElementTypes {
     public static final ButtonType MAP_CREATOR_CREATE_RANDOM_MAP_BUTTON = new ButtonType("random", 650, 100, 90, 15, false);
     public static final ButtonType MAP_CREATOR_CREATE_ONE_HANDED_SIMPLE_LINEAR_MAP_BUTTON = new ButtonType("one handed simpl linear", 650, 120, 90, 15, false);
 
+    //Advanced Map Creator Button Types
+    public static final ButtonType ADVANCED_MAP_CREATOR_BUTTON = new ButtonType("Advanced Map creator", 850, 200, 190, 30, false);
+    public static final ButtonType ADVANCED_MAP_CREATOR_CREATE_MAP_BUTTON = new ButtonType("Create Advanced Map",850, 180, 190, 15, false);
+    public static final ButtonType ADVANCED_MAP_CREATOR_SET_GENRES =        new ButtonType("select Genre 1",     850, 140, 140, 15, false);
+    public static final ButtonType ADVANCED_MAP_CREATOR_SET_GENRES_2 =      new ButtonType("select Genre 2",     850, 160, 140, 15, false);
+    public static final ButtonType ADVANCED_MAP_CREATOR_SET_TAGS =          new ButtonType("select Tag 1",       850, 100, 140, 15, false);
+    public static final ButtonType ADVANCED_MAP_CREATOR_SET_TAGS_2 =        new ButtonType("select Tag 2",       850, 120, 140, 15, false);
+    public static final ButtonType ADVANCED_MAP_CREATOR_SET_Difficulty =    new ButtonType("select Difficulty",  850,  80, 140, 15, false);
+    public static final TextFieldType ADVANCED_MAP_CREATOR_BPM = new TextFieldType("bpm", 1000, 140, 40, 15, false);
+    public static final TextFieldType ADVANCED_MAP_CREATOR_NPS = new TextFieldType("nps", 1000, 160, 40, 15, false);
+
+
+
     //To Timing Notes Button Types
     public static final ButtonType TIMING_NOTES_TO_TIMING_NOTES = new ButtonType("Map to timing Notes", 450, 200, 190, 30, false);
     public static final ButtonType TIMING_NOTES_TO_BLUE_ONLY_TIMING_NOTES = new ButtonType("To 1 color timing notes", 450, 180, 190, 15, false);

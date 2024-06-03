@@ -49,10 +49,8 @@ public class Pattern implements Iterable<PatternProbability> {
 //        Pattern p = new Pattern(meta);
 //        p.deleteFromDatabase();
 
-        for (int i = 157; i < 195; i++) {
-            Pattern p2 = new Pattern(i);
+            Pattern p2 = new Pattern(1010);
             p2.deleteFromDatabase();
-        }
 
     }
 
@@ -142,17 +140,23 @@ public class Pattern implements Iterable<PatternProbability> {
 
 
     /**
-     * Loads the pattern from the database<br>
-     * Metadata must be checked wherever it is being changed!
+     * Constructs a Pattern object from the database based on the provided metadata. Validates the tags, genres, and difficulties
+     * against the predefined parameters, retrieves or creates the pattern description, and initializes the pattern
+     * from the database.
      *
-     * @param metadata The PatMetadata record of the pattern
+     * @param metadata the metadata containing tags, genres, difficulties, and other relevant information
+     * @throws IllegalArgumentException if any of the tags, genres, or difficulties are not found in the database,
+     *                                  or if the pattern is not found in the database
      */
     public Pattern(PatMetadata metadata) {
         this.metadata = metadata;
+
+        // Convert predefined parameters to lowercase sets for case-insensitive comparison
         Set<String> lowerCaseMapTags = Parameters.MAP_TAGS.stream().map(String::toLowerCase).collect(Collectors.toSet());
         Set<String> lowerCaseMusicGenres = Parameters.MUSIC_GENRES.stream().map(String::toLowerCase).collect(Collectors.toSet());
         Set<String> lowerCaseDifficulties = Parameters.DIFFICULTIES.stream().map(String::toLowerCase).collect(Collectors.toSet());
 
+        // Validate tags, genres, and difficulties against the predefined parameters
         if (!lowerCaseMapTags.containsAll(metadata.tags().stream().map(String::toLowerCase).toList())) throw new IllegalArgumentException("Tag(s) not found in database: " + metadata.tags());
         if (!lowerCaseMusicGenres.containsAll(metadata.genre().stream().map(String::toLowerCase).toList())) throw new IllegalArgumentException("Genre(s) not found in database: " + metadata.genre());
         if (!lowerCaseDifficulties.containsAll(metadata.difficulty().stream().map(String::toLowerCase).toList())) throw new IllegalArgumentException("Difficulty not found in database: " + metadata.difficulty());
@@ -160,21 +164,27 @@ public class Pattern implements Iterable<PatternProbability> {
 
         PatternDescriptionEntity desc;
         try {
+            // Attempt to retrieve the pattern description from the database
             desc = PatternDescriptionEntityOperations.getPatternDescription(metadata);
             if (desc == null) throw new NoResultException("Pattern not found in the database");
         } catch (NoResultException e) {
+            // If the pattern is not found, throw an exception (could alternatively create a new pattern)
             //The Pattern has not been found in the database, so we create a new one:
-            System.out.println("Pattern not found in the database. Creating new Pattern...");
-            PatternDescriptionEntityOperations.savePatternDescription(metadata);
-            return;
+//            System.out.println("Pattern not found in the database. Creating new Pattern...");
+            throw new IllegalArgumentException("Pattern not found in the database: " + metadata);
+//            PatternDescriptionEntityOperations.savePatternDescription(metadata); //I think this is not necessary, because the pattern is not found in the database
+//            return;
         }
 
+        // Retrieve pattern entities based on the pattern description
         List<PatternEntity> databasePatterns = PatternEntityOperations.getPatternByDescription(desc);
         for (PatternEntity p : databasePatterns) {
+            // Convert database entities to notes and initialize the pattern
             Note base = Objects.requireNonNull(NoteEntityOperations.getNoteById(p.getNoteId())).toNote();
             Note follower = Objects.requireNonNull(NoteEntityOperations.getNoteById(p.getFollowedByNoteId())).toNote();
             int count = p.getCount();
 
+            // Create and merge the pattern
             Pattern pattern = new Pattern();
             pattern.patterns[0][0] = base;
             pattern.patterns[0][1] = follower;
@@ -184,13 +194,22 @@ public class Pattern implements Iterable<PatternProbability> {
         }
     }
 
+    /**
+     * Constructs a Pattern object based on the pattern description ID. Retrieves the pattern description
+     * from the database, initializes metadata, and creates the pattern using the retrieved metadata.
+     *
+     * @param patternDescriptionId the ID of the pattern description
+     * @throws IllegalArgumentException if the pattern description is not found in the database
+     */
     public Pattern(int patternDescriptionId) {
+        // Retrieve the pattern description from the database
         PatternDescriptionEntity description = PatternDescriptionEntityOperations.getPatternDescription(patternDescriptionId);
         if (description == null) {
             System.err.println("[WARN]: Pattern not found in database: " + patternDescriptionId);
             throw new IllegalArgumentException("Pattern not found in database: " + patternDescriptionId);
         }
 
+        // Initialize metadata from the pattern description entity
         this.metadata = new PatMetadata(
                 description.getName(),
                 description.getBpm(),
@@ -199,17 +218,32 @@ public class Pattern implements Iterable<PatternProbability> {
                 TagAssignmentEntityOperations.getTagsForPattern(description.getId()),
                 GenreAssignmentEntityOperations.getGenresForPatternID(description.getId())
         );
+
+        // Create a new pattern using the retrieved metadata
         Pattern p = new Pattern(metadata);
+
+        // Initialize the pattern properties with the newly created pattern
         this.patterns = p.patterns;
         this.count = p.count;
         this.probabilities = p.probabilities;
     }
 
 
+
+    /**
+     * Saves or updates the pattern in the database.
+     *
+     * @return true if the operation was successful, false otherwise
+     */
     public boolean saveOrUpdateInDatabase() {
         return databaseOperation("save");
     }
 
+    /**
+     * Deletes the pattern from the database.
+     *
+     * @return true if the operation was successful, false otherwise
+     */
     public boolean deleteFromDatabase() {
         if (databaseOperation("delete")) {
             if (verbose) System.out.println("[INFO]: Successfully deleted pattern from database: " + metadata);
@@ -220,14 +254,27 @@ public class Pattern implements Iterable<PatternProbability> {
         }
     }
 
+    /**
+     * Performs the specified database operation (save or delete) on the pattern.
+     *
+     * @param operation the operation to perform ("save" or "delete")
+     * @return true if the operation was successful, false otherwise
+     */
     private boolean databaseOperation(String operation) {
-        if (operation == null || Objects.equals(operation, "") || Objects.equals(operation, "update") || Objects.equals(operation, "save")) operation = "save";
-        else if (Objects.equals(operation, "delete") || Objects.equals(operation, "remove")) operation = "delete";
+        if (operation == null || operation.isEmpty() || Objects.equals(operation, "update") || Objects.equals(operation, "save")) {
+            operation = "save";
+        } else if (Objects.equals(operation, "delete") || Objects.equals(operation, "remove")) {
+            operation = "delete";
+        }
 
         PatternDescriptionEntity description;
-        if (operation.equals("save")) description = PatternDescriptionEntityOperations.savePatternDescription(metadata);
-        else if (operation.equals("delete")) description = PatternDescriptionEntityOperations.getPatternDescription(metadata);
-        else return true;
+        if (operation.equals("save")) {
+            description = PatternDescriptionEntityOperations.savePatternDescription(metadata);
+        } else if (operation.equals("delete")) {
+            description = PatternDescriptionEntityOperations.getPatternDescription(metadata);
+        } else {
+            return true;
+        }
 
         System.out.println("Pattern to be " + operation + "d: " + description);
 
@@ -269,23 +316,24 @@ public class Pattern implements Iterable<PatternProbability> {
         }
 
         if (operation.equals("delete")) {
-            //<editor-fold desc="Delete Operations">
-
+            // Perform additional delete operations for related entities
             boolean success = true;
             success &= DifficultyAssignmentEntityOperations.deleteAssignmentEntity(metadata, description, entityManager);
             success &= TagAssignmentEntityOperations.deleteTagAssignmentEntity(metadata, description, entityManager);
             success &= GenreAssignmentEntityOperations.deleteGenreAssignmentEntity(metadata, description, entityManager);
             success &= PatternDescriptionEntityOperations.deletePatternDescriptionEntity(metadata, description, entityManager);
 
-            if (success) System.out.println("[INFO]: Successfully deleted PatternDescription: " + description);
-            else System.err.println("[WARN]: Failed to delete PatternDescription: " + description);
+            if (success) {
+                System.out.println("[INFO]: Successfully deleted PatternDescription: " + description);
+            } else {
+                System.err.println("[WARN]: Failed to delete PatternDescription: " + description);
+            }
             return success;
-
-            //</editor-fold desc="Delete Operations">
         }
 
         return true;
     }
+
 
 
     /**
@@ -435,9 +483,9 @@ public class Pattern implements Iterable<PatternProbability> {
             twoDimArr:
             for (int i = 0; i < patterns.length; i++) {
 
-                // If the previous BeatSaberObjects.Objects.Note was not found in the pattern list
+                // If the previous Note was not found in the pattern list
                 if ((patterns[i][0] == null)) {
-                    // Add the previous BeatSaberObjects.Objects.Note and the current BeatSaberObjects.Objects.Note to the pattern list
+                    // Add the previous Note and the current BeatSaberObjects.Objects.Note to the pattern list
                     patterns[i][0] = prev;
                     patterns[i][1] = n;
                     count[i][1] = 1;
@@ -447,7 +495,7 @@ public class Pattern implements Iterable<PatternProbability> {
                 } else if (patterns[i][0].equalPlacement(prev)) {
                     for (int j = 1; j < patterns[i].length; j++) {
                         if (patterns[i][j] == null) {
-                            // Add the current BeatSaberObjects.Objects.Note to the pattern list
+                            // Add the current Note to the pattern list
                             patterns[i][j] = n;
                             count[i][j] = 1;
                             break twoDimArr; // Break out of the outer loop
