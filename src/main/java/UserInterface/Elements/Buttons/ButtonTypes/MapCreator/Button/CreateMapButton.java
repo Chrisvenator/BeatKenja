@@ -7,6 +7,8 @@ import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.MapCreatorSubButton
 import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.ElementTypes;
 
+import javax.swing.*;
+
 import static DataManager.Parameters.verbose;
 
 public class CreateMapButton extends MapCreatorSubButton {

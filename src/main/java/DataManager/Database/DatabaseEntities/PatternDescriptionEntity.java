@@ -4,6 +4,7 @@ import javax.persistence.*;
 
 @Entity
 @NamedQuery(name = "DifficultyEntity.findPatternDescriptionById", query = "SELECT p FROM PatternDescriptionEntity p  WHERE p.id = :id")
+@NamedQuery(name = "DifficultyEntity.findPatternDescriptionByNameAndNps", query = "SELECT p FROM PatternDescriptionEntity p  WHERE p.name = :name  AND p.nps = :nps ")
 @NamedQuery(name = "DifficultyEntity.findPatternDescription", query = "SELECT p FROM PatternDescriptionEntity p " +
         "JOIN DifficultyAssignmentEntity da ON da.fkPatternDescriptionId = p.id " +
         "JOIN GenreAssignmentEntity ga ON ga.fkPatternDescriptionId = p.id " +
@@ -11,7 +12,8 @@ import javax.persistence.*;
         "JOIN DifficultyEntity d ON da.fkDifficultyId = d.id " +
         "JOIN GenreEntity g ON ga.fkGenreId = g.id " +
         "JOIN TagEntity t ON  ta.fkTagId = t.id " +
-        "WHERE p.name = :name  AND p.nps = :nps " + // "AND p.bpm = :bpm" +
+        "WHERE p.name = :name  AND p.nps = :nps " +
+        // "AND p.bpm = :bpm" +
         "AND d.name IN :difficultyNames " +
 //        "AND g.name IN :genreNames " +
         "AND t.name IN :tagNames")
