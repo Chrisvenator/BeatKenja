@@ -116,6 +116,7 @@ public class CreatePatterns {
             prevBlue = getLast(notes, 1) == null ? prevBlue : getLast(notes, 1);
         }
 
+//        FixErrorsInPatterns.fixSwingPathAboveEachOther(notes);
         checkForMappingErrors(notes, false);
 
         checkIfEveryNoteIsPlaced(notes, timings);
@@ -207,6 +208,8 @@ public class CreatePatterns {
                     prevRed
             )).toList());
         }
+
+        FixErrorsInPatterns.fixSimpleMappingErrors(notes);
 
         // If stacks are enabled, re-add the stack placements to the notes
         if (stacks) notes = placeStacks(notes, stackPlacements);
