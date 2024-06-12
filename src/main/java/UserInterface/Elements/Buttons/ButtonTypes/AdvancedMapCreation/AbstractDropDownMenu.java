@@ -1,10 +1,8 @@
 package UserInterface.Elements.Buttons.ButtonTypes.AdvancedMapCreation;
 
-import DataManager.Parameters;
 import UserInterface.Elements.Buttons.ButtonType;
 import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.Buttons.MySubButton;
-import UserInterface.Elements.ElementTypes;
 
 import javax.swing.*;
 import java.awt.event.ItemEvent;
@@ -36,7 +34,9 @@ public abstract class AbstractDropDownMenu extends MySubButton {
             dropdownFrame.setLayout(null);
             dropdownFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-            JComboBox<String> comboBox = new JComboBox<>(items.toArray(new String[0]));
+            JComboBox<String> comboBox = new JComboBox<>();
+            comboBox.addItem("Select Item");
+            for (String item : items) comboBox.addItem(item);
             comboBox.setBounds(50, 20, 200, 25);
 
             comboBox.addItemListener(e -> {
