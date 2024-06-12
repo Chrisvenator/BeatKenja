@@ -6,6 +6,8 @@ import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.MapCreatorSubButton
 import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.ElementTypes;
 
+import java.util.List;
+
 public class CreateBlueLinearMap extends MapCreatorSubButton {
     public CreateBlueLinearMap(MyButton parent) {
         super(ElementTypes.MAP_CREATOR_CREATE_ONE_HANDED_SIMPLE_LINEAR_MAP_BUTTON, parent);
@@ -17,7 +19,7 @@ public class CreateBlueLinearMap extends MapCreatorSubButton {
         ui.map.toBlueLeftBottomRowDotTimings();
 
         Thread calculateNewMap = new Thread(() -> {
-            BeatSaberMap map = new BeatSaberMap(CreatePatterns.linearSlowPattern(ui.map._notes, true, null, null));
+            BeatSaberMap map = new BeatSaberMap(CreatePatterns.linearSlowPattern(List.of(ui.map._notes), true, null, null));
             loadNewlyCreatedMap(map);
         });
 
