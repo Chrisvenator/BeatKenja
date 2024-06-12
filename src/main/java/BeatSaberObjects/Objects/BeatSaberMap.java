@@ -412,6 +412,14 @@ public class BeatSaberMap {
         return true;
     }
 
+    /**
+     * Extracts the color array from a bookmark JSONObject.
+     * The function attempts to retrieve the color array from the "_color" key, then the "c" key, and defaults to [0, 0, 0] if not found.
+     * The color array is returned as a float array containing the RGB values.
+     *
+     * @param bookmark The JSONObject containing the bookmark data.
+     * @return a float array containing the RGB color values extracted from the JSONObject.
+     */
     private float[] extractColor(JSONObject bookmark) {
         try {
             JSONArray color = bookmark.optJSONArray("_color");
