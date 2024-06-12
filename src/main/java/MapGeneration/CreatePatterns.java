@@ -75,6 +75,7 @@ public class CreatePatterns {
             }
 
             if (bookmarks.get(i)._name.equalsIgnoreCase("end")) break;
+            if (currentNotes.isEmpty()) continue; //If there are no notes in the current section, then skip it
 //            try {
             switch (bookmarks.get(i)._name.toLowerCase()) {
                 case "complex" -> {
@@ -116,7 +117,7 @@ public class CreatePatterns {
             prevBlue = getLast(notes, 1) == null ? prevBlue : getLast(notes, 1);
         }
 
-//        FixErrorsInPatterns.fixSwingPathAboveEachOther(notes);
+        FixErrorsInPatterns.fixSwingPathAboveEachOther(notes);
         checkForMappingErrors(notes, false);
 
         checkIfEveryNoteIsPlaced(notes, timings);
@@ -229,6 +230,7 @@ public class CreatePatterns {
      * @return A List of all notes that have been generated
      */
     public static Note[] complexPatternFromTemplate(Note[] timings, Pattern p, boolean oneHanded, boolean stacks, Note prevBlue, Note prevRed) throws IllegalArgumentException {
+        if (timings == null || timings.length == 0) return new Note[0];
         Note[] pattern = new Note[timings.length];
         if (timings.length == 1) oneHanded = true;
         int j = oneHanded ? 1 : 2;
