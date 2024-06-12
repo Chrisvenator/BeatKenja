@@ -6,6 +6,8 @@ import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.MapCreatorSubButton
 import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.ElementTypes;
 
+import java.util.List;
+
 public class CreateBlueComplexMap extends MapCreatorSubButton {
     public CreateBlueComplexMap(MyButton parent) {
         super(ElementTypes.MAP_CREATOR_CREATE_ONE_HANDED_COMPLEX_MAP_BUTTON, parent);
@@ -17,7 +19,7 @@ public class CreateBlueComplexMap extends MapCreatorSubButton {
         ui.map.toBlueLeftBottomRowDotTimings();
 
         try {
-            BeatSaberMap map = new BeatSaberMap(CreatePatterns.complexPatternFromTemplate(ui.map._notes, ui.pattern, true, false, null, null));
+            BeatSaberMap map = new BeatSaberMap(CreatePatterns.complexPatternFromTemplate(List.of(ui.map._notes), ui.pattern, true, false, null, null));
             loadNewlyCreatedMap(map);
 
         } catch (IllegalArgumentException ex) {
