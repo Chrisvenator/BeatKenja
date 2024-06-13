@@ -136,9 +136,13 @@ public class CreatePatterns {
         List<Note> timings = new ArrayList<>(timingsImmutable);
         timings.sort(Comparator.comparingDouble(n -> n._time));
 
+//        Pattern.normalizeCountArray(fallbackPattern.count, true);
+
         // Remove all the stack placements because they break everything YAY. They can be added later again
         // Remove all stack placements as they can cause issues, to be added back later if needed
         List<Note> stackPlacements = removeStacks(timings);
+
+        Map<PatMetadata, Pattern> patternCache = new HashMap<>();
 
 
         int nps; // Notes per second
@@ -173,19 +177,7 @@ public class CreatePatterns {
 
             // Create a new PatMetadata instance with the calculated NPS
             PatMetadata newMetadata = new PatMetadata(metadata.name(), metadata.bpm(), nps, metadata.difficulty(), metadata.genre(), metadata.tags());
-            Pattern p;
-            try {
-                // Try to create a new pattern with the new metadata
-                p = new Pattern(newMetadata);
-            } catch (IllegalArgumentException e1) {
-                try {
-                    // If creating the new pattern fails, revert to the original metadata
-                    p = new Pattern(metadata);
-                } catch (IllegalArgumentException e2) {
-                    // If that also fails, use the fallback pattern
-                    p = fallbackPattern;
-                }
-            }
+            Pattern p = getCachedPattern(newMetadata, fallbackPattern, patternCache);
 
             // Add the generated notes to the list
             notes.addAll(complexPatternFromTemplate(
@@ -204,6 +196,34 @@ public class CreatePatterns {
         if (stacks) notes = placeStacks(notes, stackPlacements);
 
         return notes;
+    }
+
+
+    //The dynamic switching between Patterns work. But the data in the database is very... trash
+    private static Pattern getCachedPattern(PatMetadata metadata, Pattern fallbackPattern, Map<PatMetadata, Pattern> patternCache) {
+        // Check if the pattern is already cached
+        if (patternCache.containsKey(metadata)) {
+            System.out.println("Using cached pattern for " + metadata.name() + " with " + metadata.bpm() + " BPM and " + metadata.nps() + " NPS");
+            return patternCache.get(metadata);
+        }
+
+        // Try to create a new pattern with the provided metadata
+        try {
+            System.out.println("Fetching pattern for " + metadata.name() + " with " + metadata.bpm() + " BPM and " + metadata.nps() + " NPS");
+            Pattern p = new Pattern(metadata);
+            patternCache.put(metadata, p);
+            return p;
+        } catch (IllegalArgumentException e1) {
+            // If creating the new pattern fails, try the original metadata
+            try {
+                Pattern p = new Pattern(metadata);
+                patternCache.put(metadata, p);
+                return p;
+            } catch (IllegalArgumentException e2) {
+                // If that also fails, use the fallback pattern
+                return fallbackPattern;
+            }
+        }
     }
 
     /**
@@ -278,7 +298,9 @@ public class CreatePatterns {
             if (probabilities == null || invalidPlacesInARow >= 100) {
                 pattern.set(i, nextLinearNote(previous, timings.get(i)._time));
             } else {
-                pattern.set(i, predictNextNote(probabilities, timings.get(i)._time));
+                Note next = predictNextNote(probabilities, timings.get(i)._time);
+                if (next == null) System.err.println("Error at beat: " + timings.get(i)._time + " next note is null. Please have a look at predictNextNote()");
+                pattern.set(i, next);
             }
 
             // check, if the placement is valid (example: dd)
@@ -1197,7 +1219,7 @@ public class CreatePatterns {
         double placement = RANDOM.nextDouble() * 100;
 
         for (int i = 0; i < pattern.probabilities.length; i++) {
-            if (pattern.notes[i] == null || currentProbability > 99) return null;
+            if (pattern.notes[i] == null || currentProbability > 100) return null;
             currentProbability += pattern.probabilities[i];
             if (placement <= currentProbability) {
                 Note n = pattern.notes[i];
@@ -1206,6 +1228,7 @@ public class CreatePatterns {
 
         }
 
+        System.out.println("Something went wrong. Please have a look at beat: " + time);
         return null;
     }
 
