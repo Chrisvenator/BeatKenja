@@ -44,7 +44,7 @@ public class CreateAdvancedMapButton extends MapCreatorSubButton {
         genres.add("NULL");
         tags.add("NULL");
         tags.add("NULL");
-        difficulties.add("Easy");
+        difficulties.add("StandardExpertPlus");
 
         this.npsField = npsField;
         this.bpmField = bpmField;
@@ -58,6 +58,11 @@ public class CreateAdvancedMapButton extends MapCreatorSubButton {
     public void onClick() {
         ui.manageMap();
         Arrays.stream(ui.map._notes).forEach(note -> note._cutDirection = 8);
+        ui.pattern.visualizeAsHeatmap();
+        ui.pattern.visualizeAsHeatmapNormalized();
+        ui.pattern.visualizeAsHeatmapNormalizedLogarithmically();
+        ui.pattern.visualizeAsHeatmapTruncated();
+
 
         try {
             int nps = Objects.equals(npsField.getText(), "nps") ? 4 : Integer.parseInt(npsField.getText());
