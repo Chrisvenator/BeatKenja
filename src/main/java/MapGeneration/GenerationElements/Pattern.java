@@ -7,6 +7,7 @@ import DataManager.Database.DatabaseOperations.*;
 import DataManager.FileManager;
 import DataManager.Parameters;
 import DataManager.Records.PatMetadata;
+import MapAnalysation.PatternVisualisation.PatternVisualisationHeatMap;
 import MapGeneration.GenerationElements.Exceptions.MalformattedFileException;
 import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
 import UserInterface.UserInterface;
@@ -22,7 +23,7 @@ import static DataManager.Parameters.entityManager;
 import static DataManager.Parameters.verbose;
 
 public class Pattern implements Iterable<PatternProbability> {
-    private final int MAX_ARRAY_SIZE = 109; // lines * layers * cut directions = 4 * 3 * 9 = 108 + 1 (base note)
+    private static final int MAX_ARRAY_SIZE = 109; // lines * layers * cut directions = 4 * 3 * 9 = 108 + 1 (base note)
 
     // In this variable, all the possible notes are stored as patterns
     public Note[][] patterns = new Note[MAX_ARRAY_SIZE][MAX_ARRAY_SIZE];
@@ -49,9 +50,156 @@ public class Pattern implements Iterable<PatternProbability> {
 //        Pattern p = new Pattern(meta);
 //        p.deleteFromDatabase();
 
-            Pattern p2 = new Pattern(1010);
-            p2.deleteFromDatabase();
+//        Pattern p2 = new Pattern(1010);
+//        p2.deleteFromDatabase();
 
+    }
+
+    /**
+     * Visualizes the current pattern as a heatmap without normalization or truncation.
+     * <p>
+     * This method calls the static `visualize` method of the `PatternVisualisationHeatMap` class
+     * with normalization and truncation both set to false. The resulting heatmap will display
+     * the raw count values as they are stored in the pattern.
+     * </p>
+     * <p>
+     * A heatmap is a graphical representation of data where individual values are represented
+     * by colors. In this case, each cell in the heatmap corresponds to a value in the count array.
+     * </p>
+     * <p>
+     * Usage:
+     * <pre>
+     * {@code
+     * Pattern pattern = new Pattern(metadata);
+     * pattern.visualizeAsHeatmap();
+     * }
+     * </pre>
+     * This will create a Swing window displaying the heatmap of the pattern's count array.
+     */
+    public void visualizeAsHeatmap() {
+        PatternVisualisationHeatMap.visualizeAsHeatmap(this);
+    }
+
+    /**
+     * Visualizes the current pattern as a normalized heatmap.
+     * <p>
+     * This method calls the static `visualize` method of the `PatternVisualisationHeatMap` class
+     * with normalization set to true and truncation set to false. The count values in the pattern
+     * will be normalized to the range 0-255 before being visualized. This ensures that the minimum
+     * value is displayed as black and the maximum value is displayed as blue.
+     * </p>
+     * <p>
+     * A normalized heatmap scales the values in the count array so that the smallest value becomes 0
+     * and the largest value becomes 255. This preserves the relative differences between values while
+     * fitting them into a standard color range.
+     * </p>
+     * <p>
+     * Usage:
+     * <pre>
+     * {@code
+     * Pattern pattern = new Pattern(metadata);
+     * pattern.visualizeAsHeatmapNormalized();
+     * }
+     * </pre>
+     * This will create a Swing window displaying the normalized heatmap of the pattern's count array.
+     */
+    public void visualizeAsHeatmapNormalized() {
+        PatternVisualisationHeatMap.visualizeAsHeatmapNormalized(this);
+    }
+
+    /**
+     * Visualizes the current pattern as a logarithmically normalized heatmap.
+     * <p>
+     * This method calls the static `visualize` method of the `PatternVisualisationHeatMap` class
+     * with normalization set to true and truncation set to false. The count values in the pattern
+     * will be normalized to the range 0-255 before being visualized. This ensures that the minimum
+     * value is displayed as black and the maximum value is displayed as blue.
+     * </p>
+     * <p>
+     * A normalized heatmap scales the values in the count array so that the smallest value becomes 0
+     * and the largest value becomes 255. This preserves the relative differences between values while
+     * fitting them into a standard color range.
+     * </p>
+     * <p>
+     * Usage:
+     * <pre>
+     * {@code
+     * Pattern pattern = new Pattern(metadata);
+     * pattern.visualizeAsHeatmapLogarithmicNormalized();
+     * }
+     * </pre>
+     * This will create a Swing window displaying the normalized heatmap of the pattern's count array.
+     */
+    public void visualizeAsHeatmapNormalizedLogarithmically() {
+        PatternVisualisationHeatMap.visualizeAsHeatmapLogarithmicNormalized(this);
+    }
+
+    /**
+     * Visualizes the current pattern as a truncated heatmap.
+     * <p>
+     * This method calls the static `visualize` method of the `PatternVisualisationHeatMap` class
+     * with normalization set to false and truncation set to true. The count values in the pattern
+     * will be truncated to the range 0-255 before being visualized. This means that any values
+     * above 255 will be displayed as blue.
+     * </p>
+     * <p>
+     * A truncated heatmap limits (or truncates) the values in the count array to a specified range,
+     * in this case, 0-255. Values above 255 are capped at 255. This approach ensures that extreme
+     * values do not skew the color representation excessively.
+     * </p>
+     * <p>
+     * Usage:
+     * <pre>
+     * {@code
+     * Pattern pattern = new Pattern(metadata);
+     * pattern.visualizeAsHeatmapTruncated();
+     * }
+     * </pre>
+     * This will create a Swing window displaying the truncated heatmap of the pattern's count array.
+     */
+    public void visualizeAsHeatmapTruncated() {
+        PatternVisualisationHeatMap.visualizeAsHeatmapTruncated(this);
+    }
+
+    /**
+     * Normalizes the count array values to the range 0-255 for each row separately.
+     * If all values in a row are the same, they are set to 0 to avoid log(0).
+     * If logarithmic is true, the values are normalized logarithmically.
+     * <p>
+     * The count must be a square matrix with a size of MAX_ARRAY_SIZE!
+     */
+    public static void normalizeCountArray(int[][] count, boolean logarithmic) {
+        if (count == null) return;
+        if (count.length != MAX_ARRAY_SIZE) throw new IllegalArgumentException("The count array must have a size of " + MAX_ARRAY_SIZE);
+
+        // Iterate over each row
+        for (int i = 0; i < count.length; i++) {
+            int min = Integer.MAX_VALUE;
+            int max = Integer.MIN_VALUE;
+
+            // Find min and max values in the current row
+            for (int j = 0; j < count.length; j++) {
+                if (count[i][j] < min) {
+                    min = count[i][j];
+                }
+                if (count[i][j] > max) {
+                    max = count[i][j];
+                }
+            }
+
+            // If all values in the row are the same, set them to 0 to avoid log(0)
+            if (min == max) {
+                for (int j = 0; j < count.length; j++) {
+                    count[i][j] = 0;
+                }
+            } else {
+                // Normalize the values in the current row to the range 0-255
+                for (int j = 0; j < count.length; j++) {
+                    if (logarithmic) count[i][j] = (int) ((Math.log(count[i][j] - min + 1) / Math.log(max - min + 1)) * 255);
+                    else count[i][j] = (int) ((count[i][j] - min) / (double) (max - min) * 255);
+                }
+            }
+        }
     }
 
 
@@ -229,7 +377,6 @@ public class Pattern implements Iterable<PatternProbability> {
     }
 
 
-
     /**
      * Saves or updates the pattern in the database.
      *
@@ -333,7 +480,6 @@ public class Pattern implements Iterable<PatternProbability> {
 
         return true;
     }
-
 
 
     /**
