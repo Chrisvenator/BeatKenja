@@ -86,7 +86,12 @@ public class BatchWavToMaps {
                             createDiffFromTimings(destinationFolderPath, difficulties[i], timingsDiff);
 
 
-                            double duration = peaks.get(i).get(peaks.get(0).size() - 1); // Assuming the last peak time gives approximate duration
+                            if (peaks.get(i).isEmpty()){
+                                System.err.println("No peaks found for difficulty " + i + " in the audio file. Please adjust the thresholds in the code.");
+                                i++;
+                                continue;
+                            }
+                            double duration = peaks.get(i).get(peaks.get(i).size() - 1); // Assuming the last peak time gives approximate duration
                             double[][] spectrogram = SpectrogramCalculator.calculateSpectrogram(file.getAbsolutePath(), 1024, 512);
                             final int finalI = i;
                             SwingUtilities.invokeLater(() -> {
