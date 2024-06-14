@@ -305,9 +305,12 @@ public class Pattern implements Iterable<PatternProbability> {
         Set<String> lowerCaseDifficulties = Parameters.DIFFICULTIES.stream().map(String::toLowerCase).collect(Collectors.toSet());
 
         // Validate tags, genres, and difficulties against the predefined parameters
-        if (!lowerCaseMapTags.containsAll(metadata.tags().stream().map(String::toLowerCase).toList())) throw new IllegalArgumentException("Tag(s) not found in database: " + metadata.tags());
-        if (!lowerCaseMusicGenres.containsAll(metadata.genre().stream().map(String::toLowerCase).toList())) throw new IllegalArgumentException("Genre(s) not found in database: " + metadata.genre());
-        if (!lowerCaseDifficulties.containsAll(metadata.difficulty().stream().map(String::toLowerCase).toList())) throw new IllegalArgumentException("Difficulty not found in database: " + metadata.difficulty());
+        if (!lowerCaseMapTags.containsAll(metadata.tags().stream().map(String::toLowerCase).toList()) && !lowerCaseMapTags.containsAll(metadata.tags()))
+            throw new IllegalArgumentException("Tag(s) not found in database: " + metadata.tags());
+        if (!lowerCaseMusicGenres.containsAll(metadata.genre().stream().map(String::toLowerCase).toList()) && !lowerCaseMusicGenres.containsAll(metadata.genre()))
+            throw new IllegalArgumentException("Genre(s) not found in database: " + metadata.genre());
+        if (!lowerCaseDifficulties.containsAll(metadata.difficulty().stream().map(String::toLowerCase).toList()) && !lowerCaseDifficulties.containsAll(metadata.difficulty()))
+            throw new IllegalArgumentException("Difficulty not found in database: " + metadata.difficulty());
 
 
         PatternDescriptionEntity desc;
@@ -892,6 +895,7 @@ public class Pattern implements Iterable<PatternProbability> {
     }
 
     //TODO: Das funktioniert nicht richtig. REVERT!
+    //TODO: Das funktioniert nicht richtig. FIX IT!
     public void adjustVariance(float variance) {
         if (variance != 0) {
             System.out.println("Original Variance: \n" + this.exportInPatFormat());
