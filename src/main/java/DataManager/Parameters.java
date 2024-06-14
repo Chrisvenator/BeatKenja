@@ -36,7 +36,7 @@ public class Parameters {
 
     //Note Generator settings:
     public static final double BPM = 120;
-    public static final double PLACEMENT_PRECISION = (double) 1 / 8; //Placement Precision
+    public static final double PLACEMENT_PRECISION = (double) 1 / 16; //Placement Precision
     public static final boolean FIX_PLACEMENTS = true; //should the timings be fixed so that SS doesn't flag it as AI made?
 
     //Try to load the config. If it doesn't exist, then use the default values
