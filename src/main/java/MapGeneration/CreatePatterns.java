@@ -134,6 +134,10 @@ public class CreatePatterns {
     public static List<Note> createAdvancedComplexPattern(List<Note> timingsImmutable, Pattern fallbackPattern, boolean oneHanded, boolean stacks, Note prevBlue, Note prevRed, PatMetadata metadata) throws IllegalArgumentException {
         List<Note> notes = new ArrayList<>();
         List<Note> timings = new ArrayList<>(timingsImmutable);
+//        for (int i = 0; i < timingsImmutable.size(); i++) {
+//            if (Math.random() < 0.3) timings.get(i)._type = 0;
+//            if (Math.random() > 0.7) timings.add(new Note(timingsImmutable.get(i)._time, 0, 0, 0, 0));
+//        }
         timings.sort(Comparator.comparingDouble(n -> n._time));
 
 //        Pattern.normalizeCountArray(fallbackPattern.count, true);
@@ -197,7 +201,6 @@ public class CreatePatterns {
 
         return notes;
     }
-
 
     //The dynamic switching between Patterns work. But the data in the database is very... trash
     private static Pattern getCachedPattern(PatMetadata metadata, Pattern fallbackPattern, Map<PatMetadata, Pattern> patternCache) {
