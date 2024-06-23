@@ -97,7 +97,7 @@ public class CreatePatterns {
                     }
                 }
             } catch (Exception e) {
-                System.out.println(notes);
+//                System.out.println(notes);
                 e.printStackTrace();
                 throw new RuntimeException("BREAK");
             }
@@ -289,6 +289,9 @@ public class CreatePatterns {
         int redHorizontalsInARow = 0;  // prevent parity breaks for red notes
         int invalidPlacesInARow = 0;   // prevent infinite loops
 
+        boolean[] palmDirection = {determineInitialPalmDirection(pattern.get(0)), determineInitialPalmDirection(pattern.size() >= 2 ? pattern.get(1) : null)}; //true is up and false is down, [0] is red and [1] is blue
+        int[] inversePlacementCount = {0, 0}; //[0] is red and [1] is blue
+
         List<Note> blueNotesFirstFix = new ArrayList<>();
         for (int i = j; i < timings.size(); i++) {
             boolean inValidPlacement = false;
@@ -335,6 +338,7 @@ public class CreatePatterns {
             }
             if (previous._cutDirection == pattern.get(i)._cutDirection) throw new IllegalArgumentException("hä?");
 
+
             // Check if the horizontal placement is correct or if there is a parity break.
             // For further info, have a look at: endHorizontalPlacements()
             if ((redHorizontalsInARow >= 2 || blueHorizontalsInARow >= 2) && (pattern.get(i)._cutDirection != 2 && pattern.get(i)._cutDirection != 3)) {
@@ -363,14 +367,33 @@ public class CreatePatterns {
                             pattern.get(i)._lineIndex,
                             pattern.get(i)._lineLayer,
                             pattern.get(i)._type,
-                            (pattern.get(i)._cutDirection == 6 || pattern.get(i)._cutDirection == 1 || pattern.get(i)._cutDirection == 7) ? 0 : 1);
+                            (pattern.get(i)._cutDirection == 6 || pattern.get(i)._cutDirection == 1 || pattern.get(i)._cutDirection == 7) ? 0 : 1); //cutDirection
 
                     blueNotesFirstFix.add(pattern.get(i));
                     pattern.set(i, noteNew);
                     System.out.println("Added new Note: " + noteNew);
+
+                    //Only a blue note can be here. So we don't need to check ever statement TODO
+                    palmDirection[i % j] = !palmDirection[i % j];
                 }
             }
 
+            int checkPalmDirection = checkPalmDirection(palmDirection[i % j], pattern.get(i));
+            if (checkPalmDirection == 1) inversePlacementCount[i % j]++; //parity break
+            if (checkPalmDirection == 0) inversePlacementCount[i % j] = 0; //everything okay
+            if (inversePlacementCount[i % j] >= 2) {
+                Note noteNew = new Note(pattern.get(i)._time, pattern.get(i - j)._lineIndex, pattern.get(i - j)._lineLayer, pattern.get(i - j)._type, pattern.get(i - j)._cutDirection);
+                pattern.set(i, noteNew); //If there is a parity break, duplicate the current note. It will be taken care of later :P
+                System.out.println("Fixed horizontal parity break at: " + pattern.get(i)._time + "\n");
+
+                inversePlacementCount[i % j] = 0;
+                palmDirection[i % j] = !palmDirection[i % j];
+                continue;
+            }
+
+
+            //invert wrist position
+            palmDirection[i % j] = !palmDirection[i % j];
         }
 
         // make every second note red:
@@ -388,6 +411,23 @@ public class CreatePatterns {
         pattern = checkForMappingErrors(l, true);
 
         return pattern;
+    }
+
+    private static int checkPalmDirection(boolean palmDirection, Note note) {
+        if (note == null) return -1;
+        if (palmDirection && (note._cutDirection == 6 || note._cutDirection == 1 || note._cutDirection == 7) || !palmDirection && (note._cutDirection == 4 || note._cutDirection == 0 || note._cutDirection == 5))
+            return 0; //no errors
+        else if (!palmDirection && (note._cutDirection == 6 || note._cutDirection == 1 || note._cutDirection == 7) || palmDirection && (note._cutDirection == 4 || note._cutDirection == 0 || note._cutDirection == 5))
+            return 1; //error detected!
+        return -1; //error
+    }
+
+    private static boolean determineInitialPalmDirection(Note note) {
+        if (note == null) return true;
+        if (note._cutDirection == 4 || note._cutDirection == 0 || note._cutDirection == 5) return true;
+        if (note._cutDirection == 6 || note._cutDirection == 1 || note._cutDirection == 7) return false;
+
+        return true;
     }
 
     @Deprecated
@@ -596,7 +636,12 @@ public class CreatePatterns {
             } else if (invalidPlacementsInARow >= 500)
                 throw new IllegalArgumentException("Infinite Loop while creating map! Please try again. (Error occured in \"2-2\")");
             if (i >= 2 && notes.get(notes.size() - 1)._cutDirection == 8) {
-                notes.add(nextNoteAfterTimingNote(notes, timings.get(i)._time, notes.size(), i < 4 ? 2 : 4));
+                try {
+                    notes.add(nextNoteAfterTimingNote(notes, timings.get(i)._time, notes.size(), i < 4 ? 2 : 4));
+                } catch (Exception e){
+                    e.printStackTrace();
+                    return notes;
+                }
                 continue;
             }
 
