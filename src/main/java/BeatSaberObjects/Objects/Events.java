@@ -5,21 +5,24 @@ import BeatSaberObjects.BeatsaberObject;
 import java.util.Objects;
 
 public class Events implements BeatsaberObject {
-    protected float _time;
-    protected int _type;
+    public float _time;
+    public int _type;
     public int _value;
+    public float _floatValue = 0;
 
-    public Events(float _time, int _type, int _value) {
+    public Events(float _time, int _type, int _value, int... _floatValue) {
         this._time = _time;
         this._type = _type;
         this._value = _value;
+        if (_floatValue == null || _floatValue.length == 0) this._floatValue = 0;
+        else this._floatValue = _floatValue[0];
     }
 
     // <editor-fold desc="default methods">
 
     @Override
     public String toString() {
-        return "{\"_time\":" + _time + ",\"_type\":" + _type + ",\"_value\":" + _value + "}";
+        return "{\"_time\":" + _time + ",\"_type\":" + _type + ",\"_value\":" + _value + ",\"_floatValue\":" + _floatValue + "}";
     }
 
     @Override

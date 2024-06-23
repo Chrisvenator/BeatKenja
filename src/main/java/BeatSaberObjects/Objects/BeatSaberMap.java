@@ -51,6 +51,11 @@ public class BeatSaberMap {
         this._notes = notes.toArray(new Note[0]);
     }
 
+    public BeatSaberMap(List<Note> notes, Events[] events) {
+        this._notes = notes.toArray(new Note[0]);
+        this._events = events;
+    }
+
     public BeatSaberMap(List<Note> notes, String originalJSON) {
         this._notes = notes.toArray(new Note[0]);
         this.originalJSON = originalJSON;
@@ -316,6 +321,7 @@ public class BeatSaberMap {
     //WARNING: If there is more than 1 note in the same beat, then all but one are erased (for example stacks)
     //If you want to keep them, then have a look at "mapToTimingNotesArray" or "mapToTimingNotesList"
     public void toBlueLeftBottomRowDotTimings() {
+        _events = new Events[0];
         Note[] timings = new Note[_notes.length];
         int numberOfNulls = 0;
 
