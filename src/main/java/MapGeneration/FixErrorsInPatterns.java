@@ -9,10 +9,47 @@ import java.util.List;
 public class FixErrorsInPatterns {
     public static void fixSimpleMappingErrors(List<Note> notes) {
         notes.sort(Comparator.comparingDouble(n -> n._time));
-        fixSwingPathDoubles(notes);
-        fixSwingPathAboveEachOther(notes);
-        fixSwingPath(notes);
-        fixNoteInNote(notes);
+        //We need to run this twice, because the first run might create new errors
+        for (int i = 0; i < 2; i++) {
+            fixNoteOutsideOfGrid(notes);
+            fixNoteInNote(notes);
+            fixSwingPathDoubles(notes);
+            fixSwingPathAboveEachOther(notes);
+            fixSwingPath(notes);
+        }
+        hardFixNoteOutsideOfGrid(notes);
+    }
+
+    /**
+     * Fixes notes that are outside of the grid after the first run of the error fixing. Because of the other fixes, the notes might be outside of the grid again.
+     * This function just shifts all the notes of that specific time, where the note os outside the grid, back into the grid.
+     * Errors can still occur, but this function should fix most of them.
+     *
+     * @param notes List of notes
+     */
+    private static void hardFixNoteOutsideOfGrid(List<Note> notes) {
+        for (Note note : notes) {
+            if (note._lineIndex < 0) notes.stream().filter(n -> n._time == note._time).forEach(n -> n._lineIndex++);
+            if (note._lineIndex > 3) notes.stream().filter(n -> n._time == note._time).forEach(n -> n._lineIndex--);
+            if (note._lineLayer < 0) notes.stream().filter(n -> n._time == note._time).forEach(n -> n._lineLayer++);
+            if (note._lineLayer > 2) notes.stream().filter(n -> n._time == note._time).forEach(n -> n._lineLayer--);
+        }
+    }
+
+    /**
+     * Fixes notes that are outside of the grid
+     * The note will be moved to the closest position inside the grid.
+     * The grid is 4x3, so the note will be moved to the closest position inside the grid.
+     *
+     * @param notes List of notes
+     */
+    private static void fixNoteOutsideOfGrid(List<Note> notes) {
+        for (Note note : notes) {
+            if (note._lineIndex < 0) note._lineIndex = 0;
+            if (note._lineIndex > 3) note._lineIndex = 3;
+            if (note._lineLayer < 0) note._lineLayer = 0;
+            if (note._lineLayer > 2) note._lineLayer = 2;
+        }
     }
 
     /**

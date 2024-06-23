@@ -230,18 +230,27 @@ public class CreatePatterns {
     }
 
     /**
-     * This method creates a pattern on basis of the original MapGeneration.GenerationElements.Pattern.
+     * This method creates a pattern on the basis of the original Pattern.
      *
      * @param timings   where the notes should be placed
-     * @param p         p are the probabilities that which note follows which. It must be in the "MapGeneration.GenerationElements.Pattern"-Format
-     * @param oneHanded is the map one handed?
+     * @param p         p are the probabilities that which note follows that. It must be in the "Pattern"-Format
+     * @param oneHanded is the map one-handed?
      * @param prevBlue  What the previous blue note was
      * @param prevRed   What the previous red note was
      * @return A List of all notes that have been generated
      */
-    public static List<Note> complexPatternFromTemplate(List<Note> timings, Pattern p, boolean oneHanded, boolean stacks, Note prevBlue, Note prevRed) throws IllegalArgumentException {
-        if (timings == null || timings.isEmpty()) return new ArrayList<>();
+    public static List<Note> complexPatternFromTemplate(List<Note> timingsImmutable, Pattern p, boolean oneHanded, boolean stacks, Note prevBlue, Note prevRed) throws IllegalArgumentException {
+        if (timingsImmutable == null || timingsImmutable.isEmpty()) return new ArrayList<>();
+        List<Note> timings = new ArrayList<>(timingsImmutable);
+
+        if (verbose) System.out.println("Creating complex pattern from template with " + timings.size() + " notes");
+        List<Note> removeStacks = removeStacks(timings);
+        if (verbose) System.out.println("Removed " + removeStacks.size() + " stack placements");
+        if (verbose) System.out.println("New timings size: " + timings.size());
+
         List<Note> pattern = new ArrayList<>(timings.size());
+
+
         for (int i = 0; i < timings.size(); i++) {
             pattern.add(null);
         }
@@ -320,8 +329,8 @@ public class CreatePatterns {
             }
             if (previous._cutDirection == pattern.get(i)._cutDirection) throw new IllegalArgumentException("hä?");
 
-            // check if the horizontal placement is correct or if there is a parity break.
-            // For further info have a look at: endHorizontalPlacements()
+            // Check if the horizontal placement is correct or if there is a parity break.
+            // For further info, have a look at: endHorizontalPlacements()
             if ((redHorizontalsInARow >= 2 || blueHorizontalsInARow >= 2) && (pattern.get(i)._cutDirection != 2 && pattern.get(i)._cutDirection != 3)) {
                 Note noteAfterHorizontal = endHorizontalPlacements(pattern, i, j);
                 pattern.set(i, noteAfterHorizontal != null ? noteAfterHorizontal : pattern.get(i));
@@ -343,7 +352,8 @@ public class CreatePatterns {
 
         // Check, if one note is inside another note
         List<Note> l = new ArrayList<>(pattern);
-        if (stacks) l = createStacks(l);
+        if (stacks) l = placeStacks(l, removeStacks);
+        FixErrorsInPatterns.fixSimpleMappingErrors(pattern);
         pattern = checkForMappingErrors(l, true);
 
         return pattern;
@@ -1513,6 +1523,7 @@ public class CreatePatterns {
      * This method collects all notes that should be removed first and then removes them in a separate operation.
      *
      * @param notes A list of Note objects, each representing a musical note with a type and timing.
+     * @return A list of Note objects with the notes, that were too close, removed.
      */
     private static List<Note> removeStacks(List<Note> notes) {
         List<Note> toRemove = new ArrayList<>(); // List to hold notes that need to be removed
