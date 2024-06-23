@@ -104,6 +104,7 @@ public class CreateAdvancedMapButton extends MapCreatorSubButton {
             else loadNewlyCreatedMap(map);
 
             if (verbose) System.out.println("New: " + map.exportAsMap());
+            loadNewlyCreatedMap(map);
 
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(null, "Please enter valid numbers for NPS and BPM.", "Input Error", JOptionPane.ERROR_MESSAGE);
