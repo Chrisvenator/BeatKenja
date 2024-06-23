@@ -79,15 +79,15 @@ public class CreatePatterns {
 
             try {
                 switch (bookmarks.get(i)._name.toLowerCase()) {
-                    case "complex" -> notes.addAll(complexPatternFromTemplate(currentNotes, p, false, stacks, prevBlue, prevRed));
-                    case "linear" -> notes.addAll(linearSlowPattern(currentNotes, false, prevBlue, prevRed));
+                    case "l", "linear" -> notes.addAll(linearSlowPattern(currentNotes, false, prevBlue, prevRed));
+                    case "c", "complex" -> notes.addAll(complexPatternFromTemplate(currentNotes, p, false, stacks, prevBlue, prevRed));
                     case "1-2" -> notes.addAll(twoRightOneLeft(currentNotes, p, prevBlue, prevRed, stacks));
                     case "2-1" -> notes.addAll(twoRightOneLeft(currentNotes, p, prevRed, prevBlue, stacks).stream().map(Note::invertNote).toList());
                     case "2-2" -> notes.addAll(twoLeftTwoRight(currentNotes, prevBlue, prevRed));
-                    case "small-jumps", "smalljumps", "small_jumps", "small jumps" -> notes.addAll(createSmallJumps(currentNotes, false, prevBlue, prevRed));
-                    case "jumps", "normal jumps", "normal_jumps", "normal-jumps" -> notes.addAll(createJumps(currentNotes, false, prevBlue, prevRed));
-                    case "big-jumps", "bigjumps", "big_jumps", "big jumps" -> notes.addAll(createBigJumps(currentNotes, false, prevBlue, prevRed));
-                    case "doubles", "double-handed" -> notes.addAll(createDoubles(currentNotes, prevBlue, prevRed));
+                    case "sj", "small-jumps", "smalljumps", "small_jumps", "small jumps" -> notes.addAll(createSmallJumps(currentNotes, false, prevBlue, prevRed));
+                    case "j", "jumps", "normal jumps", "normal_jumps", "normal-jumps" -> notes.addAll(createJumps(currentNotes, false, prevBlue, prevRed));
+                    case "bj", "big-jumps", "bigjumps", "big_jumps", "big jumps" -> notes.addAll(createBigJumps(currentNotes, false, prevBlue, prevRed));
+                    case "d", "doubles", "double-handed" -> notes.addAll(createDoubles(currentNotes, prevBlue, prevRed));
 
                     default -> {
                         System.err.println("There is no such flag as: \"" + bookmarks.get(i)._name + "\" with " + currentNotes.size() + " notes. Please have a look at the supported ones in the README");
@@ -105,7 +105,7 @@ public class CreatePatterns {
             prevBlue = getLast(notes, 1) == null ? prevBlue : getLast(notes, 1);
         }
 
-        FixErrorsInPatterns.fixSwingPathAboveEachOther(notes);
+        FixErrorsInPatterns.fixSimpleMappingErrors(notes);
         checkForMappingErrors(notes, false);
 
         checkIfEveryNoteIsPlaced(notes, timings);
@@ -232,11 +232,11 @@ public class CreatePatterns {
     /**
      * This method creates a pattern on the basis of the original Pattern.
      *
-     * @param timings   where the notes should be placed
-     * @param p         p are the probabilities that which note follows that. It must be in the "Pattern"-Format
-     * @param oneHanded is the map one-handed?
-     * @param prevBlue  What the previous blue note was
-     * @param prevRed   What the previous red note was
+     * @param timingsImmutable where the notes should be placed
+     * @param p                p are the probabilities that which note follows that. It must be in the "Pattern"-Format
+     * @param oneHanded        is the map one-handed?
+     * @param prevBlue         What the previous blue note was
+     * @param prevRed          What the previous red note was
      * @return A List of all notes that have been generated
      */
     public static List<Note> complexPatternFromTemplate(List<Note> timingsImmutable, Pattern p, boolean oneHanded, boolean stacks, Note prevBlue, Note prevRed) throws IllegalArgumentException {
@@ -258,8 +258,11 @@ public class CreatePatterns {
         int j = oneHanded ? 1 : 2;
 
         // Placing the first notes manually:
+
+        //set Blue
         pattern.set(0, prevBlue != null ? nextLinearNote(prevBlue, timings.get(0)._time) : firstNotePlacement(timings.get(0)._time));
         int counter = 0;
+
         while (pattern.get(0).isDD(prevBlue) && prevBlue != null && counter <= 300) {
             pattern.set(0, nextLinearNote(prevBlue, timings.get(0)._time));
             counter++;
@@ -267,10 +270,12 @@ public class CreatePatterns {
         if (counter >= 300)
             System.err.println("[ERROR] at beat: " + timings.get(0)._time + " infinite loop in create complex (blue)");
 
+        //set Red
         if (!oneHanded) {
             pattern.set(1, prevRed != null ? nextLinearNote(prevRed, timings.get(1)._time) : firstNotePlacement(timings.get(1)._time));
         }
         counter = 0;
+
         if (!oneHanded) {
             while (pattern.get(1).isDD(prevRed) && prevRed != null && counter <= 300) {
                 pattern.set(1, nextLinearNote(prevRed, timings.get(1)._time));
@@ -284,6 +289,7 @@ public class CreatePatterns {
         int redHorizontalsInARow = 0;  // prevent parity breaks for red notes
         int invalidPlacesInARow = 0;   // prevent infinite loops
 
+        List<Note> blueNotesFirstFix = new ArrayList<>();
         for (int i = j; i < timings.size(); i++) {
             boolean inValidPlacement = false;
 
@@ -343,6 +349,28 @@ public class CreatePatterns {
 
             // creating the flag, so that a stack may be done later;
             pattern.get(i).amountOfStackedNotes = timings.get(i).amountOfStackedNotes;
+
+            //Make it so that a blue swing is always first
+            if (!oneHanded && i >= 6 && i + 1 < timings.size()) {
+                // The i%2 is necessary, because every second note will be inverted. And we only want to fix blue notes
+                if (i % 2 == 0 && pattern.get(i)._time - pattern.get(i - 1)._time >= 0.4 && (
+                        ((pattern.get(i)._cutDirection == 6 || pattern.get(i)._cutDirection == 1 || pattern.get(i)._cutDirection == 7) && (pattern.get(i - 1)._cutDirection == 6 || pattern.get(i - 1)._cutDirection == 1 || pattern.get(i - 1)._cutDirection == 7)) ||
+                                ((pattern.get(i)._cutDirection == 4 || pattern.get(i)._cutDirection == 0 || pattern.get(i)._cutDirection == 5) && (pattern.get(i - 1)._cutDirection == 4 || pattern.get(i - 1)._cutDirection == 0 || pattern.get(i - 1)._cutDirection == 5))
+                )) {
+
+                    Note noteNew = new Note(
+                            timings.get(i + 1)._time,
+                            pattern.get(i)._lineIndex,
+                            pattern.get(i)._lineLayer,
+                            pattern.get(i)._type,
+                            (pattern.get(i)._cutDirection == 6 || pattern.get(i)._cutDirection == 1 || pattern.get(i)._cutDirection == 7) ? 0 : 1);
+
+                    blueNotesFirstFix.add(pattern.get(i));
+                    pattern.set(i, noteNew);
+                    System.out.println("Added new Note: " + noteNew);
+                }
+            }
+
         }
 
         // make every second note red:
@@ -352,6 +380,9 @@ public class CreatePatterns {
 
         // Check, if one note is inside another note
         List<Note> l = new ArrayList<>(pattern);
+        l.addAll(blueNotesFirstFix);
+        l.sort(Comparator.comparingDouble(n -> n._time));
+
         if (stacks) l = placeStacks(l, removeStacks);
         FixErrorsInPatterns.fixSimpleMappingErrors(pattern);
         pattern = checkForMappingErrors(l, true);
