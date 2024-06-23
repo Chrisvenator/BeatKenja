@@ -59,7 +59,7 @@ public class FixErrorsInPatterns {
      *
      * @param notes List of notes
      */
-    public static void fixNoteInNote(List<Note> notes) {
+    private static void fixNoteInNote(List<Note> notes) {
         for (int i = 0; i < notes.size(); i++) {
             if (i >= 1 && notes.get(i).equalNotePlacement(notes.get(i - 1)) && notes.get(i)._time == notes.get(i - 1)._time) {
 
@@ -98,7 +98,7 @@ public class FixErrorsInPatterns {
      *
      * @param notes List of notes
      */
-    public static void fixSwingPathDoubles(List<Note> notes) {
+    private static void fixSwingPathDoubles(List<Note> notes) {
         for (int i = 0; i < notes.size(); i++) {
             if (i >= 1) {
                 //Check if they at the *same time and layer*
@@ -126,7 +126,7 @@ public class FixErrorsInPatterns {
      *
      * @param notes List of notes
      */
-    public static void fixSwingPathAboveEachOther(List<Note> notes) {
+    private static void fixSwingPathAboveEachOther(List<Note> notes) {
         for (int i = 0; i < notes.size(); i++) {
             if (i >= 1) {
                 //Check if they at the same time but different types
@@ -152,7 +152,7 @@ public class FixErrorsInPatterns {
      *
      * @param notes List of notes
      */
-    public static void fixSwingPath(List<Note> notes) {
+    private static void fixSwingPath(List<Note> notes) {
         for (int i = 0; i < notes.size(); i++) {
             if (i >= 1) {
                 Note c; // Current note (above)
