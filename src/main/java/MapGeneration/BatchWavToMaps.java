@@ -86,7 +86,7 @@ public class BatchWavToMaps {
                             createDiffFromTimings(destinationFolderPath, difficulties[i], timingsDiff);
 
 
-                            if (peaks.get(i).isEmpty()){
+                            if (peaks.get(i).isEmpty()) {
                                 System.err.println("No peaks found for difficulty " + i + " in the audio file. Please adjust the thresholds in the code.");
                                 i++;
                                 continue;
@@ -325,7 +325,7 @@ public class BatchWavToMaps {
                 "  \"_songSubName\" : \"\",\n" +
                 "  \"_songAuthorName\" : \"BeatKenja\",\n" +
                 "  \"_levelAuthorName\" : \"BeatKenja\",\n" +
-                "  \"_beatsPerMinute\" : 120,\n" +
+                "  \"_beatsPerMinute\" : " + BPM + ",\n" +
                 "  \"_previewStartTime\" : 30,\n" +
                 "  \"_previewDuration\" : 20,\n" +
                 "  \"_songTimeOffset\" : 0,\n" +
