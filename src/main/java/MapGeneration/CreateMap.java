@@ -4,7 +4,6 @@ import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Bookmark;
 import BeatSaberObjects.Objects.Note;
 import DataManager.Parameters;
-import DataManager.Records.PatMetadata;
 import MapGeneration.PatternGeneration.CommonMethods.FixErrorsInPatterns;
 import MapGeneration.GenerationElements.Pattern;
 
@@ -12,7 +11,7 @@ import java.util.*;
 
 import static MapGeneration.PatternGeneration.BigJumps.createBigJumps;
 import static MapGeneration.PatternGeneration.CommonMethods.CheckParity.checkForMappingErrors;
-import static MapGeneration.PatternGeneration.ComplexPatternFromTemplate.complexPatternFromTemplate;
+import static MapGeneration.ComplexPatternFromTemplate.complexPatternFromTemplate;
 import static MapGeneration.PatternGeneration.Doubles.createDoubles;
 import static MapGeneration.PatternGeneration.NormalJumps.createNormalJumps;
 import static MapGeneration.PatternGeneration.LinearSlowPattern.linearSlowPattern;

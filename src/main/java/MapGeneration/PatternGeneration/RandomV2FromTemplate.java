@@ -8,7 +8,7 @@ import java.util.List;
 
 import static DataManager.Parameters.ignoreDDs;
 import static MapGeneration.PatternGeneration.CommonMethods.StackPlacements.createStacks;
-import static MapGeneration.PatternGeneration.ComplexPatternFromTemplate.complexPatternFromTemplate;
+import static MapGeneration.ComplexPatternFromTemplate.complexPatternFromTemplate;
 import static MapGeneration.PatternGeneration.RandomPattern.createRandomPattern;
 
 public class RandomV2FromTemplate {
