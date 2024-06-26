@@ -649,7 +649,7 @@ public class CreatePatterns {
             if (i % 4 == 0) {
                 Note blue1 = nextLinearNote(notes.get(notes.size() - 3), timings.get(i)._time);
                 if (i >= timings.size() - 1) continue;
-                Note blue2 = nextLinearNote(notes.get(notes.size() - 1), timings.get(i + 1)._time);
+                Note blue2 = nextLinearNote(blue1, timings.get(i + 1)._time);
                 if (blue1.isDD(notes.get(notes.size() - 3)) || blue2.isDD(blue1)) {
                     i--;
                     invalidPlacementsInARow++;
@@ -660,7 +660,7 @@ public class CreatePatterns {
             } else {
                 Note red1 = nextLinearNote(notes.get(notes.size() - 3), timings.get(i)._time);
                 if (i >= timings.size() - 1) continue;
-                Note red2 = nextLinearNote(notes.get(notes.size() - 1), timings.get(i + 1)._time);
+                Note red2 = nextLinearNote(red1, timings.get(i + 1)._time);
                 if (red1.isDD(notes.get(notes.size() - 3)) || red2.isDD(red1)) {
                     i--;
                     invalidPlacementsInARow++;
