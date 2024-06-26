@@ -7,7 +7,7 @@ import UserInterface.Elements.ElementTypes;
 
 import java.util.List;
 
-import static MapGeneration.PatternGeneration.ComplexPatternFromTemplate.complexPatternFromTemplate;
+import static MapGeneration.ComplexPatternFromTemplate.complexPatternFromTemplate;
 
 public class CreateBlueComplexMap extends MapCreatorSubButton {
     public CreateBlueComplexMap(MyButton parent) {

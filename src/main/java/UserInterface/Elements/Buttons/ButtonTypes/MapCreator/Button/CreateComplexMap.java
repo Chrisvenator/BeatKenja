@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static MapGeneration.PatternGeneration.ComplexPatternFromTemplate.complexPatternFromTemplate;
+import static MapGeneration.ComplexPatternFromTemplate.complexPatternFromTemplate;
 
 public class CreateComplexMap extends MapCreatorSubButton {
     public CreateComplexMap(MyButton parent) {

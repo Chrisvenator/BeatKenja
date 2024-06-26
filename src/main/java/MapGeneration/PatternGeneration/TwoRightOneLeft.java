@@ -11,7 +11,7 @@ import static MapGeneration.PatternGeneration.CommonMethods.CheckParity.invalidP
 import static MapGeneration.PatternGeneration.CommonMethods.CheckParity.nextNoteAfterTimingNote;
 import static MapGeneration.PatternGeneration.CommonMethods.PlaceFirstNotes.firstNotePlacement;
 import static MapGeneration.PatternGeneration.CommonMethods.StackPlacements.createStacks;
-import static MapGeneration.PatternGeneration.ComplexPatternFromTemplate.complexPatternFromTemplate;
+import static MapGeneration.ComplexPatternFromTemplate.complexPatternFromTemplate;
 import static MapGeneration.PatternGeneration.NextLinearNote.nextLinearNote;
 
 public class TwoRightOneLeft {
