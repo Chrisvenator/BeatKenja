@@ -1,4 +1,4 @@
-package MapGeneration.PatternGeneration;
+package MapGeneration;
 
 import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Bookmark;
@@ -20,7 +20,26 @@ import static MapGeneration.PatternGeneration.SmallJumps.createSmallJumps;
 import static MapGeneration.PatternGeneration.TwoLeftTwoRight.twoLeftTwoRight;
 import static MapGeneration.PatternGeneration.TwoRightOneLeft.twoRightOneLeft;
 
+
+
 public class CreateMap {
+
+
+    /*
+    Red: 0
+    Blue: 1
+
+    Index - Layer:          Cut direction:
+    |---|---|---|---|       |---|---|---|
+    |   |   |   |   |       | 4 | 0 | 5 |
+    |---|---|---|---|       |---|---|---|
+    |1-0|1-1|1-2|1-3|       | 2 | 8 | 3 |
+    |---|---|---|---|       |---|---|---|
+    | 0 | 1 | 2 | 3 |       | 6 | 1 | 7 |
+    |---|---|---|---|       |---|---|---|
+     */
+
+
     /**
      * This function creates a BeatSaberObjects.Objects.BeatSaberMap from a timings-map.
      *
@@ -173,5 +192,17 @@ public class CreateMap {
         }
     }
 
+    /*
+    Red: 0
+    Blue: 1
 
+    Index - Layer:          Cut direction:
+    |---|---|---|---|       |---|---|---|
+    |   |   |   |   |       | 4 | 0 | 5 |
+    |---|---|---|---|       |---|---|---|
+    |1-0|1-1|1-2|1-3|       | 2 | 8 | 3 |
+    |---|---|---|---|       |---|---|---|
+    | 0 | 1 | 2 | 3 |       | 6 | 1 | 7 |
+    |---|---|---|---|       |---|---|---|
+     */
 }

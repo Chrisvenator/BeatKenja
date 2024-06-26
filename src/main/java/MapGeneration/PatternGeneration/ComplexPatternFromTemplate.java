@@ -20,6 +20,22 @@ import static MapGeneration.PatternGeneration.CommonMethods.StackPlacements.remo
 import static MapGeneration.PatternGeneration.NextLinearNote.nextLinearNote;
 
 public class ComplexPatternFromTemplate {
+
+        /*
+    Red: 0
+    Blue: 1
+
+    Index - Layer:          Cut direction:
+    |---|---|---|---|       |---|---|---|
+    |   |   |   |   |       | 4 | 0 | 5 |
+    |---|---|---|---|       |---|---|---|
+    |1-0|1-1|1-2|1-3|       | 2 | 8 | 3 |
+    |---|---|---|---|       |---|---|---|
+    | 0 | 1 | 2 | 3 |       | 6 | 1 | 7 |
+    |---|---|---|---|       |---|---|---|
+     */
+
+
     /**
      * This method creates a pattern on the basis of the original Pattern.
      *
@@ -314,5 +330,20 @@ public class ComplexPatternFromTemplate {
 
         return true;
     }
+
+        /*
+    Red: 0
+    Blue: 1
+
+    Index - Layer:          Cut direction:
+    |---|---|---|---|       |---|---|---|
+    |   |   |   |   |       | 4 | 0 | 5 |
+    |---|---|---|---|       |---|---|---|
+    |1-0|1-1|1-2|1-3|       | 2 | 8 | 3 |
+    |---|---|---|---|       |---|---|---|
+    | 0 | 1 | 2 | 3 |       | 6 | 1 | 7 |
+    |---|---|---|---|       |---|---|---|
+     */
+
 
 }
