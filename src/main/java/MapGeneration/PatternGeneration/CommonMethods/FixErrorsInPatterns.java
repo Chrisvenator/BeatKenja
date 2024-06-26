@@ -1,4 +1,4 @@
-package MapGeneration;
+package MapGeneration.PatternGeneration.CommonMethods;
 
 import BeatSaberObjects.Objects.Note;
 import DataManager.Parameters;
