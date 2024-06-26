@@ -14,7 +14,7 @@ import java.util.Objects;
 import static DataManager.Parameters.RANDOM;
 import static DataManager.Parameters.verbose;
 import static MapGeneration.PatternGeneration.CommonMethods.CheckParity.*;
-import static MapGeneration.PatternGeneration.CommonMethods.PlaceFirstNotes.firstNotePlacement;
+import static MapGeneration.PatternGeneration.CommonMethods.PlaceFirstNotes.placeInitialNoteBasedOnPrevNote;
 import static MapGeneration.PatternGeneration.CommonMethods.StackPlacements.placeStacks;
 import static MapGeneration.PatternGeneration.CommonMethods.StackPlacements.removeStacks;
 import static MapGeneration.PatternGeneration.NextLinearNote.nextLinearNote;
@@ -42,39 +42,18 @@ public class ComplexPatternFromTemplate {
         List<Note> pattern = new ArrayList<>(timings.size());
 
 
-        for (int i = 0; i < timings.size(); i++) {
-            pattern.add(null);
-        }
         if (timings.size() == 1) oneHanded = true;
         int j = oneHanded ? 1 : 2;
 
-        // Placing the first notes manually:
 
-        //set Blue
-        pattern.set(0, prevBlue != null ? nextLinearNote(prevBlue, timings.get(0)._time) : firstNotePlacement(timings.get(0)._time));
-        int counter = 0;
+        placeInitialNoteBasedOnPrevNote(pattern, prevBlue, timings.get(0)._time); // Handling Blue
+        if (!oneHanded) placeInitialNoteBasedOnPrevNote(pattern, prevRed, timings.get(1)._time); // Handling Red
 
-        while (pattern.get(0).isDD(prevBlue) && prevBlue != null && counter <= 300) {
-            pattern.set(0, nextLinearNote(prevBlue, timings.get(0)._time));
-            counter++;
+
+        for (int i = j; i < timings.size(); i++) {
+            pattern.add(null);
         }
-        if (counter >= 300)
-            System.err.println("[ERROR] at beat: " + timings.get(0)._time + " infinite loop in create complex (blue)");
 
-        //set Red
-        if (!oneHanded) {
-            pattern.set(1, prevRed != null ? nextLinearNote(prevRed, timings.get(1)._time) : firstNotePlacement(timings.get(1)._time));
-        }
-        counter = 0;
-
-        if (!oneHanded) {
-            while (pattern.get(1).isDD(prevRed) && prevRed != null && counter <= 300) {
-                pattern.set(1, nextLinearNote(prevRed, timings.get(1)._time));
-                counter++;
-            }
-        }
-        if (counter >= 300)
-            System.err.println("[ERROR] at beat: " + timings.get(0)._time + " infinite loop in create complex (red)");
 
         int blueHorizontalsInARow = 0; // prevent parity breaks for red notes
         int redHorizontalsInARow = 0;  // prevent parity breaks for red notes
