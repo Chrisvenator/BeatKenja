@@ -1,12 +1,13 @@
 package UserInterface.Elements.Buttons.ButtonTypes.MapCreator.Button;
 
 import BeatSaberObjects.Objects.BeatSaberMap;
-import MapGeneration.CreatePatterns;
 import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.MapCreatorSubButton;
 import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.ElementTypes;
 
 import java.util.List;
+
+import static MapGeneration.PatternGeneration.ComplexPatternFromTemplate.complexPatternFromTemplate;
 
 public class CreateBlueComplexMap extends MapCreatorSubButton {
     public CreateBlueComplexMap(MyButton parent) {
@@ -19,7 +20,7 @@ public class CreateBlueComplexMap extends MapCreatorSubButton {
         ui.map.toBlueLeftBottomRowDotTimings();
 
         try {
-            BeatSaberMap map = new BeatSaberMap(CreatePatterns.complexPatternFromTemplate(List.of(ui.map._notes), ui.pattern, true, false, null, null));
+            BeatSaberMap map = new BeatSaberMap(complexPatternFromTemplate(List.of(ui.map._notes), ui.pattern, true, false, null, null));
             loadNewlyCreatedMap(map);
 
         } catch (IllegalArgumentException ex) {

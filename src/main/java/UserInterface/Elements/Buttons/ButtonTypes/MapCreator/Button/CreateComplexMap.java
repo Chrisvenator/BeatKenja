@@ -3,8 +3,7 @@ package UserInterface.Elements.Buttons.ButtonTypes.MapCreator.Button;
 import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Events;
 import BeatSaberObjects.Objects.Note;
-import MapGeneration.CreatePatterns;
-import MapGeneration.FixErrorsInPatterns;
+import MapGeneration.PatternGeneration.CommonMethods.FixErrorsInPatterns;
 import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.MapCreatorSubButton;
 import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.ElementTypes;
@@ -12,6 +11,8 @@ import UserInterface.Elements.ElementTypes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static MapGeneration.PatternGeneration.ComplexPatternFromTemplate.complexPatternFromTemplate;
 
 public class CreateComplexMap extends MapCreatorSubButton {
     public CreateComplexMap(MyButton parent) {
@@ -27,7 +28,7 @@ public class CreateComplexMap extends MapCreatorSubButton {
 
 
             ui.map.toBlueLeftBottomRowDotTimings();
-            notes.addAll(CreatePatterns.complexPatternFromTemplate(List.of(ui.map._notes), ui.pattern, false, false, null, null));
+            notes.addAll(complexPatternFromTemplate(List.of(ui.map._notes), ui.pattern, false, false, null, null));
             System.out.println(ui.map._notes[0]._time);
             System.out.println(notes.get(0)._time);
         } else {
@@ -35,11 +36,11 @@ public class CreateComplexMap extends MapCreatorSubButton {
             ui.statusCheck.append("Map Template found. Creating new map with the position of red & blue notes...\n");
 
             //Blue notes
-            notes.addAll(CreatePatterns.complexPatternFromTemplate(Arrays.stream(ui.map._notes).filter(note -> note._type == 1).toList(), ui.pattern, true, false, null, null));
+            notes.addAll(complexPatternFromTemplate(Arrays.stream(ui.map._notes).filter(note -> note._type == 1).toList(), ui.pattern, true, false, null, null));
             System.out.println(notes.size() + " notes created from blue notes " + Arrays.stream(ui.map._notes).filter(note -> note._type == 0).toList().size());
 
             //Red notes are inverted blue notes
-            notes.addAll(CreatePatterns.complexPatternFromTemplate(
+            notes.addAll(complexPatternFromTemplate(
                     Arrays.stream(ui.map._notes).filter(note -> note._type == 0).toList(), ui.pattern, true, false, null, null)
                     .stream().peek(Note::invertNote).toList());
             System.out.println(notes.size() + " notes created from red notes " + Arrays.stream(ui.map._notes).filter(note -> note._type == 1).toList().size());
