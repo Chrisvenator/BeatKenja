@@ -8,7 +8,7 @@ import UserInterface.Elements.ElementTypes;
 
 
 import static DataManager.Parameters.verbose;
-import static MapGeneration.PatternGeneration.CreateMap.createMap;
+import static MapGeneration.CreateMap.createMap;
 
 public class CreateMapButton extends MapCreatorSubButton {
     public CreateMapButton(MyButton parent) {
