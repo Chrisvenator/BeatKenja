@@ -1,10 +1,11 @@
 package UserInterface.Elements.Buttons.ButtonTypes.MapCreator.Button;
 
 import BeatSaberObjects.Objects.BeatSaberMap;
-import MapGeneration.CreatePatterns;
 import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.MapCreatorSubButton;
 import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.ElementTypes;
+
+import static MapGeneration.PatternGeneration.RandomPattern.createRandomPattern;
 
 
 public class CreateRandomMap extends MapCreatorSubButton {
@@ -18,7 +19,7 @@ public class CreateRandomMap extends MapCreatorSubButton {
         ui.map.toBlueLeftBottomRowDotTimings();
 
         try {
-            BeatSaberMap map = new BeatSaberMap(CreatePatterns.createRandomPattern(ui.map._notes, false));
+            BeatSaberMap map = new BeatSaberMap(createRandomPattern(ui.map._notes, false));
             loadNewlyCreatedMap(map);
 
         } catch (IllegalArgumentException ex) {

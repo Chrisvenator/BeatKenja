@@ -1,15 +1,14 @@
 package UserInterface;
 
 import BeatSaberObjects.Objects.BeatSaberMap;
-import BeatSaberObjects.Objects.Events;
 import BeatSaberObjects.Objects.Note;
 import BeatSaberObjects.Objects.Obstacle;
 import DataManager.*;
-import MapGeneration.CreatePatterns;
 import MapGeneration.GenerationElements.*;
 
 import static DataManager.Parameters.*;
 
+import MapGeneration.PatternGeneration.CommonMethods.CheckParity;
 import UserInterface.Elements.Buttons.*;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons.*;
 import UserInterface.Elements.Buttons.ButtonTypes.*;
@@ -134,7 +133,8 @@ public class UserInterface extends JFrame {
             if (verbose) statusCheck.setText(statusCheck.getText() + "\n patterns: " + pattern.toString());
         }
         map._obstacles = new Obstacle[0];
-        map._events = new Events[0];
+        //map._events = new Events[0]; //Dont remove events because bpm changes are stored in events
+        //map._events = Arrays.stream(map._events).filter(event -> event._type == 1000).toArray(Events[]::new); //remove all events EXCEPT for the bpm-changes!
 
 
         String errorOutput = OUTPUT_STREAM.toString();
@@ -153,7 +153,7 @@ public class UserInterface extends JFrame {
         Collections.addAll(notes, map._notes);
 
         System.setErr(ERROR_PRINT_STREAM);
-        CreatePatterns.checkForMappingErrors(notes, false);
+        CheckParity.checkForMappingErrors(notes, false);
         changeBackOutput();
     }
 

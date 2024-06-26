@@ -1,12 +1,13 @@
 package UserInterface.Elements.Buttons.ButtonTypes.MapCreator.Button;
 
 import BeatSaberObjects.Objects.BeatSaberMap;
-import MapGeneration.CreatePatterns;
 import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.MapCreatorSubButton;
 import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.ElementTypes;
 
 import java.util.List;
+
+import static MapGeneration.PatternGeneration.LinearSlowPattern.linearSlowPattern;
 
 public class CreateBlueLinearMap extends MapCreatorSubButton {
     public CreateBlueLinearMap(MyButton parent) {
@@ -19,7 +20,7 @@ public class CreateBlueLinearMap extends MapCreatorSubButton {
         ui.map.toBlueLeftBottomRowDotTimings();
 
         Thread calculateNewMap = new Thread(() -> {
-            BeatSaberMap map = new BeatSaberMap(CreatePatterns.linearSlowPattern(List.of(ui.map._notes), true, null, null));
+            BeatSaberMap map = new BeatSaberMap(linearSlowPattern(List.of(ui.map._notes), true, null, null));
             loadNewlyCreatedMap(map);
         });
 
