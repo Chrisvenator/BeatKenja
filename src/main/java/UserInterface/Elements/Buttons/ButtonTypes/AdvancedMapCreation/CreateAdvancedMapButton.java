@@ -2,7 +2,6 @@ package UserInterface.Elements.Buttons.ButtonTypes.AdvancedMapCreation;
 
 import BeatSaberObjects.Objects.BeatSaberMap;
 import DataManager.Records.PatMetadata;
-import MapGeneration.CreatePatterns;
 import UserInterface.Elements.Buttons.ButtonTypes.AdvancedMapCreation.TextFields.CreateAdvancedMapBPM;
 import UserInterface.Elements.Buttons.ButtonTypes.AdvancedMapCreation.TextFields.CreateAdvancedMapNPS;
 import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.Exceptions.MapDidntComputeException;
@@ -17,6 +16,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static DataManager.Parameters.verbose;
+import static MapGeneration.PatternGeneration.AdvancedComplexMap.createAdvancedComplexPattern;
 
 /**
  * Button to create an advanced Beat Saber map. This class handles user input,
@@ -75,7 +75,7 @@ public class CreateAdvancedMapButton extends MapCreatorSubButton {
 
             // Create the advanced Beat Saber map using the specified parameters and patterns
             BeatSaberMap map = new BeatSaberMap(
-                    CreatePatterns.createAdvancedComplexPattern(
+                    createAdvancedComplexPattern(
                             Arrays.stream(ui.map._notes).toList(),
                             ui.pattern,
                             false,

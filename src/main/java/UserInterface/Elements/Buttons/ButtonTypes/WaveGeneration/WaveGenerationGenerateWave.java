@@ -2,7 +2,7 @@ package UserInterface.Elements.Buttons.ButtonTypes.WaveGeneration;
 
 import BeatSaberObjects.Objects.BeatSaberMap;
 import CustomWaveGenerator.CustomWaveGenerator;
-import MapGeneration.CreatePatterns;
+import MapGeneration.PatternGeneration.WavesToMap;
 import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.Buttons.MySubButton;
 import UserInterface.Elements.ElementTypes;
@@ -28,7 +28,7 @@ public class WaveGenerationGenerateWave extends MySubButton {
 
 
         ui.map.toBlueLeftBottomRowDotTimings();
-        BeatSaberMap map = new BeatSaberMap(CreatePatterns.createMapFromWaves(coordinates));
+        BeatSaberMap map = new BeatSaberMap(WavesToMap.createMapFromWaves(coordinates));
         loadNewlyCreatedMap(map);
 
         SwingUtilities.invokeLater(() -> {
