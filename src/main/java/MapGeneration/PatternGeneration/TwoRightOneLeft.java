@@ -30,7 +30,7 @@ public class TwoRightOneLeft {
         List<Note> redNotes = new ArrayList<>();
 
         // Right-hand swings:
-        List<Note> complexPattern = complexPatternFromTemplate(timings, p, true, stacks, prevBlue, null);
+        List<Note> complexPattern = complexPatternFromTemplate(timings, p, true, stacks, false,prevBlue, null);
 
         // Define the previous note that came before this function was called
         if (prevRed == null) firstNotePlacement(timings.get(0)._time);

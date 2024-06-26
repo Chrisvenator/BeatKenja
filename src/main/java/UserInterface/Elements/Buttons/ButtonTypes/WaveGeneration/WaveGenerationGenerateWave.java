@@ -22,6 +22,8 @@ public class WaveGenerationGenerateWave extends MySubButton {
     @Override
     public void onClick() {
 
+        ui.manageMap();
+        Arrays.stream(ui.map._notes).forEach(note -> note._cutDirection = 8);
 
         CustomWaveGenerator waveGenerator = new CustomWaveGenerator(SEED);
         List<Coordinate> coordinates = waveGenerator.getCoordinates(Arrays.stream(ui.map._notes).toList());

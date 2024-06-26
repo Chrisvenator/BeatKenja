@@ -18,4 +18,11 @@ public class TimingNote extends Note {
     public TimingNote(float time) {
         super(time);
     }
+
+    public static boolean isTimingNote(Note note) {
+        if (note instanceof TimingNote) return true;
+        if (note._type == 0 && note._lineLayer == 0 && note._lineIndex == 0 && note._cutDirection == 8) return true;
+
+        return false;
+    }
 }

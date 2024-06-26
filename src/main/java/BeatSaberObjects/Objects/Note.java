@@ -137,6 +137,10 @@ public class Note implements Comparable<Note> {
 
     // <editor-fold desc="Invert functions">
 
+    /**
+     * Makes the blue Note a red Note and vice versa
+     * @return the inverted Note
+     */
     public Note invertNote() {
         invertColor();
         invertLineIndex();

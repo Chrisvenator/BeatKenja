@@ -20,7 +20,7 @@ public class CreateBlueComplexMap extends MapCreatorSubButton {
         ui.map.toBlueLeftBottomRowDotTimings();
 
         try {
-            BeatSaberMap map = new BeatSaberMap(complexPatternFromTemplate(List.of(ui.map._notes), ui.pattern, true, false, null, null));
+            BeatSaberMap map = new BeatSaberMap(complexPatternFromTemplate(List.of(ui.map._notes), ui.pattern, true, false, false,null, null));
             loadNewlyCreatedMap(map);
 
         } catch (IllegalArgumentException ex) {
