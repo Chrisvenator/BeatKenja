@@ -2,6 +2,7 @@ package MapGeneration;
 
 import BeatSaberObjects.Objects.Note;
 import BeatSaberObjects.Objects.TimingNote;
+import MapGeneration.GenerationElements.PatternCache;
 import MapGeneration.PatternGeneration.CommonMethods.FixErrorsInPatterns;
 import MapGeneration.GenerationElements.Pattern;
 import MapGeneration.GenerationElements.PatternProbability;
@@ -35,6 +36,11 @@ public class ComplexPatternFromTemplate {
     |---|---|---|---|       |---|---|---|
      */
 
+    private static final int NUMBER_OF_PATTERNS = 4; //must be >= 3
+    private static final int LENGTH_OF_PATTERN = 8;
+    private static final int NUMBER_OF_NOTES_TO_BE_CHANGED = 4;
+    private static PatternCache patternCache;
+
 
     /**
      * This method creates a pattern on the basis of the original Pattern.
@@ -46,7 +52,7 @@ public class ComplexPatternFromTemplate {
      * @param prevRed          What the previous red note was
      * @return A List of all notes that have been generated
      */
-    public static List<Note> complexPatternFromTemplate(List<Note> timingsImmutable, Pattern p, boolean oneHanded, boolean stacks, Note prevBlue, Note prevRed) throws IllegalArgumentException {
+    public static List<Note> complexPatternFromTemplate(List<Note> timingsImmutable, Pattern p, boolean oneHanded, boolean stacks, boolean usePatternCache, Note prevBlue, Note prevRed) throws IllegalArgumentException {
         if (timingsImmutable == null || timingsImmutable.isEmpty()) return new ArrayList<>();
         List<Note> timings = new ArrayList<>(timingsImmutable);
 
@@ -56,6 +62,7 @@ public class ComplexPatternFromTemplate {
         if (verbose) System.out.println("New timings size: " + timings.size());
 
         List<Note> pattern = new ArrayList<>(timings.size());
+        if (usePatternCache) patternCache = new PatternCache(timings, p, NUMBER_OF_PATTERNS, LENGTH_OF_PATTERN, NUMBER_OF_NOTES_TO_BE_CHANGED);
 
 
         if (timings.size() == 1) oneHanded = true;
@@ -98,17 +105,24 @@ public class ComplexPatternFromTemplate {
             }
 
             Note previous = pattern.get(i - j);
-            PatternProbability probabilities = p.getProbabilityOf(previous);
-
-            // Generate a note according to the template
-            // If there is an infinite loop, then try to place a linear note
-            if (probabilities == null || invalidPlacesInARow >= 100) {
-                pattern.set(i, nextLinearNote(previous, timings.get(i)._time));
-            } else {
-                Note next = predictNextNote(probabilities, timings.get(i)._time);
-                if (next == null) System.err.println("Error at beat: " + timings.get(i)._time + " next note is null. Please have a look at predictNextNote()");
-                pattern.set(i, next);
-            }
+            Note next;
+            if (usePatternCache) {// alle false noch einmal evaluieren
+                next = patternCache.getNext(previous, invalidPlacesInARow, timings.get(i)._time);
+            } else
+                next = getComplexNote(p, previous, invalidPlacesInARow, timings.get(i)._time);
+            pattern.set(i, next);
+//            else ;
+//            PatternProbability probabilities = p.getProbabilityOf(previous);
+//
+//            // Generate a note according to the template
+//            // If there is an infinite loop, then try to place a linear note
+//            if (probabilities == null || invalidPlacesInARow >= 100) {
+//                pattern.set(i, nextLinearNote(previous, timings.get(i)._time));
+//            } else {
+//                Note next = predictNextNote(probabilities, timings.get(i)._time);
+//                if (next == null) System.err.println("Error at beat: " + timings.get(i)._time + " next note is null. Please have a look at predictNextNote()");
+//                pattern.set(i, next);
+//            }
 
             // check, if the placement is valid (example: dd)
             if (previous.isDD(pattern.get(i))) inValidPlacement = true;
@@ -345,5 +359,19 @@ public class ComplexPatternFromTemplate {
     |---|---|---|---|       |---|---|---|
      */
 
+    public static Note getComplexNote(Pattern p, Note previous, int invalidPlacesInARow, float timing) {
+        Note next;
+        PatternProbability probabilities = p.getProbabilityOf(previous);
+
+        // Generate a note according to the template
+        // If there is an infinite loop, then try to place a linear note
+        if (probabilities == null || invalidPlacesInARow >= 100) next = nextLinearNote(previous, timing);
+        else {
+            next = predictNextNote(probabilities, timing);
+            if (next == null) System.err.println("Error at beat: " + timing + " next note is null. Please have a look at predictNextNote()");
+        }
+
+        return next;
+    }
 
 }

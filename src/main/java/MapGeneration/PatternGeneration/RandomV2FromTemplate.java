@@ -24,8 +24,8 @@ public class RandomV2FromTemplate {
             else redNotes.add(randomNote);
         }
 
-        List<Note> blueComplex = complexPatternFromTemplate(blueNotes, p, true, false, prevBlue, null);
-        List<Note> redComplex = complexPatternFromTemplate(redNotes, p, true, false, prevRed, null);
+        List<Note> blueComplex = complexPatternFromTemplate(blueNotes, p, true, false,false, prevBlue, null);
+        List<Note> redComplex = complexPatternFromTemplate(redNotes, p, true, false, false,prevRed, null);
         redComplex.forEach(Note::invertNote);
 
         for (int i = 0; i < blueNotes.size(); i++) {

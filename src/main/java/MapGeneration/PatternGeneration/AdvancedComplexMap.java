@@ -68,6 +68,7 @@ public class AdvancedComplexMap {
                             fallbackPattern,
                             oneHanded,
                             stacks,
+                            false,
                             prevBlue,
                             prevRed
                     ));
@@ -86,6 +87,7 @@ public class AdvancedComplexMap {
                     p,
                     oneHanded,
                     stacks,
+                    false,
                     prevBlue,
                     prevRed
             ));

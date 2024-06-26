@@ -28,7 +28,7 @@ public class CreateComplexMap extends MapCreatorSubButton {
 
 
             ui.map.toBlueLeftBottomRowDotTimings();
-            notes.addAll(complexPatternFromTemplate(List.of(ui.map._notes), ui.pattern, false, false, null, null));
+            notes.addAll(complexPatternFromTemplate(List.of(ui.map._notes), ui.pattern, false, false, false,null, null));
             System.out.println(ui.map._notes[0]._time);
             System.out.println(notes.get(0)._time);
         } else {
@@ -36,12 +36,12 @@ public class CreateComplexMap extends MapCreatorSubButton {
             ui.statusCheck.append("Map Template found. Creating new map with the position of red & blue notes...\n");
 
             //Blue notes
-            notes.addAll(complexPatternFromTemplate(Arrays.stream(ui.map._notes).filter(note -> note._type == 1).toList(), ui.pattern, true, false, null, null));
+            notes.addAll(complexPatternFromTemplate(Arrays.stream(ui.map._notes).filter(note -> note._type == 1).toList(), ui.pattern, true, false, false,null, null));
             System.out.println(notes.size() + " notes created from blue notes " + Arrays.stream(ui.map._notes).filter(note -> note._type == 0).toList().size());
 
             //Red notes are inverted blue notes
             notes.addAll(complexPatternFromTemplate(
-                    Arrays.stream(ui.map._notes).filter(note -> note._type == 0).toList(), ui.pattern, true, false, null, null)
+                    Arrays.stream(ui.map._notes).filter(note -> note._type == 0).toList(), ui.pattern, true, false, false,null, null)
                     .stream().peek(Note::invertNote).toList());
             System.out.println(notes.size() + " notes created from red notes " + Arrays.stream(ui.map._notes).filter(note -> note._type == 1).toList().size());
 
