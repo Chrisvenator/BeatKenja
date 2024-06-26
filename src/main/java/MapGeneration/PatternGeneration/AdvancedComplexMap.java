@@ -9,7 +9,7 @@ import java.util.*;
 
 import static MapGeneration.PatternGeneration.CommonMethods.StackPlacements.placeStacks;
 import static MapGeneration.PatternGeneration.CommonMethods.StackPlacements.removeStacks;
-import static MapGeneration.PatternGeneration.ComplexPatternFromTemplate.complexPatternFromTemplate;
+import static MapGeneration.ComplexPatternFromTemplate.complexPatternFromTemplate;
 import static MapGeneration.PatternGeneration.NextLinearNote.nextLinearNote;
 
 public class AdvancedComplexMap {

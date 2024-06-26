@@ -1,4 +1,4 @@
-package MapGeneration.PatternGeneration;
+package MapGeneration;
 
 import BeatSaberObjects.Objects.Note;
 import BeatSaberObjects.Objects.TimingNote;
