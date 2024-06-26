@@ -125,33 +125,6 @@ public class CreateMap {
         return newMap;
     }
 
-    //The dynamic switching between Patterns work. But the data in the database is very... trash
-    private static Pattern getCachedPattern(PatMetadata metadata, Pattern fallbackPattern, Map<PatMetadata, Pattern> patternCache) {
-        // Check if the pattern is already cached
-        if (patternCache.containsKey(metadata)) {
-            System.out.println("Using cached pattern for " + metadata.name() + " with " + metadata.bpm() + " BPM and " + metadata.nps() + " NPS");
-            return patternCache.get(metadata);
-        }
-
-        // Try to create a new pattern with the provided metadata
-        try {
-            System.out.println("Fetching pattern for " + metadata.name() + " with " + metadata.bpm() + " BPM and " + metadata.nps() + " NPS");
-            Pattern p = new Pattern(metadata);
-            patternCache.put(metadata, p);
-            return p;
-        } catch (IllegalArgumentException e1) {
-            // If creating the new pattern fails, try the original metadata
-            try {
-                Pattern p = new Pattern(metadata);
-                patternCache.put(metadata, p);
-                return p;
-            } catch (IllegalArgumentException e2) {
-                // If that also fails, use the fallback pattern
-                return fallbackPattern;
-            }
-        }
-    }
-
     /**
      * returns the last BeatSaberObjects.Objects.Note of type "type" in the list l
      *
