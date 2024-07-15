@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import static DataManager.Parameters.entityManager;
 import static DataManager.Parameters.verbose;
+import static MapAnalysation.Distributions.DirichletMultinomialDistribution.*;
 
 public class Pattern implements Iterable<PatternProbability> {
     private static final int MAX_ARRAY_SIZE = 109; // lines * layers * cut directions = 4 * 3 * 9 = 108 + 1 (base note)
@@ -1058,6 +1059,18 @@ public class Pattern implements Iterable<PatternProbability> {
             if (values[i].equalPlacement(n)) return i;
         }
         return -1;
+    }
+
+    public void applyDirichletMultinomial(double[] alpha, int N) {
+        for (int i = 0; i < patterns.length; i++) {
+            if (patterns[i][0] == null) break; // Beende die Schleife, wenn keine weiteren Muster vorhanden sind
+            double[] dirichletSample = sampleDirichlet(alpha);
+            int[] multinomialSample = sampleMultinomial(N, dirichletSample);
+            for (int j = 0; j < multinomialSample.length; j++) {
+                this.count[i][j] = multinomialSample[j];
+            }
+        }
+        computeProbabilities();
     }
 
 }
