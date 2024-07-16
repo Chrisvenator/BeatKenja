@@ -19,8 +19,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-import static DataManager.Parameters.entityManager;
-import static DataManager.Parameters.verbose;
+import static DataManager.Parameters.*;
 
 public class Pattern implements Iterable<PatternProbability> {
     private static final int MAX_ARRAY_SIZE = 109; // lines * layers * cut directions = 4 * 3 * 9 = 108 + 1 (base note)
@@ -297,6 +296,10 @@ public class Pattern implements Iterable<PatternProbability> {
      *                                  or if the pattern is not found in the database
      */
     public Pattern(PatMetadata metadata) {
+        if (!useDatabase && metadata.equals(Parameters.DEFAULT_PATTERN_METADATA)){
+
+        }
+
         this.metadata = metadata;
 
         // Convert predefined parameters to lowercase sets for case-insensitive comparison
