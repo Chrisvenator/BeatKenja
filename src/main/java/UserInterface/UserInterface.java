@@ -35,7 +35,7 @@ public class UserInterface extends JFrame {
     public final JLabel labelMapDiff;
     public final TextArea statusCheck; //essentially the log
     public boolean mapSuccessfullyLoaded = false;
-    public static float patternVariance;
+    public static int patternVariance;
 
 
     // Redirect the standard error stream to the custom PrintStream
@@ -48,7 +48,11 @@ public class UserInterface extends JFrame {
         loadConfig();
         if (verbose) System.setErr(ERROR_PRINT_STREAM);
         pattern = new Pattern(String.valueOf(useDatabase ? DEFAULT_PATTERN_METADATA : DEFAULT_PATTERN_PATH));
-        System.out.println(pattern);
+//        System.out.println(pattern.exportInPatFormat());
+        pattern.visualizeAsHeatmapNormalized();
+        pattern.applyDirichletMultinomial(new double[]{2.0, 2.0, 2.0}, 10);
+        pattern.visualizeAsHeatmapNormalized();
+//        System.out.println(pattern.exportInPatFormat());
 
 
         //<editor-fold desc="Initialize UI Elements">

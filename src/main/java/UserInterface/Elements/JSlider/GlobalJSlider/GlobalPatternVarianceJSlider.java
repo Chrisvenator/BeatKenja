@@ -1,38 +1,51 @@
 package UserInterface.Elements.JSlider.GlobalJSlider;
 
+import MapGeneration.GenerationElements.Pattern;
 import UserInterface.Elements.ElementTypes;
 import UserInterface.Elements.JSlider.MyGlobalJSlider;
 import UserInterface.UserInterface;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.Hashtable;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class GlobalPatternVarianceJSlider extends MyGlobalJSlider {
+    private Pattern patternWithoutVariance = ui.pattern;
+
     public GlobalPatternVarianceJSlider(UserInterface ui) {
         super(ElementTypes.GLOBAL_PATTERN_VARIANCE_SLIDER, ui);
 
+        setMinimum(0);
+        setMaximum(50);
+
         setMajorTickSpacing(10);
-        setMinorTickSpacing(1);
+        setMinorTickSpacing(10);
+
         setPaintTicks(true);
         setPaintLabels(true);
 
-        setLabelTable(new Hashtable<>(IntStream.iterate(0, i -> i <= 100, i -> i + 10)
-                .boxed()
-                .collect(Collectors.toMap(
-                        i -> i,
-                        i -> new JLabel(String.valueOf(i / 10)))
-                )
-        ));
+        // Create label table for specified values with custom color for 0 and 10
+        Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
+        for (int i = 0; i <= 50; i += 10) {
+            JLabel label = new JLabel(String.valueOf(i));
+            if (i == 0 || i == 10) {
+                label.setForeground(Color.BLUE);  // Set color to blue
+            }
+            labelTable.put(i, label);
+        }
+
+        setLabelTable(labelTable);
     }
 
 
     @Override
     public void onClick() {
-        float value = ((JSlider) eventObject.getSource()).getValue() / 10f;
+        int value = ((JSlider) eventObject.getSource()).getValue();
         UserInterface.patternVariance = value;
-        ui.pattern.adjustVariance(value);
+//        ui.pattern = Pattern.adjustVariance(patternWithoutVariance, value);
+
         System.out.println("Slider value (float): " + value);
         ui.statusCheck.append("Pattern Variance set to " + value + "\n");
     }

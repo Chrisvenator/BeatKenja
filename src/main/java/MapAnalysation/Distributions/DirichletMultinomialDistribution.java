@@ -3,6 +3,7 @@ package MapAnalysation.Distributions;
 import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
 import MapGeneration.GenerationElements.Pattern;
 
+import java.util.Arrays;
 import java.util.Random;
 
 public class DirichletMultinomialDistribution {
@@ -66,6 +67,57 @@ public class DirichletMultinomialDistribution {
         }
 
         return counts;
+    }
+
+    public static void printCharacteristics(double[] alpha, int N) {
+        System.out.println("Expected Value: " + Arrays.toString(computeExpectedValues(alpha, N)));
+        System.out.println("Variance: " + Arrays.toString(computeVariances(alpha, N)));
+        System.out.println("Covariance: " + Arrays.deepToString(computeCovariances(alpha, N)));
+    }
+
+    // Methode zur Berechnung des Erwartungswerts
+    public static double[] computeExpectedValues(double[] alpha, int N) {
+        double sumAlpha = 0.0;
+        for (double a : alpha) {
+            sumAlpha += a;
+        }
+        double[] expectedValues = new double[alpha.length];
+        for (int i = 0; i < alpha.length; i++) {
+            expectedValues[i] = N * (alpha[i] / sumAlpha);
+        }
+        return expectedValues;
+    }
+
+    // Methode zur Berechnung der Varianz
+    public static double[] computeVariances(double[] alpha, int N) {
+        double sumAlpha = 0.0;
+        for (double a : alpha) {
+            sumAlpha += a;
+        }
+        double[] variances = new double[alpha.length];
+        for (int i = 0; i < alpha.length; i++) {
+            variances[i] = N * (alpha[i] / sumAlpha) * (1 - (alpha[i] / sumAlpha)) * (N + sumAlpha) / (sumAlpha + 1);
+        }
+        return variances;
+    }
+
+    // Methode zur Berechnung der Kovarianz
+    public static double[][] computeCovariances(double[] alpha, int N) {
+        double sumAlpha = 0.0;
+        for (double a : alpha) {
+            sumAlpha += a;
+        }
+        double[][] covariances = new double[alpha.length][alpha.length];
+        for (int i = 0; i < alpha.length; i++) {
+            for (int j = 0; j < alpha.length; j++) {
+                if (i == j) {
+                    covariances[i][j] = N * (alpha[i] / sumAlpha) * (1 - (alpha[i] / sumAlpha)) * (N + sumAlpha) / (sumAlpha + 1);
+                } else {
+                    covariances[i][j] = -N * (alpha[i] / sumAlpha) * (alpha[j] / sumAlpha) * (N + sumAlpha) / (sumAlpha + 1);
+                }
+            }
+        }
+        return covariances;
     }
 
     // andere Methoden, einschließlich computeProbabilities()...
