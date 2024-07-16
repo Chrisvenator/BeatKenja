@@ -1,5 +1,6 @@
 import DataManager.CreateAllNecessaryDIRsAndFiles;
 import DataManager.Database.DatabaseExport;
+import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
 import UserInterface.UserInterface;
 
 import java.util.Random;
@@ -24,7 +25,7 @@ public class Start {
      */
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws NoteNotValidException {
         java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
 
         SEED = (long) (new Random().nextDouble() * 1000000000);
@@ -37,7 +38,7 @@ public class Start {
         UserInterface ui = new UserInterface();
         ui.setVisible(true);
 
-        ui.addWindowListener(new java.awt.event.WindowAdapter() {
+        if (useDatabase) ui.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
                 if (exportDatabase) DatabaseExport.exportDatabase("./database"); // Export the database if the user wants to. Currently disabled because of bugs.
