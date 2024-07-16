@@ -1,8 +1,5 @@
 package DataManager;
 
-import DataManager.Database.DatabaseEntities.DifficultyEntity;
-import DataManager.Database.DatabaseEntities.GenreEntity;
-import DataManager.Database.DatabaseEntities.TagEntity;
 import DataManager.Database.DatabaseOperations.DifficultyEntityOperations;
 import DataManager.Database.DatabaseOperations.GenreEntityOperations;
 import DataManager.Database.DatabaseOperations.TagEntityOperations;
@@ -50,12 +47,14 @@ public class Parameters {
     }
 
     //Definitions:
-    public static final EntityManager entityManager = Persistence.createEntityManagerFactory("default").createEntityManager();
+    public static final boolean useDatabase = false;
+    public static final EntityManager entityManager = useDatabase ? Persistence.createEntityManagerFactory("default").createEntityManager() : null;
 
     //General Config:
     public static final String CONFIG_FILE_LOCATION = "./config.txt";
     public static final String README_FILE_LOCATION = "README.md";
     public static final PatMetadata DEFAULT_PATTERN_METADATA = new PatMetadata("ISeeFire", 170, 5.91, Collections.singletonList("StandardExpertPlus"), Collections.singletonList("Balanced"), Collections.singletonList("Metal"));
+    public static final String DEFAULT_PATTERN_PATH = "C:\\Users\\SCCO\\IdeaProjects\\BeatKenja\\MapTemplates\\Template--ISeeFire.txt";
     public static final String DEFAULT_ONSET_GENERATION_FOLDER = "./OnsetGeneration/";
     public static final String ONSET_GENERATION_FOLDER_PATH_INPUT = "./OnsetGeneration/mp3Files/";
     public static final String ONSET_GENERATION_FOLDER_PATH_OUTPUT = saveNewMapsToDefaultPath ? DEFAULT_PATH : "./OnsetGeneration/output/";
@@ -70,9 +69,9 @@ public class Parameters {
     public static final int WAVE_NOTE_GENERATION_SAMPLING_POINTS = 1000;
     public static final JFileChooser FILE_CHOOSER = new JFileChooser(DEFAULT_PATH.trim());
     public static final FileNameExtensionFilter MAP_FILE_FORMAT = new FileNameExtensionFilter("BeatSaber Maps (*.dat) or Pattern files (*.pat)", "dat", "pat");
-    public static final List<String> MAP_TAGS = TagEntityOperations.getAllTags().stream().map(TagEntity::getName).toList();
-    public static final List<String> MUSIC_GENRES = GenreEntityOperations.getAllGenres().stream().map(GenreEntity::getName).toList();
-    public static final List<String> DIFFICULTIES = DifficultyEntityOperations.getAllDifficulties().stream().map(DifficultyEntity::getName).toList();
+    public static final List<String> MAP_TAGS = TagEntityOperations.getAllTagNames();
+    public static final List<String> MUSIC_GENRES = GenreEntityOperations.getAllGenreNames();
+    public static final List<String> DIFFICULTIES = DifficultyEntityOperations.getAllDifficultiesNames();
     public static final java.util.Map<String, String> databaseSettings = new java.util.HashMap<>();
     public static final boolean exportDatabase = true;
 
