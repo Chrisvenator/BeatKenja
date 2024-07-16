@@ -1,5 +1,6 @@
 package MapAnalysation.PatternVisualisation;
 
+import DataManager.Parameters;
 import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
 import MapGeneration.GenerationElements.Pattern;
 
@@ -9,10 +10,10 @@ import java.util.Random;
 
 public class DirichletMultinomialDistributionVisualizer extends JFrame {
 
-    private static final int MAX_ARRAY_SIZE = 10; // Adjust size according to the practical limits
+    private static final int MAX_ARRAY_SIZE = 40; // Adjust size according to the practical limits
 
     public static void main(String[] args) throws NoteNotValidException {
-        Pattern pattern = new Pattern("C:\\Users\\SCCO\\IdeaProjects\\BeatKenja\\src\\main\\resources\\MapTemplates\\Template--ISeeFire.txt");
+        Pattern pattern = new Pattern(Parameters.DEFAULT_PATTERN_PATH);
         double[] alpha = {2.0, 2.0, 2.0}; // Dirichlet parameters
         int N = 10; // Number of draws
 
