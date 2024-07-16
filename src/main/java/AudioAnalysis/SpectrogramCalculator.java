@@ -1,13 +1,12 @@
 package AudioAnalysis;
 
-import be.tarsos.dsp.AudioDispatcher;
-import be.tarsos.dsp.AudioEvent;
-import be.tarsos.dsp.AudioProcessor;
-import be.tarsos.dsp.io.jvm.AudioDispatcherFactory;
-import be.tarsos.dsp.util.fft.FFT;
+//import be.tarsos.dsp.AudioDispatcher;
+//import be.tarsos.dsp.AudioEvent;
+//import be.tarsos.dsp.AudioProcessor;
+//import be.tarsos.dsp.io.jvm.AudioDispatcherFactory;
+//import be.tarsos.dsp.util.fft.FFT;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,33 +27,33 @@ public class SpectrogramCalculator {
      * @return a 2D array representing the spectrogram (amplitude squared).
      */
     public static double[][] calculateSpectrogram(String filePath, int fftSize, int overlap) throws UnsupportedAudioFileException, IOException {
-        AudioDispatcher dispatcher = AudioDispatcherFactory.fromFile(new File(filePath), fftSize, overlap);
-        FFT fft = new FFT(fftSize);
+//        AudioDispatcher dispatcher = AudioDispatcherFactory.fromFile(new File(filePath), fftSize, overlap);
+//        FFT fft = new FFT(fftSize);
         List<double[]> spectrogram = new ArrayList<>();
-
-        dispatcher.addAudioProcessor(new AudioProcessor() {
-            @Override
-            public boolean process(AudioEvent audioEvent) {
-                float[] audioBuffer = audioEvent.getFloatBuffer().clone();
-                float[] fftBuffer = new float[fftSize * 2];
-                System.arraycopy(audioBuffer, 0, fftBuffer, 0, audioBuffer.length);
-                fft.forwardTransform(fftBuffer);
-                double[] amplitudes = new double[fftSize / 2];
-
-                for (int i = 0; i < amplitudes.length; i++) {
-                    amplitudes[i] = Math.pow(fftBuffer[2 * i] * fftBuffer[2 * i] + fftBuffer[2 * i + 1] * fftBuffer[2 * i + 1], 0.5);
-                }
-                spectrogram.add(amplitudes);
-                return true;
-            }
-
-            @Override
-            public void processingFinished() {
-                System.out.println("Finished processing!");
-            }
-        });
-
-        dispatcher.run();
+//
+//        dispatcher.addAudioProcessor(new AudioProcessor() {
+//            @Override
+//            public boolean process(AudioEvent audioEvent) {
+//                float[] audioBuffer = audioEvent.getFloatBuffer().clone();
+//                float[] fftBuffer = new float[fftSize * 2];
+//                System.arraycopy(audioBuffer, 0, fftBuffer, 0, audioBuffer.length);
+//                fft.forwardTransform(fftBuffer);
+//                double[] amplitudes = new double[fftSize / 2];
+//
+//                for (int i = 0; i < amplitudes.length; i++) {
+//                    amplitudes[i] = Math.pow(fftBuffer[2 * i] * fftBuffer[2 * i] + fftBuffer[2 * i + 1] * fftBuffer[2 * i + 1], 0.5);
+//                }
+//                spectrogram.add(amplitudes);
+//                return true;
+//            }
+//
+//            @Override
+//            public void processingFinished() {
+//                System.out.println("Finished processing!");
+//            }
+//        });
+//
+//        dispatcher.run();
         return listToArray(spectrogram);
     }
 
