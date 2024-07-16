@@ -56,6 +56,8 @@ public class ComplexPatternFromTemplate {
         if (timingsImmutable == null || timingsImmutable.isEmpty()) return new ArrayList<>();
         List<Note> timings = new ArrayList<>(timingsImmutable);
 
+        p = Pattern.adjustVariance(p);
+
         if (verbose) System.out.println("Creating complex pattern from template with " + timings.size() + " notes");
         List<Note> removeStacks = removeStacks(timings);
         if (verbose) System.out.println("Removed " + removeStacks.size() + " stack placements");

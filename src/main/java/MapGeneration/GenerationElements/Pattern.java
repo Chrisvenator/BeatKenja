@@ -7,6 +7,7 @@ import DataManager.Database.DatabaseOperations.*;
 import DataManager.FileManager;
 import DataManager.Parameters;
 import DataManager.Records.PatMetadata;
+import MapAnalysation.Distributions.DirichletMultinomialDistribution;
 import MapAnalysation.PatternVisualisation.PatternVisualisationHeatMap;
 import MapGeneration.GenerationElements.Exceptions.MalformattedFileException;
 import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
@@ -20,8 +21,7 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 
-import static DataManager.Parameters.entityManager;
-import static DataManager.Parameters.verbose;
+import static DataManager.Parameters.*;
 import static MapAnalysation.Distributions.DirichletMultinomialDistribution.*;
 
 
@@ -300,7 +300,7 @@ public class Pattern implements Iterable<PatternProbability> {
      *                                  or if the pattern is not found in the database
      */
     public Pattern(PatMetadata metadata) {
-        if (!useDatabase && metadata.equals(Parameters.DEFAULT_PATTERN_METADATA)){
+        if (!useDatabase && metadata.equals(Parameters.DEFAULT_PATTERN_METADATA)) {
 
         }
 
@@ -880,8 +880,8 @@ public class Pattern implements Iterable<PatternProbability> {
      * @return A PatternProbability object that represents the probability of the note pattern, or null if the note pattern is not found.
      */
     public PatternProbability getProbabilityOf(Note n) {
-        Pattern p = clonePattern();
-        p.adjustVariance(UserInterface.patternVariance);
+//        Pattern p = adjustVariance(this);
+        Pattern p = this;
 
         // Iterate over the patterns array and check for a matching note pattern
         for (int i = 0; i < p.patterns.length && p.patterns[i] != null; i++) {
@@ -903,14 +903,18 @@ public class Pattern implements Iterable<PatternProbability> {
 
     //TODO: Das funktioniert nicht richtig. REVERT!
     //TODO: Das funktioniert nicht richtig. FIX IT!
-    public void adjustVariance(float variance) {
-        if (variance != 0) {
-            System.out.println("Original Variance: \n" + this.exportInPatFormat());
-            Arrays.stream(count).forEach(ints -> Arrays.setAll(ints, i -> ints[i] == 0 ? 0 : (int) (Math.log10(ints[i] * 100) / Math.log10(variance * 100) * 100)));
-            System.out.println("Adjusted Variance: \n" + this.exportInPatFormat());
-        }
+    public static Pattern adjustVariance(Pattern pattern) {
+        if (UserInterface.patternVariance == 0) return pattern;
+        Pattern p = pattern.clonePattern();
 
-        computeProbabilities();
+        // Also irgendwie funktioniert das noch nicht so richtig...
+
+//        Arrays.stream(p.count).forEach(ints -> Arrays.setAll(ints, i -> ints[i] == 0 ? 0 : (int) (Math.log10(ints[i] * 100) / Math.log10(variance * 100) * 100)));
+        p.applyDirichletMultinomial(new double[]{2.0, 2.0, 2.0}, UserInterface.patternVariance);
+        System.out.println("Applied Dirichlet Multinomial Distribution");
+
+        p.computeProbabilities();
+        return p;
     }
 
     public Pattern clonePattern() {
@@ -1068,6 +1072,7 @@ public class Pattern implements Iterable<PatternProbability> {
     }
 
     public void applyDirichletMultinomial(double[] alpha, int N) {
+//        DirichletMultinomialDistribution.printCharacteristics(alpha, N);
         for (int i = 0; i < patterns.length; i++) {
             if (patterns[i][0] == null) break; // Beende die Schleife, wenn keine weiteren Muster vorhanden sind
             double[] dirichletSample = sampleDirichlet(alpha);
