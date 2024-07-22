@@ -54,7 +54,7 @@ public class Parameters {
     public static final String CONFIG_FILE_LOCATION = "./config.txt";
     public static final String README_FILE_LOCATION = "README.md";
     public static final PatMetadata DEFAULT_PATTERN_METADATA = new PatMetadata("ISeeFire", 170, 5.91, Collections.singletonList("StandardExpertPlus"), Collections.singletonList("Balanced"), Collections.singletonList("Metal"));
-    public static final String DEFAULT_PATTERN_PATH = "C:\\Users\\SCCO\\IdeaProjects\\BeatKenja\\MapTemplates\\Template--ISeeFire.txt";
+    public static final String DEFAULT_PATTERN_PATH = "C:\\Users\\SCCO\\IdeaProjects\\BeatKenja\\src\\main\\resources\\MapTemplates\\AllGroupedV1; 98; 4;[StandardExpert];NULL;NULL.pat";
     public static final String DEFAULT_ONSET_GENERATION_FOLDER = "./OnsetGeneration/";
     public static final String ONSET_GENERATION_FOLDER_PATH_INPUT = "./OnsetGeneration/mp3Files/";
     public static final String ONSET_GENERATION_FOLDER_PATH_OUTPUT = saveNewMapsToDefaultPath ? DEFAULT_PATH : "./OnsetGeneration/output/";

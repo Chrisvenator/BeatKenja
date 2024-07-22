@@ -4,6 +4,8 @@ import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Note;
 import BeatSaberObjects.Objects.Obstacle;
 import DataManager.*;
+import MapAnalysation.Distributions.DirichletMultinomialDistribution;
+import MapAnalysation.PatternVisualisation.DirichletMultinomialDistributionVisualizer;
 import MapGeneration.GenerationElements.*;
 
 import static DataManager.Parameters.*;
@@ -35,7 +37,7 @@ public class UserInterface extends JFrame {
     public final JLabel labelMapDiff;
     public final TextArea statusCheck; //essentially the log
     public boolean mapSuccessfullyLoaded = false;
-    public static int patternVariance;
+    public static int patternVariance = 0;
 
 
     // Redirect the standard error stream to the custom PrintStream
@@ -49,10 +51,13 @@ public class UserInterface extends JFrame {
         if (verbose) System.setErr(ERROR_PRINT_STREAM);
         pattern = new Pattern(String.valueOf(useDatabase ? DEFAULT_PATTERN_METADATA : DEFAULT_PATTERN_PATH));
 //        System.out.println(pattern.exportInPatFormat());
-        pattern.visualizeAsHeatmapNormalized();
-        pattern.applyDirichletMultinomial(new double[]{2.0, 2.0, 2.0}, 10);
-        pattern.visualizeAsHeatmapNormalized();
-//        System.out.println(pattern.exportInPatFormat());
+//        pattern.visualizeAsHeatmapNormalizedLogarithmically();
+//        pattern.visualizeAsHeatmapTruncated();
+//        pattern.visualizeDirichletMultinomialDistribution(1);
+//        pattern.applyDirichletMultinomial(10);
+//        pattern.visualizeAsHeatmapNormalizedLogarithmically();
+//        pattern.visualizeAsHeatmapTruncated();
+
 
 
         //<editor-fold desc="Initialize UI Elements">

@@ -35,7 +35,6 @@ public class CreateComplexMap extends MapCreatorSubButton {
             System.out.println("Map Template found. Creating new map with the position of red & blue notes...");
             ui.statusCheck.append("Map Template found. Creating new map with the position of red & blue notes...\n");
 
-            //Blue notes
             notes.addAll(complexPatternFromTemplate(Arrays.stream(ui.map._notes).filter(note -> note._type == 1).toList(), ui.pattern, true, false, false,null, null));
             System.out.println(notes.size() + " notes created from blue notes " + Arrays.stream(ui.map._notes).filter(note -> note._type == 0).toList().size());
 

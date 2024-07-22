@@ -59,7 +59,7 @@ public class CreateAdvancedMapButton extends MapCreatorSubButton {
         ui.manageMap();
         Arrays.stream(ui.map._notes).forEach(note -> note._cutDirection = 8);
         ui.pattern.visualizeAsHeatmap();
-        ui.pattern.visualizeAsHeatmapNormalized();
+        ui.pattern.visualizeAsHeatmapNormalized("");
         ui.pattern.visualizeAsHeatmapNormalizedLogarithmically();
         ui.pattern.visualizeAsHeatmapTruncated();
 

@@ -14,25 +14,24 @@ public class DirichletMultinomialDistributionVisualizer extends JFrame {
 
     public static void main(String[] args) throws NoteNotValidException {
         Pattern pattern = new Pattern(Parameters.DEFAULT_PATTERN_PATH);
-        double[] alpha = {2.0, 2.0, 2.0}; // Dirichlet parameters
         int N = 10; // Number of draws
 
         EventQueue.invokeLater(() -> {
-            DirichletMultinomialDistributionVisualizer ex = new DirichletMultinomialDistributionVisualizer(pattern, alpha, N);
+            DirichletMultinomialDistributionVisualizer ex = new DirichletMultinomialDistributionVisualizer(pattern, N);
             ex.setVisible(true);
         });
 
         pattern.visualizeAsHeatmapNormalizedLogarithmically();
     }
 
-    public DirichletMultinomialDistributionVisualizer(Pattern pattern, double[] alpha, int N) {
-        int[][] originalCount = copyArray(pattern.count);
+    public DirichletMultinomialDistributionVisualizer(Pattern pattern, int N) {
+        Pattern p = pattern.deepCopy();
 
-        pattern.applyDirichletMultinomial(alpha, N);
+        p.applyDirichletMultinomial(N);
 
         JPanel panel = new JPanel(new GridLayout(2, 1));
-        panel.add(createHeatMapPanel(originalCount, "Original Counts"));
-        panel.add(createHeatMapPanel(pattern.count, "Modified Counts"));
+        panel.add(createHeatMapPanel(pattern.count, "Original Counts"));
+        panel.add(createHeatMapPanel(p.count, "Modified Counts"));
 
         add(panel);
 
