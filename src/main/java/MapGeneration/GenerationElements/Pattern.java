@@ -7,25 +7,29 @@ import DataManager.Database.DatabaseOperations.*;
 import DataManager.FileManager;
 import DataManager.Parameters;
 import DataManager.Records.PatMetadata;
-import MapAnalysation.Distributions.DirichletMultinomialDistribution;
+import MapAnalysation.PatternVisualisation.DirichletMultinomialDistributionVisualizer;
 import MapAnalysation.PatternVisualisation.PatternVisualisationHeatMap;
 import MapGeneration.GenerationElements.Exceptions.MalformattedFileException;
 import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
 import UserInterface.UserInterface;
 import com.google.gson.Gson;
+import org.apache.commons.math3.linear.RealVector;
 
 import javax.persistence.*;
-import java.io.File;
+import java.awt.*;
+import java.io.*;
 import java.util.*;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 
 import static DataManager.Parameters.*;
 import static MapAnalysation.Distributions.DirichletMultinomialDistribution.*;
+import static MapAnalysation.Distributions.InverseDirichletMultinomialDistribution.estimateDirichletParameters;
+import static MapAnalysation.Distributions.InverseDirichletMultinomialDistribution.estimateMultinomialProbabilities;
 
-
-public class Pattern implements Iterable<PatternProbability> {
+public class Pattern implements Iterable<PatternProbability>, Serializable {
     private static final int MAX_ARRAY_SIZE = 109; // lines * layers * cut directions = 4 * 3 * 9 = 108 + 1 (base note)
 
     // In this variable, all the possible notes are stored as patterns
@@ -79,8 +83,8 @@ public class Pattern implements Iterable<PatternProbability> {
      * </pre>
      * This will create a Swing window displaying the heatmap of the pattern's count array.
      */
-    public void visualizeAsHeatmap() {
-        PatternVisualisationHeatMap.visualizeAsHeatmap(this);
+    public void visualizeAsHeatmap(String ... name) {
+        PatternVisualisationHeatMap.visualizeAsHeatmap(this, name == null ? null : name[0]);
     }
 
     /**
@@ -106,8 +110,8 @@ public class Pattern implements Iterable<PatternProbability> {
      * </pre>
      * This will create a Swing window displaying the normalized heatmap of the pattern's count array.
      */
-    public void visualizeAsHeatmapNormalized() {
-        PatternVisualisationHeatMap.visualizeAsHeatmapNormalized(this);
+    public void visualizeAsHeatmapNormalized(String ... name) {
+        PatternVisualisationHeatMap.visualizeAsHeatmapNormalized(this, name == null || name.length == 0 ? null : name[0]);
     }
 
     /**
@@ -133,8 +137,8 @@ public class Pattern implements Iterable<PatternProbability> {
      * </pre>
      * This will create a Swing window displaying the normalized heatmap of the pattern's count array.
      */
-    public void visualizeAsHeatmapNormalizedLogarithmically() {
-        PatternVisualisationHeatMap.visualizeAsHeatmapLogarithmicNormalized(this);
+    public void visualizeAsHeatmapNormalizedLogarithmically(String ... name) {
+        PatternVisualisationHeatMap.visualizeAsHeatmapLogarithmicNormalized(this, name == null ? null : name[0]);
     }
 
     /**
@@ -160,8 +164,8 @@ public class Pattern implements Iterable<PatternProbability> {
      * </pre>
      * This will create a Swing window displaying the truncated heatmap of the pattern's count array.
      */
-    public void visualizeAsHeatmapTruncated() {
-        PatternVisualisationHeatMap.visualizeAsHeatmapTruncated(this);
+    public void visualizeAsHeatmapTruncated(String ... name) {
+        PatternVisualisationHeatMap.visualizeAsHeatmapTruncated(this, name == null ? null : name[0]);
     }
 
     /**
@@ -204,6 +208,40 @@ public class Pattern implements Iterable<PatternProbability> {
             }
         }
     }
+
+    // Inverse of logarithmic scaling
+    public static void inverseNormalizeCountArray(int[][] count, boolean logarithmic, int N) {
+        if (count == null) return;
+        if (count.length != MAX_ARRAY_SIZE) throw new IllegalArgumentException("The count array must have a size of " + MAX_ARRAY_SIZE);
+
+        // Iterate over each row
+        for (int i = 0; i < count.length; i++) {
+            int min = Integer.MAX_VALUE;
+            int max = Integer.MIN_VALUE;
+
+            // Find min and max values in the current row
+            for (int j = 0; j < count[i].length; j++) {
+                if (count[i][j] < min) {
+                    min = count[i][j];
+                }
+                if (count[i][j] > max) {
+                    max = count[i][j];
+                }
+            }
+
+            if (min == max) {
+                // If all values in the row are the same, setting them to 0 was already handled
+                continue;
+            } else {
+                // Reverse the normalization of the values in the current row
+                for (int j = 0; j < count[i].length; j++) {
+                    if (logarithmic) count[i][j] = (int) Math.exp(((double) count[i][j] / (N*N)) * Math.log((max - min + 1) * N)) + min - 1;
+                    else count[i][j] = (int) ((count[i][j] - min) * (double) (max - min) * 255);
+                }
+            }
+        }
+    }
+
 
 
     // Constructor that analyzes the patterns based on the provided notes and type
@@ -901,29 +939,35 @@ public class Pattern implements Iterable<PatternProbability> {
         return null;
     }
 
-    //TODO: Das funktioniert nicht richtig. REVERT!
-    //TODO: Das funktioniert nicht richtig. FIX IT!
-    public static Pattern adjustVariance(Pattern pattern) {
-        if (UserInterface.patternVariance == 0) return pattern;
-        Pattern p = pattern.clonePattern();
-
-        // Also irgendwie funktioniert das noch nicht so richtig...
-
-//        Arrays.stream(p.count).forEach(ints -> Arrays.setAll(ints, i -> ints[i] == 0 ? 0 : (int) (Math.log10(ints[i] * 100) / Math.log10(variance * 100) * 100)));
-        p.applyDirichletMultinomial(new double[]{2.0, 2.0, 2.0}, UserInterface.patternVariance);
-        System.out.println("Applied Dirichlet Multinomial Distribution");
-
-        p.computeProbabilities();
-        return p;
-    }
 
     public Pattern clonePattern() {
         Pattern p = new Pattern();
-        p.patterns = patterns;
-        p.count = count;
-        p.probabilities = probabilities;
+        System.arraycopy(p.patterns, 0, patterns, 0, p.patterns.length);
+        System.arraycopy(p.count, 0, count, 0, p.count.length);
+        System.arraycopy(p.probabilities, 0, probabilities, 0, p.probabilities.length);
         p.metadata = metadata;
         return p;
+    }
+
+    public Pattern deepCopy() {
+        try {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            oos.writeObject(this);
+            oos.flush();
+            oos.close();
+
+            ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+            ObjectInputStream ois = new ObjectInputStream(bis);
+            Pattern p = (Pattern) ois.readObject();
+            bis.close();
+            ois.close();
+
+            return p;
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 
@@ -1071,17 +1115,65 @@ public class Pattern implements Iterable<PatternProbability> {
         return -1;
     }
 
-    public void applyDirichletMultinomial(double[] alpha, int N) {
-//        DirichletMultinomialDistribution.printCharacteristics(alpha, N);
+    public static Pattern adjustVariance(Pattern pattern) {
+        if (UserInterface.patternVariance == 0){
+            pattern.visualizeAsHeatmapNormalized();
+            return pattern;
+        }
+        Pattern p = pattern.deepCopy();
+
+
+        p.visualizeAsHeatmapNormalized("Before Adjust-Variance - Normalized");
+
+        if (UserInterface.patternVariance < 0) {
+            Pattern.inverseNormalizeCountArray(p.count,true, UserInterface.patternVariance * -1);
+            Pattern.normalizeCountArray(p.count, true);
+        } else {
+            p.applyDirichletMultinomial(UserInterface.patternVariance);
+            Pattern.normalizeCountArray(p.count, true);
+        }
+        System.out.println("Applied Dirichlet Multinomial Distribution");
+
+        p.visualizeAsHeatmapNormalized("After Adjust-Variance - Normalized");
+
+
+        p.computeProbabilities();
+        return p;
+    }
+
+
+    public void applyDirichletMultinomial(int N) {
+//        applyDirichletMultinomial(this.count);
         for (int i = 0; i < patterns.length; i++) {
             if (patterns[i][0] == null) break; // Beende die Schleife, wenn keine weiteren Muster vorhanden sind
-            double[] dirichletSample = sampleDirichlet(alpha);
+            double[] dirichletSample = sampleDirichlet(this.count[i]);
             int[] multinomialSample = sampleMultinomial(N, dirichletSample);
-            for (int j = 0; j < multinomialSample.length; j++) {
-                this.count[i][j] = multinomialSample[j];
-            }
+            int[] mle = estimateAlphaMLE(multinomialSample , count[i] ,N);
+//            System.arraycopy(mle, 0, this.count[i], 0, mle.length);
+            System.arraycopy(multinomialSample, 0, this.count[i], 0, multinomialSample.length);
         }
         computeProbabilities();
     }
 
+    public void applyInverseDirichletMultinomial(int N) {
+        for (int i = 0; i < count.length; i++) {
+            double[] dirichletSample = estimateDirichletParameters(count[i], N);
+            int[] multinomialSample = estimateMultinomialProbabilities(N, dirichletSample);
+            int[] mle = estimateAlphaMLE(multinomialSample, count[i], N);
+            System.arraycopy(mle, 0, count[i], 0, mle.length);
+        }
+        computeProbabilities();
+    }
+
+
+    /**
+     * Visualizes the original and Dirichlet-Multinomial-Distributed pattern [][]
+     * @param N
+     */
+    public void visualizeDirichletMultinomialDistribution(int N) {
+        EventQueue.invokeLater(() -> {
+            DirichletMultinomialDistributionVisualizer ex = new DirichletMultinomialDistributionVisualizer(this, N);
+            ex.setVisible(true);
+        });
+    }
 }
