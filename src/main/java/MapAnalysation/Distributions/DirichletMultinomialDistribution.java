@@ -1,17 +1,20 @@
 package MapAnalysation.Distributions;
 
-import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
-import MapGeneration.GenerationElements.Pattern;
+import DataManager.Parameters;
 
 import java.util.Arrays;
 import java.util.Random;
 
 public class DirichletMultinomialDistribution {
+    private static final int MAX_ITERATIONS = 10000;
+    private static final double TOLERANCE = 1e-6;
+
+
     // Methode zur Erzeugung von Stichproben aus einer Dirichlet-Verteilung
-    public static double[] sampleDirichlet(double[] alpha) {
+    public static double[] sampleDirichlet(int[] alpha) {
         double[] sample = new double[alpha.length];
         double sum = 0.0;
-        Random rand = new Random();
+        Random rand = new Random(Parameters.SEED);
 
         for (int i = 0; i < alpha.length; i++) {
             sample[i] = gammaSample(alpha[i], 1.0, rand);
@@ -69,14 +72,14 @@ public class DirichletMultinomialDistribution {
         return counts;
     }
 
-    public static void printCharacteristics(double[] alpha, int N) {
+    public static void printCharacteristics(int[] alpha, int N) {
         System.out.println("Expected Value: " + Arrays.toString(computeExpectedValues(alpha, N)));
         System.out.println("Variance: " + Arrays.toString(computeVariances(alpha, N)));
         System.out.println("Covariance: " + Arrays.deepToString(computeCovariances(alpha, N)));
     }
 
     // Methode zur Berechnung des Erwartungswerts
-    public static double[] computeExpectedValues(double[] alpha, int N) {
+    public static double[] computeExpectedValues(int[] alpha, int N) {
         double sumAlpha = 0.0;
         for (double a : alpha) {
             sumAlpha += a;
@@ -89,7 +92,7 @@ public class DirichletMultinomialDistribution {
     }
 
     // Methode zur Berechnung der Varianz
-    public static double[] computeVariances(double[] alpha, int N) {
+    public static double[] computeVariances( int[] alpha, int N) {
         double sumAlpha = 0.0;
         for (double a : alpha) {
             sumAlpha += a;
@@ -102,7 +105,7 @@ public class DirichletMultinomialDistribution {
     }
 
     // Methode zur Berechnung der Kovarianz
-    public static double[][] computeCovariances(double[] alpha, int N) {
+    public static double[][] computeCovariances(int[] alpha, int N) {
         double sumAlpha = 0.0;
         for (double a : alpha) {
             sumAlpha += a;
@@ -120,23 +123,39 @@ public class DirichletMultinomialDistribution {
         return covariances;
     }
 
-    // andere Methoden, einschließlich computeProbabilities()...
+    // Maximum Likelihood Estimation for Dirichlet parameters
+    public static int[] estimateAlphaMLE(int[] data, int[] alphaInit, int N) {
+        int K = Math.min(alphaInit.length, data.length);
+        int[] alpha = Arrays.copyOf(alphaInit, K);
+        double[] g = new double[K];
+        double[] h = new double[K];
+        int[] newAlpha = new int[K];
 
-    public static void main(String[] args) throws NoteNotValidException {
-        Pattern pattern = new Pattern("C:\\Users\\SCCO\\IdeaProjects\\BeatKenja\\src\\main\\resources\\MapTemplates\\Template--ISeeFire.txt");
-        // Setze die Parameter für die Dirichlet-Verteilung
-        double[] alpha = {2.0, 2.0, 2.0}; // Parameter der Dirichlet-Verteilung
-        int N = 10; // Anzahl der Ziehungen
+        for (int iter = 0; iter < MAX_ITERATIONS; iter++) {
+            Arrays.fill(g, 0);
+            Arrays.fill(h, 0);
+            double sumAlpha = 0.0;
 
-        pattern.applyDirichletMultinomial(alpha, N);
-
-        // Ausgabe der Resultate
-//        for (int i = 0; i < pattern.count.length; i++) {
-        for (int i = 0; i < 50; i++) {
-            for (int j = 0; j < 14; j++) {
-                System.out.print(pattern.count[i][j] + " ");
+            for (double a : alpha) {
+                sumAlpha += a;
             }
-            System.out.println();
+
+                for (int k = 0; k < K; k++) {
+                    g[k] += (data[k] - N * (alpha[k] / sumAlpha));
+                    h[k] += (N * (alpha[k] / sumAlpha) * (1 - (alpha[k] / sumAlpha)));
+                }
+
+            boolean converged = true;
+            for (int k = 0; k < K; k++) {
+                newAlpha[k] = (int) Math.round(alpha[k] + g[k] / h[k]);
+                if (Math.abs(newAlpha[k] - alpha[k]) > TOLERANCE) {
+                    converged = false;
+                }
+            }
+
+            if (converged) break;
+            alpha = Arrays.copyOf(newAlpha, K);
         }
+        return alpha;
     }
 }

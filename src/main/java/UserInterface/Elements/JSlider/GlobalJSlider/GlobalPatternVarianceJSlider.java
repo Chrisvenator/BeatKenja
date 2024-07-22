@@ -12,13 +12,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class GlobalPatternVarianceJSlider extends MyGlobalJSlider {
-    private Pattern patternWithoutVariance = ui.pattern;
-
     public GlobalPatternVarianceJSlider(UserInterface ui) {
         super(ElementTypes.GLOBAL_PATTERN_VARIANCE_SLIDER, ui);
-
-        setMinimum(0);
-        setMaximum(50);
 
         setMajorTickSpacing(10);
         setMinorTickSpacing(10);
@@ -28,9 +23,9 @@ public class GlobalPatternVarianceJSlider extends MyGlobalJSlider {
 
         // Create label table for specified values with custom color for 0 and 10
         Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
-        for (int i = 0; i <= 50; i += 10) {
+        for (int i = -50; i <= 50; i += 10) {
             JLabel label = new JLabel(String.valueOf(i));
-            if (i == 0 || i == 10) {
+            if (i == 0) {
                 label.setForeground(Color.BLUE);  // Set color to blue
             }
             labelTable.put(i, label);
@@ -43,7 +38,7 @@ public class GlobalPatternVarianceJSlider extends MyGlobalJSlider {
     @Override
     public void onClick() {
         int value = ((JSlider) eventObject.getSource()).getValue();
-        UserInterface.patternVariance = value;
+        UserInterface.patternVariance = value * 10;
 //        ui.pattern = Pattern.adjustVariance(patternWithoutVariance, value);
 
         System.out.println("Slider value (float): " + value);
