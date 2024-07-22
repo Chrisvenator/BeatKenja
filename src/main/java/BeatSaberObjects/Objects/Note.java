@@ -3,6 +3,7 @@ package BeatSaberObjects.Objects;
 import static DataManager.Parameters.*;
 
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -20,7 +21,7 @@ Layer - Index:          Cut direction:
 |0-0|1-0|2-0|3-0|       | 6 | 1 | 7 |
 |---|---|---|---|       |---|---|---|
  */
-public class Note implements Comparable<Note> {
+public class Note implements Comparable<Note>, Serializable {
     public float _time;
     public double _lineIndex;
     public double _lineLayer;

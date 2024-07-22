@@ -56,7 +56,7 @@ public class ComplexPatternFromTemplate {
         if (timingsImmutable == null || timingsImmutable.isEmpty()) return new ArrayList<>();
         List<Note> timings = new ArrayList<>(timingsImmutable);
 
-        p = Pattern.adjustVariance(p);
+        Pattern patternAdjustedVariance = Pattern.adjustVariance(p);
 
         if (verbose) System.out.println("Creating complex pattern from template with " + timings.size() + " notes");
         List<Note> removeStacks = removeStacks(timings);
@@ -64,7 +64,7 @@ public class ComplexPatternFromTemplate {
         if (verbose) System.out.println("New timings size: " + timings.size());
 
         List<Note> pattern = new ArrayList<>(timings.size());
-        if (usePatternCache) patternCache = new PatternCache(timings, p, NUMBER_OF_PATTERNS, LENGTH_OF_PATTERN, NUMBER_OF_NOTES_TO_BE_CHANGED);
+        if (usePatternCache) patternCache = new PatternCache(timings, patternAdjustedVariance, NUMBER_OF_PATTERNS, LENGTH_OF_PATTERN, NUMBER_OF_NOTES_TO_BE_CHANGED);
 
 
         if (timings.size() == 1) oneHanded = true;
@@ -111,22 +111,12 @@ public class ComplexPatternFromTemplate {
             if (usePatternCache) {// alle false noch einmal evaluieren
                 next = patternCache.getNext(previous, invalidPlacesInARow, timings.get(i)._time);
             } else
-                next = getComplexNote(p, previous, invalidPlacesInARow, timings.get(i)._time);
+                next = getComplexNote(patternAdjustedVariance, previous, invalidPlacesInARow, timings.get(i)._time);
             pattern.set(i, next);
-//            else ;
-//            PatternProbability probabilities = p.getProbabilityOf(previous);
-//
-//            // Generate a note according to the template
-//            // If there is an infinite loop, then try to place a linear note
-//            if (probabilities == null || invalidPlacesInARow >= 100) {
-//                pattern.set(i, nextLinearNote(previous, timings.get(i)._time));
-//            } else {
-//                Note next = predictNextNote(probabilities, timings.get(i)._time);
-//                if (next == null) System.err.println("Error at beat: " + timings.get(i)._time + " next note is null. Please have a look at predictNextNote()");
-//                pattern.set(i, next);
-//            }
 
-            // check, if the placement is valid (example: dd)
+
+
+
             if (previous.isDD(pattern.get(i))) inValidPlacement = true;
             if (previous._cutDirection == pattern.get(i)._cutDirection) inValidPlacement = true;
             if (invalidPlacement(pattern, i, oneHanded)) inValidPlacement = true;
@@ -186,7 +176,7 @@ public class ComplexPatternFromTemplate {
             if (inversePlacementCount[i % j] >= 2) {
                 Note noteNew = new Note(pattern.get(i)._time, pattern.get(i - j)._lineIndex, pattern.get(i - j)._lineLayer, pattern.get(i - j)._type, pattern.get(i - j)._cutDirection);
                 pattern.set(i, noteNew); //If there is a parity break, duplicate the current note. It will be taken care of later :P
-                System.out.println("Fixed horizontal parity break at: " + pattern.get(i)._time + "\n");
+                if (verbose) System.out.println("Fixed horizontal parity break at: " + pattern.get(i)._time + "\n");
 
                 inversePlacementCount[i % j] = 0;
                 palmDirection[i % j] = !palmDirection[i % j];
@@ -223,7 +213,14 @@ public class ComplexPatternFromTemplate {
      * @return BeatSaberObjects.Objects.Note
      */
     public static Note predictNextNote(PatternProbability pattern, float time) {
-        if (pattern == null || pattern.notes == null) return null;
+        if (pattern == null){
+            System.err.println("Patten is null!");
+            return null;
+        }
+        if (pattern.notes == null) {
+            System.err.println("Notes are null!");
+            return null;
+        }
 
         float currentProbability = 0;
         double placement = RANDOM.nextDouble() * 100;
@@ -238,7 +235,12 @@ public class ComplexPatternFromTemplate {
 
         }
 
-        System.out.println("Something went wrong. Please have a look at beat: " + time);
+        System.err.println("Something went wrong. Please have a look at beat: " + time);
+
+        for (int i = 0; i < pattern.probabilities.length; i++) {
+            System.out.println(pattern.probabilities[i]);
+        }
+
         return null;
     }
 
