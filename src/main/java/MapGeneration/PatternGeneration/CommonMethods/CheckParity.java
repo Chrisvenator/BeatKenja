@@ -1,6 +1,7 @@
 package MapGeneration.PatternGeneration.CommonMethods;
 
 import BeatSaberObjects.Objects.Note;
+import DataManager.Parameters;
 
 import java.util.Collections;
 import java.util.List;
@@ -168,6 +169,7 @@ public class CheckParity {
      * @return boolean
      */
     public static boolean invalidPlacement(List<Note> notes, int i, boolean oneHanded) {
+        if (Parameters.ignoreDDs) return false;
         if (notes.size() <= 2) return false;
         if (i < 4) return false;
         if (notes.get(i - 1) == null || notes.get(i) == null) return true;
