@@ -13,7 +13,6 @@ import MapGeneration.GenerationElements.Exceptions.MalformattedFileException;
 import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
 import UserInterface.UserInterface;
 import com.google.gson.Gson;
-import org.apache.commons.math3.linear.RealVector;
 
 import javax.persistence.*;
 import java.awt.*;
@@ -229,10 +228,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
                 }
             }
 
-            if (min == max) {
-                // If all values in the row are the same, setting them to 0 was already handled
-                continue;
-            } else {
+            if (min != max) {
                 // Reverse the normalization of the values in the current row
                 for (int j = 0; j < count[i].length; j++) {
                     if (logarithmic) count[i][j] = (int) Math.exp(((double) count[i][j] / (N*N)) * Math.log((max - min + 1) * N)) + min - 1;
@@ -339,7 +335,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
      */
     public Pattern(PatMetadata metadata) {
         if (!useDatabase && metadata.equals(Parameters.DEFAULT_PATTERN_METADATA)) {
-
+            //TODO:
         }
 
         this.metadata = metadata;
@@ -1143,7 +1139,6 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
 
 
     public void applyDirichletMultinomial(int N) {
-//        applyDirichletMultinomial(this.count);
         for (int i = 0; i < patterns.length; i++) {
             if (patterns[i][0] == null) break; // Beende die Schleife, wenn keine weiteren Muster vorhanden sind
             double[] dirichletSample = sampleDirichlet(this.count[i]);
