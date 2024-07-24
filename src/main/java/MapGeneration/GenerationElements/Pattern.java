@@ -1113,13 +1113,13 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
 
     public static Pattern adjustVariance(Pattern pattern) {
         if (UserInterface.patternVariance == 0){
-            pattern.visualizeAsHeatmapNormalized();
+//            pattern.visualizeAsHeatmapNormalized();
             return pattern;
         }
         Pattern p = pattern.deepCopy();
 
 
-        p.visualizeAsHeatmapNormalized("Before Adjust-Variance - Normalized");
+//        p.visualizeAsHeatmapNormalized("Before Adjust-Variance - Normalized");
 
         if (UserInterface.patternVariance < 0) {
             Pattern.inverseNormalizeCountArray(p.count,true, UserInterface.patternVariance * -1);
@@ -1130,7 +1130,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
         }
         System.out.println("Applied Dirichlet Multinomial Distribution");
 
-        p.visualizeAsHeatmapNormalized("After Adjust-Variance - Normalized");
+//        p.visualizeAsHeatmapNormalized("After Adjust-Variance - Normalized");
 
 
         p.computeProbabilities();

@@ -19,6 +19,7 @@ public class GlobalButton extends MyButton {
         this.addChild(new GlobalConvertMP3ToMaps(ui));
         this.addChild(new GlobalOpenFolder(ui));
         this.addChild(new GlobalLoadPatterns(ui));
+        this.addChild(new GlobalShowPatterns(ui));
         this.addChild(new MapChecks(ui));
         this.addChild(new GlobalSeedFrame(ui));
     }
