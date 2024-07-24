@@ -93,34 +93,42 @@ public class DirichletMultinomialDistribution {
 
     // Methode zur Berechnung der Varianz
     public static double[] computeVariances( int[] alpha, int N) {
-        double sumAlpha = 0.0;
-        for (double a : alpha) {
-            sumAlpha += a;
-        }
-        double[] variances = new double[alpha.length];
+        double[] variance = new double[alpha.length];
+        int alphaSum = sum(alpha);
+        double factor = (double) (N + alphaSum) / (alphaSum + 1);
+
         for (int i = 0; i < alpha.length; i++) {
-            variances[i] = N * (alpha[i] / sumAlpha) * (1 - (alpha[i] / sumAlpha)) * (N + sumAlpha) / (sumAlpha + 1);
+            double p = (double) alpha[i] / alphaSum;
+            variance[i] = N * p * (1 - p) * factor;
         }
-        return variances;
+        return variance;
     }
 
     // Methode zur Berechnung der Kovarianz
     public static double[][] computeCovariances(int[] alpha, int N) {
-        double sumAlpha = 0.0;
-        for (double a : alpha) {
-            sumAlpha += a;
-        }
-        double[][] covariances = new double[alpha.length][alpha.length];
+        double[][] covariance = new double[alpha.length][alpha.length];
+        double alphaSum = sum(alpha);
+        double factor = (N + alphaSum) / (alphaSum + 1);
+
         for (int i = 0; i < alpha.length; i++) {
             for (int j = 0; j < alpha.length; j++) {
-                if (i == j) {
-                    covariances[i][j] = N * (alpha[i] / sumAlpha) * (1 - (alpha[i] / sumAlpha)) * (N + sumAlpha) / (sumAlpha + 1);
+                if (i != j) {
+                    covariance[i][j] = -N * (alpha[i] * alpha[j]) / (alphaSum * alphaSum) * factor;
                 } else {
-                    covariances[i][j] = -N * (alpha[i] / sumAlpha) * (alpha[j] / sumAlpha) * (N + sumAlpha) / (sumAlpha + 1);
+                    double p = alpha[i] / alphaSum;
+                    covariance[i][i] = N * p * (1 - p) * factor;
                 }
             }
         }
-        return covariances;
+        return covariance;
+    }
+
+    private static int sum(int[] array) {
+        int sum = 0;
+        for (int v : array) {
+            sum += v;
+        }
+        return sum;
     }
 
     // Maximum Likelihood Estimation for Dirichlet parameters
