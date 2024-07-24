@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static DataManager.Parameters.RANDOM;
+import static DataManager.Parameters.ignoreDDs;
 import static DataManager.Parameters.verbose;
 import static MapGeneration.PatternGeneration.CommonMethods.CheckParity.*;
 import static MapGeneration.PatternGeneration.CommonMethods.PlaceFirstNotes.placeInitialNoteBasedOnPrevNote;
@@ -56,15 +57,13 @@ public class ComplexPatternFromTemplate {
         if (timingsImmutable == null || timingsImmutable.isEmpty()) return new ArrayList<>();
         List<Note> timings = new ArrayList<>(timingsImmutable);
 
-        Pattern patternAdjustedVariance = Pattern.adjustVariance(p);
-
         if (verbose) System.out.println("Creating complex pattern from template with " + timings.size() + " notes");
         List<Note> removeStacks = removeStacks(timings);
         if (verbose) System.out.println("Removed " + removeStacks.size() + " stack placements");
         if (verbose) System.out.println("New timings size: " + timings.size());
 
         List<Note> pattern = new ArrayList<>(timings.size());
-        if (usePatternCache) patternCache = new PatternCache(timings, patternAdjustedVariance, NUMBER_OF_PATTERNS, LENGTH_OF_PATTERN, NUMBER_OF_NOTES_TO_BE_CHANGED);
+        if (usePatternCache) patternCache = new PatternCache(timings, p, NUMBER_OF_PATTERNS, LENGTH_OF_PATTERN, NUMBER_OF_NOTES_TO_BE_CHANGED);
 
 
         if (timings.size() == 1) oneHanded = true;
@@ -111,14 +110,14 @@ public class ComplexPatternFromTemplate {
             if (usePatternCache) {// alle false noch einmal evaluieren
                 next = patternCache.getNext(previous, invalidPlacesInARow, timings.get(i)._time);
             } else
-                next = getComplexNote(patternAdjustedVariance, previous, invalidPlacesInARow, timings.get(i)._time);
+                next = getComplexNote(p, previous, invalidPlacesInARow, timings.get(i)._time);
             pattern.set(i, next);
 
 
 
 
             if (previous.isDD(pattern.get(i))) inValidPlacement = true;
-            if (previous._cutDirection == pattern.get(i)._cutDirection) inValidPlacement = true;
+            if (!ignoreDDs && previous._cutDirection == pattern.get(i)._cutDirection) inValidPlacement = true;
             if (invalidPlacement(pattern, i, oneHanded)) inValidPlacement = true;
             if (inValidPlacement) {
                 pattern.set(i, null);
@@ -173,7 +172,7 @@ public class ComplexPatternFromTemplate {
             int checkPalmDirection = checkPalmDirection(palmDirection[i % j], pattern.get(i));
             if (checkPalmDirection == 1) inversePlacementCount[i % j]++; //parity break
             if (checkPalmDirection == 0) inversePlacementCount[i % j] = 0; //everything okay
-            if (inversePlacementCount[i % j] >= 2) {
+            if (!ignoreDDs && inversePlacementCount[i % j] >= 2) {
                 Note noteNew = new Note(pattern.get(i)._time, pattern.get(i - j)._lineIndex, pattern.get(i - j)._lineLayer, pattern.get(i - j)._type, pattern.get(i - j)._cutDirection);
                 pattern.set(i, noteNew); //If there is a parity break, duplicate the current note. It will be taken care of later :P
                 if (verbose) System.out.println("Fixed horizontal parity break at: " + pattern.get(i)._time + "\n");
