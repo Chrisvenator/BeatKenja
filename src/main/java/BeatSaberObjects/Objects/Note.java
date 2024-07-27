@@ -140,6 +140,7 @@ public class Note implements Comparable<Note>, Serializable {
 
     /**
      * Makes the blue Note a red Note and vice versa
+     *
      * @return the inverted Note
      */
     public Note invertNote() {
@@ -175,6 +176,19 @@ public class Note implements Comparable<Note>, Serializable {
         else if (_cutDirection == 5) _cutDirection = 4;
         else if (_cutDirection == 6) _cutDirection = 7;
         else if (_cutDirection == 7) _cutDirection = 6;
+    }
+
+    public void invertCutDirection() {
+        invertNoteRotation();
+        if (_cutDirection == 0) _cutDirection = 1;
+        else if (_cutDirection == 1) _cutDirection = 0;
+        else if (_cutDirection == 2) _cutDirection = 3;
+        else if (_cutDirection == 3) _cutDirection = 2;
+    }
+
+    //   _time,_lineIndex,_lineLayer,_type,_cutDirection ; _time,_lineIndex,_lineLayer,_type,_cutDirection,count ; ... (If there are more than one notes in the pattern) <br>
+    public String exportInPatFormat() {
+        return "" + (int) _lineIndex + "" + (int) _lineLayer + "" + _type + "" + _cutDirection;
     }
 
     public Note getInverted() {

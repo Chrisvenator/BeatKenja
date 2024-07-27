@@ -1,7 +1,6 @@
 package DataManager.Database;
 
 import DataManager.Database.DatabaseEntities.*;
-import DataManager.FileManager;
 import DataManager.Parameters;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.boot.Metadata;
@@ -61,7 +60,7 @@ public class DatabaseExport {
     private static void exportSchema(String path) {
         // Create the ServiceRegistry from the settings
         ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
-                .applySettings(Parameters.databaseSettings)
+                .applySettings(Parameters.DATABASE_SETTINGS)
                 .build();
 
         //Save schema
