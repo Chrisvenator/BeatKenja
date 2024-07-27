@@ -74,7 +74,9 @@ public class Parameters {
     public static final List<String> MUSIC_GENRES = GenreEntityOperations.getAllGenres().stream().map(GenreEntity::getName).toList();
     public static final List<String> DIFFICULTIES = DifficultyEntityOperations.getAllDifficulties().stream().map(DifficultyEntity::getName).toList();
     public static final java.util.Map<String, String> databaseSettings = new java.util.HashMap<>();
-    public static final boolean exportDatabase = true;
+    public static final boolean exportDatabase = false;
+    public static final boolean SHOW_HEATMAP_WHEN_GENERATING_ONSETS = false;
+    public static final boolean SHOW_SPECTOGRAM_WHEN_GENERATING_ONSETS = false;
 
     public static double MADMOM_ONSET_GENERATION_ONSET_CERTAINTY = 7.5;   //For madmom onset detection only! This is an arbitrary value. The lower the value, the more onsets will be detected
     public static double MADMOM_ONSET_GENERATION_MINIMUM_PROXIMITY = 0.1; //For madmom onset detection only! Minimum proximity between onsets in seconds

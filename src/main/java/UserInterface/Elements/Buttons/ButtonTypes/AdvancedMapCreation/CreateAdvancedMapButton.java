@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import static DataManager.Parameters.SHOW_HEATMAP_WHEN_GENERATING_ONSETS;
 import static DataManager.Parameters.verbose;
 import static MapGeneration.PatternGeneration.AdvancedComplexMap.createAdvancedComplexPattern;
 
@@ -58,11 +59,12 @@ public class CreateAdvancedMapButton extends MapCreatorSubButton {
     public void onClick() {
         ui.manageMap();
         Arrays.stream(ui.map._notes).forEach(note -> note._cutDirection = 8);
-        ui.pattern.visualizeAsHeatmap();
-        ui.pattern.visualizeAsHeatmapNormalized();
-        ui.pattern.visualizeAsHeatmapNormalizedLogarithmically();
-        ui.pattern.visualizeAsHeatmapTruncated();
-
+        if(SHOW_HEATMAP_WHEN_GENERATING_ONSETS){
+            ui.pattern.visualizeAsHeatmap();
+            ui.pattern.visualizeAsHeatmapNormalized();
+            ui.pattern.visualizeAsHeatmapNormalizedLogarithmically();
+            ui.pattern.visualizeAsHeatmapTruncated();
+        }
 
         try {
             int nps = Objects.equals(npsField.getText(), "nps") ? 4 : Integer.parseInt(npsField.getText());
