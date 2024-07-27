@@ -13,6 +13,7 @@ public class FixErrorsInPatterns {
         for (int i = 0; i < 2; i++) {
             fixNoteOutsideOfGrid(notes);
             fixNoteInNote(notes);
+            fixNoteNextToEachOtherInBottomLane(notes);
             fixSwingPathDoubles(notes);
             fixSwingPathAboveEachOther(notes);
             fixSwingPath(notes);
@@ -192,6 +193,24 @@ public class FixErrorsInPatterns {
 
 
                 }
+            }
+        }
+    }
+
+    public static void fixNoteNextToEachOtherInBottomLane(List<Note> notes) {
+        //Hitbox path fix when both notes are next to each other in the bottom lane
+        for (int i = 1; i < notes.size(); i++) {
+            Note current = notes.get(i);
+            Note prev = notes.get(i - 1);
+
+            if (current._time == prev._time && current._lineLayer == 0 && prev._lineLayer == 0 ) {
+                if (current._lineIndex - prev._lineIndex == -1 && current._lineIndex - prev._lineIndex == 1) {
+                    if (current._cutDirection == 2 || current._cutDirection == 3) current._cutDirection = 1;
+                    if (current._cutDirection == 4 || current._cutDirection == 5) current._cutDirection = 0;
+                    if (prev._cutDirection == 2 || prev._cutDirection == 3) prev._cutDirection = 1;
+                    if (prev._cutDirection == 4 || prev._cutDirection == 5) prev._cutDirection = 0;
+                }
+
             }
         }
     }
