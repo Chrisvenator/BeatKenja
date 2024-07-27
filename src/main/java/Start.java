@@ -1,5 +1,6 @@
 import DataManager.CreateAllNecessaryDIRsAndFiles;
 import DataManager.Database.DatabaseExport;
+import DataManager.Parameters;
 import UserInterface.UserInterface;
 
 import java.util.Random;
@@ -28,7 +29,7 @@ public class Start {
         java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
 
         SEED = (long) (new Random().nextDouble() * 1000000000);
-        RANDOM = new Random(SEED);
+        Parameters.RANDOM = new Random(SEED);
         System.out.println("Current seed is: " + SEED);
 
 
@@ -37,12 +38,13 @@ public class Start {
         UserInterface ui = new UserInterface();
         ui.setVisible(true);
 
-        ui.addWindowListener(new java.awt.event.WindowAdapter() {
-            @Override
-            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                if (exportDatabase) DatabaseExport.exportDatabase("./database"); // Export the database if the user wants to. Currently disabled because of bugs.
-                entityManager.close();
-            }
-        });
+        //: Uncomment when finished debugging
+//        ui.addWindowListener(new java.awt.event.WindowAdapter() {
+//            @Override
+//            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+//                if (exportDatabase) DatabaseExport.exportDatabase("./database"); // Export the database if the user wants to. Currently disabled because of bugs.
+//                entityManager.close();
+//            }
+//        });
     }
 }
