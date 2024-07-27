@@ -7,10 +7,9 @@ import MapGeneration.PatternGeneration.CommonMethods.FixErrorsInPatterns;
 import MapGeneration.GenerationElements.Pattern;
 import MapGeneration.GenerationElements.PatternProbability;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
 
 import static DataManager.Parameters.RANDOM;
 import static DataManager.Parameters.ignoreDDs;
@@ -114,8 +113,9 @@ public class ComplexPatternFromTemplate {
             pattern.set(i, next);
 
 
-
-
+            if (pattern.get(i) == null) {
+                System.err.println("NULL");
+            }
             if (previous.isDD(pattern.get(i))) inValidPlacement = true;
             if (!ignoreDDs && previous._cutDirection == pattern.get(i)._cutDirection) inValidPlacement = true;
             if (invalidPlacement(pattern, i, oneHanded)) inValidPlacement = true;
@@ -172,9 +172,10 @@ public class ComplexPatternFromTemplate {
             int checkPalmDirection = checkPalmDirection(palmDirection[i % j], pattern.get(i));
             if (checkPalmDirection == 1) inversePlacementCount[i % j]++; //parity break
             if (checkPalmDirection == 0) inversePlacementCount[i % j] = 0; //everything okay
-            if (!ignoreDDs && inversePlacementCount[i % j] >= 2) {
-                Note noteNew = new Note(pattern.get(i)._time, pattern.get(i - j)._lineIndex, pattern.get(i - j)._lineLayer, pattern.get(i - j)._type, pattern.get(i - j)._cutDirection);
-                pattern.set(i, noteNew); //If there is a parity break, duplicate the current note. It will be taken care of later :P
+            if (!ignoreDDs && inversePlacementCount[i % j] >= 1) { //TODO: War 2
+//                Note noteNew = new Note(pattern.get(i)._time, pattern.get(i - j)._lineIndex, pattern.get(i - j)._lineLayer, pattern.get(i - j)._type, pattern.get(i - j)._cutDirection);
+//                pattern.set(i, noteNew); //If there is a parity break, duplicate the current note. It will be taken care of later :P
+                pattern.get(i).invertCutDirection();
                 if (verbose) System.out.println("Fixed horizontal parity break at: " + pattern.get(i)._time + "\n");
 
                 inversePlacementCount[i % j] = 0;
@@ -212,12 +213,18 @@ public class ComplexPatternFromTemplate {
      * @return BeatSaberObjects.Objects.Note
      */
     public static Note predictNextNote(PatternProbability pattern, float time) {
-        if (pattern == null){
-            System.err.println("Patten is null!");
+        if (pattern == null) {
+            System.err.println("[INFO]: Patten is null!");
             return null;
         }
         if (pattern.notes == null) {
-            System.err.println("Notes are null!");
+            System.err.println("[INFO]: Notes are null!");
+            return null;
+        }
+        // Check, if there even is a probability in the pattern.
+        // This case could appear when the count[][] has been modified and all counts have been set to 0 instead of null.
+        if (IntStream.range(0, pattern.probabilities.length).mapToDouble(i -> pattern.probabilities[i]).sum() <= 0) {
+            if (verbose) System.out.println("[INFO]: Every probability is 0...");
             return null;
         }
 
@@ -234,7 +241,7 @@ public class ComplexPatternFromTemplate {
 
         }
 
-        System.err.println("Something went wrong. Please have a look at beat: " + time);
+        System.err.println("[WARN]: Couldn't find a next note. Please have a look at beat: " + time);
 
         for (int i = 0; i < pattern.probabilities.length; i++) {
             System.out.println(pattern.probabilities[i]);
@@ -371,7 +378,12 @@ public class ComplexPatternFromTemplate {
         if (probabilities == null || invalidPlacesInARow >= 100) next = nextLinearNote(previous, timing);
         else {
             next = predictNextNote(probabilities, timing);
-            if (next == null) System.err.println("Error at beat: " + timing + " next note is null. Please have a look at predictNextNote()");
+            if (next == null) {
+                if (verbose) System.out.println("Somehow, the next note couldn't be computed. Falling back to BasicLinearNote...");
+                next = nextLinearNote(previous, timing);
+            }
+            if (next == null)
+                System.err.println("Error at beat: " + timing + " next note is null. Please have a look at predictNextNote()");
         }
 
         return next;
