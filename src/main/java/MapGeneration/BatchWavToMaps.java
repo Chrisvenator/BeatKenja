@@ -93,14 +93,17 @@ public class BatchWavToMaps {
                             }
                             double duration = peaks.get(i).get(peaks.get(i).size() - 1); // Assuming the last peak time gives approximate duration
                             double[][] spectrogram = SpectrogramCalculator.calculateSpectrogram(file.getAbsolutePath(), 1024, 512);
-                            final int finalI = i;
-                            SwingUtilities.invokeLater(() -> {
-                                SpectrogramDisplay frame = new SpectrogramDisplay(spectrogram, peaks.get(finalI), duration, difficulties[finalI], true); // Example uses the first difficulty level
-                                frame.setVisible(true);
-                            });
 
+                            if (SHOW_SPECTOGRAM_WHEN_GENERATING_ONSETS) {
+                                final int finalI = i;
+                                SwingUtilities.invokeLater(() -> {
+                                    SpectrogramDisplay frame = new SpectrogramDisplay(spectrogram, peaks.get(finalI), duration, difficulties[finalI], true); // Example uses the first difficulty level
+                                    frame.setVisible(true);
+                                });
+                            }
                             i++;
                         }
+                        convertWavToOgg(file.getAbsolutePath(), destinationFolderPath + "/" + filename + ".ogg");
                     } catch (IOException e) {
                         e.printStackTrace();
                     } catch (UnsupportedAudioFileException e) {
@@ -116,6 +119,34 @@ public class BatchWavToMaps {
         return true;
     }
 
+    private static void convertWavToOgg(String inputFilePath, String outputFilePath) throws IOException {// Path to the input .wav file
+        ProcessBuilder processBuilder = new ProcessBuilder(
+                "ffmpeg", "-i", inputFilePath, outputFilePath
+        );
+
+        System.out.println("Converting " + new File(inputFilePath).getName() + " to " + outputFilePath.substring(outputFilePath.lastIndexOf("/"), outputFilePath.length()));
+        processBuilder.redirectErrorStream(true);
+        Process process = processBuilder.start();
+        int exitCode = 0;
+        try {
+            exitCode = process.waitFor();
+            System.out.println("Converted " + new File(inputFilePath).getName() + " to " + new File(outputFilePath).getName());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        if (exitCode != 0) {
+            throw new RuntimeException("FFmpeg conversion failed with exit code: " + exitCode);
+        }
+
+        // Delete the original .wav file
+        File inputFile = new File(inputFilePath);
+        if (inputFile.delete()) {
+            System.out.println("Deleted the original .wav file: " + inputFilePath);
+        } else {
+            System.out.println("Failed to delete the original .wav file: " + inputFilePath);
+        }
+    }
 
     /**
      * Renames all files in the specified input path, removing illegal characters and Japanese Kanji, ensuring file names comply with the naming rules.
@@ -332,7 +363,7 @@ public class BatchWavToMaps {
                 "  \"_shuffle\" : 0,\n" +
                 "  \"_shufflePeriod\" : 0.5,\n" +
                 "  \"_coverImageFilename\" : \"\",\n" +
-                "  \"_songFilename\" : \"" + songName + ".wav\",\n" +
+                "  \"_songFilename\" : \"" + songName + ".ogg\",\n" +
                 "  \"_environmentName\" : \"DefaultEnvironment\",\n" +
                 "  \"_allDirectionsEnvironmentName\" : \"GlassDesertEnvironment\",\n" +
                 "  \"_customData\" : {\n" +
@@ -415,4 +446,6 @@ public class BatchWavToMaps {
             // Do nothing, effectively discarding the output
         }
     }
+
+
 }

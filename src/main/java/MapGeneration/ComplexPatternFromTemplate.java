@@ -66,7 +66,7 @@ public class ComplexPatternFromTemplate {
 
 
         if (timings.size() == 1) oneHanded = true;
-        int j = oneHanded ? 1 : 2;
+        int j = oneHanded ? 1 : 2; //One-handed or not. If not one-handed, then every second note will be blue and every other will be red
 
 
         placeInitialNoteBasedOnPrevNote(pattern, prevBlue, timings.get(0)._time); // Handling Blue
@@ -111,20 +111,7 @@ public class ComplexPatternFromTemplate {
             } else
                 next = getComplexNote(p, previous, invalidPlacesInARow, timings.get(i)._time);
             pattern.set(i, next);
-//            else ;
-//            PatternProbability probabilities = p.getProbabilityOf(previous);
-//
-//            // Generate a note according to the template
-//            // If there is an infinite loop, then try to place a linear note
-//            if (probabilities == null || invalidPlacesInARow >= 100) {
-//                pattern.set(i, nextLinearNote(previous, timings.get(i)._time));
-//            } else {
-//                Note next = predictNextNote(probabilities, timings.get(i)._time);
-//                if (next == null) System.err.println("Error at beat: " + timings.get(i)._time + " next note is null. Please have a look at predictNextNote()");
-//                pattern.set(i, next);
-//            }
 
-            // check, if the placement is valid (example: dd)
             if (previous.isDD(pattern.get(i))) inValidPlacement = true;
             if (previous._cutDirection == pattern.get(i)._cutDirection) inValidPlacement = true;
             if (invalidPlacement(pattern, i, oneHanded)) inValidPlacement = true;
