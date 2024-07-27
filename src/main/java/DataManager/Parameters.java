@@ -30,6 +30,8 @@ public class Parameters {
     public static boolean darkMode = false;
     public static boolean saveNewMapsToDefaultPath = true;
     public static boolean ignoreDDs = false;
+    public static final boolean PARITY_ERRORS_AS_BOOKMARKS = true; //TODO: Add to config
+
 
     //Note Generator settings:
     public static final double BPM = 120;
@@ -54,7 +56,8 @@ public class Parameters {
     public static final String CONFIG_FILE_LOCATION = "./config.txt";
     public static final String README_FILE_LOCATION = "README.md";
     public static final PatMetadata DEFAULT_PATTERN_METADATA = new PatMetadata("ISeeFire", 170, 5.91, Collections.singletonList("StandardExpertPlus"), Collections.singletonList("Balanced"), Collections.singletonList("Metal"));
-    public static final String DEFAULT_PATTERN_PATH = "C:\\Users\\SCCO\\IdeaProjects\\BeatKenja\\src\\main\\resources\\MapTemplates\\AllGroupedV1; 98; 4;[StandardExpert];NULL;NULL.pat";
+//    public static final String DEFAULT_PATTERN_PATH = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\_SongsToTimings\\src\\main\\resources\\MapTemplates\\AllGroupedV1; 98; 4;[StandardExpert];NULL;NULL.pat";
+    public static final String DEFAULT_PATTERN_PATH = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\_SongsToTimings\\src\\main\\resources\\MapTemplates\\Template--ISeeFire.txt";
     public static final String DEFAULT_ONSET_GENERATION_FOLDER = "./OnsetGeneration/";
     public static final String ONSET_GENERATION_FOLDER_PATH_INPUT = "./OnsetGeneration/mp3Files/";
     public static final String ONSET_GENERATION_FOLDER_PATH_OUTPUT = saveNewMapsToDefaultPath ? DEFAULT_PATH : "./OnsetGeneration/output/";
@@ -72,8 +75,8 @@ public class Parameters {
     public static final List<String> MAP_TAGS = TagEntityOperations.getAllTagNames();
     public static final List<String> MUSIC_GENRES = GenreEntityOperations.getAllGenreNames();
     public static final List<String> DIFFICULTIES = DifficultyEntityOperations.getAllDifficultiesNames();
-    public static final java.util.Map<String, String> databaseSettings = new java.util.HashMap<>();
-    public static final boolean exportDatabase = true;
+    public static final java.util.Map<String, String> DATABASE_SETTINGS = new java.util.HashMap<>();
+    public static final boolean EXPORT_DATABASE = false;
 
     public static double MADMOM_ONSET_GENERATION_ONSET_CERTAINTY = 7.5;   //For madmom onset detection only! This is an arbitrary value. The lower the value, the more onsets will be detected
     public static double MADMOM_ONSET_GENERATION_MINIMUM_PROXIMITY = 0.1; //For madmom onset detection only! Minimum proximity between onsets in seconds
@@ -84,11 +87,11 @@ public class Parameters {
         if (darkMode) FILE_CHOOSER.setForeground(Color.white);
 
         //Database settings:
-        databaseSettings.put("connection.driver_class", "com.mysql.cj.jdbc.Driver");
-        databaseSettings.put("dialect", "org.hibernate.dialect.MySQLDialect");
-        databaseSettings.put("hibernate.connection.url", "jdbc:mysql://localhost:3306/beatKenja");
-        databaseSettings.put("hibernate.connection.username", "root");
-        databaseSettings.put("hibernate.connection.password", "root");
+        DATABASE_SETTINGS.put("connection.driver_class", "com.mysql.cj.jdbc.Driver");
+        DATABASE_SETTINGS.put("dialect", "org.hibernate.dialect.MySQLDialect");
+        DATABASE_SETTINGS.put("hibernate.connection.url", "jdbc:mysql://localhost:3306/beatKenja");
+        DATABASE_SETTINGS.put("hibernate.connection.username", "root");
+        DATABASE_SETTINGS.put("hibernate.connection.password", "root");
     }
 
 }

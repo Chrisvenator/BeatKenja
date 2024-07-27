@@ -82,7 +82,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
      * </pre>
      * This will create a Swing window displaying the heatmap of the pattern's count array.
      */
-    public void visualizeAsHeatmap(String ... name) {
+    public void visualizeAsHeatmap(String... name) {
         PatternVisualisationHeatMap.visualizeAsHeatmap(this, name == null ? null : name[0]);
     }
 
@@ -109,7 +109,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
      * </pre>
      * This will create a Swing window displaying the normalized heatmap of the pattern's count array.
      */
-    public void visualizeAsHeatmapNormalized(String ... name) {
+    public void visualizeAsHeatmapNormalized(String... name) {
         PatternVisualisationHeatMap.visualizeAsHeatmapNormalized(this, name == null || name.length == 0 ? null : name[0]);
     }
 
@@ -136,7 +136,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
      * </pre>
      * This will create a Swing window displaying the normalized heatmap of the pattern's count array.
      */
-    public void visualizeAsHeatmapNormalizedLogarithmically(String ... name) {
+    public void visualizeAsHeatmapNormalizedLogarithmically(String... name) {
         PatternVisualisationHeatMap.visualizeAsHeatmapLogarithmicNormalized(this, name == null ? null : name[0]);
     }
 
@@ -163,7 +163,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
      * </pre>
      * This will create a Swing window displaying the truncated heatmap of the pattern's count array.
      */
-    public void visualizeAsHeatmapTruncated(String ... name) {
+    public void visualizeAsHeatmapTruncated(String... name) {
         PatternVisualisationHeatMap.visualizeAsHeatmapTruncated(this, name == null ? null : name[0]);
     }
 
@@ -231,13 +231,12 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
             if (min != max) {
                 // Reverse the normalization of the values in the current row
                 for (int j = 0; j < count[i].length; j++) {
-                    if (logarithmic) count[i][j] = (int) Math.exp(((double) count[i][j] / (N*N)) * Math.log((max - min + 1) * N)) + min - 1;
+                    if (logarithmic) count[i][j] = (int) Math.exp(((double) count[i][j] / (N * N)) * Math.log((max - min + 1) * N)) + min - 1;
                     else count[i][j] = (int) ((count[i][j] - min) * (double) (max - min) * 255);
                 }
             }
         }
     }
-
 
 
     // Constructor that analyzes the patterns based on the provided notes and type
@@ -533,7 +532,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
      * All notes are separated by a semicolon;<br>
      * The pat format is as follows: <br>
      * <br>
-     * _time,_lineIndex,_lineLayer,_type,_cutDirection ; _time,_lineIndex,_lineLayer,_type,_cutDirection,count ; ... (If there are more than one notes in the pattern) <br>
+     * _lineIndex,_lineLayer,_type,_cutDirection,count ; _time,_lineIndex,_lineLayer,_type,_cutDirection,count ; ... (If there are more than one notes in the pattern) <br>
      * Example: 0.0,2.0,2.0,1,0;0.0,2.0,0.0,1,1,2
      *
      * @param pathToPatternFile The path to the pattern file
@@ -603,7 +602,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
      * All notes are separated by a semicolon;<br>
      * The pat format is as follows: <br>
      * <br>
-     * _time,_lineIndex,_lineLayer,_type,_cutDirection ; _time,_lineIndex,_lineLayer,_type,_cutDirection,count ; ... (If there are more than one notes in the pattern) <br>
+     * _lineIndex,_lineLayer,_type,_cutDirection,count ; _time,_lineIndex,_lineLayer,_type,_cutDirection,count ; ... (If there are more than one notes in the pattern) <br>
      * Example: 0.0,2.0,2.0,1,0;0.0,2.0,0.0,1,1,2
      *
      * @return a Pattern in the .pat file format.
@@ -625,17 +624,10 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
             s.append(lineIndex).append(lineLayer).append(type).append(cutDirection).append(";");
 
             // Iterate over the remaining notes in the pattern
-            for (int i = 1; i < notes.length; i++) {
-                if (notes[i] != null) {
-                    // Append the string representation of the note, its count, and probability
-                    lineIndex = (int) notes[i]._lineIndex;
-                    lineLayer = (int) notes[i]._lineLayer;
-                    type = notes[i]._type;
-                    cutDirection = notes[i]._cutDirection;
+            // Append the string representation of the note and its count
+            for (int i = 1; i < notes.length; i++)
+                if (notes[i] != null) s.append(notes[i].exportInPatFormat()).append(this.count[counter][i]).append(";");
 
-                    s.append(lineIndex).append(lineLayer).append(type).append(cutDirection).append(this.count[counter][i]).append(";");
-                }
-            }
 
             // Append the closing bracket for the pattern
             s.append("\n");
@@ -856,12 +848,31 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
                 if (this.patterns[i][j] != null) ct += this.count[i][j];
             }
 
-            // Calculates the probability for every note
-            for (int j = 0; j < this.patterns[i].length; j++) {
-                if (this.patterns[i][j] != null)
-                    this.probabilities[i][j] = (float) this.count[i][j] / ct * 100;
+            // Check if ct is zero to avoid division by zero
+            if (ct == 0) {
+                // Handle the case when no elements are present
+                for (int j = 0; j < this.patterns[i].length; j++) {
+                    this.probabilities[i][j] = 0; // You can assign any appropriate default value
+                }
+            } else {
+                // Calculates the probability for every note
+                for (int j = 0; j < this.patterns[i].length; j++) {
+                    if (this.patterns[i][j] != null)
+                        this.probabilities[i][j] = (float) this.count[i][j] / ct * 100;
+                }
             }
         }
+
+        if (containsNaN()) throw new RuntimeException("CONTAINS NAN!");
+    }
+
+    public boolean containsNaN() {
+        for (float[] pat : this.probabilities)
+            for (float p : pat)
+                if (Double.isNaN(p))
+                    return true;
+
+        return false;
     }
 
 
@@ -1112,7 +1123,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
     }
 
     public static Pattern adjustVariance(Pattern pattern) {
-        if (UserInterface.patternVariance == 0){
+        if (UserInterface.patternVariance == 0) {
 //            pattern.visualizeAsHeatmapNormalized();
             return pattern;
         }
@@ -1122,7 +1133,8 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
 //        p.visualizeAsHeatmapNormalized("Before Adjust-Variance - Normalized");
 
         if (UserInterface.patternVariance < 0) {
-            Pattern.inverseNormalizeCountArray(p.count,true, UserInterface.patternVariance * -1);
+            System.out.println("Variance: " + UserInterface.patternVariance);
+            Pattern.inverseNormalizeCountArray(p.count, true, (UserInterface.patternVariance * -1));
             Pattern.normalizeCountArray(p.count, true);
         } else {
             p.applyDirichletMultinomial(UserInterface.patternVariance);
@@ -1143,7 +1155,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
             if (patterns[i][0] == null) break; // Beende die Schleife, wenn keine weiteren Muster vorhanden sind
             double[] dirichletSample = sampleDirichlet(this.count[i]);
             int[] multinomialSample = sampleMultinomial(N, dirichletSample);
-            int[] mle = estimateAlphaMLE(multinomialSample , count[i] ,N);
+            int[] mle = estimateAlphaMLE(multinomialSample, count[i], N);
 //            System.arraycopy(mle, 0, this.count[i], 0, mle.length);
             System.arraycopy(multinomialSample, 0, this.count[i], 0, multinomialSample.length);
         }
@@ -1163,6 +1175,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
 
     /**
      * Visualizes the original and Dirichlet-Multinomial-Distributed pattern [][]
+     *
      * @param N
      */
     public void visualizeDirichletMultinomialDistribution(int N) {
