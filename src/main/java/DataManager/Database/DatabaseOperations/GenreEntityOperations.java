@@ -62,6 +62,7 @@ public class GenreEntityOperations extends GenreEntity {
             genreNames.add("Trance");
             genreNames.add("Video Game");
             genreNames.add("Vocaloid");
+            genreNames.add("NULL");
 
             return genreNames;
         }
