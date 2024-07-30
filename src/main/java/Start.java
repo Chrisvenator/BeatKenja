@@ -24,10 +24,9 @@ public class Start {
     |---|---|---|---|       |---|---|---|
      */
 
-    //TODO: Add to config:    public static final boolean PARITY_ERRORS_AS_BOOKMARKS = true;
-    //TODO: Config loader dependency?
-    //TODO: info.dat aus file-picker entfernen
-    //TODO:     public Pattern(PatMetadata metadata) {
+    //TODO: Config loader dependency weiter machen
+    //TODO: Besserer Logger
+    //TODO: public static final boolean PARITY_ERRORS_AS_BOOKMARKS = true;
 
     public static void main(String[] args) throws NoteNotValidException {
         java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
