@@ -8,7 +8,6 @@ import MapGeneration.GenerationElements.Pattern;
 import MapGeneration.GenerationElements.PatternProbability;
 
 import java.util.*;
-import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
 import static DataManager.Parameters.RANDOM;
@@ -254,8 +253,8 @@ public class ComplexPatternFromTemplate {
      * This function tries to avoid parity breaks when a horizontal segment is coming to an end.
      *
      * @param pattern pattern [] is the array, where the previous notes are saved.
-     * @param i       i specifies at which element the last note has been placed.
-     * @param j       j... If the pattern is one handed: j = 1. If two handed: j = 2.
+     * @param i       specifies at which element the last note has been placed.
+     * @param j       If the pattern is one-handed: j = 1. If two-handed: j = 2.
      * @return BeatSaberObjects.Objects.Note
      */
     public static Note endHorizontalPlacements(List<Note> pattern, int i, int j) {
@@ -264,11 +263,6 @@ public class ComplexPatternFromTemplate {
         int firstHorizontalCutDirection = -1;
         int secondHorizontalCutDirection = -1;
         int horizontalsInARow = 0;
-//        if (debug) System.out.println(pattern[i - j - j - j - j].toString().replaceAll("\n", ""));
-//        if (debug) System.out.println(pattern[i - j - j - j].toString().replaceAll("\n", ""));
-//        if (debug) System.out.println(pattern[i - j - j].toString().replaceAll("\n", ""));
-//        if (debug) System.out.println(pattern[i - j].toString().replaceAll("\n", ""));
-//        if (debug) System.out.println(pattern[i].toString().replaceAll("\n", ""));
 
         for (int k = i - j; k >= 0; k -= j) {
             if (pattern.get(k)._cutDirection != 2 && pattern.get(k)._cutDirection != 3) {
@@ -278,10 +272,6 @@ public class ComplexPatternFromTemplate {
             }
             horizontalsInARow++;
         }
-//        if (debug) System.out.println("In a row:   " + horizontalsInARow);
-//        if (debug) System.out.println("Direction:  " + firstHorizontalCutDirection);
-//        if (debug) System.out.println("BeatSaberObjects.Objects.Note (i):   " + i);
-//        if (debug) System.out.println();
 
         if (horizontalsInARow == 0) return null;
 
@@ -382,10 +372,7 @@ public class ComplexPatternFromTemplate {
                 if (verbose) System.out.println("Somehow, the next note couldn't be computed. Falling back to BasicLinearNote...");
                 next = nextLinearNote(previous, timing);
             }
-            if (next == null)
-                System.err.println("Error at beat: " + timing + " next note is null. Please have a look at predictNextNote()");
         }
-
         return next;
     }
 

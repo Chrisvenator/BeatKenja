@@ -45,7 +45,7 @@ also make it easier for users to populate the skeletons database.
 
 Declarative Python API definitions for static analysis tools cannot cover all
 dynamic tricks used in real APIs of libraries: some of them still require
-library-specific code analysis. Nevertheless the skeletons database is enough
+library-specific code analysis. Nevertheless, the skeletons database is enough
 for many libraries.
 
 The proposed [python-skeletons](https://github.com/JetBrains/python-skeletons)
@@ -123,7 +123,7 @@ visible names, no generic types). So you cannot use these expressions in
 Python 3 function annotations.
 
 If you want to create a parameterized class, you should define its parameters
-in the mock return type of a constructor:
+in the mock return type of constructor:
 
 ```python
 class C(object):

@@ -1,8 +1,11 @@
 package DataManager.Database.DatabaseEntities;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.persistence.*;
 
-@Entity
+@Setter @Getter @Entity
 @NamedQuery(name = "DifficultyAssignment.findDifficultyAssignmentByFkPatternDescriptionId", query = "SELECT da FROM DifficultyAssignmentEntity da WHERE fkPatternDescriptionId = :fkPatternDescriptionId")
 @NamedQuery(name = "DifficultyAssignment.findDifficultyAssignment", query = "SELECT da FROM DifficultyAssignmentEntity da WHERE fkPatternDescriptionId = :fkPatternDescriptionId AND fkDifficultyId = :fkDifficultyId")
 @Table(name = "assignment_difficulty", schema = "beatkenja", catalog = "")
@@ -17,30 +20,6 @@ public class DifficultyAssignmentEntity {
     @Basic
     @Column(name = "fk_pattern_description_id")
     private int fkPatternDescriptionId;
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getFkDifficultyId() {
-        return fkDifficultyId;
-    }
-
-    public void setFkDifficultyId(int fkDifficultyId) {
-        this.fkDifficultyId = fkDifficultyId;
-    }
-
-    public int getFkPatternDescriptionId() {
-        return fkPatternDescriptionId;
-    }
-
-    public void setFkPatternDescriptionId(int fkPatternDescriptionId) {
-        this.fkPatternDescriptionId = fkPatternDescriptionId;
-    }
 
     @Override
     public boolean equals(Object o) {

@@ -10,7 +10,8 @@ import java.io.*;
 
 public class Mp3ToWavConverter {
 
-    public static void convert(String mp3FilePath, String wavFilePath) throws UnsupportedAudioFileException, IOException, LineUnavailableException, JavaLayerException {
+    public static void convert(String mp3FilePath, String wavFilePath) throws IOException
+    {
         File file = new File(mp3FilePath);
         FileInputStream fis = new FileInputStream(file);
         BufferedInputStream bis = new BufferedInputStream(fis);
@@ -45,7 +46,8 @@ public class Mp3ToWavConverter {
         }
 
         @Override
-        public int read() throws IOException {
+        public int read()
+        {
             if (buffer == null || index >= buffer.getBufferLength()) {
                 if (!decodeFrame()) {
                     return -1;  // end of stream
