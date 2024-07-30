@@ -24,9 +24,9 @@ import static MapGeneration.PatternGeneration.AdvancedComplexMap.createAdvancedC
  * manages genres, tags, and difficulties, and triggers the map creation process.
  */
 public class CreateAdvancedMapButton extends MapCreatorSubButton {
-    public static List<String> genres = new ArrayList<>();
-    public static List<String> tags = new ArrayList<>();
-    public static List<String> difficulties = new ArrayList<>();
+    public static final List<String> genres = new ArrayList<>();
+    public static final List<String> tags = new ArrayList<>();
+    public static final List<String> difficulties = new ArrayList<>();
     private final CreateAdvancedMapNPS npsField;
     private final CreateAdvancedMapBPM bpmField;
 

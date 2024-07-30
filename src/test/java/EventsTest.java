@@ -6,20 +6,6 @@ class EventsTest {
 
     @Test
     void testToString() {
-//        new BeatSaberObjects.Objects.Events(1, 0, 1);
-//        new BeatSaberObjects.Objects.Events(1, 0, 1);
-//        new BeatSaberObjects.Objects.Events(1, 2, 1);
-//        new BeatSaberObjects.Objects.Events(1, 2, 1);
-//        new BeatSaberObjects.Objects.Events(1, 3, 2);
-//        new BeatSaberObjects.Objects.Events(1, 3, 2);
-//        new BeatSaberObjects.Objects.Events(1, 4, 2);
-//        new BeatSaberObjects.Objects.Events(1, 4, 2);
-//        new BeatSaberObjects.Objects.Events(1, 5, 3);
-//        new BeatSaberObjects.Objects.Events(1, 5, 3);
-//        new BeatSaberObjects.Objects.Events(1, 6, 3);
-//        new BeatSaberObjects.Objects.Events(1, 6, 3);
-//        System.out.println("Assertions.assertEquals(" + this.toString() + ",new BeatSaberObjects.Objects.Events(" + _time + ", " + _type + ", " + _value + ").toString());");
-
         Assertions.assertEquals("{\"_time\":0.0,\"_type\":0,\"_value\":0}", new Events(0, 0, 0).toString());
         Assertions.assertEquals("{\"_time\":1.0,\"_type\":0,\"_value\":1}", new Events(1, 0, 1).toString());
         Assertions.assertEquals("{\"_time\":1.0,\"_type\":0,\"_value\":1}", new Events(1, 0, 1).toString());

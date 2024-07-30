@@ -1,5 +1,7 @@
 package DataManager.Database.DatabaseOperations;
 
+import DataManager.Database.DatabaseCommonMethods;
+import DataManager.Database.DatabaseEntities.GenreAssignmentEntity;
 import DataManager.Database.DatabaseEntities.PatternDescriptionEntity;
 import DataManager.Database.DatabaseEntities.TagAssignmentEntity;
 import DataManager.Records.PatMetadata;
@@ -16,10 +18,12 @@ import static DataManager.Parameters.verbose;
 public class TagAssignmentEntityOperations extends TagAssignmentEntity {
     public static ArrayList<TagAssignmentEntity> getAssignmentEntity(int fkTagId, int fkPatternDescriptionId) {
         try {
-            return (ArrayList<TagAssignmentEntity>) entityManager.createNamedQuery("TagAssignment.findTagAssignment")
+            List<?> result = entityManager.createNamedQuery("TagAssignment.findTagAssignment")
                     .setParameter("fkTagId", fkTagId)
                     .setParameter("fkPatternDescriptionId", fkPatternDescriptionId)
                     .getResultList();
+
+            return DatabaseCommonMethods.checkCastFromQuery(result, TagAssignmentEntity.class);
         } catch (NoResultException e) {
             System.err.println("[ERROR]: Could not find a difficulty");
             return new ArrayList<>();
@@ -55,9 +59,11 @@ public class TagAssignmentEntityOperations extends TagAssignmentEntity {
 
     public static List<String> getTagsForPattern(int id) {
         try {
-            ArrayList<TagAssignmentEntity> list = (ArrayList<TagAssignmentEntity>) entityManager.createNamedQuery("TagAssignment.findTagAssignmentByFkPatternDescriptionId")
+            List<?> result = entityManager.createNamedQuery("TagAssignment.findTagAssignmentByFkPatternDescriptionId")
                     .setParameter("fkPatternDescriptionId", id)
                     .getResultList();
+
+            ArrayList<TagAssignmentEntity> list = DatabaseCommonMethods.checkCastFromQuery(result, TagAssignmentEntity.class);
             ArrayList<String> tags = new ArrayList<>();
             list.forEach(entity -> tags.add(TagEntityOperations.getTag(entity.getFkTagId()).getName()));
             return tags;

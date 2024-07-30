@@ -1,6 +1,5 @@
 package UserInterface.Elements.JSlider.GlobalJSlider;
 
-import MapGeneration.GenerationElements.Pattern;
 import UserInterface.Elements.ElementTypes;
 import UserInterface.Elements.JSlider.MyGlobalJSlider;
 import UserInterface.UserInterface;
@@ -8,8 +7,6 @@ import UserInterface.UserInterface;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Hashtable;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class GlobalPatternVarianceJSlider extends MyGlobalJSlider {
     public GlobalPatternVarianceJSlider(UserInterface ui) {

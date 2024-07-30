@@ -8,19 +8,19 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class CreateAllNecessaryDIRsAndFiles {
-    public static String[] preMadePatternsFilesToCopy = {
+    public static final String[] preMadePatternsFilesToCopy = {
             DEFAULT_ONSET_GENERATION_FOLDER + "SongToOnsets.py",      //Default value: "OnsetGeneration/SongToOnsets.py",
             DEFAULT_ONSET_GENERATION_FOLDER + "ConvertSong.py",       //Default value: "OnsetGeneration/ConvertSong.py",
             README_FILE_LOCATION                                      //Default value: "README.md"
     };
 
-    public static String[] directories = {
+    public static final String[] directories = {
             DEFAULT_ONSET_GENERATION_FOLDER,
             ONSET_GENERATION_FOLDER_PATH_INPUT,
             ONSET_GENERATION_FOLDER_PATH_OUTPUT
     };
 
-    public static String config = """
+    public static final String config = """
             defaultPath:C:/Program Files (x86)/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels //This should link to your WIP folder
             verbose:false //It is not recommended to change this except for debugging purposes.
             dark-mode:false
@@ -89,7 +89,7 @@ public class CreateAllNecessaryDIRsAndFiles {
                 if (inputStream != null) {
 
                     File destinationFile = new File(DEFAULT_EXPORT_PATH + filePathToCopy);
-                    destinationFile.getParentFile().mkdirs();
+                    if (!destinationFile.getParentFile().mkdirs()) System.err.println("Something went wrong while trying to create folder!");
 
                     OutputStream outputStream = new FileOutputStream(destinationFile);
                     byte[] buffer = new byte[1024];

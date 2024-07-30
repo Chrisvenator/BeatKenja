@@ -24,12 +24,6 @@ import AudioAnalysis.SpectrogramDisplay;
  * This class is used to generate Beat Saber maps from .wav files. It is used to generate maps in bulk.
  */
 public class BatchWavToMaps {
-    public static void main(String[] args) {
-        // If madmom onset generation may be used, uncomment the following line:
-//        generateOnsets(ONSET_GENERATION_FOLDER_PATH_INPUT, ONSET_GENERATION_FOLDER_PATH_OUTPUT, true, "madmom_onset_generation.py");
-        // If the default onset generation may be used, uncomment the following line:
-//        generateOnsets(ONSET_GENERATION_FOLDER_PATH_INPUT, ONSET_GENERATION_FOLDER_PATH_OUTPUT, true, null);
-    }
 
     /**
      * Generates Beat Saber maps based on .wav files located in the specified input path. The generated maps will be located in the specified output path.
@@ -214,7 +208,7 @@ public class BatchWavToMaps {
      *
      * @param file File that should be converted
      */
-    private static boolean executeConvertSongsPY(File file, boolean verbose) {
+    @SuppressWarnings("GrazieInspection") private static boolean executeConvertSongsPY(File file, boolean verbose) {
         //Command to do it manually:
         //python ConvertSong.py mp3Files/input.mp3 output.wav wav
 

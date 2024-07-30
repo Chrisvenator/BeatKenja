@@ -29,7 +29,7 @@ public class GlobalLoadPatterns extends GlobalButton {
         int option = FILE_CHOOSER.showOpenDialog(this);
         FILE_CHOOSER.setCurrentDirectory(new File(DEFAULT_PATH));
 
-        if (!approveFileloading(option)) return;
+        if (!approveFileLoading(option)) return;
         try {
             if (FILE_CHOOSER.getSelectedFile().getName().endsWith(".pat")) {
                 ui.pattern = new Pattern(FILE_CHOOSER.getSelectedFile().getAbsolutePath());

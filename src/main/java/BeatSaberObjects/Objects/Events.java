@@ -5,10 +5,10 @@ import BeatSaberObjects.BeatsaberObject;
 import java.util.Objects;
 
 public class Events implements BeatsaberObject {
-    public float _time;
-    public int _type;
+    public final float _time;
+    public final int _type;
+    public final float _floatValue;
     public int _value;
-    public float _floatValue = 0;
 
     public Events(float _time, int _type, int _value, int... _floatValue) {
         this._time = _time;

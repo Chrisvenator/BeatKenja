@@ -71,7 +71,6 @@ public class UserInterface extends JFrame {
         AdvancedMapCreatorButton advancedMapCreatorButton = new AdvancedMapCreatorButton(this);
         MyButton toTimingNotes = new ToTimingNotesButton(this);
         MyButton utilsMapUtilsButton = new MapUtilitiesButton(this);
-        MyButton waveGeneratorButton = new WaveGenerationButton(this);
         //</editor-fold desc="Initialize UI Elements">
 
         //<editor-fold desc="Event Listener">
@@ -96,7 +95,6 @@ public class UserInterface extends JFrame {
                     advancedMapCreatorButton.setVisible(true);
                     toTimingNotes.setVisible(true);
                     utilsMapUtilsButton.setVisible(true);
-                    waveGeneratorButton.setVisible(true);
 
                     saveMapButton.setVisible(true);
                     openMapInBrowserButton.setVisible(true);
@@ -133,7 +131,7 @@ public class UserInterface extends JFrame {
             if (verbose) statusCheck.setText(statusCheck.getText() + "\n patterns: " + pattern.toString());
         }
         map._obstacles = new Obstacle[0];
-        //map._events = new Events[0]; //Dont remove events because bpm changes are stored in events
+        //map._events = new Events[0]; //Don't remove events because bpm changes are stored in events
         //map._events = Arrays.stream(map._events).filter(event -> event._type == 1000).toArray(Events[]::new); //remove all events EXCEPT for the bpm-changes!
 
 

@@ -37,22 +37,10 @@ class BeatSaberMapTest {
         map2.originalJSON = FileManager.readFile("src/test/resources/BookmarksExample.txt").get(0);
     }
 
-    //    @Test
-//    void convertToDDMap() {
-//    }
-//
-//    @Test
-//    void createBombResets() {
-//    }
-//
-//    @Test
-//    void deleteEverySecondNote() {
-//    }
-//
     @Test
     void fixPlacements() {
         BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
-        for (int i = 0; i < 27; i++) map._notes[i]._time += 0.000000001;
+        for (int i = 0; i < 27; i++) map._notes[i]._time += 0.000000001F;
         map.fixPlacements(0.015625); //1 / 64
 
         Assertions.assertEquals(6.5, map._notes[0]._time);
@@ -83,7 +71,7 @@ class BeatSaberMapTest {
         Assertions.assertEquals(23.625, map._notes[25]._time);
         Assertions.assertEquals(24.5, map._notes[26]._time);
 
-        for (int i = 0; i < 27; i++) map._notes[i]._time += 0.000000001;
+        for (int i = 0; i < 27; i++) map._notes[i]._time += 0.000000001F;
         map.fixPlacements(0.03125); //1 / 32
 
         Assertions.assertEquals(6.5, map._notes[0]._time);
@@ -115,7 +103,7 @@ class BeatSaberMapTest {
         Assertions.assertEquals(24.5, map._notes[26]._time);
 
 
-        for (int i = 0; i < 27; i++) map._notes[i]._time += 0.000000001;
+        for (int i = 0; i < 27; i++) map._notes[i]._time += 0.000000001F;
         map.fixPlacements(0.0625); //1 / 16
 
         Assertions.assertEquals(6.5, map._notes[0]._time);
@@ -147,7 +135,7 @@ class BeatSaberMapTest {
         Assertions.assertEquals(24.5, map._notes[26]._time);
 
 
-        for (int i = 0; i < 27; i++) map._notes[i]._time += 0.000000001;
+        for (int i = 0; i < 27; i++) map._notes[i]._time += 0.000000001F;
         map.fixPlacements(0.125); //1 / 8
 
         Assertions.assertEquals(6.5, map._notes[0]._time);
@@ -179,7 +167,7 @@ class BeatSaberMapTest {
         Assertions.assertEquals(24.5, map._notes[26]._time);
 
 
-        for (int i = 0; i < 27; i++) map._notes[i]._time += 0.000000001;
+        for (int i = 0; i < 27; i++) map._notes[i]._time += 0.000000001F;
         map.fixPlacements(0.25); //1 / 4
 
         Assertions.assertEquals(6.5, map._notes[0]._time);
@@ -210,7 +198,7 @@ class BeatSaberMapTest {
         Assertions.assertEquals(23.75, map._notes[25]._time);
         Assertions.assertEquals(24.5, map._notes[26]._time);
 
-        for (int i = 0; i < 27; i++) map._notes[i]._time += 0.000000001;
+        for (int i = 0; i < 27; i++) map._notes[i]._time += 0.000000001F;
         map.fixPlacements(0.5); //1 / 2
 
         Assertions.assertEquals(6.5, map._notes[0]._time);
@@ -242,7 +230,7 @@ class BeatSaberMapTest {
         Assertions.assertEquals(24.5, map._notes[26]._time);
 
 
-        for (int i = 0; i < 27; i++) map._notes[i]._time += 0.000000001;
+        for (int i = 0; i < 27; i++) map._notes[i]._time += 0.000000001F;
         map.fixPlacements(1); //1 / 1
 
         Assertions.assertEquals(7.0, map._notes[0]._time);
@@ -273,10 +261,6 @@ class BeatSaberMapTest {
         Assertions.assertEquals(24.0, map._notes[25]._time);
         Assertions.assertEquals(25.0, map._notes[26]._time);
     }
-
-//    @Test
-//    void getNotesFromJSON() {
-//    }
 
     @Test
     void newMapFromJSON() {

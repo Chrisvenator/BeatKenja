@@ -78,12 +78,12 @@ public class Parameters {
     public static final JFileChooser FILE_CHOOSER = new JFileChooser(DEFAULT_PATH.trim());
     public static final FileNameExtensionFilter MAP_FILE_FORMAT = new FileNameExtensionFilter("BeatSaber Maps (*.dat) or Pattern files (*.pat)", "dat", "pat");
     public static final List<String> MAP_TAGS = TagEntityOperations.getAllTags();
-    public static final List<String> MUSIC_GENRES = GenreEntityOperations.getAllGenreNames();
-    public static final List<String> DIFFICULTIES = DifficultyEntityOperations.getAllDifficultiesNames();
+    public static final List<String> MUSIC_GENRES = GenreEntityOperations.getAllGenres();
+    public static final List<String> DIFFICULTIES = DifficultyEntityOperations.getAllDifficulties();
     public static final java.util.Map<String, String> DATABASE_SETTINGS = new java.util.HashMap<>();
 
-    public static double MADMOM_ONSET_GENERATION_ONSET_CERTAINTY = 7.5;   //For madmom onset detection only! This is an arbitrary value. The lower the value, the more onsets will be detected
-    public static double MADMOM_ONSET_GENERATION_MINIMUM_PROXIMITY = 0.1; //For madmom onset detection only! Minimum proximity between onsets in seconds
+    public static final double MADMOM_ONSET_GENERATION_ONSET_CERTAINTY = 7.5;   //For madmom onset detection only! This is an arbitrary value. The lower the value, the more onsets will be detected
+    public static final double MADMOM_ONSET_GENERATION_MINIMUM_PROXIMITY = 0.1; //For madmom onset detection only! Minimum proximity between onsets in seconds
 
 
     static {

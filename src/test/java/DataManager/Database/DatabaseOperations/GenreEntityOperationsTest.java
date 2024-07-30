@@ -21,7 +21,7 @@ class GenreEntityOperationsTest {
     }
 
     @Test
-    void getAllGenres() {
+    void getAllGenreEntities() {
         List<String> genres = new java.util.ArrayList<>(FileManager.readFile("database/data/genre.csv").stream().map(s -> s.split(",")[1]).toList());
         genres.remove("name");
         assertTrue(Parameters.MUSIC_GENRES.containsAll(genres));

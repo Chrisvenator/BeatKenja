@@ -16,7 +16,7 @@ public class ElementTypes {
     public static final ButtonType MAP_CREATOR_CREATE_ONE_HANDED_COMPLEX_MAP_BUTTON = new ButtonType("complex", 750, 120, 90, 15, false);
     public static final ButtonType MAP_CREATOR_CREATE_RANDOM_MAP_V2_BUTTON = new ButtonType("rand. V2", 750, 100, 90, 15, false);
     public static final ButtonType MAP_CREATOR_CREATE_RANDOM_MAP_BUTTON = new ButtonType("random", 650, 100, 90, 15, false);
-    public static final ButtonType MAP_CREATOR_CREATE_ONE_HANDED_SIMPLE_LINEAR_MAP_BUTTON = new ButtonType("one handed simpl linear", 650, 120, 90, 15, false);
+    public static final ButtonType MAP_CREATOR_CREATE_ONE_HANDED_SIMPLE_LINEAR_MAP_BUTTON = new ButtonType("one handed simple linear", 650, 120, 90, 15, false);
 
     //Advanced Map Creator Button Types
     public static final ButtonType ADVANCED_MAP_CREATOR_BUTTON = new ButtonType("Advanced Map creator", 850, 200, 190, 30, false);
@@ -44,10 +44,6 @@ public class ElementTypes {
     public static final TextFieldType MAP_UTILITIES_DELETE_NOTE_TYPES_TEXT_FIELD = new TextFieldType("0", 400, 160, 40, 15, false);
     public static final ButtonType MAP_UTILITIES_CONVERT_ALL_FLASHING_LIGHTS_BUTTON = new ButtonType("Convert All FlashingLight", 250, 140, 190, 15, false);
     public static final ButtonType MAP_UTILITIES_MAKE_NO_ARROW_MAP_BUTTON = new ButtonType("Make into no arrow map", 250, 120, 190, 15, false);
-
-    //Wave Generator Button Types
-    public static final ButtonType WAVE_GENERATOR_BUTTON = new ButtonType("Wave Functions", 50, 200, 190, 30, false);
-    public static final ButtonType WAVE_GENERATOR_Generate_WAVE_BUTTON = new ButtonType("Generate Wave", 50, 180, 145, 15, false);
 
     //Map Checks
     public static final ButtonType MAP_CHECKS_MAP_CHECKS = new ButtonType("Map Checks", 850, 200, 190, 30, false);
