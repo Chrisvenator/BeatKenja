@@ -248,8 +248,6 @@ public class NextLinearNote {
         //error catching:
         //If I forgot to add a note,it will be displayed here:
         else {
-//            System.out.println(p.toString().replaceAll("\n",""));
-//            System.err.println("THERE WAS AN UNDETECTED NOTE!");
             if (p._type != 2 && (p._cutDirection == 1 || p._cutDirection == 6 || p._cutDirection == 2))
                 return new Note(time, 3, 2, 1, 5);
             else if (p._type != 2 && (p._cutDirection == 7 || p._cutDirection == 3))

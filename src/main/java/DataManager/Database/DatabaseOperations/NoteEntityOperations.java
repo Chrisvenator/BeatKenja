@@ -1,6 +1,8 @@
 package DataManager.Database.DatabaseOperations;
 
 import BeatSaberObjects.Objects.Note;
+import DataManager.Database.DatabaseCommonMethods;
+import DataManager.Database.DatabaseEntities.GenreAssignmentEntity;
 import DataManager.Database.DatabaseEntities.NoteEntity;
 
 import javax.persistence.NoResultException;
@@ -15,7 +17,6 @@ public class NoteEntityOperations extends NoteEntity {
     public static NoteEntity getNote(Note note) {
         try {
             if (notes == null) notes = getAllNotes();
-            if (notes == null) return null;
             for (NoteEntity noteEntity : notes) {
                 if (noteEntity.getLineIndex() == note._lineIndex && noteEntity.getLineLayer() == note._lineLayer && noteEntity.getCutDirection() == note._cutDirection && noteEntity.getType() == note._type) {
                     return noteEntity;
@@ -39,7 +40,9 @@ public class NoteEntityOperations extends NoteEntity {
 
     public static ArrayList<NoteEntity> getAllNotes() {
         try {
-            ArrayList<NoteEntity> noteEntities = (ArrayList<NoteEntity>) entityManager.createNamedQuery("NoteEntity.findAllNotes").getResultList();
+            List<?> result = entityManager.createNamedQuery("NoteEntity.findAllNotes").getResultList();
+            ArrayList<NoteEntity> noteEntities = DatabaseCommonMethods.checkCastFromQuery(result, NoteEntity.class);
+
             if (notes == null) notes = noteEntities;
             return noteEntities;
         } catch (NoResultException e) {

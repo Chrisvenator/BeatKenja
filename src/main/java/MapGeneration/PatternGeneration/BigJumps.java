@@ -11,7 +11,7 @@ public class BigJumps {
      * This function creates a jump-pattern where the jumps are huge. Use with caution!
      *
      * @param timings   List of note timings
-     * @param oneHanded should the jumps be one handed?
+     * @param oneHanded should the jumps be one-handed?
      * @param prevBlue  previous blue note so that there is no parity break
      * @param prevRed   previous blue note so that there is no parity break
      * @return returns a jump-pattern with not-so-big swings

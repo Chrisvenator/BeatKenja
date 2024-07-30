@@ -188,7 +188,7 @@ public class Note implements Comparable<Note>, Serializable {
 
     //   _time,_lineIndex,_lineLayer,_type,_cutDirection ; _time,_lineIndex,_lineLayer,_type,_cutDirection,count ; ... (If there are more than one notes in the pattern) <br>
     public String exportInPatFormat() {
-        return "" + (int) _lineIndex + "" + (int) _lineLayer + "" + _type + "" + _cutDirection;
+        return "" + (int) _lineIndex + (int) _lineLayer + _type + _cutDirection;
     }
 
     public Note getInverted() {

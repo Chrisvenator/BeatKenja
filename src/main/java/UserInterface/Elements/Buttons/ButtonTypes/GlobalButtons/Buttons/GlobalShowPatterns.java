@@ -46,6 +46,7 @@ public class GlobalShowPatterns extends GlobalButton {
             map.put("Truncated Heatmap", Pattern::visualizeAsHeatmapTruncated);
             map.put("Normalized Heatmap", Pattern::visualizeAsHeatmapNormalized);
             map.put("Logarithmic Normalized Heatmap", Pattern::visualizeAsHeatmapNormalizedLogarithmically);
+            map.put("Dirichlet-multinomial distribution", Pattern::visualizeDirichletMultinomialDistribution);
 
             for (String s : map.keySet()){
                 String name = openingString + s + varianceString;

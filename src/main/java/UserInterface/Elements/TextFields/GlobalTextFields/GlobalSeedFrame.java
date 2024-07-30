@@ -13,7 +13,7 @@ import java.awt.event.KeyListener;
 import static DataManager.Parameters.SEED;
 
 public class GlobalSeedFrame extends MyGlobalTextField {
-    UserInterface ui;
+    private final UserInterface ui;
 
     public GlobalSeedFrame(UserInterface ui) {
         super(ElementTypes.GLOBAL_SEED_FRAME, ui);

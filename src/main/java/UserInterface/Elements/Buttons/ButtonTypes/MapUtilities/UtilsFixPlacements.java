@@ -9,7 +9,7 @@ import UserInterface.Elements.TextFields.MyTextField;
 import static DataManager.Parameters.verbose;
 
 public class UtilsFixPlacements extends MySubButton {
-    MyTextField fixPlacementTextField;
+    private final MyTextField fixPlacementTextField;
 
     public UtilsFixPlacements(MyButton parent, MyTextField fixPlacementTextField) {
         super(ElementTypes.MAP_UTILITIES_FIX_PLACEMENTS_BUTTON, parent);

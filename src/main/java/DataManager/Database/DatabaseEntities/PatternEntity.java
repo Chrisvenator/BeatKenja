@@ -1,8 +1,11 @@
 package DataManager.Database.DatabaseEntities;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.persistence.*;
 
-@Entity
+@Setter @Getter @Entity
 @NamedQuery(name = "PatternEntity.findByPatternDescriptionId", query = "SELECT p FROM PatternEntity p WHERE patternDescriptionId = :patternDescriptionId")
 @NamedQuery(name = "PatternEntity.findById", query = "SELECT p FROM PatternEntity p WHERE p.id = :id")
 @NamedQuery(name = "PatternEntity.find", query = "SELECT p FROM PatternEntity p WHERE p.patternDescriptionId = :patternDescriptionId AND p.noteId = :noteId AND p.followedByNoteId = :followedByNoteId")
@@ -24,46 +27,6 @@ public class PatternEntity {
     @Basic
     @Column(name = "pattern_description_id")
     private int patternDescriptionId;
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getNoteId() {
-        return noteId;
-    }
-
-    public void setNoteId(int noteId) {
-        this.noteId = noteId;
-    }
-
-    public int getFollowedByNoteId() {
-        return followedByNoteId;
-    }
-
-    public void setFollowedByNoteId(int followedByNoteId) {
-        this.followedByNoteId = followedByNoteId;
-    }
-
-    public int getCount() {
-        return count;
-    }
-
-    public void setCount(int count) {
-        this.count = count;
-    }
-
-    public int getPatternDescriptionId() {
-        return patternDescriptionId;
-    }
-
-    public void setPatternDescriptionId(int patternDescriptionId) {
-        this.patternDescriptionId = patternDescriptionId;
-    }
 
     @Override
     public boolean equals(Object o) {

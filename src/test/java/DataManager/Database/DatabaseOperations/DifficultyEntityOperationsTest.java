@@ -5,7 +5,6 @@ import DataManager.Parameters;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -21,7 +20,7 @@ class DifficultyEntityOperationsTest {
     }
 
     @Test
-    void getAllDifficulties() {
+    void getAllDifficultyEntities() {
         List<String> difficulties = new java.util.ArrayList<>(FileManager.readFile("database/data/difficulty.csv").stream().map(s -> s.split(",")[1]).toList());
         difficulties.remove("name");
         assertTrue(Parameters.DIFFICULTIES.containsAll(difficulties));

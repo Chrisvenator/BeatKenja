@@ -1,10 +1,13 @@
 package DataManager.Database.DatabaseOperations;
 
+import DataManager.Database.DatabaseCommonMethods;
+import DataManager.Database.DatabaseEntities.GenreAssignmentEntity;
 import DataManager.Database.DatabaseEntities.PatternDescriptionEntity;
 import DataManager.Database.DatabaseEntities.PatternEntity;
 import DataManager.Database.DatabaseSaveOperations;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -29,10 +32,11 @@ public class PatternEntityOperations extends PatternEntity {
      * @return A list of matching PatternEntity objects.
      */
     public static List<PatternEntity> getPatternByDescription(PatternDescriptionEntity description) {
-
-        return (List<PatternEntity>) entityManager.createNamedQuery("PatternEntity.findByPatternDescriptionId")
+        List<?> result = entityManager.createNamedQuery("PatternEntity.findByPatternDescriptionId")
                 .setParameter("patternDescriptionId", description.getId())
                 .getResultList();
+
+        return DatabaseCommonMethods.checkCastFromQuery(result, PatternEntity.class);
     }
 
     public static PatternEntity getPatternById(int id) {

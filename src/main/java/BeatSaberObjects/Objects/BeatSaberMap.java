@@ -96,10 +96,11 @@ public class BeatSaberMap {
 
     public void deleteEverySecondNote() {
         List<Note> notes = new ArrayList<>(List.of(_notes));
-        for (int i = 0; i < notes.size(); i++) {
-            notes.remove(i);
+        for (int i = notes.size() - 1; i >= 0; i--) {
+            if (i % 2 != 0) {
+                notes.remove(i);
+            }
         }
-
         this._notes = notes.toArray(new Note[0]);
     }
 

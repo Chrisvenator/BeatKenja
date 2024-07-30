@@ -3,11 +3,11 @@ package BeatSaberObjects.Objects;
 import java.util.Objects;
 
 public class Obstacle {
-    protected float _time;
-    protected String _lineIndex;
-    protected int _type;
-    protected float _duration;
-    protected float _width;
+    protected final float _time;
+    protected final String _lineIndex;
+    protected final int _type;
+    protected final float _duration;
+    protected final float _width;
 
     public Obstacle(float _time, String _lineIndex, int _type, float _duration, float _width) {
         this._time = _time;
