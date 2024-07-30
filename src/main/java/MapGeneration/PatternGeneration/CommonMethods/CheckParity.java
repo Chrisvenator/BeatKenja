@@ -147,8 +147,8 @@ public class CheckParity {
      *
      * @param pattern pattern is the list where the previous notes are saved.
      * @param time    time specifies on which bpm the note should be placed.
-     * @param i       i specifies at which element the last note has been placed.
-     * @param j       j... If the pattern is one handed: j = 1. If two handed: j = 2.
+     * @param i       specifies at which element the last note has been placed.
+     * @param j       If the pattern is one-handed: j = 1. If two-handed: j = 2.
      * @return BeatSaberObjects.Objects.Note
      */
     public static Note nextNoteAfterTimingNote(List<Note> pattern, float time, int i, int j) {
@@ -179,8 +179,8 @@ public class CheckParity {
      * read further for more information
      *
      * @param notes     notes is the list where the previous notes are saved.
-     * @param i         i specifies at which element the last note has been placed.
-     * @param oneHanded is the map a one handed map.
+     * @param i         specifies at which element the last note has been placed.
+     * @param oneHanded is the map a one-handed map.
      * @return boolean
      */
     public static boolean invalidPlacement(List<Note> notes, int i, boolean oneHanded) {

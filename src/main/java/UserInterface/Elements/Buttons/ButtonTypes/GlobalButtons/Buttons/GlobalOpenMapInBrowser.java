@@ -21,8 +21,8 @@ public class GlobalOpenMapInBrowser extends GlobalButton {
 
     @Override
     public void onClick() {
-//            String url = "https://allpoland.github.io/ArcViewer/";
-//            String url = "https://skystudioapps.com/bs-viewer/";
+        // url: "https://allpoland.github.io/ArcViewer/";
+        // url: "https://skystudioapps.com/bs-viewer/";
 
         try {
             URI uri = new URI(mapViewerURL);
@@ -30,7 +30,7 @@ public class GlobalOpenMapInBrowser extends GlobalButton {
             if (Desktop.isDesktopSupported()) {
                 Desktop desktop = Desktop.getDesktop();
 
-                if (filePath != null && !filePath.equals("")) {
+                if (filePath != null && !filePath.isEmpty()) {
                     desktop.browse(uri);
                     desktop.open(new File(filePath));
 

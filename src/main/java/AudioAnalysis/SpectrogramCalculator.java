@@ -26,7 +26,8 @@ public class SpectrogramCalculator {
      * @param overlap    the number of samples to overlap between consecutive FFTs.
      * @return a 2D array representing the spectrogram (amplitude squared).
      */
-    public static double[][] calculateSpectrogram(String filePath, int fftSize, int overlap) throws UnsupportedAudioFileException, IOException {
+    public static double[][] calculateSpectrogram(String filePath, int fftSize, int overlap)
+    {
 //        AudioDispatcher dispatcher = AudioDispatcherFactory.fromFile(new File(filePath), fftSize, overlap);
 //        FFT fft = new FFT(fftSize);
         List<double[]> spectrogram = new ArrayList<>();

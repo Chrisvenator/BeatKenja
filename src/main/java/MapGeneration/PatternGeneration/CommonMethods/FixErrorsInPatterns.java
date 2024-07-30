@@ -22,7 +22,7 @@ public class FixErrorsInPatterns {
     }
 
     /**
-     * Fixes notes that are outside of the grid after the first run of the error fixing. Because of the other fixes, the notes might be outside of the grid again.
+     * Fixes notes that are outside the grid after the first run of the error fixing. Because of the other fixes, the notes might be outside the grid again.
      * This function just shifts all the notes of that specific time, where the note os outside the grid, back into the grid.
      * Errors can still occur, but this function should fix most of them.
      *
@@ -38,7 +38,7 @@ public class FixErrorsInPatterns {
     }
 
     /**
-     * Fixes notes that are outside of the grid
+     * Fixes notes that are outside the grid
      * The note will be moved to the closest position inside the grid.
      * The grid is 4x3, so the note will be moved to the closest position inside the grid.
      *

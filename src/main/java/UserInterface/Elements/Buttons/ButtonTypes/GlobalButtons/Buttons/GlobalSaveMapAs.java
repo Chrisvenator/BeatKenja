@@ -1,6 +1,5 @@
 package UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons;
 
-import BeatSaberObjects.Objects.BeatSaberMap;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.GlobalButton;
 import UserInterface.Elements.ElementTypes;
 import UserInterface.UserInterface;
@@ -22,7 +21,7 @@ public class GlobalSaveMapAs extends GlobalButton {
     public void onClick() {
         int option = FILE_CHOOSER.showSaveDialog(this);
 
-        if (!approveFileloading(option)) return;
+        if (!approveFileLoading(option)) return;
         try {
             String filePath = FILE_CHOOSER.getSelectedFile().getAbsolutePath();
             filePath += filePath.contains(".dat") ? "" : ".dat";

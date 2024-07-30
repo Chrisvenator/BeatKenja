@@ -11,20 +11,12 @@ import org.json.JSONObject;
 import java.util.*;
 import java.util.concurrent.*;
 import java.io.File;
-import java.util.List;
-import java.util.ArrayList;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ImportDownloadedMapsIntoDatabase {
-//    public static void main(String[] args) {
-//        ImportDownloadedMapsIntoDatabase.importAllMaps("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\test\\", "AllMapsGroupedV1");
-//        ImportDownloadedMapsIntoDatabase.importAllMaps("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\" +
-//                "test\\", "test123");
-//    }
-
     public static void importAllMaps(String MAPS_DIRECTORY, String patternName) {
         if (!MAPS_DIRECTORY.endsWith("/")) MAPS_DIRECTORY += "/";
 
@@ -315,7 +307,6 @@ public class ImportDownloadedMapsIntoDatabase {
                 patterns.add(p);
             } catch (NoteNotValidException e) {
                 System.err.println("[INFO]: Failed to create pattern for difficulty because a note is not valid: " + diff + " in map: " + mapDir);
-                continue;
             }
         }
 
