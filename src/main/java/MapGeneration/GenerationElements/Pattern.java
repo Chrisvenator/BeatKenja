@@ -319,10 +319,20 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
      * @throws IllegalArgumentException if any of the tags, genres, or difficulties are not found in the database,
      *                                  or if the pattern is not found in the database
      */
+    @lombok.SneakyThrows
     public Pattern(PatMetadata metadata) {
         if (!useDatabase && metadata.equals(Parameters.DEFAULT_PATTERN_METADATA)) {
-            //TODO:
+            System.out.println("[INFO]: Database has been disabled but the default metadata was still used. Using default Pattern instead...");
+            Pattern p = new Pattern(DEFAULT_PATTERN_PATH);
+
+            this.count = p.count;
+            this.patterns = p.patterns;
+            this.probabilities = p.probabilities;
+            this.metadata = p.metadata;
+
+            return;
         }
+        if (!useDatabase) throw new RuntimeException("[ERROR]: Database has not been turned on! Shutting down");
 
         this.metadata = metadata;
 
@@ -332,12 +342,9 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
         Set<String> lowerCaseDifficulties = Parameters.DIFFICULTIES.stream().map(String::toLowerCase).collect(Collectors.toSet());
 
         // Validate tags, genres, and difficulties against the predefined parameters
-        if (!lowerCaseMapTags.containsAll(metadata.tags().stream().map(String::toLowerCase).toList()) && !lowerCaseMapTags.containsAll(metadata.tags()))
-            throw new IllegalArgumentException("Tag(s) not found in database: " + metadata.tags());
-        if (!lowerCaseMusicGenres.containsAll(metadata.genre().stream().map(String::toLowerCase).toList()) && !lowerCaseMusicGenres.containsAll(metadata.genre()))
-            throw new IllegalArgumentException("Genre(s) not found in database: " + metadata.genre());
-        if (!lowerCaseDifficulties.containsAll(metadata.difficulty().stream().map(String::toLowerCase).toList()) && !lowerCaseDifficulties.containsAll(metadata.difficulty()))
-            throw new IllegalArgumentException("Difficulty not found in database: " + metadata.difficulty());
+        if (!lowerCaseMapTags.containsAll(metadata.tags().stream().map(String::toLowerCase).toList()) && !lowerCaseMapTags.containsAll(metadata.tags())) throw new IllegalArgumentException("Tag(s) not found in database: " + metadata.tags());
+        if (!lowerCaseMusicGenres.containsAll(metadata.genre().stream().map(String::toLowerCase).toList()) && !lowerCaseMusicGenres.containsAll(metadata.genre())) throw new IllegalArgumentException("Genre(s) not found in database: " + metadata.genre());
+        if (!lowerCaseDifficulties.containsAll(metadata.difficulty().stream().map(String::toLowerCase).toList()) && !lowerCaseDifficulties.containsAll(metadata.difficulty())) throw new IllegalArgumentException("Difficulty not found in database: " + metadata.difficulty());
 
 
         PatternDescriptionEntity desc;
