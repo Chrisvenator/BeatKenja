@@ -1,6 +1,6 @@
 {
  "global": {
-   "verbose": true,
+   "verbose": false,
    "dark-mode": false,
    "save-maps-to-wip-folder-after-mp3-conversion": true,
    "ignore-dds": false,
@@ -10,9 +10,10 @@
  },
  "default-paths": {
      "wip-folder": "C:/Program Files (x86)/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels/",
+     "default-pattern": "C:\\Users\\SCCO\\IdeaProjects\\BeatKenja\\src\\main\\resources\\MapTemplates\\AllGroupedV1; 98; 4;[StandardExpert];NULL;NULL.pat",
      "config": "./config.json",
      "readme": "./README.md",
-     "default-pattern": "C:\\Users\\SCCO\\IdeaProjects\\BeatKenja\\src\\main\\resources\\MapTemplates\\AllGroupedV1; 98; 4;[StandardExpert];NULL;NULL.pat"
+     "default-log-path": "./logs/"
  },
  "colors": {
    "light-mode-background-color": "#FFFFFF",
@@ -23,7 +24,7 @@
  "generated-default-paths": {
      "onset-generation-folder": "./OnsetGeneration/",
      "onset-generation-folder-mp3-input": "./OnsetGeneration/mp3Files/",
-     "onset-generation-folder-wav-output": "./OnsetGeneration/output/",
+     "onset-generation-output-folder": "./OnsetGeneration/output/",
      "beatsaver-map-info-path": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\MapInfos\\",
      "beatsaver-maps-path": "./BeatSaberMaps/Maps/",
      "extract-from-jar-path": "./"
