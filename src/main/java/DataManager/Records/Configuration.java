@@ -12,6 +12,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.awt.*;
 import java.util.List;
 
+@lombok.Getter
+@lombok.Setter
 public class Configuration
 {
     @JsonProperty("global")
@@ -50,10 +52,14 @@ public class Configuration
     {
         @JsonProperty("wip-folder")
         public String wipFolder = "C:/Program Files (x86)/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels/";
+        @JsonProperty("config")
         public String config = "./config.json";
+        @JsonProperty("readme")
         public String readme = "./README.md";
         @JsonProperty("default-pattern")
         public String defaultPattern = "C:\\Users\\SCCO\\IdeaProjects\\BeatKenja\\src\\main\\resources\\MapTemplates\\AllGroupedV1; 98; 4;[StandardExpert];NULL;NULL.pat";
+        @JsonProperty("default-log.path")
+        public String defaultLogPath = "./logs/";
     }
 
     public static class Colors
@@ -85,8 +91,8 @@ public class Configuration
         public String onsetGenerationFolder = "./OnsetGeneration/";
         @JsonProperty("onset-generation-folder-mp3-input")
         public String onsetGenerationFolderMp3Input = "./OnsetGeneration/mp3Files/";
-        @JsonProperty("onset-generation-folder-wav-output")
-        public String onsetGenerationFolderWavOutput = "./OnsetGeneration/output/";
+        @JsonProperty("onset-generation-output-folder")
+        public String onsetGenerationOutputFolder = "./OnsetGeneration/output/";
         @JsonProperty("beatsaver-map-info-path")
         public String beatsaverMapInfoPath = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\MapInfos\\";
         @JsonProperty("beatsaver-maps-path")

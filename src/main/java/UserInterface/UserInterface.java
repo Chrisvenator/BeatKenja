@@ -45,7 +45,6 @@ public class UserInterface extends JFrame {
 
     public UserInterface() throws NoteNotValidException {
         //loading config:
-        loadConfig();
         if (verbose) System.setErr(ERROR_PRINT_STREAM);
         pattern = new Pattern(String.valueOf(useDatabase ? DEFAULT_PATTERN_METADATA : DEFAULT_PATTERN_PATH));
 
@@ -55,7 +54,7 @@ public class UserInterface extends JFrame {
         //  Initialize UI Elements  //
         //////////////////////////////
 
-        final UIElements uiElements = new UIElements(darkMode, this);
+        final UIElements uiElements = new UIElements(DARK_MODE, this);
         uiElements.initialize();
 
         labelMapDiff = uiElements.labelMapDiff();
@@ -79,7 +78,7 @@ public class UserInterface extends JFrame {
         /////////////////////
 
         //global
-        statusCheck.append("config: \nverbose: " + verbose + "\npath: " + DEFAULT_PATH + "\ndark mode:" + darkMode + "\nsave new maps to WIP folder (default path): " + saveNewMapsToDefaultPath + "\n\n");
+        statusCheck.append("config: \nverbose: " + verbose + "\npath: " + DEFAULT_PATH + "\ndark mode:" + DARK_MODE + "\nsave new maps to WIP folder (default path): " + saveNewMapsToDefaultPath + "\n\n");
         ignoreDDsCheckBox.addActionListener(e -> statusCheck.append("\n[INFO]: ignore DDs: " + (ignoreDDs = ignoreDDsCheckBox.isSelected())));
         //</editor-fold desc="Event Listener">
 
@@ -171,6 +170,7 @@ public class UserInterface extends JFrame {
     }
 
     //If you want to add more configs:
+    @Deprecated
     public static void loadConfig() {
         List<String> config = FileManager.readFile(CONFIG_FILE_LOCATION);
         if (config != null && !config.isEmpty()) {
@@ -180,7 +180,7 @@ public class UserInterface extends JFrame {
                 if (s.contains("defaultPath") && s.contains("//")) DEFAULT_PATH = splits[1] + ":" + splits[2].substring(0, splits[2].indexOf("//")).trim();
             }
             verbose = config.toString().contains("verbose:true");
-            darkMode = config.toString().contains("dark-mode:true");
+            DARK_MODE = config.toString().contains("dark-mode:true");
             saveNewMapsToDefaultPath = config.toString().contains("save_new_maps_to_default_path:true") && new File(DEFAULT_PATH).exists() && new File(DEFAULT_PATH).isDirectory();
         }
     }
