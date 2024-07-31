@@ -29,7 +29,7 @@ public class ConfigLoader {
     public static void main(String[] args) {
         ConfigLoader loader = new ConfigLoader("./config.json");
         Configuration config = loader.getConfig();
-        System.out.println("Database URL: " + config.database.settings.dialect);
-        System.out.println("Max Connections: " + config.global.defaultMapPreviewer);
+        System.out.println("Database URL: " + config.database.settings.hibernate.connection.url);
+        System.out.println("Dark-Mode: " + config.global.darkMode);
     }
 }

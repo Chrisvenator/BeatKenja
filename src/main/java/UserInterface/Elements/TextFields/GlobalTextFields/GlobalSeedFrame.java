@@ -21,11 +21,11 @@ public class GlobalSeedFrame extends MyGlobalTextField {
 
         JLabel seedLabel = new JLabel("Seed:");
         seedLabel.setBounds(960, 17, 40, 20);
-        if (Parameters.darkMode) seedLabel.setForeground(Color.white);
+        if (Parameters.DARK_MODE) seedLabel.setForeground(Color.white);
         ui.add(seedLabel);
 
-        if (Parameters.darkMode) setBackground(Color.black);
-        if (Parameters.darkMode) setForeground(Color.white);
+        if (Parameters.DARK_MODE) setBackground(Color.black);
+        if (Parameters.DARK_MODE) setForeground(Color.white);
 
         addKeyListener(new MyKeyListener());
     }
