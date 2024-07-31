@@ -7,10 +7,7 @@ import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Exceptions.Conve
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.GlobalButton;
 import UserInterface.Elements.ElementTypes;
 import UserInterface.UserInterface;
-import javazoom.jl.decoder.JavaLayerException;
 
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -66,7 +63,7 @@ public class GlobalConvertMP3ToMaps extends GlobalButton {
                 if (files.isEmpty()) throw new Exception();
                 ui.statusCheck.append("[INFO]: Found " + files.size() + " MP3 Files in \"" + ONSET_GENERATION_FOLDER_PATH_INPUT + "\"\n\n");
             } catch (Exception e) {
-                ui.statusCheck.setBackground(darkMode ? Color.BLACK : Color.WHITE);
+                ui.statusCheck.setBackground(DARK_MODE ? Color.BLACK : Color.WHITE);
                 this.setText("Convert MP3s to timing maps");
                 throw new ConvertMP3Exception("Found 0 MP3 Files! Please put your mp3 Files into th folder: \"" + ONSET_GENERATION_FOLDER_PATH_INPUT);
             }
@@ -82,7 +79,7 @@ public class GlobalConvertMP3ToMaps extends GlobalButton {
                 else ui.statusCheck.append("\n[ERROR]: error while installing dependencies...");
             }
 
-            ui.statusCheck.setBackground(darkMode ? Color.BLACK : Color.WHITE);
+            ui.statusCheck.setBackground(DARK_MODE ? Color.BLACK : Color.WHITE);
             this.setText("Convert MP3s to timing maps");
         } catch (ConvertMP3Exception e) {
             printException(e);

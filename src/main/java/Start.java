@@ -24,9 +24,13 @@ public class Start {
     |---|---|---|---|       |---|---|---|
      */
 
-    //TODO: Config loader dependency weiter machen
-    //TODO: Besserer Logger
-    //TODO: public static final boolean PARITY_ERRORS_AS_BOOKMARKS = true;
+    /**
+     *********** Planned Features ***********
+     * Config loader dependency weiter machen
+     * Besserer Logger
+     * public static final boolean PARITY_ERRORS_AS_BOOKMARKS = true;
+     *****************************************
+    **/
 
     public static void main(String[] args) throws NoteNotValidException {
         java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);

@@ -13,7 +13,7 @@ import static DataManager.Parameters.*;
 public class GlobalOpenFolder extends GlobalButton {
     public GlobalOpenFolder(UserInterface ui) {
         super(ElementTypes.GLOBAL_OPEN_FOLDER, ui);
-        setBackground(darkMode ? new Color(175, 140, 59) : new Color(255, 212, 123));
+        setBackground(DARK_MODE ? new Color(175, 140, 59) : new Color(255, 212, 123));
     }
 
     @Override
