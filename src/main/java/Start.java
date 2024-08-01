@@ -26,19 +26,29 @@ public class Start {
 
     /**
      *********** Planned Features ***********
-     * Config loader dependency weiter machen
      * Besserer Logger
      * public static final boolean PARITY_ERRORS_AS_BOOKMARKS = true;
+     * export as .jar
      *****************************************
     **/
+
 
     public static void main(String[] args) throws NoteNotValidException {
         java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
 
         SEED = (long) (new Random().nextDouble() * 1000000000);
         RANDOM = new Random(SEED);
-        System.out.println("Current seed is: " + SEED);
 
+        logger.info("Starting Start...");
+        logger.info("Seed: {}", SEED);
+        logger.info("Setting Hibernate Logger to warning");
+
+//        logger.trace("Entering method processOrder().");
+//        logger.debug("Received order with ID 12345.");
+//        logger.info("Order shipped successfully.");
+//        logger.warn("Potential security vulnerability detected in user input: '...'");
+//        logger.error("Failed to process order. Error: {. . .}");
+//        logger.fatal("System crashed. Shutting down...");
 
         CreateAllNecessaryDIRsAndFiles.createAllNecessaryDIRsAndFiles();
 
@@ -48,6 +58,7 @@ public class Start {
         if (useDatabase) ui.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                logger.trace("Closing Window");
                 if (EXPORT_DATABASE) DatabaseExport.exportDatabase("./database"); // Export the database if the user wants to. Currently disabled because of bugs.
                 entityManager.close();
             }

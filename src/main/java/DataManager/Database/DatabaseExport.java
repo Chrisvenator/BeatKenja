@@ -12,6 +12,8 @@ import org.hibernate.tool.schema.TargetType;
 import java.util.EnumSet;
 import java.util.List;
 
+import static DataManager.Parameters.logger;
+
 /**
  * Provides functionality to export the database schema and data into separate files.
  * This class supports exporting entity data for various entities like Genre, Difficulty, Tag, Note, etc.,
@@ -31,6 +33,7 @@ public class DatabaseExport {
      *             in a subdirectory named "data" with respective CSV files, and the schema will be saved as "schema.sql".
      */
     public static void exportDatabase(String path) {
+        logger.debug("Export database to {}", path);
         if (!path.endsWith("/")) path += "/";
         System.out.println("[INFO]: Dumping database...");
 
@@ -48,6 +51,7 @@ public class DatabaseExport {
         exportPattern(path + "data/pattern.csv");
 
         System.out.println("[INFO]: Dumped database to " + path + "exported_schema.sql");
+        logger.debug("Dumped database to " + path + "exported_schema.sql");
     }
 
     /**
@@ -58,6 +62,7 @@ public class DatabaseExport {
      *             and "schema.sql" will be appended to this path for the output file.
      */
     private static void exportSchema(String path) {
+        logger.info("Export schema to {}", path);
         // Create the ServiceRegistry from the settings
         ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
                 .applySettings(Parameters.DATABASE_SETTINGS)
@@ -80,6 +85,8 @@ public class DatabaseExport {
         schemaExport.setFormat(true);
         schemaExport.setOutputFile(path);
         schemaExport.createOnly(EnumSet.of(TargetType.SCRIPT), metadata);
+
+        logger.info("Exported schema to {}", path);
     }
 
     // The following methods document the export process for each entity type.
@@ -91,12 +98,14 @@ public class DatabaseExport {
      * @param path The file path where the Genre data should be saved in CSV format.
      */
     private static void exportGenre(String path) {
+        logger.debug("Export genre to {}", path);
         StringBuilder csv = new StringBuilder("id,name\n");
         List<GenreEntity> entityList = Parameters.entityManager.createQuery("SELECT d FROM GenreEntity d").getResultList();
         for (GenreEntity entity : entityList) {
             csv.append(entity.getId()).append(",").append(entity.getName()).append("\n");
         }
         DataManager.FileManager.overwriteFile(path, csv.toString());
+        logger.debug("Exported genre to {}", path);
     }
 
     /**
@@ -105,12 +114,14 @@ public class DatabaseExport {
      * @param path The file path where the Difficulty data should be saved in CSV format.
      */
     private static void exportDifficulty(String path) {
+        logger.debug("Export difficulty to {}", path);
         StringBuilder csv = new StringBuilder("id,name\n");
         List<DifficultyEntity> entityList = Parameters.entityManager.createQuery("SELECT d FROM DifficultyEntity d").getResultList();
         for (DifficultyEntity entity : entityList) {
             csv.append(entity.getId()).append(",").append(entity.getName()).append("\n");
         }
         DataManager.FileManager.overwriteFile(path, csv.toString());
+        logger.debug("Exported difficulty to {}", path);
     }
 
     /**
@@ -119,12 +130,14 @@ public class DatabaseExport {
      * @param path The file path where the Tag data should be saved in CSV format.
      */
     private static void exportTag(String path) {
+        logger.debug("Export tag to {}", path);
         StringBuilder csv = new StringBuilder("id,name\n");
         List<TagEntity> entityList = Parameters.entityManager.createQuery("SELECT d FROM TagEntity d").getResultList();
         for (TagEntity entity : entityList) {
             csv.append(entity.getId()).append(",").append(entity.getName()).append("\n");
         }
         DataManager.FileManager.overwriteFile(path, csv.toString());
+        logger.debug("Exported tag to {}", path);
     }
 
     /**
@@ -133,6 +146,7 @@ public class DatabaseExport {
      * @param path The file path where the Tag data should be saved in CSV format.
      */
     private static void exportNote(String path) {
+        logger.debug("Export note to {}", path);
         StringBuilder csv = new StringBuilder("id,line_index,line_layer,cut_direction,type\n");
         List<NoteEntity> entityList = Parameters.entityManager.createQuery("SELECT d FROM NoteEntity d").getResultList();
         for (NoteEntity entity : entityList) {
@@ -140,6 +154,7 @@ public class DatabaseExport {
         }
 
         DataManager.FileManager.overwriteFile(path, csv.toString());
+        logger.debug("Exported note to {}", path);
     }
 
     /**
@@ -148,6 +163,7 @@ public class DatabaseExport {
      * @param path The file path where the DifficultyAssignment data should be saved in CSV format.
      */
     private static void exportAssignmentDifficulty(String path) {
+        logger.debug("Export assignment difficulty to {}", path);
         StringBuilder csv = new StringBuilder("id,fk_difficulty_id,fk_pattern_description_id\n");
         List<DifficultyAssignmentEntity> entityList = Parameters.entityManager.createQuery("SELECT d FROM DifficultyAssignmentEntity d").getResultList();
         for (DifficultyAssignmentEntity entity : entityList) {
@@ -155,6 +171,7 @@ public class DatabaseExport {
         }
 
         DataManager.FileManager.overwriteFile(path, csv.toString());
+        logger.debug("Exported assignment difficulty to {}", path);
     }
 
     /**
@@ -163,6 +180,7 @@ public class DatabaseExport {
      * @param path The file path where the GenreAssignment data should be saved in CSV format.
      */
     private static void exportAssignmentGenre(String path) {
+        logger.debug("Export assignment genre to {}", path);
         StringBuilder csv = new StringBuilder("id,fk_genre_id,fk_pattern_description_id\n");
         List<GenreAssignmentEntity> entityList = Parameters.entityManager.createQuery("SELECT d FROM GenreAssignmentEntity d").getResultList();
         for (GenreAssignmentEntity entity : entityList) {
@@ -170,6 +188,7 @@ public class DatabaseExport {
         }
 
         DataManager.FileManager.overwriteFile(path, csv.toString());
+        logger.debug("Exported assignment genre to {}", path);
     }
 
     /**
@@ -178,6 +197,7 @@ public class DatabaseExport {
      * @param path The file path where the TagAssignment data should be saved in CSV format.
      */
     private static void exportAssignmentTag(String path) {
+        logger.debug("Export assignment tag to {}", path);
         StringBuilder csv = new StringBuilder("id,fk_tag_id,fk_pattern_description_id\n");
         List<TagAssignmentEntity> entityList = Parameters.entityManager.createQuery("SELECT d FROM TagAssignmentEntity d").getResultList();
         for (TagAssignmentEntity entity : entityList) {
@@ -185,6 +205,7 @@ public class DatabaseExport {
         }
 
         DataManager.FileManager.overwriteFile(path, csv.toString());
+        logger.debug("Exported assignment tag to {}", path);
     }
 
     /**
@@ -193,6 +214,7 @@ public class DatabaseExport {
      * @param path The file path where the PatternDescription data should be saved in CSV format.
      */
     private static void exportPatternDescription(String path) {
+        logger.debug("Export pattern description to {}", path);
         StringBuilder csv = new StringBuilder("id,name,bpm,nps\n");
         List<PatternDescriptionEntity> entityList = Parameters.entityManager.createQuery("SELECT d FROM PatternDescriptionEntity d").getResultList();
         for (PatternDescriptionEntity entity : entityList) {
@@ -200,6 +222,7 @@ public class DatabaseExport {
         }
 
         DataManager.FileManager.overwriteFile(path, csv.toString());
+        logger.debug("Exported pattern description to {}", path);
     }
 
     /**
@@ -208,6 +231,7 @@ public class DatabaseExport {
      * @param path The file path where the Pattern data should be saved in CSV format.
      */
     private static void exportPattern(String path) {
+        logger.debug("Export pattern to {}", path);
         StringBuilder csv = new StringBuilder("id,note_id,followed_by_note_id,count,pattern_description_id\n");
         List<PatternEntity> entityList = Parameters.entityManager.createQuery("SELECT d FROM PatternEntity d").getResultList();
         for (PatternEntity entity : entityList) {
@@ -215,6 +239,7 @@ public class DatabaseExport {
         }
 
         DataManager.FileManager.overwriteFile(path, csv.toString());
+        logger.debug("Exported pattern to {}", path);
     }
 
 

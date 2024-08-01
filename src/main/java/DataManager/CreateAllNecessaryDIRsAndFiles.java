@@ -28,17 +28,19 @@ public class CreateAllNecessaryDIRsAndFiles {
 
     public static void createAllNecessaryDIRsAndFiles() {
         //Checking dependencies:
-        if (isPipInstalled()) System.out.println("Pip is installed.");
+        if (isPipInstalled()) logger.info("Pip is installed.");
         else installPip();
 
 
+        logger.info("Checking if directories exist");
         //Checking if the directories exist.
         //If yes, then don't create them again
-        File f3 = new File(CONFIG_FILE_LOCATION);             //Default Value: "./config.txt"
+        File f3 = new File(CONFIG_FILE_LOCATION);             //Default Value: "./config.txt" //TODO: Ändern
         if (f3.exists() && f3.isFile()) {
+            logger.info("config file exists");
             return;
         }
-        System.out.println("Creating all necessary directories and files.");
+        logger.info("Creating all necessary directories and files.");
 
 
         createConfigFile();
@@ -51,7 +53,7 @@ public class CreateAllNecessaryDIRsAndFiles {
      * Creates a config file with default values.
      */
     private static void createConfigFile() {
-
+        logger.info("Creating config file.");
         FileManager.overwriteFile(CONFIG_FILE_LOCATION, config);
     }
 
@@ -60,11 +62,13 @@ public class CreateAllNecessaryDIRsAndFiles {
      */
     public static void createDirectories(String[] dirs) {
         try {
+            logger.info("Creating directories.");
             for (String dir : dirs) {
+                logger.info("Creating directory: {}", dir);
                 Files.createDirectories(Paths.get(dir));
             }
         } catch (IOException e) {
-            System.err.println("There has been an Exception while creating the files:\n");
+            logger.fatal("There has been an Exception while creating the directories: {}", e.getMessage());
             e.printStackTrace();
         }
     }
@@ -78,18 +82,20 @@ public class CreateAllNecessaryDIRsAndFiles {
     private static void extractFilesFromJar(String[] filesToCopy) {
         // Get the current ClassLoader
         ClassLoader classLoader = CreateAllNecessaryDIRsAndFiles.class.getClassLoader();
+        logger.info("Extracting files from jar.");
 
         try {
             for (String filePathToCopy : filesToCopy) {
+                logger.info("Extracting file: {}", filePathToCopy);
                 filePathToCopy = filePathToCopy.replaceAll("\\./", "");
                 InputStream inputStream = classLoader.getResourceAsStream(filePathToCopy);
                 File f = new File(filePathToCopy);
-                System.out.println(f.getAbsolutePath());
+                logger.info("Path: {}", f.getAbsolutePath());
 
                 if (inputStream != null) {
 
                     File destinationFile = new File(DEFAULT_EXPORT_PATH + filePathToCopy);
-                    if (!destinationFile.getParentFile().mkdirs()) System.err.println("Something went wrong while trying to create folder!");
+                    if (!destinationFile.getParentFile().mkdirs()) logger.fatal("Something went wrong while trying to create folder: {}", destinationFile.getParentFile().getAbsolutePath());
 
                     OutputStream outputStream = new FileOutputStream(destinationFile);
                     byte[] buffer = new byte[1024];
@@ -101,13 +107,14 @@ public class CreateAllNecessaryDIRsAndFiles {
                     outputStream.close();
                     inputStream.close();
 
-                    System.out.println("File copied: " + filePathToCopy);
+                    logger.info("File copied: {}", filePathToCopy);
                 } else {
-                    System.out.println("File not found in the JAR: " + filePathToCopy);
+                    logger.error("File not found in the JAR: {}", filePathToCopy);
                     return;
                 }
             }
         } catch (IOException e) {
+            logger.fatal("There has been an Exception while creating the files: {}", e.toString());
             e.printStackTrace();
         }
     }
@@ -119,12 +126,15 @@ public class CreateAllNecessaryDIRsAndFiles {
      */
     public static boolean isFFMpegInstalled() {
         try {
+            logger.info("Checking if FFMpeg is installed.");
             ProcessBuilder processBuilder = new ProcessBuilder("ffmpeg", "-version");
             Process process = processBuilder.start();
             int exitCode = process.waitFor();
 
+            logger.info("FFmpeg installation exited with code {}", exitCode);
             return exitCode == 0;
         } catch (IOException | InterruptedException e) {
+            logger.error("Something went wrong with the installation of FFMPEG: {}", e.toString());
             return false; // An exception occurred or ffmpeg is not found
         }
     }
@@ -136,12 +146,15 @@ public class CreateAllNecessaryDIRsAndFiles {
      */
     public static boolean isPythonInstalled() {
         try {
+            logger.info("Checking if Python is installed.");
             ProcessBuilder processBuilder = new ProcessBuilder("python", "--version");
             Process process = processBuilder.start();
             int exitCode = process.waitFor();
 
+            logger.info("Python installation exited with code {}", exitCode);
             return exitCode == 0;
         } catch (IOException | InterruptedException e) {
+            logger.error("Something went wrong with the installation of Python: {}", e.getMessage());
             return false; // An exception occurred or python is not found
         }
     }
@@ -153,12 +166,15 @@ public class CreateAllNecessaryDIRsAndFiles {
      */
     public static boolean isPipInstalled() {
         try {
+            logger.info("Checking if Pip is installed.");
             ProcessBuilder processBuilder = new ProcessBuilder("pip", "--version");
             Process process = processBuilder.start();
             int exitCode = process.waitFor();
 
+            logger.info("Pip installation exited with code {}", exitCode);
             return exitCode == 0;
         } catch (IOException | InterruptedException e) {
+            logger.error("Something went wrong with the installation of Pip: {}", e.getMessage());
             return false; // An exception occurred or pip is not found
         }
     }
@@ -168,12 +184,13 @@ public class CreateAllNecessaryDIRsAndFiles {
      */
     public static void installPip() {
         try {
+            logger.info("Installing Pip...");
             ProcessBuilder processBuilder = new ProcessBuilder("python", "-m", "ensurepip");
             processBuilder.start();
 
-            System.out.println("Pip has been installed.");
+            logger.info("Pip has been installed.");
         } catch (IOException e) {
-            System.out.println("Failed to install Pip.");
+            logger.error("Failed to install Pip.");
             e.printStackTrace();
         }
     }
@@ -185,6 +202,7 @@ public class CreateAllNecessaryDIRsAndFiles {
      */
     public static boolean installDependencies() {
         try {
+            logger.info("Installing dependencies...");
             ProcessBuilder processBuilder = new ProcessBuilder("pip", "install", "pydub");
             ProcessBuilder processBuilder2 = new ProcessBuilder("pip", "install", "librosa");
             ProcessBuilder processBuilder3 = new ProcessBuilder("pip", "install", "numpy");
@@ -200,17 +218,20 @@ public class CreateAllNecessaryDIRsAndFiles {
             int exitCode3 = p3.waitFor();
             int exitCode4 = p4.waitFor();
 
+            logger.info("Dependency pydub installation exited with code {}", exitCode);
+            logger.info("Dependency librosa installation exited with code {}", exitCode2);
+            logger.info("Dependency numpy installation exited with code {}", exitCode3);
+            logger.info("Dependency upgrade installation exited with code {}", exitCode4);
 
             if (exitCode2 == 0 && exitCode == 0 && exitCode3 == 0 && exitCode4 == 0) {
-                System.out.println("Dependencies has been installed.");
+                logger.info("Dependencies has been installed.");
                 return true;
             } else {
-                System.err.println("Failed to install dependencies. Are they already installed?");
+                logger.warn("Failed to install dependencies. Are they already installed?");
                 return false;
             }
         } catch (IOException | InterruptedException e) {
-            System.out.println("Failed to install dependencies.");
-            e.printStackTrace();
+            logger.error("Failed to install dependencies.");
             return false;
         }
     }
