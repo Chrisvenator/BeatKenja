@@ -6,6 +6,8 @@ import DataManager.Database.DatabaseOperations.TagEntityOperations;
 import DataManager.Records.Configuration;
 import DataManager.Records.PatMetadata;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons.Common.DifficultyFileNameExtensionFilter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
@@ -79,6 +81,7 @@ public class Parameters {
 
 
     // Common
+    public static final Logger logger = LogManager.getLogger();
     public static final EntityManager entityManager = useDatabase ? Persistence.createEntityManagerFactory("default").createEntityManager() : null;
     public static final JFileChooser FILE_CHOOSER = new JFileChooser(DEFAULT_PATH.trim());
     public static final List<String> MAP_TAGS = TagEntityOperations.getAllTags();
