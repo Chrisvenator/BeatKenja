@@ -1,6 +1,7 @@
 package UserInterface.Elements.Buttons.ButtonTypes.MapCreator.Button;
 
 import BeatSaberObjects.Objects.BeatSaberMap;
+import MapGeneration.GenerationElements.Pattern;
 import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.Exceptions.MapDidntComputeException;
 import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.MapCreatorSubButton;
 import UserInterface.Elements.Buttons.MyButton;
@@ -29,7 +30,7 @@ public class CreateMapButton extends MapCreatorSubButton {
             if (verbose) ui.statusCheck.append("\nVERBOSE: og: " + ui.map.exportAsMap());
             //</editor-fold>
 
-            BeatSaberMap map = createMap(ui.map, ui.pattern, false, false);
+            BeatSaberMap map = createMap(ui.map, Pattern.adjustVariance(ui.pattern), false, false);
 
             if (ui.map.exportAsMap().split("\"_cutDirection\":8").length >= 20) ui.statusCheck.append("There are a lot of errors. Do you really want to continue? It is recommended to try again\n");
 

@@ -1,9 +1,10 @@
 package DataManager.Records;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
-public record PatMetadata(String name, double bpm, double nps, List<String> difficulty, List<String> tags, List<String> genre) {
+public record PatMetadata(String name, double bpm, double nps, List<String> difficulty, List<String> tags, List<String> genre) implements Serializable {
 
     public String toString() {
         String s = this.name + ";";

@@ -2,6 +2,7 @@ package UserInterface.Elements.Buttons.ButtonTypes.AdvancedMapCreation;
 
 import BeatSaberObjects.Objects.BeatSaberMap;
 import DataManager.Records.PatMetadata;
+import MapGeneration.GenerationElements.Pattern;
 import UserInterface.Elements.Buttons.ButtonTypes.AdvancedMapCreation.TextFields.CreateAdvancedMapBPM;
 import UserInterface.Elements.Buttons.ButtonTypes.AdvancedMapCreation.TextFields.CreateAdvancedMapNPS;
 import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.Exceptions.MapDidntComputeException;
@@ -61,7 +62,7 @@ public class CreateAdvancedMapButton extends MapCreatorSubButton {
         Arrays.stream(ui.map._notes).forEach(note -> note._cutDirection = 8);
         if(SHOW_HEATMAP_WHEN_GENERATING_ONSETS){
             ui.pattern.visualizeAsHeatmap();
-            ui.pattern.visualizeAsHeatmapNormalized();
+            ui.pattern.visualizeAsHeatmapNormalized("");
             ui.pattern.visualizeAsHeatmapNormalizedLogarithmically();
             ui.pattern.visualizeAsHeatmapTruncated();
         }
@@ -75,11 +76,12 @@ public class CreateAdvancedMapButton extends MapCreatorSubButton {
             if (verbose) System.out.println("og: " + ui.map.exportAsMap());
             if (verbose) ui.statusCheck.append("\nVERBOSE: og: " + ui.map.exportAsMap());
 
+
             // Create the advanced Beat Saber map using the specified parameters and patterns
             BeatSaberMap map = new BeatSaberMap(
                     createAdvancedComplexPattern(
                             Arrays.stream(ui.map._notes).toList(),
-                            ui.pattern,
+                            Pattern.adjustVariance(ui.pattern),
                             false,
                             true,
                             null,

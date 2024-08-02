@@ -1,5 +1,6 @@
 import DataManager.CreateAllNecessaryDIRsAndFiles;
 import DataManager.Database.DatabaseExport;
+import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
 import DataManager.Parameters;
 import UserInterface.UserInterface;
 
@@ -24,8 +25,11 @@ public class Start {
     |---|---|---|---|       |---|---|---|
      */
 
+    //TODO: Add to config:    public static final boolean PARITY_ERRORS_AS_BOOKMARKS = true;
+    //TODO: Config loader dependency?
+    //TODO: info.dat aus file-picker entfernen
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws NoteNotValidException {
         java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
 
         SEED = (long) (new Random().nextDouble() * 1000000000);
@@ -38,13 +42,12 @@ public class Start {
         UserInterface ui = new UserInterface();
         ui.setVisible(true);
 
-        //: Uncomment when finished debugging
-//        ui.addWindowListener(new java.awt.event.WindowAdapter() {
-//            @Override
-//            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-//                if (exportDatabase) DatabaseExport.exportDatabase("./database"); // Export the database if the user wants to. Currently disabled because of bugs.
-//                entityManager.close();
-//            }
-//        });
+        if (useDatabase) ui.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                if (EXPORT_DATABASE) DatabaseExport.exportDatabase("./database"); // Export the database if the user wants to. Currently disabled because of bugs.
+                entityManager.close();
+            }
+        });
     }
 }
