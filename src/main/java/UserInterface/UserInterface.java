@@ -8,6 +8,7 @@ import MapGeneration.GenerationElements.*;
 
 import static DataManager.Parameters.*;
 
+import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
 import MapGeneration.PatternGeneration.CommonMethods.CheckParity;
 import UserInterface.Elements.Buttons.*;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons.*;
@@ -34,7 +35,7 @@ public class UserInterface extends JFrame {
     public final JLabel labelMapDiff;
     public final TextArea statusCheck; //essentially the log
     public boolean mapSuccessfullyLoaded = false;
-    public static float patternVariance;
+    public static int patternVariance = 0;
 
 
     // Redirect the standard error stream to the custom PrintStream
@@ -42,12 +43,11 @@ public class UserInterface extends JFrame {
     public final ByteArrayOutputStream OUTPUT_STREAM = new ByteArrayOutputStream();
     public final PrintStream ERROR_PRINT_STREAM = new PrintStream(OUTPUT_STREAM);
 
-    public UserInterface() {
+    public UserInterface() throws NoteNotValidException {
         //loading config:
         loadConfig();
         if (verbose) System.setErr(ERROR_PRINT_STREAM);
-        pattern = new Pattern(DEFAULT_PATTERN_METADATA);
-        System.out.println(pattern);
+        pattern = new Pattern(String.valueOf(useDatabase ? DEFAULT_PATTERN_METADATA : DEFAULT_PATTERN_PATH));
 
 
         //<editor-fold desc="Initialize UI Elements">

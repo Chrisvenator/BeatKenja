@@ -1,20 +1,26 @@
 package UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons;
 
 import BeatSaberObjects.Objects.BeatSaberMap;
+import DataManager.Parameters;
 import MapGeneration.GenerationElements.Pattern;
+import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Exceptions.MapHasWrongFormatException;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.GlobalButton;
 import UserInterface.Elements.ElementTypes;
-import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Exceptions.MapHasWrongFormatException;
 import UserInterface.UserInterface;
 
 import java.awt.*;
 import java.io.File;
 
-import static DataManager.Parameters.*;
+import static DataManager.Parameters.DEFAULT_PATH;
+import static DataManager.Parameters.FILE_CHOOSER;
+import static DataManager.Parameters.verbose;
 
 public class GlobalLoadPatterns extends GlobalButton {
     public GlobalLoadPatterns(UserInterface ui) {
         super(ElementTypes.GLOBAL_LOAD_PATTERNS_BUTTON, ui);
+        if (ui.pattern == null || (!new File(Parameters.DEFAULT_PATTERN_PATH).exists() && !Parameters.useDatabase) ){
+            setBackground(Color.RED);
+        }
     }
 
     @Override
