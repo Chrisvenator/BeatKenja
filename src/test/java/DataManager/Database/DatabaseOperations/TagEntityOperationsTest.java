@@ -20,7 +20,7 @@ class TagEntityOperationsTest {
     }
 
     @Test
-    void getAllTags() {
+    void getAllTagEntities() {
         List<String> tags = new java.util.ArrayList<>(FileManager.readFile("database/data/tag.csv").stream().map(s -> s.split(",")[1]).toList());
         tags.remove("name");
         assertTrue(Parameters.MAP_TAGS.containsAll(tags));

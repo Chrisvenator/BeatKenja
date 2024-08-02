@@ -1,5 +1,7 @@
 package DataManager.Database.DatabaseOperations;
 
+import DataManager.Database.DatabaseCommonMethods;
+import DataManager.Database.DatabaseEntities.GenreAssignmentEntity;
 import DataManager.Database.DatabaseEntities.TagEntity;
 import DataManager.Parameters;
 
@@ -14,9 +16,16 @@ public class TagEntityOperations extends TagEntity {
         return (TagEntity) entityManager.createNamedQuery("TagEntity.findTag").setParameter("TagName", TagName).getSingleResult();
     }
 
-    public static ArrayList<TagEntity> getAllTags() {
+    public static List<String> getAllTags() {
+        if (!Parameters.useDatabase) return getAllTagNames();
+        else
+            return TagEntityOperations.getAllTagEntities().stream().map(TagEntity::getName).toList();
+    }
+
+    private static ArrayList<TagEntity> getAllTagEntities() {
         try {
-            return (ArrayList<TagEntity>) entityManager.createNamedQuery("TagEntity.findAllTags").getResultList();
+            List<?> result = entityManager.createNamedQuery("TagEntity.findAllTags").getResultList();
+            return DatabaseCommonMethods.checkCastFromQuery(result, TagEntity.class);
         } catch (NoResultException e) {
             System.err.println("ERROR: Could not find a Tag");
             return new ArrayList<>();
@@ -24,7 +33,6 @@ public class TagEntityOperations extends TagEntity {
     }
 
     public static List<String> getAllTagNames() {
-        if (!Parameters.useDatabase){
             List<String> l = new ArrayList<>();
             l.add("Accuracy");
             l.add("Balanced");
@@ -33,10 +41,9 @@ public class TagEntityOperations extends TagEntity {
             l.add("Fitness");
             l.add("Speed");
             l.add("Tech");
+            l.add("NULL");
 
             return l;
-        }
-        return TagEntityOperations.getAllTags().stream().map(TagEntity::getName).toList();
     }
 
     public static TagEntity getTag(int fkTagId) {

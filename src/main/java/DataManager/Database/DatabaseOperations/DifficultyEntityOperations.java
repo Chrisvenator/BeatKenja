@@ -1,6 +1,8 @@
 package DataManager.Database.DatabaseOperations;
 
+import DataManager.Database.DatabaseCommonMethods;
 import DataManager.Database.DatabaseEntities.DifficultyEntity;
+import DataManager.Database.DatabaseEntities.GenreAssignmentEntity;
 
 import javax.persistence.NoResultException;
 
@@ -15,17 +17,26 @@ public class DifficultyEntityOperations extends DifficultyEntity {
         return (DifficultyEntity) entityManager.createNamedQuery("DifficultyEntity.findDifficulty").setParameter("difficultyName", difficultyName).getSingleResult();
     }
 
-    private static ArrayList<DifficultyEntity> getAllDifficulties() {
+    public static List<String> getAllDifficulties() {
+        if (!useDatabase) return getAllDifficultiesNames();
+        else
+            return DifficultyEntityOperations.getAllDifficultyEntities().stream().map(DifficultyEntity::getName).toList();
+    }
+
+    private static ArrayList<DifficultyEntity> getAllDifficultyEntities() {
         try {
-            return (ArrayList<DifficultyEntity>) entityManager.createNamedQuery("DifficultyEntity.findAllDifficulties").getResultList();
+            List<?> result = entityManager.createNamedQuery("DifficultyEntity.findAllDifficulties").getResultList();
+            List<DifficultyEntity> difficultyEntities = new ArrayList<>();
+
+            return DatabaseCommonMethods.checkCastFromQuery(result, DifficultyEntity.class);
         } catch (NoResultException e) {
             System.err.println("ERROR: Could not find a difficulty");
             return new ArrayList<>();
         }
     }
 
+
     public static List<String> getAllDifficultiesNames() {
-        if (!useDatabase){
             List<String> difficultiesNames = new ArrayList<>();
             difficultiesNames.add("Easy");
             difficultiesNames.add("Normal");
@@ -40,9 +51,6 @@ public class DifficultyEntityOperations extends DifficultyEntity {
             }
 
             return difficultiesNames;
-        }
-
-        return DifficultyEntityOperations.getAllDifficulties().stream().map(DifficultyEntity::getName).toList();
     }
 
     public static DifficultyEntity getDifficulty(int id) {

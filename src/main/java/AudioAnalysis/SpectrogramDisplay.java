@@ -12,11 +12,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import static AudioAnalysis.SpectrogramCalculator.calculateSpectrogram;
-
 public class SpectrogramDisplay extends JFrame {
     private final BufferedImage image;
-    private final ArrayList<Double> peakTimes; // Times where peaks are detected
+    private final ArrayList<Double> peakTimes; // Timings where peaks are detected
     private final double duration; // Total duration of the audio
     private final String difficultyName;
 
@@ -102,7 +100,8 @@ public class SpectrogramDisplay extends JFrame {
         return max;
     }
 
-    public static void main(String[] args) throws UnsupportedAudioFileException, IOException, LineUnavailableException, JavaLayerException {
+    public static void main(String[] args) throws UnsupportedAudioFileException, IOException
+    {
         String filePath = Parameters.ONSET_GENERATION_FOLDER_PATH_INPUT + "/old/song.wav";
         File f = new File(filePath);
         int FFT_SIZE = 1024;

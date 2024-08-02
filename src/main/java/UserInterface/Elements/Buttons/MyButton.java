@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MyButton extends JButton implements MyElement {
-    public UserInterface ui;
+    public final UserInterface ui;
     public final List<Component> childElements = new ArrayList<>();
 
     public MyButton(ButtonType button, UserInterface ui) {

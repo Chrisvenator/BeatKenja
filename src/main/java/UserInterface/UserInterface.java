@@ -45,7 +45,6 @@ public class UserInterface extends JFrame {
 
     public UserInterface() throws NoteNotValidException {
         //loading config:
-        loadConfig();
         if (verbose) System.setErr(ERROR_PRINT_STREAM);
         pattern = new Pattern(String.valueOf(useDatabase ? DEFAULT_PATTERN_METADATA : DEFAULT_PATTERN_PATH));
 
@@ -55,7 +54,7 @@ public class UserInterface extends JFrame {
         //  Initialize UI Elements  //
         //////////////////////////////
 
-        final UIElements uiElements = new UIElements(darkMode, this);
+        final UIElements uiElements = new UIElements(DARK_MODE, this);
         uiElements.initialize();
 
         labelMapDiff = uiElements.labelMapDiff();
@@ -71,7 +70,6 @@ public class UserInterface extends JFrame {
         AdvancedMapCreatorButton advancedMapCreatorButton = new AdvancedMapCreatorButton(this);
         MyButton toTimingNotes = new ToTimingNotesButton(this);
         MyButton utilsMapUtilsButton = new MapUtilitiesButton(this);
-        MyButton waveGeneratorButton = new WaveGenerationButton(this);
         //</editor-fold desc="Initialize UI Elements">
 
         //<editor-fold desc="Event Listener">
@@ -80,7 +78,7 @@ public class UserInterface extends JFrame {
         /////////////////////
 
         //global
-        statusCheck.append("config: \nverbose: " + verbose + "\npath: " + DEFAULT_PATH + "\ndark mode:" + darkMode + "\nsave new maps to WIP folder (default path): " + saveNewMapsToDefaultPath + "\n\n");
+        statusCheck.append("config: \nverbose: " + verbose + "\npath: " + DEFAULT_PATH + "\ndark mode:" + DARK_MODE + "\nsave new maps to WIP folder (default path): " + saveNewMapsToDefaultPath + "\n\n");
         ignoreDDsCheckBox.addActionListener(e -> statusCheck.append("\n[INFO]: ignore DDs: " + (ignoreDDs = ignoreDDsCheckBox.isSelected())));
         //</editor-fold desc="Event Listener">
 
@@ -96,7 +94,6 @@ public class UserInterface extends JFrame {
                     advancedMapCreatorButton.setVisible(true);
                     toTimingNotes.setVisible(true);
                     utilsMapUtilsButton.setVisible(true);
-                    waveGeneratorButton.setVisible(true);
 
                     saveMapButton.setVisible(true);
                     openMapInBrowserButton.setVisible(true);
@@ -133,7 +130,7 @@ public class UserInterface extends JFrame {
             if (verbose) statusCheck.setText(statusCheck.getText() + "\n patterns: " + pattern.toString());
         }
         map._obstacles = new Obstacle[0];
-        //map._events = new Events[0]; //Dont remove events because bpm changes are stored in events
+        //map._events = new Events[0]; //Don't remove events because bpm changes are stored in events
         //map._events = Arrays.stream(map._events).filter(event -> event._type == 1000).toArray(Events[]::new); //remove all events EXCEPT for the bpm-changes!
 
 
@@ -173,6 +170,7 @@ public class UserInterface extends JFrame {
     }
 
     //If you want to add more configs:
+    @Deprecated
     public static void loadConfig() {
         List<String> config = FileManager.readFile(CONFIG_FILE_LOCATION);
         if (config != null && !config.isEmpty()) {
@@ -182,7 +180,7 @@ public class UserInterface extends JFrame {
                 if (s.contains("defaultPath") && s.contains("//")) DEFAULT_PATH = splits[1] + ":" + splits[2].substring(0, splits[2].indexOf("//")).trim();
             }
             verbose = config.toString().contains("verbose:true");
-            darkMode = config.toString().contains("dark-mode:true");
+            DARK_MODE = config.toString().contains("dark-mode:true");
             saveNewMapsToDefaultPath = config.toString().contains("save_new_maps_to_default_path:true") && new File(DEFAULT_PATH).exists() && new File(DEFAULT_PATH).isDirectory();
         }
     }

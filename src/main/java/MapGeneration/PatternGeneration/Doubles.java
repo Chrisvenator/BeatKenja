@@ -37,7 +37,7 @@ public class Doubles {
                 invalidPlacementsInARow = 0;
                 continue;
             } else if (invalidPlacementsInARow >= 500)
-                throw new IllegalArgumentException("Infinite Loop while creating map! Please try again. (Error occured in \"doubles\"");
+                throw new IllegalArgumentException("Infinite Loop while creating map! Please try again. (Error occurred in \"doubles\"");
             //Place a BeatSaberObjects.Objects.Note that doesn't break parity after the error:
             if (i >= 1 && notes.get(notes.size() - 1)._cutDirection == 8) {
                 notes.add(nextNoteAfterTimingNote(notes, timings.get(i)._time, notes.size(), 2));
