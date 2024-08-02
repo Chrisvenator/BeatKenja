@@ -14,7 +14,7 @@ public class TagEntityOperations extends TagEntity {
         return (TagEntity) entityManager.createNamedQuery("TagEntity.findTag").setParameter("TagName", TagName).getSingleResult();
     }
 
-    private static ArrayList<TagEntity> getAllTags() {
+    public static ArrayList<TagEntity> getAllTags() {
         try {
             return (ArrayList<TagEntity>) entityManager.createNamedQuery("TagEntity.findAllTags").getResultList();
         } catch (NoResultException e) {
