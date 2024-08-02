@@ -65,7 +65,7 @@ public class ComplexPatternFromTemplate {
 
 
         if (timings.size() == 1) oneHanded = true;
-        int j = oneHanded ? 1 : 2;
+        int j = oneHanded ? 1 : 2; //One-handed or not. If not one-handed, then every second note will be blue and every other will be red
 
 
         placeInitialNoteBasedOnPrevNote(pattern, prevBlue, timings.get(0)._time); // Handling Blue
