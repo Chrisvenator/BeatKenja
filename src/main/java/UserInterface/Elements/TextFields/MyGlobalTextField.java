@@ -5,7 +5,7 @@ import UserInterface.UserInterface;
 import java.awt.*;
 
 public class MyGlobalTextField extends TextField {
-    UserInterface ui;
+    protected final UserInterface ui;
 
     public MyGlobalTextField(TextFieldType textFieldType, UserInterface ui) {
         super(textFieldType.value(), 0);

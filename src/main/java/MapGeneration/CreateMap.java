@@ -44,7 +44,7 @@ public class CreateMap {
      *
      * @param map       the map that should be m
      * @param p         input patterns. This is used to calculate the probabilities of the complex patterns
-     * @param oneHanded should this map be one handed?
+     * @param oneHanded should this map be one-handed?
      * @return returns a new Map
      */
     public static BeatSaberMap createMap(BeatSaberMap map, Pattern p, boolean oneHanded, boolean stacks) throws IllegalArgumentException {

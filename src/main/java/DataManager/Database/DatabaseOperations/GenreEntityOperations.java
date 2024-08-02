@@ -1,5 +1,7 @@
 package DataManager.Database.DatabaseOperations;
 
+import DataManager.Database.DatabaseCommonMethods;
+import DataManager.Database.DatabaseEntities.GenreAssignmentEntity;
 import DataManager.Database.DatabaseEntities.GenreEntity;
 import DataManager.Parameters;
 
@@ -14,17 +16,24 @@ public class GenreEntityOperations extends GenreEntity {
         return (GenreEntity) entityManager.createNamedQuery("GenreEntity.findGenre").setParameter("GenreName", GenreName).getSingleResult();
     }
 
-    private static ArrayList<GenreEntity> getAllGenres() {
+    public static List<String> getAllGenres() {
+        if (!Parameters.useDatabase)  return getAllGenreNames();
+        else
+            return GenreEntityOperations.getAllGenreEntities().stream().map(GenreEntity::getName).toList();
+    }
+
+    private static ArrayList<GenreEntity> getAllGenreEntities() {
         try {
-            return (ArrayList<GenreEntity>) entityManager.createNamedQuery("GenreEntity.findAllGenres").getResultList();
+            List<?> result = entityManager.createNamedQuery("GenreEntity.findAllGenres").getResultList();
+            return DatabaseCommonMethods.checkCastFromQuery(result, GenreEntity.class);
         } catch (NoResultException e) {
             System.err.println("ERROR: Could not find a Genre");
             return new ArrayList<>();
         }
     }
 
+
     public static List<String> getAllGenreNames() {
-        if (!Parameters.useDatabase) {
             List<String> genreNames = new ArrayList<>();
             genreNames.add("Alternative");
             genreNames.add("Ambient");
@@ -65,9 +74,6 @@ public class GenreEntityOperations extends GenreEntity {
             genreNames.add("NULL");
 
             return genreNames;
-        }
-
-        return GenreEntityOperations.getAllGenres().stream().map(GenreEntity::getName).toList();
     }
 
     protected static GenreEntity getGenre(int fkGenreId) {

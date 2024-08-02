@@ -31,7 +31,7 @@ public class GlobalOpenMapButton extends GlobalButton {
     public void onClick() {
         int option = FILE_CHOOSER.showOpenDialog(this);
 
-        if (!approveFileloading(option)) return;
+        if (!approveFileLoading(option)) return;
         filePath = FILE_CHOOSER.getCurrentDirectory().toString();
         try {
             File path = FILE_CHOOSER.getSelectedFile();

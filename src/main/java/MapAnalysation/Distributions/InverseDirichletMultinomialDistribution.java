@@ -3,6 +3,7 @@ import org.apache.commons.math3.special.Gamma;
 
 import java.util.Arrays;
 
+@Deprecated
 public class InverseDirichletMultinomialDistribution {
     public static double[] estimateDirichletParameters(int[] sample, int N) {
         int n = sample.length;
@@ -58,7 +59,7 @@ public class InverseDirichletMultinomialDistribution {
             result -= 1 / x;
             x += 1;
         }
-        x -= 1 / 2;
+        x -= (double) 1 / 2;
         double xx = 1 / x;
         double xx2 = xx * xx;
         double xx4 = xx2 * xx2;

@@ -46,19 +46,6 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
         Pattern p = new Pattern(Parameters.DEFAULT_PATTERN_METADATA);
         System.out.println(p.exportInPatFormat());
         System.out.println(p.getProbabilityOf(new Note(0, 2, 0, 1, 1)));
-        System.out.println("saved successfully: " + p.saveOrUpdateInDatabase());
-
-        //Example of how to delete a pattern from the database:
-//        List<String> diffs = new ArrayList<>();        diffs.add("StandardExpert");
-//        List<String> tags = new ArrayList<>();        tags.add("Dance");
-//        List<String> genres = new ArrayList<>();        genres.add("Dance");
-//        PatMetadata meta = new PatMetadata("AllMapsGroupedV1", 125, 4, diffs, tags, genres);
-//        Pattern p = new Pattern(meta);
-//        p.deleteFromDatabase();
-
-//        Pattern p2 = new Pattern(1010);
-//        p2.deleteFromDatabase();
-
     }
 
     /**
@@ -332,10 +319,20 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
      * @throws IllegalArgumentException if any of the tags, genres, or difficulties are not found in the database,
      *                                  or if the pattern is not found in the database
      */
+    @lombok.SneakyThrows
     public Pattern(PatMetadata metadata) {
         if (!useDatabase && metadata.equals(Parameters.DEFAULT_PATTERN_METADATA)) {
-            //TODO:
+            System.out.println("[INFO]: Database has been disabled but the default metadata was still used. Using default Pattern instead...");
+            Pattern p = new Pattern(DEFAULT_PATTERN_PATH);
+
+            this.count = p.count;
+            this.patterns = p.patterns;
+            this.probabilities = p.probabilities;
+            this.metadata = p.metadata;
+
+            return;
         }
+        if (!useDatabase) throw new RuntimeException("[ERROR]: Database has not been turned on! Shutting down");
 
         this.metadata = metadata;
 
@@ -345,12 +342,9 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
         Set<String> lowerCaseDifficulties = Parameters.DIFFICULTIES.stream().map(String::toLowerCase).collect(Collectors.toSet());
 
         // Validate tags, genres, and difficulties against the predefined parameters
-        if (!lowerCaseMapTags.containsAll(metadata.tags().stream().map(String::toLowerCase).toList()) && !lowerCaseMapTags.containsAll(metadata.tags()))
-            throw new IllegalArgumentException("Tag(s) not found in database: " + metadata.tags());
-        if (!lowerCaseMusicGenres.containsAll(metadata.genre().stream().map(String::toLowerCase).toList()) && !lowerCaseMusicGenres.containsAll(metadata.genre()))
-            throw new IllegalArgumentException("Genre(s) not found in database: " + metadata.genre());
-        if (!lowerCaseDifficulties.containsAll(metadata.difficulty().stream().map(String::toLowerCase).toList()) && !lowerCaseDifficulties.containsAll(metadata.difficulty()))
-            throw new IllegalArgumentException("Difficulty not found in database: " + metadata.difficulty());
+        if (!lowerCaseMapTags.containsAll(metadata.tags().stream().map(String::toLowerCase).toList()) && !lowerCaseMapTags.containsAll(metadata.tags())) throw new IllegalArgumentException("Tag(s) not found in database: " + metadata.tags());
+        if (!lowerCaseMusicGenres.containsAll(metadata.genre().stream().map(String::toLowerCase).toList()) && !lowerCaseMusicGenres.containsAll(metadata.genre())) throw new IllegalArgumentException("Genre(s) not found in database: " + metadata.genre());
+        if (!lowerCaseDifficulties.containsAll(metadata.difficulty().stream().map(String::toLowerCase).toList()) && !lowerCaseDifficulties.containsAll(metadata.difficulty())) throw new IllegalArgumentException("Difficulty not found in database: " + metadata.difficulty());
 
 
         PatternDescriptionEntity desc;
@@ -361,10 +355,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
         } catch (NoResultException e) {
             // If the pattern is not found, throw an exception (could alternatively create a new pattern)
             //The Pattern has not been found in the database, so we create a new one:
-//            System.out.println("Pattern not found in the database. Creating new Pattern...");
             throw new IllegalArgumentException("Pattern not found in the database: " + metadata);
-//            PatternDescriptionEntityOperations.savePatternDescription(metadata); //I think this is not necessary, because the pattern is not found in the database
-//            return;
         }
 
         // Retrieve pattern entities based on the pattern description
@@ -1124,13 +1115,9 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
 
     public static Pattern adjustVariance(Pattern pattern) {
         if (UserInterface.patternVariance == 0) {
-//            pattern.visualizeAsHeatmapNormalized();
             return pattern;
         }
         Pattern p = pattern.deepCopy();
-
-
-//        p.visualizeAsHeatmapNormalized("Before Adjust-Variance - Normalized");
 
         if (UserInterface.patternVariance < 0) {
             System.out.println("Variance: " + UserInterface.patternVariance);
@@ -1141,9 +1128,6 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
             Pattern.normalizeCountArray(p.count, true);
         }
         System.out.println("Applied Dirichlet Multinomial Distribution");
-
-//        p.visualizeAsHeatmapNormalized("After Adjust-Variance - Normalized");
-
 
         p.computeProbabilities();
         return p;
@@ -1162,25 +1146,26 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
         computeProbabilities();
     }
 
+    @Deprecated
     public void applyInverseDirichletMultinomial(int N) {
-        for (int i = 0; i < count.length; i++) {
-            double[] dirichletSample = estimateDirichletParameters(count[i], N);
+        for (int[] ints : count) {
+            double[] dirichletSample = estimateDirichletParameters(ints, N);
             int[] multinomialSample = estimateMultinomialProbabilities(N, dirichletSample);
-            int[] mle = estimateAlphaMLE(multinomialSample, count[i], N);
-            System.arraycopy(mle, 0, count[i], 0, mle.length);
+            int[] mle = estimateAlphaMLE(multinomialSample, ints, N);
+            System.arraycopy(mle, 0, ints, 0, mle.length);
         }
         computeProbabilities();
     }
 
 
     /**
-     * Visualizes the original and Dirichlet-Multinomial-Distributed pattern [][]
+     * Visualizes the original and Dirichlet-Multinomial-Distributed pattern[][]
      *
-     * @param N
+     * @param name Displayed name
      */
-    public void visualizeDirichletMultinomialDistribution(int N) {
+    public void visualizeDirichletMultinomialDistribution(String name) {
         EventQueue.invokeLater(() -> {
-            DirichletMultinomialDistributionVisualizer ex = new DirichletMultinomialDistributionVisualizer(this, N);
+            DirichletMultinomialDistributionVisualizer ex = new DirichletMultinomialDistributionVisualizer(this, UserInterface.patternVariance);
             ex.setVisible(true);
         });
     }

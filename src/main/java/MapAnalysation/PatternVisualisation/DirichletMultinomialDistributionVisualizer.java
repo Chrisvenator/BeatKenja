@@ -6,7 +6,6 @@ import MapGeneration.GenerationElements.Pattern;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Random;
 
 public class DirichletMultinomialDistributionVisualizer extends JFrame {
 
@@ -37,7 +36,7 @@ public class DirichletMultinomialDistributionVisualizer extends JFrame {
 
         setTitle("Pattern Heatmap Visualizer");
         setSize(400, 800); // Scaled up for visibility
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
     }
 
