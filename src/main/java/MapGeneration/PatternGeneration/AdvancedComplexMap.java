@@ -107,7 +107,7 @@ public class AdvancedComplexMap {
 
         // Try to create a new pattern with the provided metadata
         try {
-            System.out.println("Fetching pattern for " + metadata.name() + " with " + metadata.bpm() + " BPM and " + metadata.nps() + " NPS");
+//            System.out.println("Fetching pattern for " + metadata.name() + " with " + metadata.bpm() + " BPM and " + metadata.nps() + " NPS");
             Pattern p = new Pattern(metadata);
             patternCache.put(metadata, p);
             return p;
