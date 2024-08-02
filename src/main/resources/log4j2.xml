@@ -4,9 +4,13 @@
         <Console name="console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] [%-5level] %logger{36} - %msg%n" />
         </Console>
-        <File name="file_debug" fileName="logs/app_debug.log" append="false">
+        <File name="file_trace" fileName="logs/app_trace.log" append="false">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] [%-5level] %logger{36} - %msg%n" />
             <ThresholdFilter level="TRACE" onMatch="ACCEPT" onMismatch="DENY"/>
+        </File>
+        <File name="file_debug" fileName="logs/app_debug.log" append="false">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] [%-5level] %logger{36} - %msg%n" />
+            <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
         </File>
         <File name="file_error" fileName="logs/app_error.log" append="false">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] [%-5level] %logger{36} - %msg%n" />
@@ -20,6 +24,7 @@
     <Loggers>
         <Root level="trace">
             <AppenderRef ref="console" />
+            <AppenderRef ref="file_trace" />
             <AppenderRef ref="file_debug" />
             <AppenderRef ref="file_error" />
             <AppenderRef ref="guiAppender" />

@@ -1,7 +1,6 @@
 package DataManager.Database.DatabaseOperations;
 
 import DataManager.Database.DatabaseCommonMethods;
-import DataManager.Database.DatabaseEntities.GenreAssignmentEntity;
 import DataManager.Database.DatabaseEntities.GenreEntity;
 import DataManager.Parameters;
 
@@ -10,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static DataManager.Parameters.entityManager;
+import static DataManager.Parameters.logger;
 
 public class GenreEntityOperations extends GenreEntity {
     public static GenreEntity getGenre(String GenreName) {
@@ -27,7 +27,7 @@ public class GenreEntityOperations extends GenreEntity {
             List<?> result = entityManager.createNamedQuery("GenreEntity.findAllGenres").getResultList();
             return DatabaseCommonMethods.checkCastFromQuery(result, GenreEntity.class);
         } catch (NoResultException e) {
-            System.err.println("ERROR: Could not find a Genre");
+            logger.error("Could not find a Genre");
             return new ArrayList<>();
         }
     }

@@ -35,7 +35,7 @@ public class DatabaseExport {
     public static void exportDatabase(String path) {
         logger.debug("Export database to {}", path);
         if (!path.endsWith("/")) path += "/";
-        System.out.println("[INFO]: Dumping database...");
+        logger.info("Dumping database...");
 
 //        FileManager.overwriteFile(path + "exported_schema.sql", ""); // Clear the file if it exists
         exportSchema(path + "exported_schema.sql");
@@ -50,7 +50,7 @@ public class DatabaseExport {
         exportPatternDescription(path + "data/pattern_description.csv");
         exportPattern(path + "data/pattern.csv");
 
-        System.out.println("[INFO]: Dumped database to " + path + "exported_schema.sql");
+        logger.info("Dumped database to " + path + "exported_schema.sql");
         logger.debug("Dumped database to {}exported_schema.sql", path);
     }
 
