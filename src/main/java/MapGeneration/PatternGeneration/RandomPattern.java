@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Random;
 
 import static DataManager.Parameters.ignoreDDs;
+import static DataManager.Parameters.logger;
 
 public class RandomPattern {
     /**
@@ -34,7 +35,7 @@ public class RandomPattern {
         } catch (Exception ignored) {
         }
 
-        System.out.println("Using " + bpm + " bpm");
+        logger.info("Using " + bpm + " bpm");
 
         for (int i = 0; i < timings.length; i++) {
 
