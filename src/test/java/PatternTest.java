@@ -29,14 +29,6 @@ class PatternTest {
 
         p.analyzePattern(map._notes, 1);
 
-//        System.out.println(p.patterns[0][0].toString());
-//        System.out.println(p.patterns[1][1].toString());
-//        System.out.println(p.patterns[2][2].toString());
-//        System.out.println(p.patterns[3][3].toString());
-//        System.out.println(p.patterns[4][4]);
-//        System.out.println(p.patterns[5][5]);
-//        System.out.println(p.patterns[100][100]);
-
         assertEquals("{\"_time\":6.5,\"_lineIndex\":2,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":1}\n", p.patterns[0][0].toString());
         assertEquals("{\"_time\":10.0,\"_lineIndex\":3,\"_lineLayer\":0,\"_type\":1,\"_cutDirection\":0}\n", p.patterns[1][1].toString());
         assertEquals("{\"_time\":20.0,\"_lineIndex\":3,\"_lineLayer\":1,\"_type\":1,\"_cutDirection\":1}\n", p.patterns[2][2].toString());
@@ -109,14 +101,6 @@ class PatternTest {
         p.computeProbabilities();
         p.analyzePattern(map._notes, 1);
 
-//        System.out.println(p.probabilities[0][0]);
-//        System.out.println(p.probabilities[1][1]);
-//        System.out.println(p.probabilities[2][2]);
-//        System.out.println(p.probabilities[3][3]);
-//        System.out.println(p.probabilities[4][4]);
-//        System.out.println(p.probabilities[5][5]);
-//        System.out.println(p.probabilities[100][100]);
-
         assertEquals(0.0, p.probabilities[0][0]);
         assertEquals(33.333335876464844, p.probabilities[1][1]);
         assertEquals(30.000001907348633, p.probabilities[2][2]);
@@ -143,16 +127,6 @@ class PatternTest {
         Pattern p1 = new Pattern(map._notes, 1);
         Pattern p2 = new Pattern(map._notes, 1);
         assertEquals(p1.toString(), p2.toString());
-//        p1.merge(p2);
-//        assertNotEquals(p1.toString(), p2.toString());
-//
-//        for (int i = 0; i < p2.count.length; i++) {
-//            if (p2.count[i] == null) break;
-//            for (int j = 0; j < p2.count[i].length; j++) {
-//                if (p2.count[i][j] == 0) continue;
-//                assertEquals((2 * p2.count[i][j]), p1.count[i][j]);
-//            }
-//        }
 
         Pattern pattern1 = new Pattern("src/test/resources/patterns/test1.pat");
         Pattern pattern2 = new Pattern("src/test/resources/patterns/test2.pat");
@@ -431,7 +405,7 @@ class PatternTest {
                 ]]""", p.asList().toString());
     }
 
-    String jsonExample = """
+    private final String jsonExample = """
             {"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":1}: [
               {"_time":0.0,"_lineIndex":2,"_lineLayer":2,"_type":1,"_cutDirection":1}: 1 times = 1.8867924% ,\s
               {"_time":0.0,"_lineIndex":1,"_lineLayer":0,"_type":1,"_cutDirection":5}: 1 times = 1.8867924% ,\s

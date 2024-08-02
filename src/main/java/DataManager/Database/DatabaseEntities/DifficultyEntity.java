@@ -1,8 +1,12 @@
 package DataManager.Database.DatabaseEntities;
 
-import javax.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
-@Entity
+import javax.persistence.*;
+import java.util.Objects;
+
+@Setter @Getter @Entity
 @NamedQuery(name = "DifficultyEntity.findAllDifficulties", query = "SELECT d FROM DifficultyEntity d")
 @NamedQuery(name = "DifficultyEntity.findDifficulty", query = "SELECT d FROM DifficultyEntity d where d.name = :difficultyName")
 @NamedQuery(name = "DifficultyEntity.findDifficultyById", query = "SELECT d FROM DifficultyEntity d where d.id = :id")
@@ -16,22 +20,6 @@ public class DifficultyEntity {
     @Column(name = "name")
     private String name;
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -40,9 +28,7 @@ public class DifficultyEntity {
         DifficultyEntity that = (DifficultyEntity) o;
 
         if (id != that.id) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-
-        return true;
+        return Objects.equals(name, that.name);
     }
 
     @Override

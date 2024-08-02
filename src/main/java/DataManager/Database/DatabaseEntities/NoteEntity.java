@@ -1,10 +1,12 @@
 package DataManager.Database.DatabaseEntities;
 
 import BeatSaberObjects.Objects.Note;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 
-@Entity
+@Setter @Getter @Entity
 @NamedQuery(name = "NoteEntity.findAllNotes", query = "SELECT d FROM NoteEntity d")
 @NamedQuery(name = "NoteEntity.findById", query = "SELECT d FROM NoteEntity d WHERE d.id = :id")
 @Table(name = "note", schema = "beatkenja", catalog = "")
@@ -26,46 +28,6 @@ public class NoteEntity {
     @Column(name = "type")
     private int type;
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public double getLineIndex() {
-        return lineIndex;
-    }
-
-    public void setLineIndex(double lineIndex) {
-        this.lineIndex = lineIndex;
-    }
-
-    public double getLineLayer() {
-        return lineLayer;
-    }
-
-    public void setLineLayer(double lineLayer) {
-        this.lineLayer = lineLayer;
-    }
-
-    public int getCutDirection() {
-        return cutDirection;
-    }
-
-    public void setCutDirection(int cutDirection) {
-        this.cutDirection = cutDirection;
-    }
-
-    public int getType() {
-        return type;
-    }
-
-    public void setType(int type) {
-        this.type = type;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -85,12 +47,9 @@ public class NoteEntity {
     @Override
     public int hashCode() {
         int result;
-        long temp;
         result = id;
-        temp = Double.doubleToLongBits(lineIndex);
-        result = 31 * result + (int) (temp ^ (temp >>> 32));
-        temp = Double.doubleToLongBits(lineLayer);
-        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        result = 31 * result + Double.hashCode(lineIndex);
+        result = 31 * result + Double.hashCode(lineLayer);
         result = 31 * result + cutDirection;
         result = 31 * result + type;
         return result;

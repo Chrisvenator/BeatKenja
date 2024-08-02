@@ -1,8 +1,12 @@
 package DataManager.Database.DatabaseEntities;
 
-import javax.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
-@Entity
+import javax.persistence.*;
+import java.util.Objects;
+
+@Setter @Getter @Entity
 @NamedQuery(name = "GenreAssignment.findGenreAssignment", query = "SELECT ga FROM GenreAssignmentEntity ga WHERE fkGenreId = :fkGenreId AND fkPatternDescriptionId = :fkPatternDescriptionId")
 @NamedQuery(name = "GenreAssignment.findGenreAssignmentByFkPatternDescriptionId", query = "SELECT ga FROM GenreAssignmentEntity ga WHERE fkPatternDescriptionId = :fkPatternDescriptionId")
 @Table(name = "assignment_genre", schema = "beatkenja", catalog = "")
@@ -18,30 +22,6 @@ public class GenreAssignmentEntity {
     @Column(name = "fk_pattern_description_id")
     private Integer fkPatternDescriptionId;
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getFkGenreId() {
-        return fkGenreId;
-    }
-
-    public void setFkGenreId(int fkGenreId) {
-        this.fkGenreId = fkGenreId;
-    }
-
-    public Integer getFkPatternDescriptionId() {
-        return fkPatternDescriptionId;
-    }
-
-    public void setFkPatternDescriptionId(Integer fkPatternDescriptionId) {
-        this.fkPatternDescriptionId = fkPatternDescriptionId;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -51,9 +31,7 @@ public class GenreAssignmentEntity {
 
         if (id != that.id) return false;
         if (fkGenreId != that.fkGenreId) return false;
-        if (fkPatternDescriptionId != null ? !fkPatternDescriptionId.equals(that.fkPatternDescriptionId) : that.fkPatternDescriptionId != null) return false;
-
-        return true;
+        return Objects.equals(fkPatternDescriptionId, that.fkPatternDescriptionId);
     }
 
     @Override

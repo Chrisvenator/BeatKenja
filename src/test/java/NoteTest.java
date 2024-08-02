@@ -4,27 +4,27 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class NoteTest {
-    Note note01 = new Note(255.5f, 1, 1, 0, 1);
-    Note note02 = new Note(256.5f, 2, 1, 0, 2);
-    Note note03 = new Note(257.5f, 3, 2, 0, 3);
-    Note note04 = new Note(258.5f, 1, 2, 0, 4);
-    Note note05 = new Note(259.5f, 2, 3, 0, 5);
-    Note note06 = new Note(260.5f, 3, 3, 0, 6);
-    Note note07 = new Note(261.5f, 1, 1, 0, 7);
-    Note note08 = new Note(262.5f, 2, 1, 0, 8);
-    Note note09 = new Note(263.5f, 3, 2, 0, 1);
-    Note note10 = new Note(264.5f, 1, 2, 0, 2);
-    Note note11 = new Note(264.5f, 2, 3, 1, 3);
-    Note note12 = new Note(264.5f, 3, 3, 1, 4);
-    Note note13 = new Note(264.5f, 1, 1, 1, 5);
-    Note note14 = new Note(264.5f, 2, 1, 1, 6);
-    Note note15 = new Note(264.5f, 3, 2, 1, 7);
-    Note note16 = new Note(264.5f, 1, 2, 1, 8);
-    Note note17 = new Note(264.5f, 2, 3, 1, 1);
-    Note note18 = new Note(264.5f, 3, 3, 1, 2);
-    Note note19 = new Note(264.5f, 1, 1, 1, 3);
-    Note note20 = new Note(264.5f, 2, 1, 1, 4);
-    Note note21 = new Note(264.5f, 3, 2, 1, 5);
+    private final Note note01 = new Note(255.5f, 1, 1, 0, 1);
+    private final Note note02 = new Note(256.5f, 2, 1, 0, 2);
+    private final Note note03 = new Note(257.5f, 3, 2, 0, 3);
+    private final Note note04 = new Note(258.5f, 1, 2, 0, 4);
+    private final Note note05 = new Note(259.5f, 2, 3, 0, 5);
+    private final Note note06 = new Note(260.5f, 3, 3, 0, 6);
+    private final Note note07 = new Note(261.5f, 1, 1, 0, 7);
+    private final Note note08 = new Note(262.5f, 2, 1, 0, 8);
+    private final Note note09 = new Note(263.5f, 3, 2, 0, 1);
+    private final Note note10 = new Note(264.5f, 1, 2, 0, 2);
+    private final Note note11 = new Note(264.5f, 2, 3, 1, 3);
+    private final Note note12 = new Note(264.5f, 3, 3, 1, 4);
+    private final Note note13 = new Note(264.5f, 1, 1, 1, 5);
+    private final Note note14 = new Note(264.5f, 2, 1, 1, 6);
+    private final Note note15 = new Note(264.5f, 3, 2, 1, 7);
+    private final Note note16 = new Note(264.5f, 1, 2, 1, 8);
+    private final Note note17 = new Note(264.5f, 2, 3, 1, 1);
+    private final Note note18 = new Note(264.5f, 3, 3, 1, 2);
+    private final Note note19 = new Note(264.5f, 1, 1, 1, 3);
+    private final Note note20 = new Note(264.5f, 2, 1, 1, 4);
+    private final Note note21 = new Note(264.5f, 3, 2, 1, 5);
 
     @Test
     void constructor1() {
@@ -808,11 +808,6 @@ class NoteTest {
     }
 
 
-    //    @Test
-//    void testEquals() {
-//    }
-//
-//
     @Test
     void equalNotePlacement() {
         Note note1_467 = new Note(255.5f, 2, 0, 0, 0);

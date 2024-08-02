@@ -1,8 +1,11 @@
 package DataManager.Database.DatabaseEntities;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.persistence.*;
 
-@Entity
+@Setter @Getter @Entity
 @NamedQuery(name = "TagAssignment.findTagAssignment", query = "SELECT ta FROM TagAssignmentEntity ta WHERE fkTagId = :fkTagId AND fkPatternDescriptionId = :fkPatternDescriptionId")
 @NamedQuery(name = "TagAssignment.findTagAssignmentByFkPatternDescriptionId", query = "SELECT ta FROM TagAssignmentEntity ta WHERE fkPatternDescriptionId = :fkPatternDescriptionId")
 @Table(name = "assignment_tag", schema = "beatkenja", catalog = "")
@@ -17,30 +20,6 @@ public class TagAssignmentEntity {
     @Basic
     @Column(name = "fk_pattern_description_id")
     private int fkPatternDescriptionId;
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getFkTagId() {
-        return fkTagId;
-    }
-
-    public void setFkTagId(int fkTagId) {
-        this.fkTagId = fkTagId;
-    }
-
-    public int getFkPatternDescriptionId() {
-        return fkPatternDescriptionId;
-    }
-
-    public void setFkPatternDescriptionId(int fkPatternDescriptionId) {
-        this.fkPatternDescriptionId = fkPatternDescriptionId;
-    }
 
     @Override
     public boolean equals(Object o) {

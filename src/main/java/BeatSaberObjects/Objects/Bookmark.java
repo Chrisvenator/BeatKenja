@@ -4,9 +4,9 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class Bookmark {
-    public float _time;
-    public String _name;
-    protected float[] _color;
+    public final float _time;
+    public final String _name;
+    protected final float[] _color;
 
     public Bookmark(float _time, String _name, float[] _color) {
         this._time = _time;
