@@ -132,11 +132,11 @@ public class BeatSaberMap {
     public static BeatSaberMap newMapFromJSON(String filePath) {
         File diffFile = new File(filePath);
         if (!diffFile.exists() || !diffFile.isFile()) {
-            System.err.println("[INFO]: Warning parsing BeatSaberMap from Json: File not found: " + filePath + ". Skipping...");
+            logger.error("Warning parsing BeatSaberMap from Json: File not found: {}. Skipping...", filePath);
             return new BeatSaberMap(new ArrayList<>());
         }
         if (diffFile.getName().contains("Lightshow")) {
-            System.err.println("[INFO]: Warning parsing newMapFromJSON: Lightshow maps are not supported. Skipping...");
+            logger.error("Warning parsing newMapFromJSON: Lightshow maps are not supported. Skipping...");
             return new BeatSaberMap(new ArrayList<>());
         }
 
@@ -150,7 +150,7 @@ public class BeatSaberMap {
         try {
             mapInfoJson = new JSONObject(jsonString);
         } catch (JSONException e) {
-            System.err.println("[INFO]: Error parsing BeatSaberMap from Json: Version number not found in the map file!");
+            logger.error("Couldn't convert JSON. Something went wrong!");
             return new BeatSaberMap(new ArrayList<>());
         }
 
@@ -161,26 +161,33 @@ public class BeatSaberMap {
             try {
                 versionNumber = mapInfoJson.getString("version");
             } catch (JSONException e2) {
-                System.err.println("[ERROR]: Error parsing BeatSaberMap from Json: Version number not found in the map file!");
+                logger.error("Error parsing BeatSaberMap from Json: Version number not found in the map file!");
                 return new BeatSaberMap(new ArrayList<>());
             }
         }
 
         switch (versionNumber.charAt(0)) {
             case '1' -> {
-                System.err.println("[ERROR]: Error parsing BeatSaberMap from Json: Map Version format V1 is not supported!");
+                logger.error("Error parsing BeatSaberMap from Json: Map Version format V1 is not supported!");
                 return new BeatSaberMap(new ArrayList<>());
             }
             case '2' -> {
-                Gson gson = new Gson();
-                BeatSaberMap map = gson.fromJson(mapInfoJson.toString(), BeatSaberMap.class);
+                BeatSaberMap map;
+                try {
+                    Gson gson = new Gson();
+                    map = gson.fromJson(mapInfoJson.toString(), BeatSaberMap.class);
+                } catch (Exception e) {
+                    logger.error("Couldn't convert into BeatSaberMap. Something went wrong!");
+                    return new BeatSaberMap(new ArrayList<>());
+                }
+
                 map.originalJSON = jsonString;
                 map.calculateBookmarks();
 
                 return map;
             }
             case '3' -> {
-                if (verbose) System.out.println("Detected version 3 Map file format. Omitting Chains, Arcs, Events, Bombs and obstacles...");
+                logger.info("Detected version 3 Map file format. Omitting Chains, Arcs, Events, Bombs and obstacles...");
 
                 //Parse Notes
                 JSONArray notes = mapInfoJson.getJSONArray("colorNotes");
@@ -206,10 +213,10 @@ public class BeatSaberMap {
                 return map;
             }
             case '4' -> {
-                System.err.println("[ERROR]: Error parsing BeatSaberMap from Json: Map Version format V4 is not supported yet!");
+                logger.error("Error parsing BeatSaberMap from Json: Map Version format V4 is not supported yet!");
                 return new BeatSaberMap(new ArrayList<>());
             }
-            default -> System.err.println("[ERROR]: Error parsing BeatSaberMap from Json: Unknown Map Version format: " + versionNumber);
+            default -> logger.error("Error parsing BeatSaberMap from Json: Unknown Map Version format: {}", versionNumber);
         }
         return new BeatSaberMap(new ArrayList<>());
     }
@@ -389,17 +396,17 @@ public class BeatSaberMap {
 
         JSONArray bookmarks = getBookmarksArray(json);
         if (bookmarks == null) {
-            System.err.println("[ERROR]: Error calculating Bookmarks: Bookmarks not found in the JSON. Skipping bookmarks...");
+            logger.warn("Bookmarks not found in the JSON. Skipping bookmarks...");
             return new ArrayList<>();
         }
 
         switch (_version.charAt(0)) {
-            case '1', '4' -> System.err.println("[ERROR]: Error calculating Bookmarks: Map Version format V" + _version.charAt(0) + " is not supported! Ignoring bookmarks...");
+            case '1', '4' -> logger.error("Error calculating Bookmarks: Map Version format V{} is not supported! Ignoring bookmarks...", _version.charAt(0));
             case '2', '3' -> {
                 for (int i = 0; i < bookmarks.length(); i++)
                     if (!addBookmarkToList(bookmarks.getJSONObject(i), l)) return new ArrayList<>();
             }
-            default -> System.err.println("[ERROR]: Error calculating Bookmarks: Unknown Map Version format: " + _version);
+            default -> logger.error("Error calculating Bookmarks: Unknown Map Version format: {}", _version);
         }
         this.bookmarks = l;
         return l;
@@ -412,7 +419,7 @@ public class BeatSaberMap {
             try {
                 l.add(new Bookmark(bookmark.getFloat("_time"), bookmark.getString("_name"), extractColor(bookmark)));
             } catch (Exception e1) {
-                System.err.println("[ERROR]: Error calculating Bookmarks: Error parsing bookmark color: " + e1.getMessage() + ". Skipping bookmark...");
+                logger.warn("Couldn't calculate Bookmarks: Error parsing bookmark color: " + e1.getMessage() + ". Skipping bookmarks...");
                 return false;
             }
         }
@@ -468,7 +475,7 @@ public class BeatSaberMap {
             }
         }
 
-        System.err.println("[INFO]: Warning: Bookmarks not found. Skipping... (Path not found in JSON structure.)");
+        logger.warn("Warning: Bookmarks not found. Skipping... (Path not found in JSON structure(?).)");
         return null;
     }
 

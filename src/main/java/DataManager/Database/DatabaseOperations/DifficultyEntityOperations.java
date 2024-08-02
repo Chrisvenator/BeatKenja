@@ -2,7 +2,6 @@ package DataManager.Database.DatabaseOperations;
 
 import DataManager.Database.DatabaseCommonMethods;
 import DataManager.Database.DatabaseEntities.DifficultyEntity;
-import DataManager.Database.DatabaseEntities.GenreAssignmentEntity;
 
 import javax.persistence.NoResultException;
 
@@ -10,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static DataManager.Parameters.entityManager;
+import static DataManager.Parameters.logger;
 import static DataManager.Parameters.useDatabase;
 
 public class DifficultyEntityOperations extends DifficultyEntity {
@@ -26,11 +26,10 @@ public class DifficultyEntityOperations extends DifficultyEntity {
     private static ArrayList<DifficultyEntity> getAllDifficultyEntities() {
         try {
             List<?> result = entityManager.createNamedQuery("DifficultyEntity.findAllDifficulties").getResultList();
-            List<DifficultyEntity> difficultyEntities = new ArrayList<>();
 
             return DatabaseCommonMethods.checkCastFromQuery(result, DifficultyEntity.class);
         } catch (NoResultException e) {
-            System.err.println("ERROR: Could not find a difficulty");
+            logger.error("ERROR: Could not find a difficulty");
             return new ArrayList<>();
         }
     }
