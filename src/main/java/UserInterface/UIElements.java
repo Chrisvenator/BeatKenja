@@ -70,19 +70,19 @@ public class UIElements {
         if (!CreateAllNecessaryDIRsAndFiles.isPythonInstalled()) {
             String error = "[ERROR]: Python could not be found. Please ensure that it is installed and added to the PATH variable or else the Onset Generation will not work!\n";
             statusCheck.append(error);
-            logger.fatal("Python not found.");
+            logger.error("Python not found.");
         }
 
         if (!CreateAllNecessaryDIRsAndFiles.isPipInstalled()) {
             String error = "[ERROR]: PIP could not be found. Please ensure that it is installed or else the Onset Generation will not work!\n";
             statusCheck.append(error);
-            logger.fatal("PIP not found.");
+            logger.error("PIP not found.");
         }
 
         if (!CreateAllNecessaryDIRsAndFiles.isFFMpegInstalled()) {
             String error = "[ERROR]: FFMPEG could not be found. Please ensure that it is installed and added to the PATH variable or else the Onset Generation will not work!\n";
             statusCheck.append(error);
-            logger.fatal("FFMPEG not found.");
+            logger.error("FFMPEG not found.");
         }
 
         if (CreateAllNecessaryDIRsAndFiles.isPythonInstalled() && CreateAllNecessaryDIRsAndFiles.isPipInstalled() && CreateAllNecessaryDIRsAndFiles.isFFMpegInstalled()) {

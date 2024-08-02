@@ -6,6 +6,7 @@ import UserInterface.Elements.Buttons.MySubButton;
 import UserInterface.Elements.ElementTypes;
 import UserInterface.Elements.TextFields.MyTextField;
 
+import static DataManager.Parameters.logger;
 import static DataManager.Parameters.verbose;
 
 public class UtilsFixPlacements extends MySubButton {
@@ -19,9 +20,7 @@ public class UtilsFixPlacements extends MySubButton {
     @Override
     public void onClick() {
         ui.map.fixPlacements((double) 1 / Double.parseDouble(fixPlacementTextField.getText().replaceAll("[^\\d.]", "")));
-        ui.statusCheck.setText(ui.statusCheck.getText() + "\n[INFO]: Fixed Note Placement with a precision of 1/" + fixPlacementTextField.getText() + " of a beat.");
-        System.out.println("Placements fixed: " + new BeatSaberMap(ui.map._notes).exportAsMap());
-        if (verbose)
-            ui.statusCheck.setText(ui.statusCheck.getText() + "\n" + "VERBOSE: " + "Placements fixed: " + new BeatSaberMap(ui.map._notes).exportAsMap());
+        logger.info("Fixed Note Placement with a precision of 1/{} of a beat.", fixPlacementTextField.getText());
+        logger.debug("Placements fixed: {}", new BeatSaberMap(ui.map._notes).exportAsMap());
     }
 }

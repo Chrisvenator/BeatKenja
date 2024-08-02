@@ -6,12 +6,14 @@ import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.MapCreatorSubButton
 import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.ElementTypes;
 
+import static DataManager.Parameters.logger;
 import static MapGeneration.PatternGeneration.RandomV2FromTemplate.randomV2FromTemplate;
 
 
 public class CreateRandomV2Map extends MapCreatorSubButton {
     public CreateRandomV2Map(MyButton parent) {
         super(ElementTypes.MAP_CREATOR_CREATE_RANDOM_MAP_V2_BUTTON, parent);
+        logger.debug("RandomV2 button initialized.");
     }
 
     @Override
