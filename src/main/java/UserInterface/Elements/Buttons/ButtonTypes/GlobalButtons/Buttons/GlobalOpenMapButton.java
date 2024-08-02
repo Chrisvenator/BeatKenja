@@ -12,9 +12,19 @@ import java.io.File;
 import static DataManager.Parameters.*;
 
 public class GlobalOpenMapButton extends GlobalButton {
+    @lombok.SneakyThrows
     public GlobalOpenMapButton(UserInterface ui) {
         super(ElementTypes.GLOBAL_OPEN_MAP, ui);
         setBackground(Color.cyan);
+
+        //Autoload default map for testing purposes
+        if (AUTOLOAD_DEFAULT_MAP_for_testing){
+            File f = new File(DEFAULT_PATH_FOR_AUTOLOAD_MAP);
+            if (!f.exists() || f.isDirectory() || !f.isFile() || !f.canRead()) throw new WrongFileException(DEFAULT_PATH_FOR_AUTOLOAD_MAP, "Wrong file type!");
+
+            ui.map = BeatSaberMap.newMapFromJSON(f.getAbsolutePath());
+            successfullyLoaded(f.getAbsolutePath());
+        }
     }
 
     @Override
@@ -29,9 +39,7 @@ public class GlobalOpenMapButton extends GlobalButton {
 
             ui.map = BeatSaberMap.newMapFromJSON(path.getAbsolutePath());
 
-            ui.statusCheck.setText("Successfully loaded difficulty: \"" + FILE_CHOOSER.getSelectedFile().getAbsolutePath() + "\"");
-            ui.mapSuccessfullyLoaded = true;
-            successfullyLoaded();
+            successfullyLoaded(FILE_CHOOSER.getSelectedFile().getAbsolutePath());
         } catch (Exception e) {
             errorWhileLoading(e);
             printException(e);
@@ -47,9 +55,11 @@ public class GlobalOpenMapButton extends GlobalButton {
         ui.mapSuccessfullyLoaded = false;
     }
 
-    private void successfullyLoaded() {
+    private void successfullyLoaded(String absolutePath) {
         setText("load an other diff");
         setBounds(270, 20, 200, 30);
         setBackground(Color.GREEN);
+        ui.statusCheck.setText("Successfully loaded difficulty: \"" + absolutePath + "\"");
+        ui.mapSuccessfullyLoaded = true;
     }
 }
