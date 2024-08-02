@@ -22,6 +22,7 @@ public class GlobalOpenFolder extends GlobalButton {
             Desktop.getDesktop().open(new File(ONSET_GENERATION_FOLDER_PATH_INPUT));
         } catch (IOException ex) {
             printException(new IOException("\n[ERROR]: Couldn't open the folder: " + ONSET_GENERATION_FOLDER_PATH_INPUT + "!", ex));
+            logger.error("Couldn't open the folder: {}!", ONSET_GENERATION_FOLDER_PATH_INPUT);
         }
     }
 }
