@@ -36,7 +36,7 @@ public class PatternVisualisationHeatMap extends JFrame {
 
         p.visualizeAsHeatmapTruncated();
         p.visualizeAsHeatmap();
-        p.visualizeAsHeatmapNormalized();
+        p.visualizeAsHeatmapNormalized("");
         p.visualizeAsHeatmapNormalizedLogarithmically();
     }
 
@@ -48,24 +48,24 @@ public class PatternVisualisationHeatMap extends JFrame {
      * @param truncate  If true, truncate the count array values to the range 0-255.
      * @param p         The pattern to visualize.
      */
-    private static void visualize(boolean normalize, boolean truncate, boolean log, Pattern p) {
-        SwingUtilities.invokeLater(() -> new PatternVisualisationHeatMap(normalize, truncate, log, p));
+    private static void visualize(boolean normalize, boolean truncate, boolean log, Pattern p, String name) {
+        new PatternVisualisationHeatMap(normalize, truncate, log, p, name);
     }
 
-    public static void visualizeAsHeatmapNormalized(Pattern p) {
-        PatternVisualisationHeatMap.visualize(true, false, false, p);
+    public static void visualizeAsHeatmapNormalized(Pattern p, String name) {
+        PatternVisualisationHeatMap.visualize(true, false, false, p, name);
     }
 
-    public static void visualizeAsHeatmapLogarithmicNormalized(Pattern p) {
-        PatternVisualisationHeatMap.visualize(true, false, true, p);
+    public static void visualizeAsHeatmapLogarithmicNormalized(Pattern p, String name) {
+        PatternVisualisationHeatMap.visualize(true, false, true, p, name);
     }
 
-    public static void visualizeAsHeatmap(Pattern p) {
-        PatternVisualisationHeatMap.visualize(false, false, false, p);
+    public static void visualizeAsHeatmap(Pattern p, String name) {
+        PatternVisualisationHeatMap.visualize(false, false, false, p, name);
     }
 
-    public static void visualizeAsHeatmapTruncated(Pattern p) {
-        PatternVisualisationHeatMap.visualize(false, true, false, p);
+    public static void visualizeAsHeatmapTruncated(Pattern p, String name) {
+        PatternVisualisationHeatMap.visualize(false, true, false, p, name);
     }
 
 
@@ -77,7 +77,7 @@ public class PatternVisualisationHeatMap extends JFrame {
      * @param log       If true, normalize the count array values logarithmically.
      * @param p         The pattern to visualize.
      */
-    private PatternVisualisationHeatMap(boolean normalize, boolean truncate, boolean log, Pattern p) {
+    private PatternVisualisationHeatMap(boolean normalize, boolean truncate, boolean log, Pattern p, String name) {
         this.normalize = normalize;
         this.truncate = truncate;
         this.logaritmic = log;
@@ -87,6 +87,7 @@ public class PatternVisualisationHeatMap extends JFrame {
         if (normalize) this.setTitle("Normalized Pattern Heatmap Visualization");
         else if (truncate) this.setTitle("Truncated Pattern Heatmap Visualization");
         else this.setTitle("Pattern Heatmap Visualization");
+        if (name != null) this.setTitle(name);
 
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.setSize(MAX_ARRAY_SIZE * RECT_SIZE + 10, MAX_ARRAY_SIZE * RECT_SIZE + 10);

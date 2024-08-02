@@ -1,11 +1,27 @@
 package MapGeneration.PatternGeneration.CommonMethods;
 
 import BeatSaberObjects.Objects.Note;
+import DataManager.Parameters;
 
 import java.util.Collections;
 import java.util.List;
 
 import static MapGeneration.PatternGeneration.CommonMethods.PlaceFirstNotes.firstNotePlacement;
+
+/*
+Red: 0
+Blue: 1
+
+Layer - Index:          Cut direction:
+|---|---|---|---|       |---|---|---|
+|   |   |   |3-2|       | 4 | 0 | 5 |
+|---|---|---|---|       |---|---|---|
+|   |   |   |3-1|       | 2 | 8 | 3 |
+|---|---|---|---|       |---|---|---|
+|0-0|1-0|2-0|3-0|       | 6 | 1 | 7 |
+|---|---|---|---|       |---|---|---|
+ */
+
 
 public class CheckParity {
     /**
@@ -26,55 +42,56 @@ public class CheckParity {
 
         for (Note n : notes) {
 
-            //set red and blue notes:
+            //set initial red and blue notes:
             if (red == null && n._type == 0) {
                 red = n;
-                continue;
             } else if (blue == null && n._type == 1) {
                 blue = n;
                 continue;
             } else if (blue == null || red == null) continue;
 
+            // Fortsetzen, wenn Note zur gleichen Zeit wie die vorherige Note desselben Typs
             if (n._type == 0 && red._time == n._time) continue;
             if (n._type == 1 && blue._time == n._time) continue;
 
+            // continue, if the type is invalid...
+            if (n._type < 0 || n._type > 1) continue;
 
-            //Hitbox path fix when both notes are next to each other in the bottom lane
-            if (blue._lineLayer == 0 && red._lineLayer == 0 && blue._lineIndex - red._lineIndex == -1 && blue._lineIndex - red._lineIndex == 1) {
-                if (blue._cutDirection == 2 || blue._cutDirection == 3) blue._cutDirection = 1;
-                if (blue._cutDirection == 4 || blue._cutDirection == 5) blue._cutDirection = 0;
-                if (red._cutDirection == 2 || red._cutDirection == 3) red._cutDirection = 1;
-                if (red._cutDirection == 4 || red._cutDirection == 5) red._cutDirection = 0;
-            }
 
-            //Exclude this at dd-checking:
-            if (n._type == 0 && (red._cutDirection == 6 && n._cutDirection == 4 || red._cutDirection == 4 && n._cutDirection == 6 || red._cutDirection == 7 && n._cutDirection == 5 || red._cutDirection == 5 && n._cutDirection == 7))
-                System.err.println("WARN at beat:    " + n._time + ": sharp angle");
-                //check if red has a dd:
-            else if (n._type == 0 && (n._cutDirection == red._cutDirection
-                    || (red._cutDirection == 6 || red._cutDirection == 1 || red._cutDirection == 7) && (n._cutDirection == 6 || n._cutDirection == 1 || n._cutDirection == 7)
-                    || (red._cutDirection == 7 || red._cutDirection == 3 || red._cutDirection == 5) && (n._cutDirection == 7 || n._cutDirection == 3 || n._cutDirection == 5)
-                    || (red._cutDirection == 4 || red._cutDirection == 0 || red._cutDirection == 5) && (n._cutDirection == 4 || n._cutDirection == 0 || n._cutDirection == 5)
-                    || (red._cutDirection == 4 || red._cutDirection == 2 || red._cutDirection == 6) && (n._cutDirection == 4 || n._cutDirection == 2 || n._cutDirection == 6))) {
-                if (!quiet) System.err.println("[ERROR] at beat:   " + n._time + ": Parity break!");
-            }
+            // Check for Double-Directionals
+            Note prev = n._type == 0 ? red : blue;
 
-            //Exclude this at dd-checking:
-            if (n._type == 1 && (blue._cutDirection == 6 && n._cutDirection == 4 || blue._cutDirection == 4 && n._cutDirection == 6 || blue._cutDirection == 7 && n._cutDirection == 5 || blue._cutDirection == 5 && n._cutDirection == 7))
-                System.err.println("WARN at beat:    " + n._time + ": sharp angle");
-                //check if blue has a dd:
-            else if (n._type == 1 && (n._cutDirection == blue._cutDirection
-                    || (blue._cutDirection == 6 || blue._cutDirection == 1 || blue._cutDirection == 7) && (n._cutDirection == 6 || n._cutDirection == 1 || n._cutDirection == 7)
-                    || (blue._cutDirection == 7 || blue._cutDirection == 3 || blue._cutDirection == 5) && (n._cutDirection == 7 || n._cutDirection == 3 || n._cutDirection == 5)
-                    || (blue._cutDirection == 4 || blue._cutDirection == 0 || blue._cutDirection == 5) && (n._cutDirection == 4 || n._cutDirection == 0 || n._cutDirection == 5)
-                    || (blue._cutDirection == 4 || blue._cutDirection == 2 || blue._cutDirection == 6) && (n._cutDirection == 4 || n._cutDirection == 2 || n._cutDirection == 6))) {
-                if (!quiet) System.err.println("[ERROR] at beat:   " + n._time + ": Parity break!");
-            }
+            if (isParityBreak(prev, n)) {
+                if (!quiet) System.err.println("[ERROR] at beat:   " + n._time + ": Parity break! prev: " + prev._time + "-" + prev.exportInPatFormat() + ", current: " + n._time + "-" + n.exportInPatFormat());
+            } else
+                // Sharp Angle
+                if (isParitySharpAngle(prev, n))
+                    if (!quiet) System.err.println("[WARN] at beat:    " + n._time + ": sharp angle");
 
 
             if (n._type == 0) red = n;
             else if (n._type == 1) blue = n;
+            else System.err.println("[WARN]: IN \"CheckParity\" has been an other type of note instead of 0 or 1!!");
         }
+    }
+
+    private static boolean isParitySharpAngle(Note previous, Note current) {
+        return (previous._cutDirection == 6 && current._cutDirection == 4 ||
+                previous._cutDirection == 4 && current._cutDirection == 6 ||
+                previous._cutDirection == 7 && current._cutDirection == 5 ||
+                previous._cutDirection == 5 && current._cutDirection == 7);
+    }
+
+    private static boolean isParityBreak(Note previous, Note current) {
+        return previous._cutDirection == current._cutDirection
+                || ((previous._cutDirection == 6 || previous._cutDirection == 1 || previous._cutDirection == 7)
+                && (current._cutDirection == 6 || current._cutDirection == 1 || current._cutDirection == 7))
+                || ((previous._cutDirection == 7 || previous._cutDirection == 3 || previous._cutDirection == 5)
+                && (current._cutDirection == 7 || current._cutDirection == 3 || current._cutDirection == 5))
+                || ((previous._cutDirection == 4 || previous._cutDirection == 0 || previous._cutDirection == 5)
+                && (current._cutDirection == 4 || current._cutDirection == 0 || current._cutDirection == 5))
+                || ((previous._cutDirection == 4 || previous._cutDirection == 2 || previous._cutDirection == 6)
+                && (current._cutDirection == 4 || current._cutDirection == 2 || current._cutDirection == 6));
     }
 
     /**
@@ -115,8 +132,7 @@ public class CheckParity {
         //Checking, if some notes inside other notes were missed:
         for (int i = 0; i < allNotes.size() - 1; i++) {
             if (allNotes.get(i)._time == allNotes.get(i + 1)._time && allNotes.get(i).equalNotePlacement(allNotes.get(i + 1))) {
-                if (!quiet)
-                    System.err.println("[ERROR] at beat:   " + allNotes.get(i)._time + ": note inside another Note!");
+                if (!quiet) System.err.println("[ERROR] at beat:   " + allNotes.get(i)._time + ": note inside another Note!");
             }
         }
 
@@ -168,6 +184,7 @@ public class CheckParity {
      * @return boolean
      */
     public static boolean invalidPlacement(List<Note> notes, int i, boolean oneHanded) {
+        if (Parameters.ignoreDDs) return false;
         if (notes.size() <= 2) return false;
         if (i < 4) return false;
         if (notes.get(i - 1) == null || notes.get(i) == null) return true;

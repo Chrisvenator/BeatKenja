@@ -58,9 +58,11 @@ public class ElementTypes {
     public static final ButtonType GLOBAL_OPEN_MAP = new ButtonType("click here and select your desired difficulty", 200, 20, 100, 30, true);
     public static final ButtonType GLOBAL_CONVERT_MP3s = new ButtonType("Convert MP3s to timing maps", 500, 20, 200, 30, true);
     public static final ButtonType GLOBAL_OPEN_FOLDER = new ButtonType("open folder", 705, 22, 110, 26, true);
-    public static final ButtonType GLOBAL_LOAD_PATTERNS_BUTTON = new ButtonType("Load Patterns File", 270, 70, 200, 30, true);
+    public static final ButtonType GLOBAL_LOAD_PATTERNS_BUTTON = new ButtonType("Load Patterns File", 270, 70, 140, 30, true);
+    public static final ButtonType GLOBAL_SHOW_PATTERNS_BUTTON = new ButtonType("Visualize Pattern", 275, 105, 130, 15, true);
+//    public static final ButtonType GLOBAL_SHOW_PATTERNS_BUTTON = new ButtonType("Show", 415, 75, 70, 20, true);
 
     //Global Text Field Types
     public static final TextFieldType GLOBAL_SEED_FRAME = new TextFieldType(String.valueOf(Parameters.SEED), 1000, 20, 100, 20, true);
-    public static final SliderTypes GLOBAL_PATTERN_VARIANCE_SLIDER = new SliderTypes(JSlider.HORIZONTAL, 50, 70, 200, 50, true, 0, 100, 0);
+    public static final SliderTypes GLOBAL_PATTERN_VARIANCE_SLIDER = new SliderTypes(JSlider.HORIZONTAL, 50, 70, 200, 50, true, -50, 50, 0);
 }
