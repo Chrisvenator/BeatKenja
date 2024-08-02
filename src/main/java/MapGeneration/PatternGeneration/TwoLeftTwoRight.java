@@ -34,7 +34,7 @@ public class TwoLeftTwoRight {
                 invalidPlacementsInARow = 0;
                 continue;
             } else if (invalidPlacementsInARow >= 500)
-                throw new IllegalArgumentException("Infinite Loop while creating map! Please try again. (Error occured in \"2-2\")");
+                throw new IllegalArgumentException("Infinite Loop while creating map! Please try again. (Error occurred in \"2-2\")");
             if (i >= 2 && notes.get(notes.size() - 1)._cutDirection == 8) {
                 try {
                     notes.add(nextNoteAfterTimingNote(notes, timings.get(i)._time, notes.size(), i < 4 ? 2 : 4));
@@ -46,29 +46,21 @@ public class TwoLeftTwoRight {
             }
 
 
-            if (i % 4 == 0) {
-                Note blue1 = nextLinearNote(notes.get(notes.size() - 3), timings.get(i)._time);
-                if (i >= timings.size() - 1) continue;
-                Note blue2 = nextLinearNote(blue1, timings.get(i + 1)._time);
-                if (blue1.isDD(notes.get(notes.size() - 3)) || blue2.isDD(blue1)) {
-                    i--;
-                    invalidPlacementsInARow++;
-                    continue;
-                }
-                notes.add(blue1);
-                notes.add(blue2);
-            } else {
-                Note red1 = nextLinearNote(notes.get(notes.size() - 3), timings.get(i)._time);
-                if (i >= timings.size() - 1) continue;
-                Note red2 = nextLinearNote(red1, timings.get(i + 1)._time);
-                if (red1.isDD(notes.get(notes.size() - 3)) || red2.isDD(red1)) {
-                    i--;
-                    invalidPlacementsInARow++;
-                    continue;
-                }
-                notes.add(red1);
-                notes.add(red2);
+            Note previousNote = notes.get(notes.size() - 3);
+            Note note1 = nextLinearNote(previousNote, timings.get(i)._time);
+
+            if (i >= timings.size() - 1) continue;
+
+            Note note2 = nextLinearNote(note1, timings.get(i + 1)._time);
+
+            if (note1.isDD(previousNote) || note2.isDD(note1)) {
+                i--;
+                invalidPlacementsInARow++;
+                continue;
             }
+
+            notes.add(note1);
+            notes.add(note2);
         }
 
         for (int i = 1; i < notes.size(); i++) if (i % 4 == 2 || i % 4 == 3) notes.get(i).invertNote();

@@ -17,7 +17,7 @@ public class PatternVisualisationHeatMap extends JFrame {
     private final int[][] count;
     private final boolean normalize;
     private final boolean truncate;
-    private final boolean logaritmic;
+    private final boolean logarithmic;
 
     public static void main(String[] args) {
         //AllMapsGroupedV1; 98; 4;[StandardExpert];Dance;Dance
@@ -80,7 +80,7 @@ public class PatternVisualisationHeatMap extends JFrame {
     private PatternVisualisationHeatMap(boolean normalize, boolean truncate, boolean log, Pattern p, String name) {
         this.normalize = normalize;
         this.truncate = truncate;
-        this.logaritmic = log;
+        this.logarithmic = log;
         this.count = copyArray(p.count);
 
         if (log) this.setTitle("Logarithmically Normalized Pattern Heatmap Visualization");
@@ -114,7 +114,7 @@ public class PatternVisualisationHeatMap extends JFrame {
     }
 
     private void normalizeCountArray() {
-        Pattern.normalizeCountArray(count, logaritmic);
+        Pattern.normalizeCountArray(count, logarithmic);
     }
 
 

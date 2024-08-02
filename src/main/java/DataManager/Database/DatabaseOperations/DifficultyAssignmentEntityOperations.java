@@ -10,16 +10,20 @@ import javax.persistence.NoResultException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static DataManager.Database.DatabaseCommonMethods.checkCastFromQuery;
 import static DataManager.Parameters.entityManager;
 import static DataManager.Parameters.verbose;
 
 public class DifficultyAssignmentEntityOperations extends DifficultyAssignmentEntity {
     public static ArrayList<DifficultyAssignmentEntity> getAssignmentEntity(int fkDifficultyId, int fkPatternDescriptionId) {
         try {
-            return (ArrayList<DifficultyAssignmentEntity>) entityManager.createNamedQuery("DifficultyAssignment.findDifficultyAssignment")
+            List<?> result = entityManager.createNamedQuery("DifficultyAssignment.findDifficultyAssignment")
                     .setParameter("fkDifficultyId", fkDifficultyId)
                     .setParameter("fkPatternDescriptionId", fkPatternDescriptionId)
                     .getResultList();
+
+
+            return checkCastFromQuery(result, DifficultyAssignmentEntity.class);
         } catch (NoResultException e) {
             System.err.println("[ERROR]: Could not find a difficulty");
             return new ArrayList<>();
@@ -55,12 +59,14 @@ public class DifficultyAssignmentEntityOperations extends DifficultyAssignmentEn
 
     public static List<String> getDifficultiesForPatternID(int fkPatternDescriptionId) {
         try {
-            ArrayList<DifficultyAssignmentEntity> list = (ArrayList<DifficultyAssignmentEntity>) entityManager.createNamedQuery("DifficultyAssignment.findDifficultyAssignmentByFkPatternDescriptionId")
+            List<?> result = entityManager.createNamedQuery("DifficultyAssignment.findDifficultyAssignmentByFkPatternDescriptionId")
                     .setParameter("fkPatternDescriptionId", fkPatternDescriptionId)
                     .getResultList();
 
+            ArrayList<DifficultyAssignmentEntity> checkedList = checkCastFromQuery(result, DifficultyAssignmentEntity.class);
+
             ArrayList<String> difficulties = new ArrayList<>();
-            for (DifficultyAssignmentEntity entity : list) {
+            for (DifficultyAssignmentEntity entity : checkedList) {
                 difficulties.add(DifficultyEntityOperations.getDifficulty(entity.getFkDifficultyId()).getName());
             }
 

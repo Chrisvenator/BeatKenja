@@ -7,10 +7,7 @@ import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Exceptions.Conve
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.GlobalButton;
 import UserInterface.Elements.ElementTypes;
 import UserInterface.UserInterface;
-import javazoom.jl.decoder.JavaLayerException;
 
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +50,7 @@ public class GlobalConvertMP3ToMaps extends GlobalButton {
                         Mp3ToWavConverter.convert(f.getAbsolutePath(), f.getAbsolutePath().replace(".mp3", ".wav"));
                         System.out.println("mp3 to wav conversion completed successfully for: " + f.getName() + "\n");
                         ui.statusCheck.append("mp3 to wav conversion completed successfully for: " + f.getName() + "\n");
-                    } catch (UnsupportedAudioFileException | IOException | LineUnavailableException | JavaLayerException e) {
+                    } catch (IOException e) {
                         e.printStackTrace();
                         System.err.println("Error while converting mp3 to wav: " + f.getName() + "\n");
                     }
@@ -63,10 +60,10 @@ public class GlobalConvertMP3ToMaps extends GlobalButton {
                 List<File> files = new ArrayList<>(Arrays.stream(Objects.requireNonNull(new File(ONSET_GENERATION_FOLDER_PATH_INPUT).listFiles())).toList());
                 //Remove any file that is not a wav file. Only wav files are supported for the onset generation
                 files.removeIf(f -> !f.getName().endsWith(".wav"));
-                if (files.size() == 0) throw new Exception();
+                if (files.isEmpty()) throw new Exception();
                 ui.statusCheck.append("[INFO]: Found " + files.size() + " MP3 Files in \"" + ONSET_GENERATION_FOLDER_PATH_INPUT + "\"\n\n");
             } catch (Exception e) {
-                ui.statusCheck.setBackground(darkMode ? Color.BLACK : Color.WHITE);
+                ui.statusCheck.setBackground(DARK_MODE ? Color.BLACK : Color.WHITE);
                 this.setText("Convert MP3s to timing maps");
                 throw new ConvertMP3Exception("Found 0 MP3 Files! Please put your mp3 Files into th folder: \"" + ONSET_GENERATION_FOLDER_PATH_INPUT);
             }
@@ -82,7 +79,7 @@ public class GlobalConvertMP3ToMaps extends GlobalButton {
                 else ui.statusCheck.append("\n[ERROR]: error while installing dependencies...");
             }
 
-            ui.statusCheck.setBackground(darkMode ? Color.BLACK : Color.WHITE);
+            ui.statusCheck.setBackground(DARK_MODE ? Color.BLACK : Color.WHITE);
             this.setText("Convert MP3s to timing maps");
         } catch (ConvertMP3Exception e) {
             printException(e);

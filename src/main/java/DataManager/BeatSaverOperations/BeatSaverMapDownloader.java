@@ -21,11 +21,7 @@ import java.util.function.Predicate;
  * Downloads the map into its own folder in DOWNLOAD_DIRECTORY
  */
 public class BeatSaverMapDownloader {
-    public static void main(String[] args) throws WrongFileExtensionException, JSONException, IOException {
-//        BeatSaverMapDownloader downloader = new BeatSaverMapDownloader();
-//        downloader.downloadMap("1a8", true);
-//        downloader.downloadBPLIST(new File("C:\\Users\\chris\\Documents\\_Uni\\a (1).bplist"), true);
-
+    public static void main(String[] args) throws JSONException {
         BeatSaverMapDownloader downloader = new BeatSaverMapDownloader("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\BeatSaberMaps\\_toAdd\\");
         Map<String, Predicate<Object>> filter = Map.of(
                 "score", value -> value instanceof Number && ((Number) value).doubleValue() >= 0.5,
@@ -81,7 +77,7 @@ public class BeatSaverMapDownloader {
      * boolean allFiltersTrue = checkFilters(jsonObject, filter);<br>
      * System.out.println("Are all filters true? " + allFiltersTrue);<br>
      */
-    public void downloadFilteredMaps(Map<String, Predicate<Object>> filter, boolean deleteUnnecessaryFiles) {
+    @SuppressWarnings("GrazieInspection") public void downloadFilteredMaps(Map<String, Predicate<Object>> filter, boolean deleteUnnecessaryFiles) {
         File mapInfoDirectory = new File(MAP_INFO_DIRECTORY);
         File[] mapInfoFiles = mapInfoDirectory.listFiles();
 

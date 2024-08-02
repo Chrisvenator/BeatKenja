@@ -1,6 +1,6 @@
 package DataManager.Database.DatabaseOperations;
 
-
+import DataManager.Database.DatabaseCommonMethods;
 import DataManager.Database.DatabaseEntities.GenreAssignmentEntity;
 import DataManager.Database.DatabaseEntities.PatternDescriptionEntity;
 import DataManager.Records.PatMetadata;
@@ -17,10 +17,12 @@ import static DataManager.Parameters.verbose;
 public class GenreAssignmentEntityOperations extends GenreEntityOperations {
     public static ArrayList<GenreAssignmentEntity> getAssignmentEntity(int fkGenreId, int fkPatternDescriptionId) {
         try {
-            return (ArrayList<GenreAssignmentEntity>) entityManager.createNamedQuery("GenreAssignment.findGenreAssignment")
+            List<?> result = entityManager.createNamedQuery("GenreAssignment.findGenreAssignment")
                     .setParameter("fkGenreId", fkGenreId)
                     .setParameter("fkPatternDescriptionId", fkPatternDescriptionId)
                     .getResultList();
+
+            return DatabaseCommonMethods.checkCastFromQuery(result, GenreAssignmentEntity.class);
         } catch (NoResultException e) {
             System.err.println("[ERROR]: Could not find a difficulty");
             return new ArrayList<>();
@@ -57,11 +59,13 @@ public class GenreAssignmentEntityOperations extends GenreEntityOperations {
 
     public static List<String> getGenresForPatternID(int id) {
         try {
-            ArrayList<GenreAssignmentEntity> list = (ArrayList<GenreAssignmentEntity>) entityManager.createNamedQuery("GenreAssignment.findGenreAssignmentByFkPatternDescriptionId")
+            List<?> result = entityManager.createNamedQuery("GenreAssignment.findGenreAssignmentByFkPatternDescriptionId")
                     .setParameter("fkPatternDescriptionId", id)
                     .getResultList();
+
+            ArrayList<GenreAssignmentEntity> genreAssignmentEntities = DatabaseCommonMethods.checkCastFromQuery(result, GenreAssignmentEntity.class);
             ArrayList<String> genres = new ArrayList<>();
-            list.forEach(entity -> genres.add(GenreEntityOperations.getGenre(entity.getFkGenreId()).getName()));
+            genreAssignmentEntities.forEach(entity -> genres.add(GenreEntityOperations.getGenre(entity.getFkGenreId()).getName()));
             return genres;
         } catch (NoResultException e) {
             System.err.println("[ERROR]: Could not find a genre");

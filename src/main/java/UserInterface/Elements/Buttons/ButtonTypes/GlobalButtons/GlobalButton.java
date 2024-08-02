@@ -18,7 +18,7 @@ public abstract class GlobalButton extends MyButton {
         super(button, ui);
     }
 
-    protected boolean approveFileloading(int option) {
+    protected boolean approveFileLoading(int option) {
         if (verbose && option == JFileChooser.APPROVE_OPTION) ui.statusCheck.append("\n[INFO]: File loading approved!");
         if (option == JFileChooser.CANCEL_OPTION) ui.statusCheck.append("\n[INFO]: File loading aborted.");
         if (option == JFileChooser.ERROR_OPTION) ui.statusCheck.append("\n[ERROR]: There was an error while loading the file. Please try again!");
