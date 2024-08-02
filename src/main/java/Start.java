@@ -1,6 +1,7 @@
 import DataManager.CreateAllNecessaryDIRsAndFiles;
 import DataManager.Database.DatabaseExport;
 import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
+import DataManager.Parameters;
 import UserInterface.UserInterface;
 
 import java.util.Random;
@@ -32,7 +33,7 @@ public class Start {
         java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
 
         SEED = (long) (new Random().nextDouble() * 1000000000);
-        RANDOM = new Random(SEED);
+        Parameters.RANDOM = new Random(SEED);
         System.out.println("Current seed is: " + SEED);
 
 
