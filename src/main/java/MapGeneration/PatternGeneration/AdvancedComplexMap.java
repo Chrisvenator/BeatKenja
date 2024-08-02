@@ -7,6 +7,7 @@ import MapGeneration.GenerationElements.Pattern;
 
 import java.util.*;
 
+import static DataManager.Parameters.logger;
 import static MapGeneration.PatternGeneration.CommonMethods.StackPlacements.placeStacks;
 import static MapGeneration.PatternGeneration.CommonMethods.StackPlacements.removeStacks;
 import static MapGeneration.ComplexPatternFromTemplate.complexPatternFromTemplate;
@@ -67,7 +68,6 @@ public class AdvancedComplexMap {
                             prevBlue,
                             prevRed
                     ));
-                    System.out.println("i" + i + " " + timings.size());
                 }
                 break;
             }
@@ -101,13 +101,12 @@ public class AdvancedComplexMap {
     private static Pattern getCachedPattern(PatMetadata metadata, Pattern fallbackPattern, Map<PatMetadata, Pattern> patternCache) {
         // Check if the pattern is already cached
         if (patternCache.containsKey(metadata)) {
-            System.out.println("Using cached pattern for " + metadata.name() + " with " + metadata.bpm() + " BPM and " + metadata.nps() + " NPS");
+            logger.debug("Using cached pattern for " + metadata.name() + " with " + metadata.bpm() + " BPM and " + metadata.nps() + " NPS");
             return patternCache.get(metadata);
         }
 
         // Try to create a new pattern with the provided metadata
         try {
-//            System.out.println("Fetching pattern for " + metadata.name() + " with " + metadata.bpm() + " BPM and " + metadata.nps() + " NPS");
             Pattern p = new Pattern(metadata);
             patternCache.put(metadata, p);
             return p;

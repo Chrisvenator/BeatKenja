@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static DataManager.Parameters.logger;
 import static MapGeneration.PatternGeneration.CommonMethods.CheckParity.invalidPlacement;
 import static MapGeneration.PatternGeneration.CommonMethods.CheckParity.nextNoteAfterTimingNote;
 import static MapGeneration.PatternGeneration.CommonMethods.PlaceFirstNotes.firstNotePlacement;
@@ -51,7 +52,7 @@ public class TwoRightOneLeft {
             // Try 100 times to place a normal note. If this doesn't work, then place a Timing-BeatSaberObjects.Objects.Note.
             // If this still doesn't work, then throw an exception
             if (invalidPlacementsInARow >= 100) {
-                System.err.println("WARN at beat:    " + timings.get(i)._time + " There may be a mismatched Note");
+                logger.warn("WARN at beat:    " + timings.get(i)._time + " There may be a mismatched Note");
                 // Logic for adding TimingNote or alternative note based on even/odd index and prevRed
 
                 if (i % 2 == 0 && prevRed == null) redNotes.add(new Note(complexPattern.get(i)._time, 2, 0, 1, 0));

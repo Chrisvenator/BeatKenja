@@ -1,7 +1,6 @@
 import DataManager.CreateAllNecessaryDIRsAndFiles;
 import DataManager.Database.DatabaseExport;
 import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
-import DataManager.Parameters;
 import UserInterface.UserInterface;
 
 import java.util.Random;
@@ -34,6 +33,7 @@ public class Start {
      * Sleep interrupted exception bei linear, one-handed complex
      * Verifizieren, dass ToBLueOnlyTimingNotes funktioniert
      * Möglichkeit .webp als map zu laden XD (╯°□°)╯︵ ┻━┻
+     * BatchWavToMaps Testen, ob output noch immer geht
      *****************************************
     **/
 
