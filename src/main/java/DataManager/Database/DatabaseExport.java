@@ -51,7 +51,7 @@ public class DatabaseExport {
         exportPattern(path + "data/pattern.csv");
 
         System.out.println("[INFO]: Dumped database to " + path + "exported_schema.sql");
-        logger.debug("Dumped database to " + path + "exported_schema.sql");
+        logger.debug("Dumped database to {}exported_schema.sql", path);
     }
 
     /**

@@ -161,7 +161,7 @@ public class ComplexPatternFromTemplate {
 
                     blueNotesFirstFix.add(pattern.get(i));
                     pattern.set(i, noteNew);
-                    System.out.println("Added new Note: " + noteNew);
+                    System.out.println("Added new Note: " + noteNew.toString().replace("\n",""));
 
                     //Only a blue note can be here. So we don't need to check ever statement
                     palmDirection[i % j] = !palmDirection[i % j];

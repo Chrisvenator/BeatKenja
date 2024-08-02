@@ -12,6 +12,8 @@ import org.apache.logging.log4j.core.config.plugins.PluginElement;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
+import static DataManager.Parameters.logger;
+
 @Plugin(name = "GuiAppender", category = "Core", elementType = Appender.ELEMENT_TYPE, printObject = true)
 public class GuiAppender extends AbstractAppender {
 
@@ -43,5 +45,6 @@ public class GuiAppender extends AbstractAppender {
 
     public static void setUserInterface(UserInterface ui) {
         GuiAppender.ui = ui;
+        logger.info("set User Interface for GuiAppender");
     }
 }
