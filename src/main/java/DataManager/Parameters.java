@@ -19,6 +19,7 @@ import java.util.logging.Level;
 
 @SuppressWarnings("unused")
 public class Parameters {
+    public static final Logger logger = LogManager.getLogger();
 
     private static final Configuration config = new ConfigLoader("./config.json").getConfig();
     private static final Configuration.Colors COLORS = config.colors;
@@ -81,7 +82,6 @@ public class Parameters {
 
 
     // Common
-    public static final Logger logger = LogManager.getLogger();
     public static final EntityManager entityManager = useDatabase ? Persistence.createEntityManagerFactory("default").createEntityManager() : null;
     public static final JFileChooser FILE_CHOOSER = new JFileChooser(DEFAULT_PATH.trim());
     public static final List<String> MAP_TAGS = TagEntityOperations.getAllTags();
