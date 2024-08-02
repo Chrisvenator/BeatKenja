@@ -81,6 +81,9 @@ public class Parameters {
     public static final List<String> MUSIC_GENRES = GenreEntityOperations.getAllGenreNames();
     public static final List<String> DIFFICULTIES = DifficultyEntityOperations.getAllDifficultiesNames();
     public static final java.util.Map<String, String> DATABASE_SETTINGS = new java.util.HashMap<>();
+    public static final boolean SHOW_HEATMAP_WHEN_GENERATING_ONSETS = false; //TODO: Add to Config
+    public static final boolean SHOW_SPECTOGRAM_WHEN_GENERATING_ONSETS = false; //TODO: Add to Config
+
 
     public static double MADMOM_ONSET_GENERATION_ONSET_CERTAINTY = 7.5;   //For madmom onset detection only! This is an arbitrary value. The lower the value, the more onsets will be detected
     public static double MADMOM_ONSET_GENERATION_MINIMUM_PROXIMITY = 0.1; //For madmom onset detection only! Minimum proximity between onsets in seconds
