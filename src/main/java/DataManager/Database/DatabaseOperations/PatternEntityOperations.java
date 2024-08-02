@@ -1,17 +1,16 @@
 package DataManager.Database.DatabaseOperations;
 
 import DataManager.Database.DatabaseCommonMethods;
-import DataManager.Database.DatabaseEntities.GenreAssignmentEntity;
 import DataManager.Database.DatabaseEntities.PatternDescriptionEntity;
 import DataManager.Database.DatabaseEntities.PatternEntity;
 import DataManager.Database.DatabaseSaveOperations;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
 import static DataManager.Parameters.entityManager;
+import static DataManager.Parameters.logger;
 import static DataManager.Parameters.verbose;
 
 /**
@@ -22,7 +21,7 @@ public class PatternEntityOperations extends PatternEntity {
         java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
 
         PatternDescriptionEntity desc = PatternDescriptionEntityOperations.getPatternDescription("default", 120, 5, null, null, null);
-        System.out.println(getPatternByDescription(desc));
+        logger.info(getPatternByDescription(desc));
     }
 
     /**
@@ -78,12 +77,13 @@ public class PatternEntityOperations extends PatternEntity {
                 entityManager.flush();
                 transaction.commit();
             } catch (NoResultException e) {
-                if (verbose) System.out.println("Count not find pattern to update, creating new pattern...");
+                logger.info("Count not find pattern to update, creating new pattern...");
                 return DatabaseSaveOperations.persistEntity(entity);
             }
 
         } catch (PersistenceException e) {
-            if (verbose) e.printStackTrace();
+            logger.error(e.getMessage());
+            e.printStackTrace();
             return false;
         } finally {
             if (transaction.isActive()) {
@@ -108,7 +108,7 @@ public class PatternEntityOperations extends PatternEntity {
             // Retrieve the entity to ensure it exists
             PatternEntity toDelete = entityManager.find(PatternEntity.class, entity.getId());
             if (toDelete == null) {
-                System.out.println("Pattern not found, cannot delete.");
+                logger.warn("Pattern not found, cannot delete.");
                 return false;
             }
 

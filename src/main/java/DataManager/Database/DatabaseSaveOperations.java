@@ -4,6 +4,8 @@ import DataManager.Parameters;
 
 import javax.persistence.*;
 
+import static DataManager.Parameters.logger;
+
 /**
  * This class is an example class to show how to add entities to the database
  * This class is used to persist entities to the database.
@@ -20,9 +22,9 @@ public class DatabaseSaveOperations {
             entityManager.flush();
 
             transaction.commit();
-            if (Parameters.verbose) System.out.println("Persisted " + entity + " to database");
+            logger.debug("Persisted {} to database", entity);
         } catch (PersistenceException e) {
-            System.err.println("Failed to persist " + entity + " to database");
+            logger.error("Failed to persist {} to database", entity);
             if (Parameters.verbose) e.printStackTrace();
             return false;
         } finally {

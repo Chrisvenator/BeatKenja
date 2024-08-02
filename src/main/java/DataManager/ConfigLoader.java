@@ -9,27 +9,27 @@ import lombok.Getter;
 import java.io.File;
 import java.io.IOException;
 
+import static DataManager.Parameters.logger;
+
 @Getter
 public class ConfigLoader {
-    private Configuration config;
+    private Configuration config = getDefaultConfiguration();
 
     public ConfigLoader(String configFilePath) {
         ObjectMapper mapper = new ObjectMapper();
         try {
             mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            mapper.configure(DeserializationFeature.FAIL_ON_TRAILING_TOKENS, false);
             mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
             this.config = mapper.readValue(new File(configFilePath), Configuration.class);
-            System.out.println(mapper.writeValueAsString(this.config));
+            logger.info("Config: {}", mapper.writeValueAsString(this.config));
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.warn("Could not find config. Falling back to default...");
         }
     }
 
-
-    public static void main(String[] args) {
-        ConfigLoader loader = new ConfigLoader("./config.json");
-        Configuration config = loader.getConfig();
-        System.out.println("Database URL: " + config.database.settings.hibernate.connection.url);
-        System.out.println("Dark-Mode: " + config.global.darkMode);
+    private Configuration getDefaultConfiguration() {
+        // Initialize the default configuration here
+        return new Configuration();
     }
 }

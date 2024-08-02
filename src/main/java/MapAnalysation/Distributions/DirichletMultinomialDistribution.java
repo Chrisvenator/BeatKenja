@@ -5,6 +5,8 @@ import DataManager.Parameters;
 import java.util.Arrays;
 import java.util.Random;
 
+import static DataManager.Parameters.logger;
+
 public class DirichletMultinomialDistribution {
     private static final int MAX_ITERATIONS = 10000;
     private static final double TOLERANCE = 1e-6;
@@ -73,9 +75,9 @@ public class DirichletMultinomialDistribution {
     }
 
     public static void printCharacteristics(int[] alpha, int N) {
-        System.out.println("Expected Value: " + Arrays.toString(computeExpectedValues(alpha, N)));
-        System.out.println("Variance: " + Arrays.toString(computeVariances(alpha, N)));
-        System.out.println("Covariance: " + Arrays.deepToString(computeCovariances(alpha, N)));
+        logger.info("Expected Value: {}", Arrays.toString(computeExpectedValues(alpha, N)));
+        logger.info("Variance: {}", Arrays.toString(computeVariances(alpha, N)));
+        logger.info("Covariance: {}", Arrays.deepToString(computeCovariances(alpha, N)));
     }
 
     // Methode zur Berechnung des Erwartungswerts

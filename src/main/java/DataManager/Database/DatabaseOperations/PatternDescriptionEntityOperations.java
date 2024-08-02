@@ -11,7 +11,7 @@ import javax.persistence.NoResultException;
 import java.util.List;
 
 import static DataManager.Parameters.entityManager;
-import static DataManager.Parameters.verbose;
+import static DataManager.Parameters.logger;
 
 
 public class PatternDescriptionEntityOperations extends PatternDescriptionEntity {
@@ -82,7 +82,7 @@ public class PatternDescriptionEntityOperations extends PatternDescriptionEntity
             desc.setName(metadata.name());
             desc.setBpm(metadata.bpm());
             desc.setNps(metadata.nps());
-            if (Parameters.verbose) System.out.println("Persisting " + desc + " to database");
+            logger.info("Persisting {} to database", desc);
             DatabaseSaveOperations.persistEntity(desc);
 
             // Persist difficulty assignments for the pattern description
@@ -122,11 +122,11 @@ public class PatternDescriptionEntityOperations extends PatternDescriptionEntity
             PatternDescriptionEntity entity = entityManager.find(PatternDescriptionEntity.class, description.getId());
             entityManager.remove(entity);
             transaction.commit();
-            if (verbose) System.out.println("[INFO]: Successfully deleted PatternDescription: " + entity);
+            logger.info("Successfully deleted PatternDescription: {}", entity);
         } catch (NoResultException e) {
             transaction.rollback();
             e.printStackTrace();
-            System.out.println("[INFO]: Nothing to delete... PatternDescription not found in database: " + metadata);
+            logger.warn("Nothing to delete... PatternDescription not found in database: {}", metadata);
             return false;
         }
 

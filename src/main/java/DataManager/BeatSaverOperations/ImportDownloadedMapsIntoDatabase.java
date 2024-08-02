@@ -16,13 +16,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static DataManager.Parameters.logger;
+
 public class ImportDownloadedMapsIntoDatabase {
     public static void importAllMaps(String MAPS_DIRECTORY, String patternName) {
         if (!MAPS_DIRECTORY.endsWith("/")) MAPS_DIRECTORY += "/";
 
         File[] mapFolders = new File(MAPS_DIRECTORY).listFiles();
         if (mapFolders == null) {
-            System.err.println("No files found in the directory.");
+            logger.fatal("No files found in the directory.");
             return;
         }
 
@@ -37,12 +39,12 @@ public class ImportDownloadedMapsIntoDatabase {
 //            if (count > 0) break;
             final int index = ++count;  // Use final variable for thread-safe operations
             futures.add(executor.submit(() -> {
-                System.out.println(index + "/" + maps.size() + " Importing map: " + map.getName());
+                logger.info(index + "/" + maps.size() + " Importing map: " + map.getName());
                 try {
                     List<Pattern> patternsFromMap = createPatternsFromMapDirectory(map, patternName);
                     mergeIntoPattern(patterns, patternsFromMap);
                 } catch (Exception e) {
-                    System.err.println("Failed to import map: " + map.getName() + " due to " + e.getMessage());
+                    logger.fatal("Failed to import map: {} due to {}", map.getName(), e.getMessage());
                     e.printStackTrace();
                     throw new RuntimeException(e);
                 }
@@ -54,7 +56,7 @@ public class ImportDownloadedMapsIntoDatabase {
             try {
                 future.get();  // Will block until the task is completed
             } catch (InterruptedException | ExecutionException e) {
-                System.err.println("Error waiting for map import task to complete: " + e.getMessage());
+                logger.error("Error waiting for map import task to complete: {}", e.getMessage());
             }
         }
         executor.shutdown();  // Shutdown the executor
@@ -67,13 +69,16 @@ public class ImportDownloadedMapsIntoDatabase {
             executor.shutdownNow();
         }
 
-        if (Parameters.verbose) sortPattern(patterns);
-        if (Parameters.verbose) patterns.forEach(p -> System.out.println(p.metadata.toString().replaceAll("\n", "")));
+        sortPattern(patterns);
+        logger.debug("----------------------------");
+        logger.debug("importing patterns: ");
+        patterns.forEach(p -> logger.debug(p.metadata.toString().replaceAll("\n", "")));
+        logger.debug("----------------------------");
 
         String patFolderName = new File(MAPS_DIRECTORY).getParent() + "\\" + new File(MAPS_DIRECTORY).getName() + "Pat\\";
         // Save patterns to the _toAddPat folder so that they can be added later to the database if something goes wrong
         boolean saved = saveAllPatternsIntoFolder(patFolderName, patterns);
-        if (!saved) System.err.println("[ERROR] Couldn't save .pat Files! ");
+        if (!saved) logger.error("[ERROR] Couldn't save .pat Files!");
 
 //        savePatternsIntoDatabase(patterns);
     }
@@ -82,7 +87,7 @@ public class ImportDownloadedMapsIntoDatabase {
         AtomicInteger i = new AtomicInteger();
         patterns.forEach(pattern -> {
             savePatternsIntoDatabase(pattern);
-            System.out.println("[INFO]: saved " + i.getAndIncrement() + "/" + patterns.size() + " " + pattern.metadata.toString());
+            logger.info("saved {}/{} {}", i.getAndIncrement(), patterns.size(), pattern.metadata.toString());
         });
     }
 
@@ -111,7 +116,7 @@ public class ImportDownloadedMapsIntoDatabase {
 
         File[] files = folder.listFiles();
         if (files == null) {
-            System.err.println("No files found in the directory.");
+            logger.error("No files found in the directory.");
             return;
         }
 
@@ -120,12 +125,13 @@ public class ImportDownloadedMapsIntoDatabase {
         for (File patFile : patFiles) {
             try {
                 if (savePatternsIntoDatabase(new Pattern(patFile.getAbsolutePath())))
-                    System.out.println("[INFO]: Successfully saved pattern from file into database: " + patFile.getName() + "\n");
-                else System.err.println("[ERROR]: Failed to import pattern from file: " + patFile.getName());
+                    logger.info("Successfully saved pattern from file into database: {}\n", patFile.getName());
+                else logger.error("[ERROR]: Failed to import pattern from file: {}", patFile.getName());
 
 //                break;
             } catch (Exception e) {
-                System.err.println("[ERROR]: Failed to import pattern from file: " + patFile.getName() + " due to " + e.getMessage());
+                logger.error("[ERROR]: Failed to import pattern from file: {} due to {}", patFile.getName(), e.getMessage());
+                logger.error(Arrays.toString(e.getStackTrace()));
                 e.printStackTrace();
             }
         }
@@ -221,7 +227,7 @@ public class ImportDownloadedMapsIntoDatabase {
 
         // Check if essential map files exist, log error and return empty if not.
         if (!infoFile.exists() || !metadataFile.exists()) {
-            System.out.println("[INFO]: Map is missing info.dat or metadata.json: " + mapDir + " Skipping...");
+            logger.warn("Map is missing info.dat or metadata.json: {} Skipping...", mapDir);
             return new ArrayList<>();
         }
 
@@ -270,7 +276,7 @@ public class ImportDownloadedMapsIntoDatabase {
                         break;
                     }
                 } catch (Exception e) {
-                    System.err.println("Failed to get NPS for difficulty: " + difficultyName + ". Skipping...");
+                    logger.warn("Failed to get NPS for difficulty: {}. Skipping...", difficultyName);
                     break;
                 }
             }
@@ -288,12 +294,12 @@ public class ImportDownloadedMapsIntoDatabase {
 
         // Check if something went wrong during metadata extraction, log error and return empty if so.
         if (difficulties.isEmpty()) {
-            System.err.println("Failed to get difficulties for mapDir: " + mapDir);
+            logger.error("Failed to get difficulties for mapDir: {}", mapDir);
             return new ArrayList<>();
         }
-        if (difficulties.size() > 5) System.err.println("Too many difficulties for mapDir: " + mapDir + ": " + difficulties);
+        if (difficulties.size() > 5) logger.error("Too many difficulties for mapDir: {}: {}", mapDir, difficulties);
         if (tags.size() > 2 || genres.size() > 2) {
-            System.err.println("[INFO] Too many tags or genres for map: " + mapDir + ": " + tags + " " + genres + ". Please try to limit it to only two.");
+            logger.warn("Too many tags or genres for map: {}: {} {}. Please try to limit it to only two.", mapDir, tags, genres);
         }
 
 
@@ -306,11 +312,11 @@ public class ImportDownloadedMapsIntoDatabase {
                 Pattern p = new Pattern(f.getAbsolutePath(), difficulties.get(diff));
                 patterns.add(p);
             } catch (NoteNotValidException e) {
-                System.err.println("[INFO]: Failed to create pattern for difficulty because a note is not valid: " + diff + " in map: " + mapDir);
+                logger.warn("Failed to create pattern for difficulty because a note is not valid: {} in map: {}", diff, mapDir);
             }
         }
 
-        if (Parameters.verbose) System.out.println("Analyzed Difficulties: " + difficulties);
+        logger.info("Analyzed Difficulties: {}", difficulties);
 
         return patterns;
     }
