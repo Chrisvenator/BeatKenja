@@ -44,8 +44,8 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
         java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
 
         Pattern p = new Pattern(Parameters.DEFAULT_PATTERN_METADATA);
-        System.out.println(p.exportInPatFormat());
-        System.out.println(p.getProbabilityOf(new Note(0, 2, 0, 1, 1)));
+        logger.info(p.exportInPatFormat());
+        logger.info(p.getProbabilityOf(new Note(0, 2, 0, 1, 1)));
     }
 
     /**
@@ -322,7 +322,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
     @lombok.SneakyThrows
     public Pattern(PatMetadata metadata) {
         if (!useDatabase && metadata.equals(Parameters.DEFAULT_PATTERN_METADATA)) {
-            System.out.println("[INFO]: Database has been disabled but the default metadata was still used. Using default Pattern instead...");
+            logger.info("[INFO]: Database has been disabled but the default metadata was still used. Using default Pattern instead...");
             Pattern p = new Pattern(DEFAULT_PATTERN_PATH);
 
             this.count = p.count;
@@ -387,7 +387,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
         // Retrieve the pattern description from the database
         PatternDescriptionEntity description = PatternDescriptionEntityOperations.getPatternDescription(patternDescriptionId);
         if (description == null) {
-            System.err.println("[WARN]: Pattern not found in database: " + patternDescriptionId);
+            logger.error("[WARN]: Pattern not found in database: {}", patternDescriptionId);
             throw new IllegalArgumentException("Pattern not found in database: " + patternDescriptionId);
         }
 
@@ -427,10 +427,11 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
      */
     public boolean deleteFromDatabase() {
         if (databaseOperation("delete")) {
-            if (verbose) System.out.println("[INFO]: Successfully deleted pattern from database: " + metadata);
+            if (verbose)
+                logger.info("[INFO]: Successfully deleted pattern from database: {}", metadata);
             return true;
         } else {
-            System.err.println("[WARN]: Failed to delete pattern: " + metadata);
+            logger.error("[WARN]: Failed to delete pattern: {}", metadata);
             return false;
         }
     }
@@ -457,7 +458,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
             return true;
         }
 
-        System.out.println("Pattern to be " + operation + "d: " + description);
+        logger.info("Pattern to be {}d: {}", operation, description);
 
         for (int i = 0; i < patterns.length; i++) {
             Note base = patterns[i][0];
@@ -474,7 +475,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
                     followerEntity = NoteEntityOperations.getNote(follower);
                     if (baseEntity == null || followerEntity == null) throw new NoResultException("Note not found in database: " + base + " or " + follower);
                 } catch (NoResultException e) {
-                    System.err.println("Note not found in database: " + base + " or " + follower);
+                    logger.error("Note not found in database: {} or {}", base, follower);
                     continue;
                 }
 
@@ -491,8 +492,10 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
                     success = PatternEntityOperations.deletePattern(pattern, entityManager);
                 }
 
-                if (success && Parameters.verbose) System.out.println("Successfully " + operation + "d pattern: " + pattern);
-                if (!success && Parameters.verbose) System.err.println("Failed to " + operation + " pattern: " + pattern);
+                if (success && Parameters.verbose)
+                    logger.info("Successfully {}d pattern: {}", operation, pattern);
+                if (!success && Parameters.verbose)
+                    logger.error("Failed to {} pattern: {}", operation, pattern);
             }
         }
 
@@ -505,9 +508,9 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
             success &= PatternDescriptionEntityOperations.deletePatternDescriptionEntity(metadata, description, entityManager);
 
             if (success) {
-                System.out.println("[INFO]: Successfully deleted PatternDescription: " + description);
+                logger.info("[INFO]: Successfully deleted PatternDescription: {}", description);
             } else {
-                System.err.println("[WARN]: Failed to delete PatternDescription: " + description);
+                logger.error("[WARN]: Failed to delete PatternDescription: {}", description);
             }
             return success;
         }
@@ -559,8 +562,8 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
             throw new MalformattedFileException("The file is not in the correct format. The metadata is not correct.");
         }
 
-        this.metadata.tags().stream().filter(tag -> !Parameters.MAP_TAGS.contains(tag)).forEach(tag -> System.err.println("Unknown tag: " + tag));
-        this.metadata.genre().stream().filter(genre -> !Parameters.MUSIC_GENRES.contains(genre)).forEach(genre -> System.err.println("Unknown genre: " + genre));
+        this.metadata.tags().stream().filter(tag -> !Parameters.MAP_TAGS.contains(tag)).forEach(tag -> logger.error("Unknown tag: {}", tag));
+        this.metadata.genre().stream().filter(genre -> !Parameters.MUSIC_GENRES.contains(genre)).forEach(genre -> logger.error("Unknown genre: {}", genre));
 
         for (int lineIndex = 1, i = 0; lineIndex < lines.size(); lineIndex++, i++) {
             if (lines.get(lineIndex).contains(".")) throw new MalformattedFileException("The file contains a dot (.) in line " + lineIndex + ". This is not allowed in the .pat file format.");
@@ -1120,14 +1123,14 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
         Pattern p = pattern.deepCopy();
 
         if (UserInterface.patternVariance < 0) {
-            System.out.println("Variance: " + UserInterface.patternVariance);
+            logger.info("Variance: {}", UserInterface.patternVariance);
             Pattern.inverseNormalizeCountArray(p.count, true, (UserInterface.patternVariance * -1));
             Pattern.normalizeCountArray(p.count, true);
         } else {
             p.applyDirichletMultinomial(UserInterface.patternVariance);
             Pattern.normalizeCountArray(p.count, true);
         }
-        System.out.println("Applied Dirichlet Multinomial Distribution");
+        logger.info("Applied Dirichlet Multinomial Distribution");
 
         p.computeProbabilities();
         return p;

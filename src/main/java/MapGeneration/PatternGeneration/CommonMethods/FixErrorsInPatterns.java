@@ -1,10 +1,11 @@
 package MapGeneration.PatternGeneration.CommonMethods;
 
 import BeatSaberObjects.Objects.Note;
-import DataManager.Parameters;
 
 import java.util.Comparator;
 import java.util.List;
+
+import static DataManager.Parameters.logger;
 
 public class FixErrorsInPatterns {
     public static void fixSimpleMappingErrors(List<Note> notes) {
@@ -64,10 +65,8 @@ public class FixErrorsInPatterns {
         for (int i = 0; i < notes.size(); i++) {
             if (i >= 1 && notes.get(i).equalNotePlacement(notes.get(i - 1)) && notes.get(i)._time == notes.get(i - 1)._time) {
 
-                if (Parameters.verbose) {
-                    System.out.println("Detected Note inside another Note: " + notes.get(i)._time + " " + notes.get(i)._lineIndex + " " + notes.get(i)._lineLayer + " " + notes.get(i)._type + " " + notes.get(i)._cutDirection);
-                    System.out.println("Detected Note inside another Note: " + notes.get(i - 1)._time + " " + notes.get(i - 1)._lineIndex + " " + notes.get(i - 1)._lineLayer + " " + notes.get(i - 1)._type + " " + notes.get(i - 1)._cutDirection);
-                }
+                logger.debug("Detected Note inside another Note: " + notes.get(i)._time + " " + notes.get(i)._lineIndex + " " + notes.get(i)._lineLayer + " " + notes.get(i)._type + " " + notes.get(i)._cutDirection);
+                logger.debug("Detected Note inside another Note: " + notes.get(i - 1)._time + " " + notes.get(i - 1)._lineIndex + " " + notes.get(i - 1)._lineLayer + " " + notes.get(i - 1)._type + " " + notes.get(i - 1)._cutDirection);
 
                 if (notes.get(i)._lineIndex > 0) {
                     //check for vision block
@@ -85,10 +84,8 @@ public class FixErrorsInPatterns {
                     } else notes.get(i)._lineIndex++;
                 }
 
-                if (Parameters.verbose) {
-                    System.out.println("Fixed Note inside another Note:    " + notes.get(i)._time + " " + notes.get(i)._lineIndex + " " + notes.get(i)._lineLayer + " " + notes.get(i)._type + " " + notes.get(i)._cutDirection);
-                    System.out.println("Fixed Note inside another Note:    " + notes.get(i - 1)._time + " " + notes.get(i - 1)._lineIndex + " " + notes.get(i - 1)._lineLayer + " " + notes.get(i - 1)._type + " " + notes.get(i - 1)._cutDirection);
-                }
+                logger.debug("Fixed Note inside another Note:    " + notes.get(i)._time + " " + notes.get(i)._lineIndex + " " + notes.get(i)._lineLayer + " " + notes.get(i)._type + " " + notes.get(i)._cutDirection);
+                logger.debug("Fixed Note inside another Note:    " + notes.get(i - 1)._time + " " + notes.get(i - 1)._lineIndex + " " + notes.get(i - 1)._lineLayer + " " + notes.get(i - 1)._type + " " + notes.get(i - 1)._cutDirection);
             }
         }
     }
@@ -139,7 +136,7 @@ public class FixErrorsInPatterns {
                         if (notes.get(i)._cutDirection != 2 && notes.get(i)._cutDirection != 3 && notes.get(i - 1)._cutDirection != 2 && notes.get(i - 1)._cutDirection != 3) {
                             if (notes.get(i)._type == 1 && notes.get(i)._lineIndex < 3) notes.get(i)._lineIndex++;
                             else notes.get(i)._lineIndex--;
-                            if (Parameters.verbose) System.out.println("Fixed fixSwingPathAboveEachOther: " + notes.get(i)._time);
+                            logger.debug("Fixed fixSwingPathAboveEachOther: " + notes.get(i)._time);
                         }
                     }
                 }
@@ -181,13 +178,13 @@ public class FixErrorsInPatterns {
                         if (c._lineIndex > p._lineIndex && c._cutDirection == 5) {
                             if (c._lineIndex < 3) c._lineIndex++;
                             else p._lineIndex--;
-                            if (Parameters.verbose) System.out.println("Fixed fixSwingPath: " + c._time);
+                            logger.debug("Fixed fixSwingPath: " + c._time);
                         }
                         //The note above is to the left
                         if (c._lineIndex < p._lineIndex && c._cutDirection == 4) {
                             if (c._lineIndex > 0) c._lineIndex--;
                             else p._lineIndex++;
-                            if (Parameters.verbose) System.out.println("Fixed fixSwingPath: " + c._time);
+                            logger.debug("Fixed fixSwingPath: " + c._time);
                         }
                     }
 

@@ -3,6 +3,7 @@ package MapGeneration.PatternGeneration;
 import BeatSaberObjects.Objects.Note;
 
 import static DataManager.Parameters.RANDOM;
+import static DataManager.Parameters.logger;
 
 public class NextLinearNote {
     /**
@@ -17,7 +18,7 @@ public class NextLinearNote {
         Note p = previousNote; //p is much cleaner than having a thousand times previousNote
 
         if (p == null) {
-            System.err.println("Something went wrong. A note is null :thinking: Please have a look at beat: " + time);
+            logger.warn("Something went wrong. A note is null :thinking: Please have a look at beat: " + time);
             p = new Note(time, 0, 0, 1, 1);
         }
 

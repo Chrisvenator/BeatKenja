@@ -6,6 +6,7 @@ import DataManager.Parameters;
 import java.util.Collections;
 import java.util.List;
 
+import static DataManager.Parameters.logger;
 import static MapGeneration.PatternGeneration.CommonMethods.PlaceFirstNotes.firstNotePlacement;
 
 /*
@@ -62,16 +63,16 @@ public class CheckParity {
             Note prev = n._type == 0 ? red : blue;
 
             if (isParityBreak(prev, n)) {
-                if (!quiet) System.err.println("[ERROR] at beat:   " + n._time + ": Parity break! prev: " + prev._time + "-" + prev.exportInPatFormat() + ", current: " + n._time + "-" + n.exportInPatFormat());
+                if (!quiet) logger.warn("at beat:   " + n._time + ": Parity break! prev: " + prev._time + "-" + prev.exportInPatFormat() + ", current: " + n._time + "-" + n.exportInPatFormat());
             } else
                 // Sharp Angle
                 if (isParitySharpAngle(prev, n))
-                    if (!quiet) System.err.println("[WARN] at beat:    " + n._time + ": sharp angle");
+                    if (!quiet) logger.warn("[NOTICE] at beat:    " + n._time + ": sharp angle");
 
 
             if (n._type == 0) red = n;
             else if (n._type == 1) blue = n;
-            else System.err.println("[WARN]: IN \"CheckParity\" has been an other type of note instead of 0 or 1!!");
+            else logger.warn("IN \"CheckParity\" has been an other type of note instead of 0 or 1!!");
         }
     }
 

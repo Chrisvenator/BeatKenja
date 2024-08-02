@@ -9,6 +9,7 @@ import MapGeneration.GenerationElements.Pattern;
 
 import java.util.*;
 
+import static DataManager.Parameters.logger;
 import static MapGeneration.PatternGeneration.BigJumps.createBigJumps;
 import static MapGeneration.PatternGeneration.CommonMethods.CheckParity.checkForMappingErrors;
 import static MapGeneration.ComplexPatternFromTemplate.complexPatternFromTemplate;
@@ -75,7 +76,7 @@ public class CreateMap {
         Note prevRed = null;
         for (int i = 0; i < bookmarks.size() - 1; i++) {
             List<Note> currentNotes = new ArrayList<>();
-            System.out.println(bookmarks.get(i)._time + " - " + bookmarks.get(i + 1)._time + ": " + bookmarks.get(i)._name);
+            logger.debug("Bookmarks: " + bookmarks.get(i)._time + " - " + bookmarks.get(i + 1)._time + ": " + bookmarks.get(i)._name);
 
             for (Note timing : timings) {
                 if (timing._time >= bookmarks.get(i + 1)._time) break;
@@ -98,14 +99,14 @@ public class CreateMap {
                     case "d", "doubles", "double-handed" -> notes.addAll(createDoubles(currentNotes, prevBlue, prevRed));
 
                     default -> {
-                        System.err.println("There is no such flag as: \"" + bookmarks.get(i)._name + "\" with " + currentNotes.size() + " notes. Please have a look at the supported ones in the README");
-                        System.err.println("Supported types: " + Arrays.toString(supportedTypes));
+                        logger.warn("There is no such flag as: \"" + bookmarks.get(i)._name + "\" with " + currentNotes.size() + " notes. Please have a look at the supported ones in the README");
+                        logger.warn("Supported types: " + Arrays.toString(supportedTypes));
                         notes.addAll(complexPatternFromTemplate(currentNotes, p, false, stacks, false,prevBlue, prevRed));
 
                     }
                 }
             } catch (Exception e) {
-//                System.out.println(notes);
+                logger.fatal("SOMETHING WENT WRONG WHILE GENERATING \"CreateMap\": " + e.getMessage());
                 e.printStackTrace();
                 throw new RuntimeException("BREAK");
             }
@@ -159,7 +160,7 @@ public class CreateMap {
 
             // Log an error if no matching note was found for the timing
             if (!found) {
-                System.err.println("BeatSaberObjects.Objects.Note at " + timing._time + " was not placed!");
+                logger.warn("BeatSaberObjects.Objects.Note at " + timing._time + " was not placed!");
             }
         }
     }

@@ -12,7 +12,7 @@ import java.util.stream.IntStream;
 
 import static DataManager.Parameters.RANDOM;
 import static DataManager.Parameters.ignoreDDs;
-import static DataManager.Parameters.verbose;
+import static DataManager.Parameters.logger;
 import static MapGeneration.PatternGeneration.CommonMethods.CheckParity.*;
 import static MapGeneration.PatternGeneration.CommonMethods.PlaceFirstNotes.placeInitialNoteBasedOnPrevNote;
 import static MapGeneration.PatternGeneration.CommonMethods.StackPlacements.placeStacks;
@@ -55,10 +55,10 @@ public class ComplexPatternFromTemplate {
         if (timingsImmutable == null || timingsImmutable.isEmpty()) return new ArrayList<>();
         List<Note> timings = new ArrayList<>(timingsImmutable);
 
-        if (verbose) System.out.println("Creating complex pattern from template with " + timings.size() + " notes");
+        logger.debug("Creating complex pattern from template with " + timings.size() + " notes");
         List<Note> removeStacks = removeStacks(timings);
-        if (verbose) System.out.println("Removed " + removeStacks.size() + " stack placements");
-        if (verbose) System.out.println("New timings size: " + timings.size());
+        logger.debug("Removed " + removeStacks.size() + " stack placements");
+        logger.debug("New timings size: " + timings.size());
 
         List<Note> pattern = new ArrayList<>(timings.size());
         if (usePatternCache) patternCache = new PatternCache(timings, p, NUMBER_OF_PATTERNS, LENGTH_OF_PATTERN, NUMBER_OF_NOTES_TO_BE_CHANGED);
@@ -92,7 +92,7 @@ public class ComplexPatternFromTemplate {
             // When there exists an infinite loop:
             // Then create a new next note
             if ((oneHanded && i >= 2 || i >= 4) && invalidPlacesInARow >= 500) {
-                System.err.println("[ERROR] at beat: " + timings.get(i)._time);
+                logger.warn("at beat: " + timings.get(i)._time);
                 pattern.set(i, new TimingNote(timings.get(i)._time));
                 invalidPlacesInARow = 0;
                 continue;
@@ -113,7 +113,7 @@ public class ComplexPatternFromTemplate {
 
 
             if (pattern.get(i) == null) {
-                System.err.println("NULL");
+                logger.warn("NULL: " + timings.get(i)._time);
             }
             if (previous.isDD(pattern.get(i))) inValidPlacement = true;
             if (!ignoreDDs && previous._cutDirection == pattern.get(i)._cutDirection) inValidPlacement = true;
@@ -161,7 +161,7 @@ public class ComplexPatternFromTemplate {
 
                     blueNotesFirstFix.add(pattern.get(i));
                     pattern.set(i, noteNew);
-                    System.out.println("Added new Note: " + noteNew.toString().replace("\n",""));
+                    logger.debug("Made it so that a blue swing is first. Added new Note: " + noteNew.toString().replace("\n",""));
 
                     //Only a blue note can be here. So we don't need to check ever statement
                     palmDirection[i % j] = !palmDirection[i % j];
@@ -175,7 +175,7 @@ public class ComplexPatternFromTemplate {
 //                Note noteNew = new Note(pattern.get(i)._time, pattern.get(i - j)._lineIndex, pattern.get(i - j)._lineLayer, pattern.get(i - j)._type, pattern.get(i - j)._cutDirection);
 //                pattern.set(i, noteNew); //If there is a parity break, duplicate the current note. It will be taken care of later :P
                 pattern.get(i).invertCutDirection();
-                if (verbose) System.out.println("Fixed horizontal parity break at: " + pattern.get(i)._time + "\n");
+                logger.debug("Fixed horizontal parity break at: " + pattern.get(i)._time + "\n");
 
                 inversePlacementCount[i % j] = 0;
                 palmDirection[i % j] = !palmDirection[i % j];
@@ -213,17 +213,17 @@ public class ComplexPatternFromTemplate {
      */
     public static Note predictNextNote(PatternProbability pattern, float time) {
         if (pattern == null) {
-            System.err.println("[INFO]: Patten is null!");
+            logger.debug("[WARN]: Patten is null!");
             return null;
         }
         if (pattern.notes == null) {
-            System.err.println("[INFO]: Notes are null!");
+            logger.debug("[WARN]: Notes are null!");
             return null;
         }
         // Check, if there even is a probability in the pattern.
         // This case could appear when the count[][] has been modified and all counts have been set to 0 instead of null.
         if (IntStream.range(0, pattern.probabilities.length).mapToDouble(i -> pattern.probabilities[i]).sum() <= 0) {
-            if (verbose) System.out.println("[INFO]: Every probability is 0...");
+            logger.debug("[WARN]: Every probability is 0...");
             return null;
         }
 
@@ -240,10 +240,10 @@ public class ComplexPatternFromTemplate {
 
         }
 
-        System.err.println("[WARN]: Couldn't find a next note. Please have a look at beat: " + time);
+        logger.debug("[WARN]: Couldn't find a next note. Please have a look at beat: " + time);
 
         for (int i = 0; i < pattern.probabilities.length; i++) {
-            System.out.println(pattern.probabilities[i]);
+            logger.trace("^Probabilities: " + pattern.probabilities[i]);
         }
 
         return null;
@@ -324,7 +324,7 @@ public class ComplexPatternFromTemplate {
             }
         }
 
-        System.err.println("Check parity at: " + pattern.get(i)._time);
+        logger.warn("Check parity at: " + pattern.get(i)._time);
         return null;
     }
 
@@ -369,7 +369,7 @@ public class ComplexPatternFromTemplate {
         else {
             next = predictNextNote(probabilities, timing);
             if (next == null) {
-                if (verbose) System.out.println("Somehow, the next note couldn't be computed. Falling back to BasicLinearNote...");
+                logger.debug("Somehow, the next note couldn't be computed. Falling back to BasicLinearNote...");
                 next = nextLinearNote(previous, timing);
             }
         }
