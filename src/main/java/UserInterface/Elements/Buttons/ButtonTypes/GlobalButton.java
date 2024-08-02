@@ -10,6 +10,7 @@ import UserInterface.UserInterface;
 public class GlobalButton extends MyButton {
 
     public GlobalButton(UserInterface ui) {
+        //Create a quasi-button so that the other global buttons can inherit from it
         super(new ButtonType("", -1, -1, 0, 0, false), ui);
         init();
     }

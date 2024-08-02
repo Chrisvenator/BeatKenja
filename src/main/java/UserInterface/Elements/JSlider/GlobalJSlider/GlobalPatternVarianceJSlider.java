@@ -8,7 +8,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Hashtable;
 
+import static DataManager.Parameters.*;
+
 public class GlobalPatternVarianceJSlider extends MyGlobalJSlider {
+
     public GlobalPatternVarianceJSlider(UserInterface ui) {
         super(ElementTypes.GLOBAL_PATTERN_VARIANCE_SLIDER, ui);
 
@@ -29,16 +32,15 @@ public class GlobalPatternVarianceJSlider extends MyGlobalJSlider {
         }
 
         setLabelTable(labelTable);
+        logger.debug("GlobalPatternVarianceJSlider initialized.");
     }
-
 
     @Override
     public void onClick() {
         int value = ((JSlider) eventObject.getSource()).getValue();
         UserInterface.patternVariance = value * 10;
-//        ui.pattern = Pattern.adjustVariance(patternWithoutVariance, value);
+        // ui.pattern = Pattern.adjustVariance(patternWithoutVariance, value);
 
-        System.out.println("Slider value (float): " + value);
-        ui.statusCheck.append("Pattern Variance set to " + value + "\n");
+        logger.info("Pattern Variance set to: {}", value);
     }
 }

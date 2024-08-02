@@ -4,6 +4,7 @@ import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.Buttons.MySubButton;
 import UserInterface.Elements.ElementTypes;
 
+import static DataManager.Parameters.logger;
 import static DataManager.Parameters.verbose;
 
 public class UtilsMakeIntoNoArrowMap extends MySubButton {
@@ -14,8 +15,7 @@ public class UtilsMakeIntoNoArrowMap extends MySubButton {
     @Override
     public void onClick() {
         ui.map.makeNoArrows();
-        ui.statusCheck.setText(ui.statusCheck.getText() + "\n[INFO]: Map is now a no arrows map");
-        System.out.println("No Arrow Map: " + ui.map.exportAsMap());
-        if (verbose) ui.statusCheck.setText(ui.statusCheck.getText() + "\n" + "VERBOSE: " + "No Arrow Map: " + ui.map.exportAsMap());
+        logger.info("Map is now a no arrows map");
+        logger.debug("No Arrow Map: {}", ui.map.exportAsMap());
     }
 }
