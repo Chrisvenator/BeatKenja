@@ -95,6 +95,9 @@ public class Parameters {
     // Database
     public static final PatMetadata DEFAULT_PATTERN_METADATA = new PatMetadata(DATABASE.defaultPatMetadata.name, DATABASE.defaultPatMetadata.bpm, DATABASE.defaultPatMetadata.nps, DATABASE.defaultPatMetadata.difficulties, DATABASE.defaultPatMetadata.tags, DATABASE.defaultPatMetadata.genres);
     public static final java.util.Map<String, String> DATABASE_SETTINGS = new java.util.HashMap<>();
+    public static final boolean SHOW_HEATMAP_WHEN_GENERATING_ONSETS = false; //TODO: Add to Config
+    public static final boolean SHOW_SPECTOGRAM_WHEN_GENERATING_ONSETS = false; //TODO: Add to Config
+
 
     static {
         java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
