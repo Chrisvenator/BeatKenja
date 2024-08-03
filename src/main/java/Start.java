@@ -34,6 +34,9 @@ public class Start {
      * Verifizieren, dass ToBLueOnlyTimingNotes funktioniert
      * Möglichkeit .webp als map zu laden XD (╯°□°)╯︵ ┻━┻
      * BatchWavToMaps Testen, ob output noch immer geht
+     * lehnen
+     * ganzen Ordner zu einer Complex-Map machen
+     * Bei schnellen Sektionen abwechselndes Pattern machen mit gleichen Abständen
      *****************************************
     **/
 
