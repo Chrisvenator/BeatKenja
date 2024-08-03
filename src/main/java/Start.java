@@ -34,6 +34,7 @@ public class Start {
      * Verifizieren, dass ToBLueOnlyTimingNotes funktioniert
      * Möglichkeit .webp als map zu laden XD (╯°□°)╯︵ ┻━┻
      * BatchWavToMaps Testen, ob output noch immer geht
+     * lehnen
      *****************************************
     **/
 
