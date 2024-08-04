@@ -35,6 +35,7 @@ public class Start {
      * Möglichkeit .webp als map zu laden XD (╯°□°)╯︵ ┻━┻
      * BatchWavToMaps Testen, ob output noch immer geht
      * lehnen
+     * ganzen Ordner zu einer Complex-Map machen
      *****************************************
     **/
 
