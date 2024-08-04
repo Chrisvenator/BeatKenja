@@ -36,6 +36,7 @@ public class Start {
      * BatchWavToMaps Testen, ob output noch immer geht
      * lehnen
      * ganzen Ordner zu einer Complex-Map machen
+     * Bei schnellen Sektionen abwechselndes Pattern machen mit gleichen Abständen
      *****************************************
     **/
 
