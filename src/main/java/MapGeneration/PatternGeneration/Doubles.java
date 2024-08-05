@@ -6,6 +6,7 @@ import BeatSaberObjects.Objects.TimingNote;
 import java.util.ArrayList;
 import java.util.List;
 
+import static DataManager.Parameters.logger;
 import static MapGeneration.PatternGeneration.CommonMethods.CheckParity.nextNoteAfterTimingNote;
 import static MapGeneration.PatternGeneration.CommonMethods.PlaceFirstNotes.placeInitialNoteBasedOnPrevNote;
 import static MapGeneration.PatternGeneration.NextLinearNote.nextLinearNote;
@@ -30,6 +31,7 @@ public class Doubles {
             // Try 100 times to place a normal note. If this doesn't work, then place a Timing-BeatSaberObjects.Objects.Note.
             // If this still doesn't work, then throw an exception
             if (i >= 4 && invalidPlacementsInARow >= 100) {
+                logger.warn("at beat:   " + timings.get(i)._time + " Timing note");
                 System.err.println("_ERROR at beat:   " + timings.get(i)._time + " Timing note");
                 Note errorNote = new TimingNote(timings.get(i)._time);
                 notes.add(errorNote); //Adding blue BeatSaberObjects.Objects.Note

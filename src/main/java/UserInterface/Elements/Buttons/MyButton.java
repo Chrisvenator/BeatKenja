@@ -8,6 +8,8 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static DataManager.Parameters.logger;
+
 public class MyButton extends JButton implements MyElement {
     public final UserInterface ui;
     public final List<Component> childElements = new ArrayList<>();
@@ -20,6 +22,7 @@ public class MyButton extends JButton implements MyElement {
 
         this.addActionListener(e -> {
             onClick();
+            logger.debug("{} clicked", this.getClass().getSimpleName());
             System.out.println(this.getClass().getSimpleName() + " clicked");
         });
         ui.add(this);
@@ -27,6 +30,7 @@ public class MyButton extends JButton implements MyElement {
 
     public void addChild(Component button) {
         childElements.add(button);
+        logger.debug("Added child: {} to: {}", button.getClass().getSimpleName(), this.getClass().getSimpleName());
     }
 
     public void onClick() {
@@ -34,9 +38,8 @@ public class MyButton extends JButton implements MyElement {
     }
 
     protected void printErrorMessage(Exception e, String errorMessage) {
-        System.err.println(e.getMessage());
-        System.err.println("[ERROR]: " + errorMessage);
-        ui.statusCheck.append("\n[ERROR]: " + errorMessage);
+        logger.error(e.getMessage());
+        logger.error(errorMessage);
         e.printStackTrace();
     }
 }

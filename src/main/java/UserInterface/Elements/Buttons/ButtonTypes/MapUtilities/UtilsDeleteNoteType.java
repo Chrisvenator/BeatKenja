@@ -6,6 +6,7 @@ import UserInterface.Elements.Buttons.MySubButton;
 import UserInterface.Elements.ElementTypes;
 import UserInterface.Elements.TextFields.MyTextField;
 
+import static DataManager.Parameters.logger;
 import static DataManager.Parameters.verbose;
 
 public class UtilsDeleteNoteType extends MySubButton {
@@ -19,8 +20,8 @@ public class UtilsDeleteNoteType extends MySubButton {
     @Override
     public void onClick() {
         ui.map.makeOneHanded((int) Math.round(Double.parseDouble(makeOneHandDeleteType.getText())));
-        ui.statusCheck.setText(ui.statusCheck.getText() + "\n[INFO]: Removed All Notes with type: " + makeOneHandDeleteType.getText());
+        logger.info("Removed All Notes with type: {}", makeOneHandDeleteType.getText());
+        logger.debug("One handed diff: : {}", new BeatSaberMap(ui.map._notes).exportAsMap());
         System.out.println("One handed diff: : " + new BeatSaberMap(ui.map._notes).exportAsMap());
-        if (verbose) ui.statusCheck.setText(ui.statusCheck.getText() + "\n" + "VERBOSE: " + "One handed diff: : " + new BeatSaberMap(ui.map._notes).exportAsMap());
     }
 }

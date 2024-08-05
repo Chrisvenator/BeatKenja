@@ -5,6 +5,7 @@ import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Exceptions.ZipCr
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -12,6 +13,7 @@ import java.util.zip.ZipOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import static DataManager.Parameters.logger;
 import static DataManager.Parameters.verbose;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -24,16 +26,19 @@ public class FileManager {
      * @return Every line of the File in List form
      */
     public static List<String> readFile(String filename, boolean... print) {
-        if (!Files.exists(Paths.get(filename))) {
+        Path filePath = Paths.get(filename);
+        if (!Files.exists(filePath)) {
             if (print == null || print.length == 0) {
+                logger.error("File not found!");
                 System.err.println("File not found!");
             }
             throw new NoSuchElementException("File not found: " + filename + "!");
         }
 
         try {
-            return Files.readAllLines(Paths.get(filename));
+            return Files.readAllLines(filePath);
         } catch (IOException e) {
+            logger.error("Error reading the file: {}", e.getMessage());
             System.err.println("Error reading the file: " + e.getMessage());
             return Collections.emptyList(); // Return an empty list on failure
         }
@@ -56,8 +61,12 @@ public class FileManager {
             fos.close();
 
             //The following if is for testing, so that it doesn't span the console
-            if (print == null || print.length == 0) System.out.println("File overwritten successfully!");
+            if (print == null || print.length == 0) {
+                logger.info("File overwritten successfully!");
+                System.out.println("File overwritten successfully!");
+            }
         } catch (IOException e) {
+            logger.error("An error occurred while overwriting the file: {}", e.getMessage());
             System.out.println("An error occurred while overwriting the file: " + e.getMessage());
             e.printStackTrace();
         }
@@ -85,6 +94,7 @@ public class FileManager {
      */
     public static void createZipFileFromDirectory(String directoryPath, String filename) throws IOException {
         String sourceDir = new File(directoryPath).getAbsolutePath();
+        logger.debug("Creater Zip: SourceDir: {}", sourceDir);
         System.out.println(sourceDir);
 
         FileOutputStream fos = new FileOutputStream(filename);
@@ -163,7 +173,7 @@ public class FileManager {
         zipInputStream.close();
         fileInputStream.close();
 
-        if (verbose) System.out.println("Zip file extracted successfully to: " + outputFolderPath);
+        logger.info("Zip file extracted successfully to: {}", outputFolderPath);
     }
 
     /**
@@ -175,6 +185,7 @@ public class FileManager {
     public static void removeUnnecessaryFiles(String directoryPath, String... possibleExtensions) {
         File dir = new File(directoryPath);
         if (!dir.isDirectory()) {
+            logger.error("{} is not a directory.", directoryPath);
             System.err.println(directoryPath + " is not a directory.");
             return;
         }
@@ -190,7 +201,7 @@ public class FileManager {
 
             // Keep all extensions in "possibleExtensions", delete all others
             if (!String.join("", possibleExtensions).contains(extension))
-                if (!file.delete() && verbose) System.err.println("Failed to delete: " + file.getName());
+                if (!file.delete() && verbose) logger.error("Failed to delete: {}", file.getName());
 
         });
 

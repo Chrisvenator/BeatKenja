@@ -6,6 +6,8 @@ import DataManager.Database.DatabaseOperations.TagEntityOperations;
 import DataManager.Records.Configuration;
 import DataManager.Records.PatMetadata;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons.Common.DifficultyFileNameExtensionFilter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
@@ -17,6 +19,7 @@ import java.util.logging.Level;
 
 @SuppressWarnings("unused")
 public class Parameters {
+    public static final Logger logger = LogManager.getLogger();
 
     private static final Configuration config = new ConfigLoader("./config.json").getConfig();
     private static final Configuration.Colors COLORS = config.colors;
