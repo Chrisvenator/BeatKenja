@@ -10,7 +10,7 @@
  },
  "default-paths": {
      "wip-folder": "C:/Program Files (x86)/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels/",
-     "default-pattern": "C:\\Users\\SCCO\\IdeaProjects\\BeatKenja\\src\\main\\resources\\MapTemplates\\AllGroupedV1; 98; 4;[StandardExpert];NULL;NULL.pat",
+     "default-pattern": "src/main/resources/MapTemplates/AllGroupedV1; 98; 4;[StandardExpert];NULL;NULL.pat",
      "config": "./config.json",
      "readme": "./README.md",
      "default-log-path": "./logs/"
@@ -67,6 +67,6 @@
  "development": {
     "autoload-default-map-for-testing": true,
     "export-database": false,
-    "default-path-for-autoload-map": "\\\\10.32.140.51\\Userhome\\SCCO\\Documents\\3df62\\ExpertPlusStandard.dat"
+    "default-path-for-autoload-map": "src/main/resources/dev/3df62/ExpertPlusStandard.dat"
   }
 }
