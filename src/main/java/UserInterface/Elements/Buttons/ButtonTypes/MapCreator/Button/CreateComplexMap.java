@@ -29,23 +29,27 @@ public class CreateComplexMap extends MapCreatorSubButton {
 
         if ((double) Arrays.stream(ui.map._notes).filter(note -> note._cutDirection == 8).count() / ui.map._notes.length >= 0.8) {
             logger.info("Timing Map found. Creating complex map from Pattern...");
+            System.out.println("Timing Map found. Creating complex map from Pattern...");
 
             ui.map.toBlueLeftBottomRowDotTimings();
             notes.addAll(complexPatternFromTemplate(List.of(ui.map._notes), pattern, false, false, false, null, null));
             logger.debug("First note time in original map: {}", ui.map._notes[0]._time);
             logger.debug("First note time in complex pattern: {}", notes.get(0)._time);
         } else {
+            System.out.println("Map Template found. Creating new map with the position of red & blue notes...");
             logger.info("Map Template found. Creating new map with the position of red & blue notes...");
 
             //Blue notes:
             notes.addAll(complexPatternFromTemplate(Arrays.stream(ui.map._notes).filter(note -> note._type == 1).toList(), pattern, true, false, false, null, null));
-            logger.debug("{} notes created from blue notes {}", notes.size(), Arrays.stream(ui.map._notes).filter(note -> note._type == 0).toList().size());
+            logger.info("Notes: {}. notes created from blue notes: {}", ui.map._notes.length, Arrays.stream(ui.map._notes).filter(note -> note._type == 0).toList().size());
+            System.out.println("Notes: " + ui.map._notes.length + ". notes created from blue notes: " + Arrays.stream(ui.map._notes).filter(note -> note._type == 0).toList().size());
 
             // Red notes are just inverted blue notes
             notes.addAll(complexPatternFromTemplate(
                     Arrays.stream(ui.map._notes).filter(note -> note._type == 0).toList(), pattern, true, false, false, null, null
                     ).stream().peek(Note::invertNote).toList());
-            logger.debug("{} notes created from red notes {}", notes.size(), Arrays.stream(ui.map._notes).filter(note -> note._type == 1).toList().size());
+            logger.info("Notes: {}. notes created from red notes: {}", ui.map._notes.length, Arrays.stream(ui.map._notes).filter(note -> note._type == 1).toList().size());
+            System.out.println("Notes: " + ui.map._notes.length + ". notes created from red notes: " + Arrays.stream(ui.map._notes).filter(note -> note._type == 1).toList().size());
 
             // Fix errors
             FixErrorsInPatterns.fixSimpleMappingErrors(notes);

@@ -52,6 +52,7 @@ public class LinearSlowPattern {
             // Then create a new next note
             if ((oneHanded && i >= 2 || i >= 4) && invalidPlacesInARow >= 500) {
                 logger.warn("at beat:   " + timings.get(i)._time);
+                System.err.println("[ERROR] at beat:   " + timings.get(i)._time);
                 pattern.set(i, new TimingNote(timings.get(i)._time));
                 invalidPlacesInARow = 0;
                 continue;

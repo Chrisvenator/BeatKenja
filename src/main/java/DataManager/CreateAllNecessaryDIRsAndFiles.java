@@ -28,7 +28,10 @@ public class CreateAllNecessaryDIRsAndFiles {
 
     public static void createAllNecessaryDIRsAndFiles() {
         //Checking dependencies:
-        if (isPipInstalled()) logger.info("Pip is installed.");
+        if (isPipInstalled()) {
+            logger.info("Pip is installed.");
+            System.out.println("Pip is installed.");
+        }
         else installPip();
 
 
@@ -41,6 +44,7 @@ public class CreateAllNecessaryDIRsAndFiles {
             return;
         }
         logger.info("Creating all necessary directories and files.");
+        System.out.println("Creating all necessary directories and files.");
 
 
         createConfigFile();
@@ -69,6 +73,7 @@ public class CreateAllNecessaryDIRsAndFiles {
             }
         } catch (IOException e) {
             logger.fatal("There has been an Exception while creating the directories: {}", e.getMessage());
+            System.err.println("There has been an Exception while creating the files:\n");
             e.printStackTrace();
         }
     }
@@ -91,11 +96,15 @@ public class CreateAllNecessaryDIRsAndFiles {
                 InputStream inputStream = classLoader.getResourceAsStream(filePathToCopy);
                 File f = new File(filePathToCopy);
                 logger.info("Path: {}", f.getAbsolutePath());
+                System.out.println(f.getAbsolutePath());
 
                 if (inputStream != null) {
 
                     File destinationFile = new File(DEFAULT_EXPORT_PATH + filePathToCopy);
-                    if (!destinationFile.getParentFile().mkdirs()) logger.fatal("Something went wrong while trying to create folder: {}", destinationFile.getParentFile().getAbsolutePath());
+                    if (!destinationFile.getParentFile().mkdirs()) {
+                        System.err.println("[FATAL]: Something went wrong while trying to create folder!");
+                        logger.fatal("Something went wrong while trying to create folder: {}", destinationFile.getParentFile().getAbsolutePath());
+                    }
 
                     OutputStream outputStream = new FileOutputStream(destinationFile);
                     byte[] buffer = new byte[1024];
@@ -108,8 +117,10 @@ public class CreateAllNecessaryDIRsAndFiles {
                     inputStream.close();
 
                     logger.info("File copied: {}", filePathToCopy);
+                    System.out.println("File copied: " + filePathToCopy);
                 } else {
                     logger.error("File not found in the JAR: {}", filePathToCopy);
+                    System.out.println("File not found in the JAR: " + filePathToCopy);
                     return;
                 }
             }
@@ -189,8 +200,10 @@ public class CreateAllNecessaryDIRsAndFiles {
             processBuilder.start();
 
             logger.info("Pip has been installed.");
+            System.out.println("Pip has been installed.");
         } catch (IOException e) {
             logger.error("Failed to install Pip.");
+            System.out.println("Failed to install Pip.");
             e.printStackTrace();
         }
     }
@@ -224,14 +237,17 @@ public class CreateAllNecessaryDIRsAndFiles {
             logger.info("Dependency upgrade installation exited with code {}", exitCode4);
 
             if (exitCode2 == 0 && exitCode == 0 && exitCode3 == 0 && exitCode4 == 0) {
-                logger.info("Dependencies has been installed.");
+                logger.info("Dependencies have been installed.");
+                System.out.println("Dependencies have been installed.");
                 return true;
             } else {
                 logger.warn("Failed to install dependencies. Are they already installed?");
+                System.err.println("Failed to install dependencies. Are they already installed?");
                 return false;
             }
         } catch (IOException | InterruptedException e) {
             logger.error("Failed to install dependencies.");
+            System.out.println("Failed to install dependencies.");
             return false;
         }
     }

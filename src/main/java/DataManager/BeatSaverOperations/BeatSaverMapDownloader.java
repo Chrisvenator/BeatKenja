@@ -86,6 +86,7 @@ public class BeatSaverMapDownloader {
 
         if (mapInfoFiles == null) {
             logger.fatal("No map info files found!");
+            System.err.println("No map info files found!");
             return;
         }
 
@@ -95,6 +96,7 @@ public class BeatSaverMapDownloader {
                 boolean matchesFilter = checkFilters(mapInfoJson, filter);
 
                 logger.info("Checking map: {}: filter {}", mapInfoFile.getName(), matchesFilter ? "matches" : "doesn't match");
+                System.out.println("Checking map: " + mapInfoFile.getName() + ": filter " + (matchesFilter ? "matches" : "doesn't match"));
 
                 if (matchesFilter) {
                     Thread thread = new Thread(() -> downloadMap(mapInfoFile.getName().replace(".json", ""), deleteUnnecessaryFiles));
@@ -105,9 +107,10 @@ public class BeatSaverMapDownloader {
                 }
             } catch (JSONException e) {
                 logger.error("{} was in the wrong format!", mapInfoFile.getName());
+                System.err.println(mapInfoFile.getName() + " was in the wrong format!");
 //                throw new RuntimeException(e);
             } catch (InterruptedException e) {
-                logger.fatal("WHY WA THE THREAD INTERRUPTED??? {}", e.getMessage());
+                logger.fatal("WHY WAS THE THREAD INTERRUPTED??? {}", e.getMessage());
                 logger.fatal(Arrays.toString(e.getStackTrace()));
                 throw new RuntimeException(e);
             }
@@ -159,6 +162,7 @@ public class BeatSaverMapDownloader {
             }
         } catch (JSONException e) {
             logger.error("JSON Exception");
+            System.err.println("JSON Exception");
             return false;
         }
 
@@ -190,6 +194,7 @@ public class BeatSaverMapDownloader {
 
             String path = downloadDir + "/" + mapID + ".zip";
             logger.info("Started downloading {}: {}", mapID, downloadURL);
+            System.out.println("Started downloading " + mapID + ": " + downloadURL);
 
             //Retrieving the map information
             Files.copy(Path.of(MAP_INFO_DIRECTORY + mapID + ".json"), Path.of(DOWNLOAD_DIRECTORY + mapID + "/" + mapID + ".json"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
@@ -203,8 +208,10 @@ public class BeatSaverMapDownloader {
             TimeUnit.MILLISECONDS.sleep(100);
         } catch (JSONException e) {
             logger.error("{}.json was in the wrong format! {}", mapID, mapInfo.getName());
+            System.err.println(mapID + ".json was in the wrong format! " + mapInfo.getName());
         } catch (MalformedURLException | URISyntaxException | FileNotFoundException e) {
             logger.error("URL was not found. Does this map still exist? skipping {}. URL: {}", mapID, downloadURL);
+            System.err.println("URL was not found. Does this map still exist? skipping " + mapID + ". URL: " + downloadURL);
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
@@ -212,6 +219,7 @@ public class BeatSaverMapDownloader {
         } catch (InterruptedException i) {
             logger.fatal("WHY WAS THE THREAD INTERRUPTED??? {}", i.getMessage());
             logger.fatal(Arrays.toString(i.getStackTrace()));
+            System.err.println("Failed to download the file.");
             throw new RuntimeException(i);
         }
     }
@@ -229,6 +237,7 @@ public class BeatSaverMapDownloader {
 
         if (!file.isDirectory() && file.getName().endsWith(".bplist")) {
             logger.info("Found bplist file: " + file.getName());
+            System.out.println("Found bplist file: " + file.getName());
             String content = String.join("", FileManager.readFile(file.getAbsolutePath()));
 
             JSONArray songs = new JSONObject(content).getJSONArray("songs");
@@ -237,6 +246,7 @@ public class BeatSaverMapDownloader {
             for (int i = 0; i < songs.length(); i++) downloader.downloadMap(new JSONObject(songs.get(i).toString()).getString("key"), deleteUnnecessaryFiles);
         } else {
             logger.error("File " + file.getName() + " is not a bplist file.");
+            System.err.println("File " + file.getName() + " is not a bplist file.");
             throw new WrongFileExtensionException(file, ".bplist");
         }
     }

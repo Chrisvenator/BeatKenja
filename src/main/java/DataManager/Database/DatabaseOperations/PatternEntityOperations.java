@@ -22,6 +22,7 @@ public class PatternEntityOperations extends PatternEntity {
 
         PatternDescriptionEntity desc = PatternDescriptionEntityOperations.getPatternDescription("default", 120, 5, null, null, null);
         logger.info(getPatternByDescription(desc));
+        System.out.println(getPatternByDescription(desc));
     }
 
     /**
@@ -109,6 +110,7 @@ public class PatternEntityOperations extends PatternEntity {
             PatternEntity toDelete = entityManager.find(PatternEntity.class, entity.getId());
             if (toDelete == null) {
                 logger.warn("Pattern not found, cannot delete.");
+                System.out.println("Pattern not found, cannot delete.");
                 return false;
             }
 

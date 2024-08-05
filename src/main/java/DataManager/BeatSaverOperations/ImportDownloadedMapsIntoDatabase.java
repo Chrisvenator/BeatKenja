@@ -25,6 +25,7 @@ public class ImportDownloadedMapsIntoDatabase {
         File[] mapFolders = new File(MAPS_DIRECTORY).listFiles();
         if (mapFolders == null) {
             logger.fatal("No files found in the directory.");
+            System.err.println("No files found in the directory.");
             return;
         }
 
@@ -40,11 +41,13 @@ public class ImportDownloadedMapsIntoDatabase {
             final int index = ++count;  // Use final variable for thread-safe operations
             futures.add(executor.submit(() -> {
                 logger.info(index + "/" + maps.size() + " Importing map: " + map.getName());
+                System.out.println(index + "/" + maps.size() + " Importing map: " + map.getName());
                 try {
                     List<Pattern> patternsFromMap = createPatternsFromMapDirectory(map, patternName);
                     mergeIntoPattern(patterns, patternsFromMap);
                 } catch (Exception e) {
                     logger.fatal("Failed to import map: {} due to {}", map.getName(), e.getMessage());
+                    System.err.println("Failed to import map: " + map.getName() + " due to " + e.getMessage());
                     e.printStackTrace();
                     throw new RuntimeException(e);
                 }
@@ -57,6 +60,7 @@ public class ImportDownloadedMapsIntoDatabase {
                 future.get();  // Will block until the task is completed
             } catch (InterruptedException | ExecutionException e) {
                 logger.error("Error waiting for map import task to complete: {}", e.getMessage());
+                System.err.println("Error waiting for map import task to complete: " + e.getMessage());
             }
         }
         executor.shutdown();  // Shutdown the executor
@@ -79,6 +83,7 @@ public class ImportDownloadedMapsIntoDatabase {
         // Save patterns to the _toAddPat folder so that they can be added later to the database if something goes wrong
         boolean saved = saveAllPatternsIntoFolder(patFolderName, patterns);
         if (!saved) logger.error("[ERROR] Couldn't save .pat Files!");
+        if (!saved) System.err.println("[ERROR] Couldn't save .pat Files! ");
 
 //        savePatternsIntoDatabase(patterns);
     }
@@ -88,6 +93,7 @@ public class ImportDownloadedMapsIntoDatabase {
         patterns.forEach(pattern -> {
             savePatternsIntoDatabase(pattern);
             logger.info("saved {}/{} {}", i.getAndIncrement(), patterns.size(), pattern.metadata.toString());
+            System.out.println("[INFO]: saved " + i.getAndIncrement() + "/" + patterns.size() + " " + pattern.metadata.toString());
         });
     }
 
@@ -117,6 +123,7 @@ public class ImportDownloadedMapsIntoDatabase {
         File[] files = folder.listFiles();
         if (files == null) {
             logger.error("No files found in the directory.");
+            System.err.println("No files found in the directory.");
             return;
         }
 
@@ -124,14 +131,20 @@ public class ImportDownloadedMapsIntoDatabase {
 
         for (File patFile : patFiles) {
             try {
-                if (savePatternsIntoDatabase(new Pattern(patFile.getAbsolutePath())))
+                if (savePatternsIntoDatabase(new Pattern(patFile.getAbsolutePath()))) {
                     logger.info("Successfully saved pattern from file into database: {}\n", patFile.getName());
-                else logger.error("[ERROR]: Failed to import pattern from file: {}", patFile.getName());
+                    System.out.println("[INFO]: Successfully saved pattern from file into database: " + patFile.getName() + "\n");
+                }
+                else {
+                    System.err.println("[ERROR]: Failed to import pattern from file: " + patFile.getName());
+                    logger.error("[ERROR]: Failed to import pattern from file: {}", patFile.getName());
+                }
 
 //                break;
             } catch (Exception e) {
                 logger.error("[ERROR]: Failed to import pattern from file: {} due to {}", patFile.getName(), e.getMessage());
                 logger.error(Arrays.toString(e.getStackTrace()));
+                System.err.println("[ERROR]: Failed to import pattern from file: " + patFile.getName() + " due to " + e.getMessage());
                 e.printStackTrace();
             }
         }
@@ -228,6 +241,7 @@ public class ImportDownloadedMapsIntoDatabase {
         // Check if essential map files exist, log error and return empty if not.
         if (!infoFile.exists() || !metadataFile.exists()) {
             logger.warn("Map is missing info.dat or metadata.json: {} Skipping...", mapDir);
+            System.out.println("[INFO]: Map is missing info.dat or metadata.json: " + mapDir + " Skipping...");
             return new ArrayList<>();
         }
 
@@ -277,6 +291,7 @@ public class ImportDownloadedMapsIntoDatabase {
                     }
                 } catch (Exception e) {
                     logger.warn("Failed to get NPS for difficulty: {}. Skipping...", difficultyName);
+                    System.err.println("Failed to get NPS for difficulty: " + difficultyName + ". Skipping...");
                     break;
                 }
             }
@@ -295,11 +310,16 @@ public class ImportDownloadedMapsIntoDatabase {
         // Check if something went wrong during metadata extraction, log error and return empty if so.
         if (difficulties.isEmpty()) {
             logger.error("Failed to get difficulties for mapDir: {}", mapDir);
+            System.err.println("Failed to get difficulties for mapDir: " + mapDir);
             return new ArrayList<>();
         }
-        if (difficulties.size() > 5) logger.error("Too many difficulties for mapDir: {}: {}", mapDir, difficulties);
+        if (difficulties.size() > 5){
+            logger.error("Too many difficulties for mapDir: {}: {}", mapDir, difficulties);
+            System.err.println("Too many difficulties for mapDir: " + mapDir + ": " + difficulties);
+        }
         if (tags.size() > 2 || genres.size() > 2) {
             logger.warn("Too many tags or genres for map: {}: {} {}. Please try to limit it to only two.", mapDir, tags, genres);
+            System.err.println("[INFO] Too many tags or genres for map: " + mapDir + ": " + tags + " " + genres + ". Please try to limit it to only two.");
         }
 
 
@@ -313,6 +333,7 @@ public class ImportDownloadedMapsIntoDatabase {
                 patterns.add(p);
             } catch (NoteNotValidException e) {
                 logger.warn("Failed to create pattern for difficulty because a note is not valid: {} in map: {}", diff, mapDir);
+                System.err.println("[INFO]: Failed to create pattern for difficulty because a note is not valid: " + diff + " in map: " + mapDir);
             }
         }
 

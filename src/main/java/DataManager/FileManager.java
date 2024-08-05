@@ -30,6 +30,7 @@ public class FileManager {
         if (!Files.exists(filePath)) {
             if (print == null || print.length == 0) {
                 logger.error("File not found!");
+                System.err.println("File not found!");
             }
             throw new NoSuchElementException("File not found: " + filename + "!");
         }
@@ -38,6 +39,7 @@ public class FileManager {
             return Files.readAllLines(filePath);
         } catch (IOException e) {
             logger.error("Error reading the file: {}", e.getMessage());
+            System.err.println("Error reading the file: " + e.getMessage());
             return Collections.emptyList(); // Return an empty list on failure
         }
     }
@@ -59,9 +61,13 @@ public class FileManager {
             fos.close();
 
             //The following if is for testing, so that it doesn't span the console
-            if (print == null || print.length == 0) logger.info("File overwritten successfully!");
+            if (print == null || print.length == 0) {
+                logger.info("File overwritten successfully!");
+                System.out.println("File overwritten successfully!");
+            }
         } catch (IOException e) {
             logger.error("An error occurred while overwriting the file: {}", e.getMessage());
+            System.out.println("An error occurred while overwriting the file: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -89,6 +95,7 @@ public class FileManager {
     public static void createZipFileFromDirectory(String directoryPath, String filename) throws IOException {
         String sourceDir = new File(directoryPath).getAbsolutePath();
         logger.debug("Creater Zip: SourceDir: {}", sourceDir);
+        System.out.println(sourceDir);
 
         FileOutputStream fos = new FileOutputStream(filename);
         ZipOutputStream zipOut = new ZipOutputStream(fos);
@@ -179,6 +186,7 @@ public class FileManager {
         File dir = new File(directoryPath);
         if (!dir.isDirectory()) {
             logger.error("{} is not a directory.", directoryPath);
+            System.err.println(directoryPath + " is not a directory.");
             return;
         }
 

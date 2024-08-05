@@ -28,6 +28,7 @@ public class GenreEntityOperations extends GenreEntity {
             return DatabaseCommonMethods.checkCastFromQuery(result, GenreEntity.class);
         } catch (NoResultException e) {
             logger.error("Could not find a Genre");
+            System.err.println("ERROR: Could not find a Genre");
             return new ArrayList<>();
         }
     }

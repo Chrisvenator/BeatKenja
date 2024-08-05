@@ -25,6 +25,7 @@ public class DatabaseSaveOperations {
             logger.debug("Persisted {} to database", entity);
         } catch (PersistenceException e) {
             logger.error("Failed to persist {} to database", entity);
+            System.err.println("Failed to persist " + entity + " to database");
             if (Parameters.verbose) e.printStackTrace();
             return false;
         } finally {
