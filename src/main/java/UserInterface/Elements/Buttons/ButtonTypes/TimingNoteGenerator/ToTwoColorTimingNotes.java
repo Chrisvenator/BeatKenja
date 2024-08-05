@@ -14,6 +14,7 @@ public class ToTwoColorTimingNotes extends MySubButton {
 
     @Override
     public void onClick() {
+        ui.manageMap();
         logger.warn("NOTE: It is very likely that this feature is broken! Use at your own risk!");
         ui.map.toTimingNotes();
         logger.warn("Successfully converted Map to timing notes");

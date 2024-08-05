@@ -1,11 +1,13 @@
 package DataManager;
 
+import BeatSaberObjects.Objects.Parity.Enums.ParityErrorEnum;
 import DataManager.Database.DatabaseOperations.DifficultyEntityOperations;
 import DataManager.Database.DatabaseOperations.GenreEntityOperations;
 import DataManager.Database.DatabaseOperations.TagEntityOperations;
 import DataManager.Records.Configuration;
 import DataManager.Records.PatMetadata;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons.Common.DifficultyFileNameExtensionFilter;
+import javafx.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -13,9 +15,13 @@ import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.logging.Level;
+
+import static BeatSaberObjects.Objects.Parity.Enums.ParityErrorEnum.*;
 
 @SuppressWarnings("unused")
 public class Parameters {
@@ -30,19 +36,14 @@ public class Parameters {
     private static final Configuration.Global GLOBAL = config.global;
     private static final Configuration.MapGenerator MAP_GENERATOR = config.mapGenerator;
 
-    //Variables:
-    public static long SEED = 133742069;
-    public static Random RANDOM = new Random(SEED);
-    public static String filePath;
-
-
 
     // Global
     public static boolean verbose = GLOBAL.verbose; //For debugging purposes. It prints EVERYTHING
     public static boolean DARK_MODE = GLOBAL.darkMode;
     public static boolean saveNewMapsToDefaultPath = GLOBAL.saveMapsToWipFolderAfterMp3Conversion;
     public static boolean ignoreDDs = GLOBAL.ignoreDds;
-    public static final boolean PARITY_ERRORS_AS_BOOKMARKS = GLOBAL.saveParityErrorsAsBookmarks; //TODO: implement
+    public static final boolean SAVE_PARITY_ERRORS_AS_BOOKMARKS = GLOBAL.saveParityErrorsAsBookmarks;
+    public static final boolean SAVE_PARITY_ERRORS_AS_BOOKMARKS_WILL_OVERWRITE_BOOKMARKS = true; //TODO: Add to config
     public static final String mapViewerURL = GLOBAL.defaultMapPreviewer; //https://skystudioapps.com/bs-viewer/  or  https://allpoland.github.io/ArcViewer/
 
     // Default paths
@@ -80,6 +81,26 @@ public class Parameters {
     public static final boolean FIX_PLACEMENTS = MAP_GENERATOR.fixPlacements; //should the timings be fixed so that BeatSaver doesn't flag it as AI made?
 
 
+    // Database
+    public static final PatMetadata DEFAULT_PATTERN_METADATA = new PatMetadata(DATABASE.defaultPatMetadata.name, DATABASE.defaultPatMetadata.bpm, DATABASE.defaultPatMetadata.nps, DATABASE.defaultPatMetadata.difficulties, DATABASE.defaultPatMetadata.tags, DATABASE.defaultPatMetadata.genres);
+    public static final boolean SHOW_HEATMAP_WHEN_GENERATING_ONSETS = false; //TODO: Add to Config
+    public static final boolean SHOW_SPECTOGRAM_WHEN_GENERATING_ONSETS = false; //TODO: Add to Config
+
+    public static final Map<String, String> DATABASE_SETTINGS = Map.of(
+            "connection.driver_class",       DATABASE.settings.connection.driverClass,
+            "dialect",                       DATABASE.settings.dialect,
+            "hibernate.connection.url",      config.database.settings.hibernate.connection.url,
+            "hibernate.connection.username", config.database.settings.hibernate.connection.username,
+            "hibernate.connection.password", config.database.settings.hibernate.connection.password
+    );
+
+
+    //------------------------------------------ Config end --------------------------------------------------------------
+
+    //Variables:
+    public static long SEED = 133742069;
+    public static Random RANDOM = new Random(SEED);
+    public static String filePath;
 
     // Common
     public static final EntityManager entityManager = useDatabase ? Persistence.createEntityManagerFactory("default").createEntityManager() : null;
@@ -88,6 +109,23 @@ public class Parameters {
     public static final List<String> MUSIC_GENRES = GenreEntityOperations.getAllGenres();
     public static final List<String> DIFFICULTIES = DifficultyEntityOperations.getAllDifficulties();
     public static final DifficultyFileNameExtensionFilter MAP_FILE_FORMAT = new DifficultyFileNameExtensionFilter("BeatSaber Maps (*.dat) or Pattern files (*.pat)", new String[]{"dat", "pat"}, new String[]{"info.dat", "BPMInfo.dat"});
+    public static final List<Pair<Float, ParityErrorEnum>> PARITY_ERRORS_LIST = new ArrayList<>();
+
+    public static final Map<ParityErrorEnum, Color> PARITY_ERRORS_COLORS_MAP = Map.of(
+            PARITY_BREAK,             Color.RED,
+            SHARP_ANGLE,              Color.GREEN,
+            NOTE_OUTSIDE_OF_GRID,     Color.BLUE,
+            NOTE_INSIDE_ANOTHER_NOTE, Color.CYAN,
+            DIDNT_PLACE_STACK,        Color.BLACK
+    );
+
+    static {
+        java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
+        FILE_CHOOSER.setFileFilter(MAP_FILE_FORMAT);
+        if (DARK_MODE) FILE_CHOOSER.setForeground(Color.white);
+    }
+
+
 
 
     @Deprecated
@@ -95,26 +133,44 @@ public class Parameters {
     @Deprecated
     public static final double MADMOM_ONSET_GENERATION_MINIMUM_PROXIMITY = 0.1; //For madmom onset detection only! Minimum proximity between onsets in seconds
 
-    // Database
-    public static final PatMetadata DEFAULT_PATTERN_METADATA = new PatMetadata(DATABASE.defaultPatMetadata.name, DATABASE.defaultPatMetadata.bpm, DATABASE.defaultPatMetadata.nps, DATABASE.defaultPatMetadata.difficulties, DATABASE.defaultPatMetadata.tags, DATABASE.defaultPatMetadata.genres);
-    public static final java.util.Map<String, String> DATABASE_SETTINGS = new java.util.HashMap<>();
-    public static final boolean SHOW_HEATMAP_WHEN_GENERATING_ONSETS = false; //TODO: Add to Config
-    public static final boolean SHOW_SPECTOGRAM_WHEN_GENERATING_ONSETS = false; //TODO: Add to Config
 
 
-    static {
-        java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
-        FILE_CHOOSER.setFileFilter(MAP_FILE_FORMAT);
-        if (DARK_MODE) FILE_CHOOSER.setForeground(Color.white);
-
-        Configuration.Database.Settings.Hibernate.DBConnection db_connection = config.database.settings.hibernate.connection;
-
-        //Database settings:
-        DATABASE_SETTINGS.put("connection.driver_class", DATABASE.settings.connection.driverClass);
-        DATABASE_SETTINGS.put("dialect", DATABASE.settings.dialect);
-        DATABASE_SETTINGS.put("hibernate.connection.url",      db_connection.url);
-        DATABASE_SETTINGS.put("hibernate.connection.username", db_connection.username);
-        DATABASE_SETTINGS.put("hibernate.connection.password", db_connection.password);
-    }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

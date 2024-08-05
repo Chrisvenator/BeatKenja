@@ -37,7 +37,6 @@ public class CreateMapButton extends MapCreatorSubButton {
                 loadNewlyCreatedMap(map);
                 logger.info("New map created and loaded successfully.");
             }
-
         } catch (IllegalArgumentException | MapDidntComputeException ex) {
             printException(ex);
         }
