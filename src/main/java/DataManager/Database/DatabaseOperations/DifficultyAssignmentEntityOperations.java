@@ -27,6 +27,7 @@ public class DifficultyAssignmentEntityOperations extends DifficultyAssignmentEn
             return checkCastFromQuery(result, DifficultyAssignmentEntity.class);
         } catch (NoResultException e) {
             logger.error("Could not find a difficulty");
+            System.err.println("[ERROR]: Could not find a difficulty");
             return new ArrayList<>();
         }
     }
@@ -53,6 +54,7 @@ public class DifficultyAssignmentEntityOperations extends DifficultyAssignmentEn
         } catch (NoResultException e) {
             transaction.rollback();
             logger.info("Nothing to delete... DifficultyAssignments not found in database: {}", metadata);
+            System.out.println("[INFO]: Nothing to delete... DifficultyAssignments not found in database: " + metadata);
             return false;
         }
 
@@ -75,6 +77,7 @@ public class DifficultyAssignmentEntityOperations extends DifficultyAssignmentEn
             return difficulties;
         } catch (NoResultException e) {
             logger.error("Could not find a difficulty");
+            System.err.println("[ERROR]: Could not find a difficulty");
             return new ArrayList<>();
         }
 

@@ -78,6 +78,9 @@ public class DirichletMultinomialDistribution {
         logger.info("Expected Value: {}", Arrays.toString(computeExpectedValues(alpha, N)));
         logger.info("Variance: {}", Arrays.toString(computeVariances(alpha, N)));
         logger.info("Covariance: {}", Arrays.deepToString(computeCovariances(alpha, N)));
+        System.out.println("Expected Value: " + Arrays.toString(computeExpectedValues(alpha, N)));
+        System.out.println("Variance: " + Arrays.toString(computeVariances(alpha, N)));
+        System.out.println("Covariance: " + Arrays.deepToString(computeCovariances(alpha, N)));
     }
 
     // Methode zur Berechnung des Erwartungswerts

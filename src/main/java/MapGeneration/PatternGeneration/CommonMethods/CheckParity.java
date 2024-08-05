@@ -64,15 +64,24 @@ public class CheckParity {
 
             if (isParityBreak(prev, n)) {
                 if (!quiet) logger.warn("at beat:   " + n._time + ": Parity break! prev: " + prev._time + "-" + prev.exportInPatFormat() + ", current: " + n._time + "-" + n.exportInPatFormat());
+                if (!quiet) System.err.println("[ERROR] at beat:   " + n._time + ": Parity break! prev: " + prev._time + "-" + prev.exportInPatFormat() + ", current: " + n._time + "-" + n.exportInPatFormat());
             } else
                 // Sharp Angle
-                if (isParitySharpAngle(prev, n))
-                    if (!quiet) logger.warn("[NOTICE] at beat:    " + n._time + ": sharp angle");
+                if (isParitySharpAngle(prev, n)) {
+                    if (!quiet) {
+                        logger.warn("[NOTICE] at beat:    " + n._time + ": sharp angle");
+                        System.err.println("[WARN] at beat:    " + n._time + ": sharp angle");
+                    }
+                }
 
 
             if (n._type == 0) red = n;
             else if (n._type == 1) blue = n;
-            else logger.warn("IN \"CheckParity\" has been an other type of note instead of 0 or 1!!");
+            else {
+                logger.warn("IN \"CheckParity\" has been an other type of note instead of 0 or 1!!");
+                System.err.println("[WARN]: IN \"CheckParity\" has been an other type of note instead of 0 or 1!!");
+            }
+
         }
     }
 

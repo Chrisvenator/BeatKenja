@@ -22,5 +22,6 @@ public class UtilsFixPlacements extends MySubButton {
         ui.map.fixPlacements((double) 1 / Double.parseDouble(fixPlacementTextField.getText().replaceAll("[^\\d.]", "")));
         logger.info("Fixed Note Placement with a precision of 1/{} of a beat.", fixPlacementTextField.getText());
         logger.debug("Placements fixed: {}", new BeatSaberMap(ui.map._notes).exportAsMap());
+        System.out.println("Placements fixed: " + new BeatSaberMap(ui.map._notes).exportAsMap());
     }
 }

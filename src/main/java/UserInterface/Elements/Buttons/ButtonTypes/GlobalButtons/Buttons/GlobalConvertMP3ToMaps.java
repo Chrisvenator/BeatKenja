@@ -48,9 +48,11 @@ public class GlobalConvertMP3ToMaps extends GlobalButton {
                 new ArrayList<>(Arrays.stream(Objects.requireNonNull(new File(ONSET_GENERATION_FOLDER_PATH_INPUT).listFiles())).toList()).stream().filter(f -> f.getName().endsWith(".mp3")).forEach(f -> {
                     try {
                         Mp3ToWavConverter.convert(f.getAbsolutePath(), f.getAbsolutePath().replace(".mp3", ".wav"));
+                        System.out.println("mp3 to wav conversion completed successfully for: " + f.getName() + "\n");
                         logger.info("mp3 to wav conversion completed successfully for: {}", f.getName());
                     } catch (IOException e) {
                         logger.error("Error while converting mp3 to wav: {}", f.getName(), e);
+                        System.err.println("Error while converting mp3 to wav: " + f.getName() + "\n");
                     }
                 });
 

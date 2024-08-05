@@ -19,6 +19,7 @@ public class NextLinearNote {
 
         if (p == null) {
             logger.warn("Something went wrong. A note is null :thinking: Please have a look at beat: " + time);
+            System.err.println("Something went wrong. A note is null :thinking: Please have a look at beat: " + time);
             p = new Note(time, 0, 0, 1, 1);
         }
 

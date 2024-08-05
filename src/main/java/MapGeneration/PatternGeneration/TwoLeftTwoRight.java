@@ -30,6 +30,7 @@ public class TwoLeftTwoRight {
             //Place a BeatSaberObjects.Objects.Note that doesn't break parity after the error:
             if (i >= 4 && invalidPlacementsInARow >= 100) {
                 logger.warn("at beat:   " + timings.get(i)._time + " Timing note");
+                System.err.println("[ERROR] at beat:   " + timings.get(i)._time + " Timing note");
                 Note errorNote = new TimingNote(timings.get(i)._time);
                 notes.add(errorNote); //Adding BeatSaberObjects.Objects.Note
                 invalidPlacementsInARow = 0;

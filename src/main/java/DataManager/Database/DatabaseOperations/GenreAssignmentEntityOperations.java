@@ -24,7 +24,8 @@ public class GenreAssignmentEntityOperations extends GenreEntityOperations {
 
             return DatabaseCommonMethods.checkCastFromQuery(result, GenreAssignmentEntity.class);
         } catch (NoResultException e) {
-            logger.error("Could not find a difficulty");
+            logger.error("Could not find a genre");
+            System.err.println("[ERROR]: Could not find a genre");
             return new ArrayList<>();
         }
     }
@@ -50,6 +51,7 @@ public class GenreAssignmentEntityOperations extends GenreEntityOperations {
         } catch (NoResultException e) {
             transaction.rollback();
             logger.info("Nothing to delete... GenreAssignments not found in database: {}", metadata);
+            System.out.println("[INFO]: Nothing to delete... GenreAssignments not found in database: " + metadata);
             return false;
         }
 
@@ -69,6 +71,7 @@ public class GenreAssignmentEntityOperations extends GenreEntityOperations {
             return genres;
         } catch (NoResultException e) {
             logger.error("[ERROR]: Could not find a genre");
+            System.err.println("[ERROR]: Could not find a genre");
             return new ArrayList<>();
         }
     }

@@ -47,6 +47,7 @@ public class NoteEntityOperations extends NoteEntity {
             return noteEntities;
         } catch (NoResultException e) {
             logger.error("Could not find a Note");
+            System.err.println("ERROR: Could not find a Note");
             return new ArrayList<>();
         }
     }

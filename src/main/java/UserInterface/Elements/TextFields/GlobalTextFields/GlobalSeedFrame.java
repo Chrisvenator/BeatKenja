@@ -47,6 +47,7 @@ public class GlobalSeedFrame extends MyGlobalTextField {
                 if (GlobalSeedFrame.this.getText().length() >= 18) throw new IllegalArgumentException();
                 SEED = Long.parseLong(GlobalSeedFrame.this.getText().replace(" ", ""));
                 logger.info("Current Seed: {}", SEED);
+                System.out.println("Current Seed: " + SEED);
             } catch (NumberFormatException ex) {
                 String errorMessage = "Seed is not a number!";
                 logger.error(errorMessage);

@@ -42,5 +42,6 @@ public class GlobalPatternVarianceJSlider extends MyGlobalJSlider {
         // ui.pattern = Pattern.adjustVariance(patternWithoutVariance, value);
 
         logger.info("Pattern Variance set to: {}", value);
+        System.out.println("Slider value: " + (float) value);
     }
 }

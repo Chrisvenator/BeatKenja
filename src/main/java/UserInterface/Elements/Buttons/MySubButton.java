@@ -18,7 +18,7 @@ public abstract class MySubButton extends MyButton {
         ui.map.bookmarks = ui.map.calculateBookmarks();
 
         logger.info("Map creation finished");
-
+        System.out.println("Created Map: " + ui.map.exportAsMap());
         logger.debug("Created Map: {}", ui.map.exportAsMap());
 
         ui.checkMap();
