@@ -36,6 +36,7 @@ public class Parameters {
     private static final Configuration.Global GLOBAL = config.global;
     private static final Configuration.MapGenerator MAP_GENERATOR = config.mapGenerator;
 
+    //----------------------------------- config start ----------------------------------------
 
     // Global
     public static boolean verbose = GLOBAL.verbose; //For debugging purposes. It prints EVERYTHING
@@ -43,13 +44,11 @@ public class Parameters {
     public static boolean saveNewMapsToDefaultPath = GLOBAL.saveMapsToWipFolderAfterMp3Conversion;
     public static boolean ignoreDDs = GLOBAL.ignoreDds;
     public static final boolean SAVE_PARITY_ERRORS_AS_BOOKMARKS = GLOBAL.saveParityErrorsAsBookmarks;
-    public static final boolean SAVE_PARITY_ERRORS_AS_BOOKMARKS_WILL_OVERWRITE_BOOKMARKS = true; //TODO: Add to config
+    public static final boolean SAVE_PARITY_ERRORS_AS_BOOKMARKS_WILL_OVERWRITE_BOOKMARKS = GLOBAL.saveParityErrorsAsBookmarksWillOverwriteBookmarks;
     public static final String mapViewerURL = GLOBAL.defaultMapPreviewer; //https://skystudioapps.com/bs-viewer/  or  https://allpoland.github.io/ArcViewer/
 
     // Default paths
     public static String DEFAULT_PATH = DEFAULT_PATHS.wipFolder;
-    public static final String DEFAULT_LOG_PATH = DEFAULT_PATHS.defaultLogPath + "log.txt"; //TODO: implement
-    public static final String DEFAULT_FULL_LOG_PATH = DEFAULT_PATHS.defaultLogPath + "full_log.txt"; //TODO: implement
     public static final String CONFIG_FILE_LOCATION = DEFAULT_PATHS.config;
     public static final String README_FILE_LOCATION = DEFAULT_PATHS.readme;
     public static final String DEFAULT_PATTERN_PATH = DEFAULT_PATHS.defaultPattern;
@@ -79,13 +78,10 @@ public class Parameters {
     public static final double BPM = MAP_GENERATOR.defaultBpm;
     public static final double PLACEMENT_PRECISION = MAP_GENERATOR.defaultPlacementPrecision; //Placement Precision
     public static final boolean FIX_PLACEMENTS = MAP_GENERATOR.fixPlacements; //should the timings be fixed so that BeatSaver doesn't flag it as AI made?
-
+    public static final boolean SHOW_SPECTOGRAM_WHEN_GENERATING_ONSETS = MAP_GENERATOR.showSpectogramWhenGeneratingOnsets;
 
     // Database
     public static final PatMetadata DEFAULT_PATTERN_METADATA = new PatMetadata(DATABASE.defaultPatMetadata.name, DATABASE.defaultPatMetadata.bpm, DATABASE.defaultPatMetadata.nps, DATABASE.defaultPatMetadata.difficulties, DATABASE.defaultPatMetadata.tags, DATABASE.defaultPatMetadata.genres);
-    public static final boolean SHOW_HEATMAP_WHEN_GENERATING_ONSETS = false; //TODO: Add to Config
-    public static final boolean SHOW_SPECTOGRAM_WHEN_GENERATING_ONSETS = false; //TODO: Add to Config
-
     public static final Map<String, String> DATABASE_SETTINGS = Map.of(
             "connection.driver_class",       DATABASE.settings.connection.driverClass,
             "dialect",                       DATABASE.settings.dialect,
