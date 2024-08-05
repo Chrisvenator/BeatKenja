@@ -26,8 +26,8 @@ public class Start {
 
     /**
      *********** Planned Features ***********
-     * Besserer Logger
-     * public static final boolean PARITY_ERRORS_AS_BOOKMARKS = true;
+     * public static final boolean PARITY_ERRORS_AS_BOOKMARKS = true; <-- TESTEN
+     * ^ DIDNT_PLACE_STACK in "parityErrorsAsBookmarks"
      * export as .jar
      * Random V2 "File not found crash"
      * Sleep interrupted exception bei linear, one-handed complex
@@ -50,13 +50,6 @@ public class Start {
         logger.info("Starting Start...");
         logger.info("Seed: {}", SEED);
         logger.info("Setting Hibernate Logger to warning");
-
-//        logger.trace("Entering method processOrder().");
-//        logger.debug("Received order with ID 12345.");
-//        logger.info("Order shipped successfully.");
-//        logger.warn("Potential security vulnerability detected in user input: '...'");
-//        logger.error("Failed to process order. Error: {. . .}");
-//        logger.fatal("System crashed. Shutting down...");
 
         CreateAllNecessaryDIRsAndFiles.createAllNecessaryDIRsAndFiles();
 

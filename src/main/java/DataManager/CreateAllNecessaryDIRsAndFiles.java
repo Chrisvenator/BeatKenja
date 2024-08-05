@@ -38,7 +38,7 @@ public class CreateAllNecessaryDIRsAndFiles {
         logger.info("Checking if directories exist");
         //Checking if the directories exist.
         //If yes, then don't create them again
-        File f3 = new File(CONFIG_FILE_LOCATION);             //Default Value: "./config.txt" //TODO: Ändern
+        File f3 = new File(CONFIG_FILE_LOCATION);             //Default Value: "./config.json"
         if (f3.exists() && f3.isFile()) {
             logger.info("config file exists");
             return;
