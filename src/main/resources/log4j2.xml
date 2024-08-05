@@ -3,6 +3,7 @@
     <Appenders>
         <Console name="console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] [%-5level] %logger{36} - %msg%n" />
+            <ThresholdFilter level="FATAL" onMatch="ACCEPT" onMismatch="DENY"/>
         </Console>
         <File name="file_trace" fileName="logs/app_trace.log" append="false">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] [%-5level] %logger{36} - %msg%n" />

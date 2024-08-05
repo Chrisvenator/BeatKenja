@@ -35,6 +35,7 @@ public class GlobalSaveMapAs extends GlobalButton {
             bw.write(ui.map.exportAsMap());
             logger.info("Map saved successfully at: {}", filePath);
             logger.debug("Map saved successfully: {}", ui.map.exportAsMap());
+            System.out.println("Map saved successfully: " + ui.map.exportAsMap());
         } catch (IOException e) {
             logger.error("There was an error while saving the map at {}: {}", filePath, e.getMessage());
             printException(new IOException("There was an error while saving the map " + filePath + "!", e));

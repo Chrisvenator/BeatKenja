@@ -52,6 +52,7 @@ public class GlobalLoadPatterns extends GlobalButton {
                 BeatSaberMap beatSaberMap = BeatSaberMap.newMapFromJSON(selectedFile.getAbsolutePath());
                 ui.pattern = new Pattern(beatSaberMap._notes, 1);
                 logger.info("Pattern loaded from map file: {}", selectedFile.getAbsolutePath());
+                System.out.println("[INFO]:Pattern loaded: " + ui.pattern.exportInPatFormat());
             }
 
             String successMessage = "Successfully loaded Patterns";

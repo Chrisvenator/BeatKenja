@@ -53,6 +53,7 @@ public class TwoRightOneLeft {
             // If this still doesn't work, then throw an exception
             if (invalidPlacementsInARow >= 100) {
                 logger.warn("WARN at beat:    " + timings.get(i)._time + " There may be a mismatched Note");
+                System.err.println("[WARN] at beat:    " + timings.get(i)._time + " There may be a mismatched Note");
                 // Logic for adding TimingNote or alternative note based on even/odd index and prevRed
 
                 if (i % 2 == 0 && prevRed == null) redNotes.add(new Note(complexPattern.get(i)._time, 2, 0, 1, 0));

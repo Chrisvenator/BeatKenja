@@ -32,6 +32,7 @@ public class Doubles {
             // If this still doesn't work, then throw an exception
             if (i >= 4 && invalidPlacementsInARow >= 100) {
                 logger.warn("at beat:   " + timings.get(i)._time + " Timing note");
+                System.err.println("_ERROR at beat:   " + timings.get(i)._time + " Timing note");
                 Note errorNote = new TimingNote(timings.get(i)._time);
                 notes.add(errorNote); //Adding blue BeatSaberObjects.Objects.Note
                 notes.add(errorNote); //Adding red BeatSaberObjects.Objects.Note

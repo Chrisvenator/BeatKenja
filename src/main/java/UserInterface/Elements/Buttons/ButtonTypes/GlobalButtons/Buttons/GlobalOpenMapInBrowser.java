@@ -43,6 +43,7 @@ public class GlobalOpenMapInBrowser extends GlobalButton {
                         String zipFileName = filePath + "/output.zip";
                         FileManager.createZipFileFromDirectory(filePath, zipFileName);
                         logger.info("The files have been successfully added to {}", zipFileName);
+                        System.out.println("The files have been successfully added to " + zipFileName);
                     } catch (IOException ex) {
                         logger.error("Error while creating zip file from directory: {}", ex.getMessage());
                         printException(ex);

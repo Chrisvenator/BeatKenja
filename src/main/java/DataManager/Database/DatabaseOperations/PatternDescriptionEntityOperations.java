@@ -127,6 +127,7 @@ public class PatternDescriptionEntityOperations extends PatternDescriptionEntity
             transaction.rollback();
             e.printStackTrace();
             logger.warn("Nothing to delete... PatternDescription not found in database: {}", metadata);
+            System.out.println("[INFO]: Nothing to delete... PatternDescription not found in database: " + metadata);
             return false;
         }
 

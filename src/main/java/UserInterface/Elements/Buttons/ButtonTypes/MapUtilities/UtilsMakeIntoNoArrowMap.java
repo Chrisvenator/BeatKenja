@@ -17,5 +17,6 @@ public class UtilsMakeIntoNoArrowMap extends MySubButton {
         ui.map.makeNoArrows();
         logger.info("Map is now a no arrows map");
         logger.debug("No Arrow Map: {}", ui.map.exportAsMap());
+        System.out.println("No Arrow Map: " + ui.map.exportAsMap());
     }
 }
