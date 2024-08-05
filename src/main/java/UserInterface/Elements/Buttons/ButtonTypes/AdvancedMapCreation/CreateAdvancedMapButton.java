@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import static DataManager.Parameters.logger;
 import static DataManager.Parameters.SHOW_HEATMAP_WHEN_GENERATING_ONSETS;
 import static DataManager.Parameters.verbose;
 import static MapGeneration.PatternGeneration.AdvancedComplexMap.createAdvancedComplexPattern;
@@ -50,6 +51,7 @@ public class CreateAdvancedMapButton extends MapCreatorSubButton {
 
         this.npsField = npsField;
         this.bpmField = bpmField;
+        logger.debug("CreateAdvancedMapButton initialized.");
     }
 
     /**
@@ -71,11 +73,9 @@ public class CreateAdvancedMapButton extends MapCreatorSubButton {
             int nps = Objects.equals(npsField.getText(), "nps") ? 4 : Integer.parseInt(npsField.getText());
             int bpm = Objects.equals(bpmField.getText(), "bpm") ? 120 : Integer.parseInt(bpmField.getText());
 
-            if (verbose) System.out.println("Genres: " + genres + "\nTags: " + tags + " \nDifficulty: " + difficulties + " \nNPS: " + nps + " \nBPM: " + bpm);
+            logger.info("Settings for Advanced Complex Map: Genres: {}, Tags: {}, Difficulty: {}, NPS: {}, BPM: {}", genres, tags, difficulties, nps, bpm);
 
-            if (verbose) System.out.println("og: " + ui.map.exportAsMap());
-            if (verbose) ui.statusCheck.append("\nVERBOSE: og: " + ui.map.exportAsMap());
-
+            logger.debug("Original map: {}", ui.map.exportAsMap());
 
             // Create the advanced Beat Saber map using the specified parameters and patterns
             BeatSaberMap map = new BeatSaberMap(
@@ -99,18 +99,22 @@ public class CreateAdvancedMapButton extends MapCreatorSubButton {
             // Check for unplaced notes and inform the user if there are too many errors
             int unplacedNotes = map.exportAsMap().split("\"_cutDirection\":8").length;
             if (unplacedNotes >= 20) {
-                ui.statusCheck.append("There are " + unplacedNotes + " error Notes. You will have to clean them manually. Do you really want to continue? It is recommended to try again\n");
-                JOptionPane.showMessageDialog(null, "There are " + unplacedNotes + " error Notes. You will have to clean them manually. Do you really want to continue? It is recommended to try again", "Too many errors Info", JOptionPane.INFORMATION_MESSAGE);
+                String warningMessage = "There are " + unplacedNotes + " error Notes. You will have to clean them manually. Do you really want to continue? It is recommended to try again";
+                logger.warn(warningMessage);
+                JOptionPane.showMessageDialog(null, warningMessage, "Too many errors Info", JOptionPane.INFORMATION_MESSAGE);
             }
 
             // Check if the map computation succeeded
-            if (map.equals(ui.map)) throw new MapDidntComputeException("Something went wrong Map didn't compute...");
+            if (map.equals(ui.map)) {
+                logger.error("The map is the same as the original map! Please try again");
+                throw new MapDidntComputeException("Something went wrong Map didn't compute...");
+            }
             else loadNewlyCreatedMap(map);
 
-            if (verbose) System.out.println("New: " + map.exportAsMap());
-            loadNewlyCreatedMap(map);
+            logger.debug("New map: {}", map.exportAsMap());
 
         } catch (NumberFormatException e) {
+            logger.error("Please enter valid numbers for NPS and BPM. Exception: {}", e.getMessage());
             JOptionPane.showMessageDialog(null, "Please enter valid numbers for NPS and BPM.", "Input Error", JOptionPane.ERROR_MESSAGE);
         } catch (IllegalArgumentException | MapDidntComputeException ex) {
             printException(ex);

@@ -15,27 +15,30 @@ public class GlobalSaveMapAs extends GlobalButton {
     public GlobalSaveMapAs(UserInterface ui) {
         super(ElementTypes.GLOBAL_SAVE_MAP_AS, ui);
         setBackground(Color.green);
+        logger.debug("GlobalSaveMapAs button initialized.");
     }
 
     @Override
     public void onClick() {
         int option = FILE_CHOOSER.showSaveDialog(this);
+        logger.info("File chooser opened with option: {}", option);
 
-        if (!approveFileLoading(option)) return;
-        try {
-            String filePath = FILE_CHOOSER.getSelectedFile().getAbsolutePath();
-            filePath += filePath.contains(".dat") ? "" : ".dat";
+        if (!approveFileLoading(option)) {
+            logger.info("File loading not approved.");
+            return;
+        }
 
-            BufferedWriter bw = new BufferedWriter(new FileWriter(filePath));
-//            bw.write(new BeatSaberMap(ui.map._notes).exportAsMap());
+        String filePath = FILE_CHOOSER.getSelectedFile().getAbsolutePath();
+        filePath += filePath.contains(".dat") ? "" : ".dat";
+
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(filePath))) {
             bw.write(ui.map.exportAsMap());
-            bw.close();
-
-            ui.statusCheck.append("\n[INFO]: Map saved successfully: " + filePath);
+            logger.info("Map saved successfully at: {}", filePath);
+            logger.debug("Map saved successfully: {}", ui.map.exportAsMap());
             System.out.println("Map saved successfully: " + ui.map.exportAsMap());
-            if (verbose) ui.statusCheck.setText(ui.statusCheck.getText() + "\n" + "VERBOSE: " + "Map saved successfully: " + ui.map.exportAsMap());
         } catch (IOException e) {
-            printException(new IOException("There was an error while saving the map " + filePath + "!"));
+            logger.error("There was an error while saving the map at {}: {}", filePath, e.getMessage());
+            printException(new IOException("There was an error while saving the map " + filePath + "!", e));
         }
     }
 }

@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static DataManager.Parameters.entityManager;
-import static DataManager.Parameters.verbose;
+import static DataManager.Parameters.logger;
 
 public class GenreAssignmentEntityOperations extends GenreEntityOperations {
     public static ArrayList<GenreAssignmentEntity> getAssignmentEntity(int fkGenreId, int fkPatternDescriptionId) {
@@ -24,7 +24,8 @@ public class GenreAssignmentEntityOperations extends GenreEntityOperations {
 
             return DatabaseCommonMethods.checkCastFromQuery(result, GenreAssignmentEntity.class);
         } catch (NoResultException e) {
-            System.err.println("[ERROR]: Could not find a difficulty");
+            logger.error("Could not find a genre");
+            System.err.println("[ERROR]: Could not find a genre");
             return new ArrayList<>();
         }
     }
@@ -41,7 +42,7 @@ public class GenreAssignmentEntityOperations extends GenreEntityOperations {
                     GenreAssignmentEntity toRemove = entityManager.find(GenreAssignmentEntity.class, entity.getId());
                     if (toRemove != null) {
                         entityManager.remove(toRemove);
-                        if (verbose) System.out.println("[INFO]: Successfully deleted GenreAssignment: " + toRemove);
+                        logger.info("Successfully deleted GenreAssignment: {}", toRemove);
                     }
                 });
                 transaction.commit();
@@ -49,6 +50,7 @@ public class GenreAssignmentEntityOperations extends GenreEntityOperations {
             }
         } catch (NoResultException e) {
             transaction.rollback();
+            logger.info("Nothing to delete... GenreAssignments not found in database: {}", metadata);
             System.out.println("[INFO]: Nothing to delete... GenreAssignments not found in database: " + metadata);
             return false;
         }
@@ -68,6 +70,7 @@ public class GenreAssignmentEntityOperations extends GenreEntityOperations {
             genreAssignmentEntities.forEach(entity -> genres.add(GenreEntityOperations.getGenre(entity.getFkGenreId()).getName()));
             return genres;
         } catch (NoResultException e) {
+            logger.error("[ERROR]: Could not find a genre");
             System.err.println("[ERROR]: Could not find a genre");
             return new ArrayList<>();
         }

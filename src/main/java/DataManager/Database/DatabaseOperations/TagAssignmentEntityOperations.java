@@ -1,7 +1,6 @@
 package DataManager.Database.DatabaseOperations;
 
 import DataManager.Database.DatabaseCommonMethods;
-import DataManager.Database.DatabaseEntities.GenreAssignmentEntity;
 import DataManager.Database.DatabaseEntities.PatternDescriptionEntity;
 import DataManager.Database.DatabaseEntities.TagAssignmentEntity;
 import DataManager.Records.PatMetadata;
@@ -13,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static DataManager.Parameters.entityManager;
-import static DataManager.Parameters.verbose;
+import static DataManager.Parameters.logger;
 
 public class TagAssignmentEntityOperations extends TagAssignmentEntity {
     public static ArrayList<TagAssignmentEntity> getAssignmentEntity(int fkTagId, int fkPatternDescriptionId) {
@@ -25,6 +24,7 @@ public class TagAssignmentEntityOperations extends TagAssignmentEntity {
 
             return DatabaseCommonMethods.checkCastFromQuery(result, TagAssignmentEntity.class);
         } catch (NoResultException e) {
+            logger.error("Could not find a difficulty");
             System.err.println("[ERROR]: Could not find a difficulty");
             return new ArrayList<>();
         }
@@ -42,7 +42,7 @@ public class TagAssignmentEntityOperations extends TagAssignmentEntity {
                     TagAssignmentEntity toRemove = entityManager.find(TagAssignmentEntity.class, entity.getId());
                     if (toRemove != null) {
                         entityManager.remove(toRemove);
-                        if (verbose) System.out.println("[INFO]: Successfully deleted TagAssignment: " + toRemove);
+                        logger.info("[INFO]: Successfully deleted TagAssignment: {}", toRemove);
                     }
                 });
                 transaction.commit();
@@ -50,6 +50,7 @@ public class TagAssignmentEntityOperations extends TagAssignmentEntity {
             }
         } catch (NoResultException e) {
             transaction.rollback();
+            logger.info("Nothing to delete... TagAssignments not found in database: {}", metadata);
             System.out.println("[INFO]: Nothing to delete... TagAssignments not found in database: " + metadata);
             return false;
         }
@@ -68,6 +69,7 @@ public class TagAssignmentEntityOperations extends TagAssignmentEntity {
             list.forEach(entity -> tags.add(TagEntityOperations.getTag(entity.getFkTagId()).getName()));
             return tags;
         } catch (NoResultException e) {
+            logger.error("Could not find a tag");
             System.err.println("[ERROR]: Could not find a tag");
             return new ArrayList<>();
         }
