@@ -1,6 +1,7 @@
 package UserInterface.Elements.Buttons.ButtonTypes.MapCreator.Button;
 
 import BeatSaberObjects.Objects.BeatSaberMap;
+import DataManager.Parameters;
 import MapGeneration.GenerationElements.Pattern;
 import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.MapCreatorSubButton;
 import UserInterface.Elements.Buttons.MyButton;
@@ -27,6 +28,5 @@ public class CreateBlueComplexMap extends MapCreatorSubButton {
         } catch (IllegalArgumentException ex) {
             printException(ex);
         }
-
     }
 }
