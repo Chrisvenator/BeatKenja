@@ -6,6 +6,7 @@ import BeatSaberObjects.Objects.TimingNote;
 import java.util.ArrayList;
 import java.util.List;
 
+import static DataManager.Parameters.logger;
 import static MapGeneration.PatternGeneration.CommonMethods.CheckParity.nextNoteAfterTimingNote;
 import static MapGeneration.PatternGeneration.CommonMethods.PlaceFirstNotes.placeInitialNoteBasedOnPrevNote;
 import static MapGeneration.PatternGeneration.NextLinearNote.nextLinearNote;
@@ -28,7 +29,8 @@ public class TwoLeftTwoRight {
             // If this still doesn't work, then throw an exception
             //Place a BeatSaberObjects.Objects.Note that doesn't break parity after the error:
             if (i >= 4 && invalidPlacementsInARow >= 100) {
-                System.err.println("_ERROR at beat:   " + timings.get(i)._time + " Timing note");
+                logger.warn("at beat:   " + timings.get(i)._time + " Timing note");
+                System.err.println("[ERROR] at beat:   " + timings.get(i)._time + " Timing note");
                 Note errorNote = new TimingNote(timings.get(i)._time);
                 notes.add(errorNote); //Adding BeatSaberObjects.Objects.Note
                 invalidPlacementsInARow = 0;

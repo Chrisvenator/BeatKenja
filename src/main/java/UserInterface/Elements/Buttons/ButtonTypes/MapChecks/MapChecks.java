@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static DataManager.Parameters.logger;
 
 public class MapChecks extends MyButton {
     public MapChecks(UserInterface ui) {
@@ -21,8 +22,7 @@ public class MapChecks extends MyButton {
         List<Note> notes = new ArrayList<>();
         Collections.addAll(notes, ui.map._notes);
 
-        System.setErr(ui.ERROR_PRINT_STREAM);
+        logger.info("Checking for mapping errors...");
         CheckParity.checkForMappingErrors(notes, false);
-        ui.changeBackOutput();
     }
 }

@@ -12,10 +12,13 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+
+import static DataManager.Parameters.logger;
 
 /**
  * Downloads the map into its own folder in DOWNLOAD_DIRECTORY
@@ -82,6 +85,7 @@ public class BeatSaverMapDownloader {
         File[] mapInfoFiles = mapInfoDirectory.listFiles();
 
         if (mapInfoFiles == null) {
+            logger.fatal("No map info files found!");
             System.err.println("No map info files found!");
             return;
         }
@@ -91,6 +95,7 @@ public class BeatSaverMapDownloader {
                 JSONObject mapInfoJson = new JSONObject(String.join("", FileManager.readFile(mapInfoFile.getAbsolutePath())));
                 boolean matchesFilter = checkFilters(mapInfoJson, filter);
 
+                logger.info("Checking map: {}: filter {}", mapInfoFile.getName(), matchesFilter ? "matches" : "doesn't match");
                 System.out.println("Checking map: " + mapInfoFile.getName() + ": filter " + (matchesFilter ? "matches" : "doesn't match"));
 
                 if (matchesFilter) {
@@ -101,9 +106,12 @@ public class BeatSaverMapDownloader {
                     TimeUnit.SECONDS.sleep(4);
                 }
             } catch (JSONException e) {
+                logger.error("{} was in the wrong format!", mapInfoFile.getName());
                 System.err.println(mapInfoFile.getName() + " was in the wrong format!");
 //                throw new RuntimeException(e);
             } catch (InterruptedException e) {
+                logger.fatal("WHY WAS THE THREAD INTERRUPTED??? {}", e.getMessage());
+                logger.fatal(Arrays.toString(e.getStackTrace()));
                 throw new RuntimeException(e);
             }
         }
@@ -153,6 +161,7 @@ public class BeatSaverMapDownloader {
                 }
             }
         } catch (JSONException e) {
+            logger.error("JSON Exception");
             System.err.println("JSON Exception");
             return false;
         }
@@ -184,6 +193,7 @@ public class BeatSaverMapDownloader {
             if (!downloadURL.contains("https://r2cdn.beatsaver.com/") && !downloadURL.contains("https://cdn.beatsaver.com/")) throw new MalformedURLException("wrong URL");
 
             String path = downloadDir + "/" + mapID + ".zip";
+            logger.info("Started downloading {}: {}", mapID, downloadURL);
             System.out.println("Started downloading " + mapID + ": " + downloadURL);
 
             //Retrieving the map information
@@ -197,14 +207,20 @@ public class BeatSaverMapDownloader {
 
             TimeUnit.MILLISECONDS.sleep(100);
         } catch (JSONException e) {
+            logger.error("{}.json was in the wrong format! {}", mapID, mapInfo.getName());
             System.err.println(mapID + ".json was in the wrong format! " + mapInfo.getName());
         } catch (MalformedURLException | URISyntaxException | FileNotFoundException e) {
+            logger.error("URL was not found. Does this map still exist? skipping {}. URL: {}", mapID, downloadURL);
             System.err.println("URL was not found. Does this map still exist? skipping " + mapID + ". URL: " + downloadURL);
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+            logger.error("Failed to download the file.");
+        } catch (InterruptedException i) {
+            logger.fatal("WHY WAS THE THREAD INTERRUPTED??? {}", i.getMessage());
+            logger.fatal(Arrays.toString(i.getStackTrace()));
             System.err.println("Failed to download the file.");
-        } catch (InterruptedException ignored) {
+            throw new RuntimeException(i);
         }
     }
 
@@ -220,6 +236,7 @@ public class BeatSaverMapDownloader {
         if (!file.exists()) throw new IOException("File " + file.getName() + " does not exist.");
 
         if (!file.isDirectory() && file.getName().endsWith(".bplist")) {
+            logger.info("Found bplist file: " + file.getName());
             System.out.println("Found bplist file: " + file.getName());
             String content = String.join("", FileManager.readFile(file.getAbsolutePath()));
 
@@ -228,6 +245,7 @@ public class BeatSaverMapDownloader {
 
             for (int i = 0; i < songs.length(); i++) downloader.downloadMap(new JSONObject(songs.get(i).toString()).getString("key"), deleteUnnecessaryFiles);
         } else {
+            logger.error("File " + file.getName() + " is not a bplist file.");
             System.err.println("File " + file.getName() + " is not a bplist file.");
             throw new WrongFileExtensionException(file, ".bplist");
         }

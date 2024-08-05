@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import DataManager.FileManager;
@@ -12,6 +13,7 @@ import DataManager.Parameters;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import static DataManager.Parameters.logger;
 
 public class BeatSaverMapInfoDownloader {
     private static final HttpClient httpClient = HttpClient.newBuilder().build();
@@ -33,11 +35,13 @@ public class BeatSaverMapInfoDownloader {
 
             TimeUnit.MILLISECONDS.sleep(100);
             if (i % 999 == 0) {
+                logger.info("Waiting 60 seconds...");
                 System.out.println("Waiting 60 seconds...");
                 TimeUnit.SECONDS.sleep(60);
             }
         }
 
+        logger.info("Finished downloading all maps. Last Map: " + i);
         System.out.println("Finished downloading all maps. Last Map: " + i);
     }
 
@@ -55,6 +59,7 @@ public class BeatSaverMapInfoDownloader {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.body().charAt(0) != '{') {
+                logger.info(response.body());
                 System.out.println(response.body());
                 throw new RuntimeException("Response is not a JSON object");
             }
@@ -63,8 +68,13 @@ public class BeatSaverMapInfoDownloader {
             jsonResponse.put("description", "");
 
             if (!jsonResponse.has("error")) FileManager.overwriteFile((DOWNLOAD_DIRECTORY + mapID + ".json").toLowerCase(), jsonResponse.toString(4));
-            else System.out.println("Map " + mapID + " not found");
+            else {
+                logger.info("Map {} not found", mapID);
+                System.out.println("Map " + mapID + " not found");
+            }
         } catch (IOException | InterruptedException | JSONException e) {
+            logger.fatal("WHY WAS THE THREAD INTERRUPTED??? {}", e.getMessage());
+            logger.fatal(Arrays.toString(e.getStackTrace()));
             e.printStackTrace();
             throw new RuntimeException(e);
         }

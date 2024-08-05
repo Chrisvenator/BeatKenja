@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import static DataManager.Parameters.logger;
+
 public class JsonFileMerger {
     public static void main(String[] args) {
         JsonFileMerger merger = new JsonFileMerger();
@@ -32,6 +34,7 @@ public class JsonFileMerger {
         StringBuilder output = new StringBuilder("{\n");
 
         for (int i = start; i < end; i++) {
+            if (i % 1000 == 0) logger.debug("Merging map {}...", i);
             if (i % 1000 == 0) System.out.println("Merging map " + i + "...");
             File file = new File(DOWNLOAD_DIRECTORY + Integer.toHexString(i) + ".json");
             if (!file.exists() || !file.isFile()) continue;
@@ -51,6 +54,8 @@ public class JsonFileMerger {
             writer.write(output.toString());
             writer.close();
         } catch (IOException e) {
+            logger.error("Could not write to file {}!. So it will be outputted here: ", outputFile);
+            logger.info(output);
             System.err.println("Could not write to file " + outputFile + "!. So it will be outputted here: ");
             System.out.println(output);
         }
