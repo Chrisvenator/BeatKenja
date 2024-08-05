@@ -140,11 +140,8 @@ public class UserInterface extends JFrame {
     public List<Bookmark> parityErrorsAsBookmarks() {
         if (SAVE_PARITY_ERRORS_AS_BOOKMARKS_WILL_OVERWRITE_BOOKMARKS) this.map.bookmarks = new ArrayList<>();
         List<Bookmark> bookmarks = new ArrayList<>();
-
         System.out.println("Found the following Errors: ");
         for (Pair<Float, ParityErrorEnum> err : PARITY_ERRORS_LIST) {
-            System.out.println(err.getKey() + ": " + err.getValue());
-
             float [] color = new float[3];
             color[0] = PARITY_ERRORS_COLORS_MAP.get(err.getValue()).getRed();
             color[1] = PARITY_ERRORS_COLORS_MAP.get(err.getValue()).getGreen();
