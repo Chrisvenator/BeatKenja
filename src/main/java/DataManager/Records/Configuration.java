@@ -57,7 +57,7 @@ public class Configuration
         @JsonProperty("readme")
         public String readme = "./README.md";
         @JsonProperty("default-pattern")
-        public String defaultPattern = "C:\\Users\\SCCO\\IdeaProjects\\BeatKenja\\src\\main\\resources\\MapTemplates\\AllGroupedV1; 98; 4;[StandardExpert];NULL;NULL.pat";
+        public String defaultPattern = "src/main/resources/MapTemplates/AllGroupedV1; 98; 4;[StandardExpert];NULL;NULL.pat";
         @JsonProperty("default-log.path")
         public String defaultLogPath = "./logs/";
     }
@@ -163,6 +163,6 @@ public class Configuration
         @JsonProperty("autoload-default-map-for-testing")
         public boolean autoloadDefaultMapForTesting = true;
         @JsonProperty("default-path-for-autoload-map")
-        public String defaultPathForAutoloadMap = "\\\\10.32.140.51\\Userhome\\SCCO\\Documents\\3df62\\ExpertPlusStandard.dat";
+        public String defaultPathForAutoloadMap = "src/main/resources/dev/3df62/ExpertPlusStandard.dat";
     }
 }
