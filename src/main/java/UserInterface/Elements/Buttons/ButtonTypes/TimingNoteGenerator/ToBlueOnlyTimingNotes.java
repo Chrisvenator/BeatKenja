@@ -16,6 +16,7 @@ public class ToBlueOnlyTimingNotes extends MySubButton {
 
     @Override
     public void onClick() {
+        ui.manageMap();
         ui.map.toBlueLeftBottomRowDotTimings();
         logger.info("Successfully converted Map to only blue timing notes");
         logger.debug("Created Blue-Only-Timing map: {}", ui.map.exportAsMap());

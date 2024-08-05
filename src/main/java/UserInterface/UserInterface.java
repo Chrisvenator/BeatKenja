@@ -1,9 +1,10 @@
 package UserInterface;
 
 import BeatSaberObjects.Objects.BeatSaberMap;
+import BeatSaberObjects.Objects.Bookmark;
 import BeatSaberObjects.Objects.Note;
 import BeatSaberObjects.Objects.Obstacle;
-import DataManager.*;
+import BeatSaberObjects.Objects.Parity.Enums.ParityErrorEnum;
 import DataManager.Logger.GuiAppender;
 import MapGeneration.GenerationElements.*;
 
@@ -16,11 +17,11 @@ import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons.*;
 import UserInterface.Elements.Buttons.ButtonTypes.*;
 import UserInterface.Elements.JSlider.GlobalJSlider.GlobalPatternVarianceJSlider;
 import UserInterface.Elements.JSlider.MyGlobalJSlider;
+import javafx.util.Pair;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowEvent;
-import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -126,6 +127,7 @@ public class UserInterface extends JFrame {
      * Checks if the pattern is set and if not, loads the default pattern.<br>
      */
     public void manageMap() {
+        PARITY_ERRORS_LIST.clear();
         if (pattern == null) {
             logger.info("Patterns have not been specified. Proceeding with default patterns");
             pattern = new Pattern(DEFAULT_PATTERN_METADATA);
@@ -135,6 +137,28 @@ public class UserInterface extends JFrame {
         // map._events = Arrays.stream(map._events).filter(event -> event._type == 1000).toArray(Events[]::new); //remove all events EXCEPT for the bpm-changes!
     }
 
+    public List<Bookmark> parityErrorsAsBookmarks() {
+        if (SAVE_PARITY_ERRORS_AS_BOOKMARKS_WILL_OVERWRITE_BOOKMARKS) this.map.bookmarks = new ArrayList<>();
+        List<Bookmark> bookmarks = new ArrayList<>();
+
+        System.out.println("Found the following Errors: ");
+        for (Pair<Float, ParityErrorEnum> err : PARITY_ERRORS_LIST) {
+            System.out.println(err.getKey() + ": " + err.getValue());
+
+            float [] color = new float[3];
+            color[0] = PARITY_ERRORS_COLORS_MAP.get(err.getValue()).getRed();
+            color[1] = PARITY_ERRORS_COLORS_MAP.get(err.getValue()).getGreen();
+            color[2] = PARITY_ERRORS_COLORS_MAP.get(err.getValue()).getBlue();
+
+            Bookmark b = new Bookmark(err.getKey(), err.getValue().toString(), color);
+            bookmarks.add(b);
+        }
+
+        PARITY_ERRORS_LIST.clear();
+        return bookmarks;
+    }
+
+
     /**
      * Checks the map for errors and prints them to the statusCheck text area.
      */
@@ -143,5 +167,6 @@ public class UserInterface extends JFrame {
         Collections.addAll(notes, map._notes);
 
         CheckParity.checkForMappingErrors(notes, false);
+        logger.warn("There have been {} mapping errors", PARITY_ERRORS_LIST.size());
     }
 }

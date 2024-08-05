@@ -21,7 +21,6 @@ public class CreateRandomMap extends MapCreatorSubButton {
         try {
             BeatSaberMap map = new BeatSaberMap(createRandomPattern(ui.map._notes, false));
             loadNewlyCreatedMap(map);
-
         } catch (IllegalArgumentException ex) {
             printException(ex);
         }
