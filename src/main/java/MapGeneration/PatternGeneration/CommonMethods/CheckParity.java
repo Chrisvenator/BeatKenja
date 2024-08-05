@@ -2,10 +2,13 @@ package MapGeneration.PatternGeneration.CommonMethods;
 
 import BeatSaberObjects.Objects.Note;
 import DataManager.Parameters;
+import javafx.util.Pair;
 
 import java.util.Collections;
 import java.util.List;
 
+import static BeatSaberObjects.Objects.Parity.Enums.ParityErrorEnum.*;
+import static DataManager.Parameters.PARITY_ERRORS_LIST;
 import static DataManager.Parameters.logger;
 import static MapGeneration.PatternGeneration.CommonMethods.PlaceFirstNotes.firstNotePlacement;
 
@@ -63,13 +66,16 @@ public class CheckParity {
             Note prev = n._type == 0 ? red : blue;
 
             if (isParityBreak(prev, n)) {
-                if (!quiet) logger.warn("at beat:   " + n._time + ": Parity break! prev: " + prev._time + "-" + prev.exportInPatFormat() + ", current: " + n._time + "-" + n.exportInPatFormat());
+                PARITY_ERRORS_LIST.add(new Pair<>(n._time, PARITY_BREAK));
+                if (!quiet)
+                    logger.warn("at beat:   {}: Parity break! prev: {}-{}, current: {}-{}", n._time, prev._time, prev.exportInPatFormat(), n._time, n.exportInPatFormat());
                 if (!quiet) System.err.println("[ERROR] at beat:   " + n._time + ": Parity break! prev: " + prev._time + "-" + prev.exportInPatFormat() + ", current: " + n._time + "-" + n.exportInPatFormat());
             } else
                 // Sharp Angle
                 if (isParitySharpAngle(prev, n)) {
+                    PARITY_ERRORS_LIST.add(new Pair<>(n._time, SHARP_ANGLE));
                     if (!quiet) {
-                        logger.warn("[NOTICE] at beat:    " + n._time + ": sharp angle");
+                        logger.warn("[NOTICE] at beat:    {}: sharp angle", n._time);
                         System.err.println("[WARN] at beat:    " + n._time + ": sharp angle");
                     }
                 }
@@ -134,20 +140,24 @@ public class CheckParity {
                 n._lineIndex = 2;
             }
 
-            if (n._lineIndex < 0 || n._lineIndex >= 4 || n._lineLayer < 0 || n._lineLayer >= 3)
-                if (!quiet) System.err.println("WARNING at beat: " + n._time + " note outside the grid!");
+            if (n._lineIndex < 0 || n._lineIndex >= 4 || n._lineLayer < 0 || n._lineLayer >= 3) {
+                PARITY_ERRORS_LIST.add(new Pair<>(n._time, NOTE_OUTSIDE_OF_GRID));
+                if (!quiet)System.err.println("WARNING at beat: " + n._time + " note outside the grid!");
+            }
 
         }
 
         //Checking, if some notes inside other notes were missed:
         for (int i = 0; i < allNotes.size() - 1; i++) {
             if (allNotes.get(i)._time == allNotes.get(i + 1)._time && allNotes.get(i).equalNotePlacement(allNotes.get(i + 1))) {
+                PARITY_ERRORS_LIST.add(new Pair<>(allNotes.get(i)._time, NOTE_INSIDE_ANOTHER_NOTE));
                 if (!quiet) System.err.println("[ERROR] at beat:   " + allNotes.get(i)._time + ": note inside another Note!");
             }
         }
 
         checkBasicParity(allNotes, quiet);
 
+        logger.info("Map checked successfully!");
         return allNotes;
     }
 

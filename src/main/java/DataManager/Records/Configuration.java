@@ -42,6 +42,8 @@ public class Configuration
         public boolean ignoreDds = false;
         @JsonProperty("save-parity-errors-as-bookmarks")
         public boolean saveParityErrorsAsBookmarks = true;
+        @JsonProperty("save-parity-errors-as-bookmarks-will-overwrite-bookmarks")
+        public boolean saveParityErrorsAsBookmarksWillOverwriteBookmarks = true;
         @JsonProperty("default-map-previewer")
         public String defaultMapPreviewer = "https://skystudioapps.com/bs-viewer/";
         @JsonProperty("secondary-map-previewer")
@@ -59,8 +61,6 @@ public class Configuration
         public String readme = "./README.md";
         @JsonProperty("default-pattern")
         public String defaultPattern = "src/main/resources/MapTemplates/AllGroupedV1; 98; 4;[StandardExpert];NULL;NULL.pat";
-        @JsonProperty("default-log.path")
-        public String defaultLogPath = "./logs/";
     }
 
     @lombok.Getter @lombok.Setter @lombok.ToString
@@ -164,6 +164,8 @@ public class Configuration
         public boolean fixPlacements = true;
         @JsonProperty("default-placement-precision")
         public double defaultPlacementPrecision = (double) 1/16;
+        @JsonProperty("show-spectogram-when-generating-onsets")
+        public boolean showSpectogramWhenGeneratingOnsets = true;
     }
 
     @lombok.Getter @lombok.Setter @lombok.ToString
