@@ -33,15 +33,14 @@ public class BatchWavToMaps {
      */
     public static boolean generateOnsets(String inputPath, String out, boolean verbose, String pythonScript) {
         if (pythonScript == null) pythonScript = "SongToOnsets.py";
-        PrintStream originalOut = System.out;
-        PrintStream printStream = new PrintStream(new NullOutputStream());
-
+        logger.info("Checking if there are some illegal file names...");
         System.out.println("Checking if there are some illegal file names...");
 
         renameAllIllegalFileNames(inputPath, verbose);
 
         File folder = new File(inputPath);
         File[] files = folder.listFiles();
+        logger.info("Creating maps...");
         System.out.println();
         System.out.println("Creating maps...");
 
@@ -62,8 +61,6 @@ public class BatchWavToMaps {
                     String destinationFolderPath = out + "/[BeatKenja]_" + filename;
 
                     // Disable prints while generating the map to avoid console spam
-                    if (verbose) System.setOut(printStream);
-
                     try {
                         createFolderAndMoveItems(filename, file, destinationFolderPath, verbose);
 
@@ -81,6 +78,7 @@ public class BatchWavToMaps {
 
 
                             if (peaks.get(i).isEmpty()) {
+                                logger.error("No peaks found for difficulty {} in the audio file. Please adjust the thresholds in the code.", i);
                                 System.err.println("No peaks found for difficulty " + i + " in the audio file. Please adjust the thresholds in the code.");
                                 i++;
                                 continue;
@@ -99,13 +97,15 @@ public class BatchWavToMaps {
                         }
                         convertWavToOgg(file.getAbsolutePath(), destinationFolderPath + "/" + filename + ".ogg");
                     } catch (IOException e) {
+                        logger.error("IO Exception: {}", e.getMessage());
                         e.printStackTrace();
                     } catch (UnsupportedAudioFileException e) {
+                        logger.error("Error while generating the map: {}\n{}", file.getName(), e.getMessage());
                         System.err.println("Error while generating the map: " + file.getName() + "\n" + e.getMessage());
                     }
 
                     // Enable prints after the generation
-                    System.setOut(originalOut);
+                    logger.info("Created Beat Saber Map: {}", file.getName());
                     System.out.println("Created Beat Saber Map: " + file.getName());
                 }
             }
@@ -118,12 +118,14 @@ public class BatchWavToMaps {
                 "ffmpeg", "-i", inputFilePath, outputFilePath
         );
 
+        logger.info("Converting {} to {}", new File(inputFilePath).getName(), outputFilePath.substring(outputFilePath.lastIndexOf("/")));
         System.out.println("Converting " + new File(inputFilePath).getName() + " to " + outputFilePath.substring(outputFilePath.lastIndexOf("/"), outputFilePath.length()));
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();
-        int exitCode = 0;
+        int exitCode;
         try {
             exitCode = process.waitFor();
+            logger.info("Converted {} to {}", new File(inputFilePath).getName(), new File(outputFilePath).getName());
             System.out.println("Converted " + new File(inputFilePath).getName() + " to " + new File(outputFilePath).getName());
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -136,8 +138,10 @@ public class BatchWavToMaps {
         // Delete the original .wav file
         File inputFile = new File(inputFilePath);
         if (inputFile.delete()) {
+            logger.info("Deleted the original .wav file: {}", inputFilePath);
             System.out.println("Deleted the original .wav file: " + inputFilePath);
         } else {
+            logger.info("Failed to delete the original .wav file: {}", inputFilePath);
             System.out.println("Failed to delete the original .wav file: " + inputFilePath);
         }
     }
@@ -169,8 +173,10 @@ public class BatchWavToMaps {
                         File newFile = new File(newFilePath);
 
                         if (file.renameTo(newFile)) {
-                            if (verbose) System.out.println("File renamed successfully: " + fileName + " -> " + sanitizedFileName);
+                            if (verbose)
+                                logger.info("File renamed successfully: {} -> {}", fileName, sanitizedFileName);
                         } else {
+                            logger.info("Failed to rename the file: {}", fileName);
                             System.out.println("Failed to rename the file: " + fileName);
                         }
                     }
@@ -217,7 +223,8 @@ public class BatchWavToMaps {
 
         if (!outFolder.exists()) {
             if (!outFolder.mkdir()) {
-                if (verbose) System.out.println("Failed to create parent folder: " + outFolder.getAbsolutePath());
+                if (verbose)
+                    logger.info("Failed to create parent folder: {}", outFolder.getAbsolutePath());
             }
         }
 
@@ -254,8 +261,10 @@ public class BatchWavToMaps {
 
             int exitCode = process.waitFor();
             if (exitCode == 0) {
-                if (verbose) System.out.println("Converted " + file.getName() + " to " + "wav" + " format");
+                if (verbose)
+                    logger.info("Converted {} to wav format", file.getName());
             } else {
+                logger.info("Python script execution failed with exit code: {}", exitCode);
                 System.out.println("Python script execution failed with exit code: " + exitCode);
 
                 // Capture and print the error output of the script
@@ -263,6 +272,7 @@ public class BatchWavToMaps {
                 BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream));
                 String line;
                 while ((line = errorReader.readLine()) != null) {
+                    logger.info(line);
                     System.out.println(line);
                 }
                 return exitCode != -4;
@@ -300,15 +310,17 @@ public class BatchWavToMaps {
         int exitCode = process.waitFor();
 
         if (exitCode != 0) {
-            System.out.println("Fehler beim Ausführen des Skripts. Exit-Code: " + exitCode);
+            logger.info("Error while Executing the script. Exit-Code: {}", exitCode);
+            System.out.println("Error while Executing the script. Exit-Code: " + exitCode);
 
             InputStream errorStream = process.getErrorStream();
             BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream));
             String line;
             while ((line = errorReader.readLine()) != null) {
-                System.out.println(line);
+                logger.info(line);
             }
         } else {
+            logger.info("Python script execution finished with exit code: {}", exitCode);
             System.out.println("Python script execution finished with exit code: " + exitCode);
         }
         return exitCode != -4;
@@ -325,7 +337,7 @@ public class BatchWavToMaps {
 
         for (double t : timings) {
             double beat = t * BPM / 60;
-            System.out.println(beat);
+            logger.debug(beat);
 
             notes.add(new Note((float) beat));
         }
@@ -419,27 +431,4 @@ public class BatchWavToMaps {
                 "  ]  " +
                 "}";
     }
-
-    /**
-     * // This code defines a static class called NullOutputStream that extends the java.io.OutputStream class.
-     * // The purpose of this class is to provide a stream that discards any output written to it.
-     * <p>
-     * // The class overrides the write(int b) method from the OutputStream class.
-     * // The method takes an integer argument representing a byte of data to be written.
-     * <p>
-     * // Inside the overridden write() method, there is a comment indicating that the method does nothing.
-     * // This means that when the write() method is called, it effectively discards the output without performing any action.
-     * <p>
-     * // This NullOutputStream class can be useful in situations where there is a need to suppress or ignore output.
-     * // For example, it can be used to prevent certain data from being written to a stream or to suppress unnecessary output during testing or debugging.
-     * Required so that the console is not spammed by unnecessary things
-     */
-    static class NullOutputStream extends java.io.OutputStream {
-        @Override
-        public void write(int b) {
-            // Do nothing, effectively discarding the output
-        }
-    }
-
-
 }

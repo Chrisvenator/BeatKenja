@@ -12,8 +12,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.awt.*;
 import java.util.List;
 
-@lombok.Getter
-@lombok.Setter
+@lombok.Getter @lombok.Setter @lombok.ToString
 public class Configuration
 {
     @JsonProperty("global")
@@ -31,6 +30,7 @@ public class Configuration
     @JsonProperty("development")
     public Development development = new Development();
 
+    @lombok.Getter @lombok.Setter @lombok.ToString
     public static class Global
     {
         public boolean verbose = false;
@@ -48,6 +48,7 @@ public class Configuration
         public String secondaryMapPreviewer = "https://allpoland.github.io/ArcViewer/";
     }
 
+    @lombok.Getter @lombok.Setter @lombok.ToString
     public static class DefaultPaths
     {
         @JsonProperty("wip-folder")
@@ -62,6 +63,7 @@ public class Configuration
         public String defaultLogPath = "./logs/";
     }
 
+    @lombok.Getter @lombok.Setter @lombok.ToString
     public static class Colors
     {
         @JsonDeserialize(using = ColorDeserializer.class)
@@ -85,6 +87,7 @@ public class Configuration
         public Color darkModeForegroundColor = Color.WHITE;
     }
 
+    @lombok.Getter @lombok.Setter @lombok.ToString
     public static class GeneratedDefaultPaths
     {
         @JsonProperty("onset-generation-folder")
@@ -101,6 +104,7 @@ public class Configuration
         public String extractFromJarPath = "./";
     }
 
+    @lombok.Getter @lombok.Setter @lombok.ToString
     public static class Database
     {
         public Settings settings = new Settings();
@@ -109,23 +113,27 @@ public class Configuration
         @JsonProperty("default-pat-metadata")
         public DefaultPatMetadata defaultPatMetadata = new DefaultPatMetadata();
 
+        @lombok.Getter @lombok.Setter @lombok.ToString
         public static class Settings
         {
             public Connection connection = new Connection();
             public String dialect = "org.hibernate.dialect.MySQLDialect";
             public Hibernate hibernate = new Hibernate();
 
+            @lombok.Getter @lombok.Setter @lombok.ToString
             public static class Connection
             {
                 @JsonProperty("driver_class")
                 public String driverClass = "com.mysql.cj.jdbc.Driver";
             }
 
+            @lombok.Getter @lombok.Setter @lombok.ToString
             public static class Hibernate
             {
                 @JsonProperty("db-connection")
                 public DBConnection connection = new DBConnection();
 
+                @lombok.Getter @lombok.Setter @lombok.ToString
                 public static class DBConnection
                 {
                     public String url = "jdbc:mysql://localhost:3306/beatKenja";
@@ -135,6 +143,7 @@ public class Configuration
             }
         }
 
+        @lombok.Getter @lombok.Setter @lombok.ToString
         public static class DefaultPatMetadata
         {
             public String name = "ISeeFire";
@@ -146,6 +155,7 @@ public class Configuration
         }
     }
 
+    @lombok.Getter @lombok.Setter @lombok.ToString
     public static class MapGenerator
     {
         @JsonProperty("default-bpm")
@@ -156,6 +166,7 @@ public class Configuration
         public double defaultPlacementPrecision = (double) 1/16;
     }
 
+    @lombok.Getter @lombok.Setter @lombok.ToString
     public static class Development
     {
         @JsonProperty("export-database")

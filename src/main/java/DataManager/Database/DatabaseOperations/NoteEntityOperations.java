@@ -2,7 +2,6 @@ package DataManager.Database.DatabaseOperations;
 
 import BeatSaberObjects.Objects.Note;
 import DataManager.Database.DatabaseCommonMethods;
-import DataManager.Database.DatabaseEntities.GenreAssignmentEntity;
 import DataManager.Database.DatabaseEntities.NoteEntity;
 
 import javax.persistence.NoResultException;
@@ -10,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static DataManager.Parameters.entityManager;
+import static DataManager.Parameters.logger;
 
 public class NoteEntityOperations extends NoteEntity {
     private static List<NoteEntity> notes = getAllNotes();
@@ -46,6 +46,7 @@ public class NoteEntityOperations extends NoteEntity {
             if (notes == null) notes = noteEntities;
             return noteEntities;
         } catch (NoResultException e) {
+            logger.error("Could not find a Note");
             System.err.println("ERROR: Could not find a Note");
             return new ArrayList<>();
         }

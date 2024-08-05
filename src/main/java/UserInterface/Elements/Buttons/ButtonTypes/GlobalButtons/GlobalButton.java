@@ -10,6 +10,7 @@ import javax.swing.*;
 import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
 
+import static DataManager.Parameters.logger;
 import static DataManager.Parameters.verbose;
 
 public abstract class GlobalButton extends MyButton {
@@ -19,9 +20,9 @@ public abstract class GlobalButton extends MyButton {
     }
 
     protected boolean approveFileLoading(int option) {
-        if (verbose && option == JFileChooser.APPROVE_OPTION) ui.statusCheck.append("\n[INFO]: File loading approved!");
-        if (option == JFileChooser.CANCEL_OPTION) ui.statusCheck.append("\n[INFO]: File loading aborted.");
-        if (option == JFileChooser.ERROR_OPTION) ui.statusCheck.append("\n[ERROR]: There was an error while loading the file. Please try again!");
+        if (verbose && option == JFileChooser.APPROVE_OPTION) logger.info("File loading approved!");
+        if (option == JFileChooser.CANCEL_OPTION) logger.info( "File loading aborted.");
+        if (option == JFileChooser.ERROR_OPTION) logger.error("There was an error while loading the file. Please try again!");
 
         return option == JFileChooser.APPROVE_OPTION;
     }

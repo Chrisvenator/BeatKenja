@@ -4,6 +4,7 @@ import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.Buttons.MySubButton;
 import UserInterface.Elements.ElementTypes;
 
+import static DataManager.Parameters.logger;
 import static DataManager.Parameters.verbose;
 
 public class ToTwoColorTimingNotes extends MySubButton {
@@ -13,10 +14,9 @@ public class ToTwoColorTimingNotes extends MySubButton {
 
     @Override
     public void onClick() {
+        logger.warn("NOTE: It is very likely that this feature is broken! Use at your own risk!");
         ui.map.toTimingNotes();
-        System.out.println();
-        ui.statusCheck.setText(ui.statusCheck.getText() + "\nNOTE: It is very likely that this feature is broken! Use at your own risk!");
-        ui.statusCheck.setText(ui.statusCheck.getText() + "\n[INFO]: Successfully converted Map to timing notes");
-        if (verbose) ui.statusCheck.setText(ui.statusCheck.getText() + "\n" + "VERBOSE: " + "Stacked timing notes: " + ui.map.exportAsMap());
+        logger.warn("Successfully converted Map to timing notes");
+        logger.debug("Stacked timing notes: {}", ui.map.exportAsMap());
     }
 }

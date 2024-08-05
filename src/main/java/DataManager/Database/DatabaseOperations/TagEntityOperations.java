@@ -1,7 +1,6 @@
 package DataManager.Database.DatabaseOperations;
 
 import DataManager.Database.DatabaseCommonMethods;
-import DataManager.Database.DatabaseEntities.GenreAssignmentEntity;
 import DataManager.Database.DatabaseEntities.TagEntity;
 import DataManager.Parameters;
 
@@ -10,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static DataManager.Parameters.entityManager;
+import static DataManager.Parameters.logger;
 
 public class TagEntityOperations extends TagEntity {
     public static TagEntity getTag(String TagName) {
@@ -27,6 +27,7 @@ public class TagEntityOperations extends TagEntity {
             List<?> result = entityManager.createNamedQuery("TagEntity.findAllTags").getResultList();
             return DatabaseCommonMethods.checkCastFromQuery(result, TagEntity.class);
         } catch (NoResultException e) {
+            logger.error("Could not find a Tag");
             System.err.println("ERROR: Could not find a Tag");
             return new ArrayList<>();
         }
