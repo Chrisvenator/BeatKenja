@@ -28,6 +28,7 @@ public class TagEntityOperations extends TagEntity {
             return DatabaseCommonMethods.checkCastFromQuery(result, TagEntity.class);
         } catch (NoResultException e) {
             logger.error("Could not find a Tag");
+            System.err.println("ERROR: Could not find a Tag");
             return new ArrayList<>();
         }
     }

@@ -46,6 +46,8 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
         Pattern p = new Pattern(Parameters.DEFAULT_PATTERN_METADATA);
         logger.info(p.exportInPatFormat());
         logger.info(p.getProbabilityOf(new Note(0, 2, 0, 1, 1)));
+        System.out.println(p.exportInPatFormat());
+        System.out.println(p.getProbabilityOf(new Note(0, 2, 0, 1, 1)));
     }
 
     /**
@@ -323,6 +325,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
     public Pattern(PatMetadata metadata) {
         if (!useDatabase && metadata.equals(Parameters.DEFAULT_PATTERN_METADATA)) {
             logger.info("[INFO]: Database has been disabled but the default metadata was still used. Using default Pattern instead...");
+            System.out.println("[INFO]: Database has been disabled but the default metadata was still used. Using default Pattern instead...");
             Pattern p = new Pattern(DEFAULT_PATTERN_PATH);
 
             this.count = p.count;
@@ -388,6 +391,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
         PatternDescriptionEntity description = PatternDescriptionEntityOperations.getPatternDescription(patternDescriptionId);
         if (description == null) {
             logger.error("[WARN]: Pattern not found in database: {}", patternDescriptionId);
+            System.err.println("[WARN]: Pattern not found in database: " + patternDescriptionId);
             throw new IllegalArgumentException("Pattern not found in database: " + patternDescriptionId);
         }
 
@@ -432,6 +436,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
             return true;
         } else {
             logger.error("[WARN]: Failed to delete pattern: {}", metadata);
+            System.err.println("[WARN]: Failed to delete pattern: " + metadata);
             return false;
         }
     }
@@ -459,6 +464,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
         }
 
         logger.info("Pattern to be {}d: {}", operation, description);
+        System.out.println("Pattern to be " + operation + "d: " + description);
 
         for (int i = 0; i < patterns.length; i++) {
             Note base = patterns[i][0];
@@ -475,6 +481,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
                     followerEntity = NoteEntityOperations.getNote(follower);
                     if (baseEntity == null || followerEntity == null) throw new NoResultException("Note not found in database: " + base + " or " + follower);
                 } catch (NoResultException e) {
+                    System.err.println("Note not found in database: " + base + " or " + follower);
                     logger.error("Note not found in database: {} or {}", base, follower);
                     continue;
                 }
@@ -509,8 +516,10 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
 
             if (success) {
                 logger.info("[INFO]: Successfully deleted PatternDescription: {}", description);
+                System.out.println("[INFO]: Successfully deleted PatternDescription: " + description);
             } else {
                 logger.error("[WARN]: Failed to delete PatternDescription: {}", description);
+                System.err.println("[WARN]: Failed to delete PatternDescription: " + description);
             }
             return success;
         }
@@ -564,6 +573,8 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
 
         this.metadata.tags().stream().filter(tag -> !Parameters.MAP_TAGS.contains(tag)).forEach(tag -> logger.error("Unknown tag: {}", tag));
         this.metadata.genre().stream().filter(genre -> !Parameters.MUSIC_GENRES.contains(genre)).forEach(genre -> logger.error("Unknown genre: {}", genre));
+        this.metadata.tags().stream().filter(tag -> !Parameters.MAP_TAGS.contains(tag)).forEach(tag -> System.err.println("Unknown tag: " + tag));
+        this.metadata.genre().stream().filter(genre -> !Parameters.MUSIC_GENRES.contains(genre)).forEach(genre -> System.err.println("Unknown genre: " + genre));
 
         for (int lineIndex = 1, i = 0; lineIndex < lines.size(); lineIndex++, i++) {
             if (lines.get(lineIndex).contains(".")) throw new MalformattedFileException("The file contains a dot (.) in line " + lineIndex + ". This is not allowed in the .pat file format.");
@@ -1124,6 +1135,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
 
         if (UserInterface.patternVariance < 0) {
             logger.info("Variance: {}", UserInterface.patternVariance);
+            System.out.println("Variance: " + UserInterface.patternVariance);
             Pattern.inverseNormalizeCountArray(p.count, true, (UserInterface.patternVariance * -1));
             Pattern.normalizeCountArray(p.count, true);
         } else {
@@ -1131,6 +1143,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
             Pattern.normalizeCountArray(p.count, true);
         }
         logger.info("Applied Dirichlet Multinomial Distribution");
+        System.out.println("Applied Dirichlet Multinomial Distribution");
 
         p.computeProbabilities();
         return p;

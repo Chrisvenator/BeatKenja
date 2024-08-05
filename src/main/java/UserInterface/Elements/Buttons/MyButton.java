@@ -23,6 +23,7 @@ public class MyButton extends JButton implements MyElement {
         this.addActionListener(e -> {
             onClick();
             logger.debug("{} clicked", this.getClass().getSimpleName());
+            System.out.println(this.getClass().getSimpleName() + " clicked");
         });
         ui.add(this);
     }

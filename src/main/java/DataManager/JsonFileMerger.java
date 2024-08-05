@@ -35,6 +35,7 @@ public class JsonFileMerger {
 
         for (int i = start; i < end; i++) {
             if (i % 1000 == 0) logger.debug("Merging map {}...", i);
+            if (i % 1000 == 0) System.out.println("Merging map " + i + "...");
             File file = new File(DOWNLOAD_DIRECTORY + Integer.toHexString(i) + ".json");
             if (!file.exists() || !file.isFile()) continue;
 
@@ -55,6 +56,8 @@ public class JsonFileMerger {
         } catch (IOException e) {
             logger.error("Could not write to file {}!. So it will be outputted here: ", outputFile);
             logger.info(output);
+            System.err.println("Could not write to file " + outputFile + "!. So it will be outputted here: ");
+            System.out.println(output);
         }
     }
 

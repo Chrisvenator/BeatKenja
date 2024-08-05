@@ -18,5 +18,6 @@ public class UtilsConvertAllFlashingLight extends MySubButton {
         ui.map.convertAllFlashLightsToOnLights();
         logger.info("Removed flashing lights");
         logger.debug("flashing lights removed: {}", new BeatSaberMap(ui.map._notes).exportAsMap());
+        System.out.println("flashing lights removed: " + new BeatSaberMap(ui.map._notes).exportAsMap());
     }
 }

@@ -38,6 +38,7 @@ public class PlaceFirstNotes {
                 counter++;
             }
             if (counter >= 300) logger.fatal("at beat: " + time + " infinite loop in create placement of Initial Note: \"placeInitialNoteBasedOnPrevNote\"");
+            if (counter >= 300) System.err.println("[ERROR] at beat: " + time + " infinite loop in create placement of Initial Note: \"placeInitialNoteBasedOnPrevNote\"");
         }
     }
 

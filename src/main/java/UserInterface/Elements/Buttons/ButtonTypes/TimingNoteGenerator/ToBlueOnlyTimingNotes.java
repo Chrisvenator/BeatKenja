@@ -19,5 +19,6 @@ public class ToBlueOnlyTimingNotes extends MySubButton {
         ui.map.toBlueLeftBottomRowDotTimings();
         logger.info("Successfully converted Map to only blue timing notes");
         logger.debug("Created Blue-Only-Timing map: {}", ui.map.exportAsMap());
+        System.out.println("Normal timing notes: " + ui.map.exportAsMap());
     }
 }

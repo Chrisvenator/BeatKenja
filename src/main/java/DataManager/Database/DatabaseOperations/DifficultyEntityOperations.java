@@ -29,6 +29,7 @@ public class DifficultyEntityOperations extends DifficultyEntity {
 
             return DatabaseCommonMethods.checkCastFromQuery(result, DifficultyEntity.class);
         } catch (NoResultException e) {
+            System.err.println("ERROR: Could not find a difficulty");
             logger.error("ERROR: Could not find a difficulty");
             return new ArrayList<>();
         }

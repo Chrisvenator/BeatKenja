@@ -36,6 +36,7 @@ public class RandomPattern {
         }
 
         logger.info("Using " + bpm + " bpm");
+        System.out.println("Using " + bpm + " bpm");
 
         for (int i = 0; i < timings.length; i++) {
 

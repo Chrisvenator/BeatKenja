@@ -60,6 +60,7 @@ public class GlobalOpenMapButton extends GlobalButton {
 
     private void errorWhileLoading(Exception e) {
         logger.error("Error while loading Map. Map probably has the wrong format: ", e);
+        System.err.println("[ERROR]: Map probably has the wrong format: \n" + e);
         ui.labelMapDiff.setText("There was an error while importing the map!");
         ui.labelMapDiff.setBounds(100, 20, 300, 30);
         setBounds(320, 20, 300, 30);

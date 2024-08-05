@@ -25,6 +25,7 @@ public class TagAssignmentEntityOperations extends TagAssignmentEntity {
             return DatabaseCommonMethods.checkCastFromQuery(result, TagAssignmentEntity.class);
         } catch (NoResultException e) {
             logger.error("Could not find a difficulty");
+            System.err.println("[ERROR]: Could not find a difficulty");
             return new ArrayList<>();
         }
     }
@@ -50,6 +51,7 @@ public class TagAssignmentEntityOperations extends TagAssignmentEntity {
         } catch (NoResultException e) {
             transaction.rollback();
             logger.info("Nothing to delete... TagAssignments not found in database: {}", metadata);
+            System.out.println("[INFO]: Nothing to delete... TagAssignments not found in database: " + metadata);
             return false;
         }
 
@@ -68,6 +70,7 @@ public class TagAssignmentEntityOperations extends TagAssignmentEntity {
             return tags;
         } catch (NoResultException e) {
             logger.error("Could not find a tag");
+            System.err.println("[ERROR]: Could not find a tag");
             return new ArrayList<>();
         }
     }

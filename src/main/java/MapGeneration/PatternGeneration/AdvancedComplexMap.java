@@ -102,6 +102,7 @@ public class AdvancedComplexMap {
         // Check if the pattern is already cached
         if (patternCache.containsKey(metadata)) {
             logger.debug("Using cached pattern for " + metadata.name() + " with " + metadata.bpm() + " BPM and " + metadata.nps() + " NPS");
+            System.out.println("Using cached pattern for " + metadata.name() + " with " + metadata.bpm() + " BPM and " + metadata.nps() + " NPS");
             return patternCache.get(metadata);
         }
 
