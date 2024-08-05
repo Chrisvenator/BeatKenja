@@ -5,6 +5,7 @@
    "save-maps-to-wip-folder-after-mp3-conversion": true,
    "ignore-dds": false,
    "save-parity-errors-as-bookmarks": true,
+   "save-parity-errors-as-bookmarks-will-overwrite-bookmarks": true,
    "default-map-previewer": "https://skystudioapps.com/bs-viewer/",
    "secondary-map-previewer": "https://allpoland.github.io/ArcViewer/"
  },
@@ -12,8 +13,7 @@
      "wip-folder": "C:/Program Files (x86)/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels/",
      "default-pattern": "src/main/resources/MapTemplates/AllGroupedV1; 98; 4;[StandardExpert];NULL;NULL.pat",
      "config": "./config.json",
-     "readme": "./README.md",
-     "default-log-path": "./logs/"
+     "readme": "./README.md"
  },
  "colors": {
    "light-mode-background-color": "#FFFFFF",
@@ -62,7 +62,8 @@
  "map-generator": {
    "default-bpm": 120,
    "fix-placements": true,
-   "default-placement-precision": 0.0625
+   "default-placement-precision": 0.0625,
+   "show-spectogram-when-generating-onsets": true
  },
  "development": {
     "autoload-default-map-for-testing": true,
