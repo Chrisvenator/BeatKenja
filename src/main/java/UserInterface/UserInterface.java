@@ -163,7 +163,7 @@ public class UserInterface extends JFrame {
         List<Note> notes = new ArrayList<>();
         Collections.addAll(notes, map._notes);
 
-        CheckParity.checkForMappingErrors(notes, false);
+        CheckParity.checkAndFixBasicMappingErrors(notes, false);
         logger.warn("There have been {} mapping errors", PARITY_ERRORS_LIST.size());
     }
 }

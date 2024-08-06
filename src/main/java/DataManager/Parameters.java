@@ -45,6 +45,7 @@ public class Parameters {
     public static boolean ignoreDDs = GLOBAL.ignoreDds;
     public static final boolean SAVE_PARITY_ERRORS_AS_BOOKMARKS = GLOBAL.saveParityErrorsAsBookmarks;
     public static final boolean SAVE_PARITY_ERRORS_AS_BOOKMARKS_WILL_OVERWRITE_BOOKMARKS = GLOBAL.saveParityErrorsAsBookmarksWillOverwriteBookmarks;
+    public static final boolean SAVE_DID_NOT_PLACE_STACK_AS_BOOKMARK = GLOBAL.saveDidNotPlaceStackAsBookmark;
     public static final String mapViewerURL = GLOBAL.defaultMapPreviewer; //https://skystudioapps.com/bs-viewer/  or  https://allpoland.github.io/ArcViewer/
 
     // Default paths
@@ -112,7 +113,8 @@ public class Parameters {
             SHARP_ANGLE,              Color.GREEN,
             NOTE_OUTSIDE_OF_GRID,     Color.BLUE,
             NOTE_INSIDE_ANOTHER_NOTE, Color.CYAN,
-            DIDNT_PLACE_STACK,        Color.BLACK
+            DID_NOT_PLACE_NOTE,       Color.WHITE,
+            DID_NOT_PLACE_STACK,      Color.BLACK
     );
 
     static {

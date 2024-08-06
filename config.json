@@ -6,6 +6,7 @@
    "ignore-dds": false,
    "save-parity-errors-as-bookmarks": true,
    "save-parity-errors-as-bookmarks-will-overwrite-bookmarks": true,
+   "save-did-not-place-stack-as-bookmarks": true,
    "default-map-previewer": "https://skystudioapps.com/bs-viewer/",
    "secondary-map-previewer": "https://allpoland.github.io/ArcViewer/"
  },

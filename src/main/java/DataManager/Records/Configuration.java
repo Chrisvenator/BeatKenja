@@ -44,6 +44,8 @@ public class Configuration
         public boolean saveParityErrorsAsBookmarks = true;
         @JsonProperty("save-parity-errors-as-bookmarks-will-overwrite-bookmarks")
         public boolean saveParityErrorsAsBookmarksWillOverwriteBookmarks = true;
+        @JsonProperty("save-did-not-place-stack-as-bookmarks")
+        public boolean saveDidNotPlaceStackAsBookmark = true;
         @JsonProperty("default-map-previewer")
         public String defaultMapPreviewer = "https://skystudioapps.com/bs-viewer/";
         @JsonProperty("secondary-map-previewer")
