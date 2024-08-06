@@ -45,13 +45,15 @@ public class GlobalOpenMapButton extends GlobalButton {
         filePath = FILE_CHOOSER.getCurrentDirectory().toString();
         try {
             File path = FILE_CHOOSER.getSelectedFile();
-            if (path.isDirectory() || path.getAbsolutePath().contains("Info.dat")) {
+            if (path.isDirectory() || path.getAbsolutePath().contains("Info.dat") || !path.getAbsolutePath().contains(".dat")) {
                 logger.error("Wrong file type While loading difficulty: {}", path.getName());
                 throw new WrongFileException(path.getName(), "Wrong file type!");
             }
 
             ui.map = BeatSaberMap.newMapFromJSON(path.getAbsolutePath());
             successfullyLoaded(FILE_CHOOSER.getSelectedFile().getAbsolutePath());
+        }catch (WrongFileException e){
+            errorWhileLoading(e);
         } catch (Exception e) {
             errorWhileLoading(e);
             printException(e);
@@ -59,7 +61,7 @@ public class GlobalOpenMapButton extends GlobalButton {
     }
 
     private void errorWhileLoading(Exception e) {
-        logger.error("Error while loading Map. Map probably has the wrong format: ", e);
+        logger.error("Error while loading Map. Map probably has the wrong format: {}", e.getMessage());
         System.err.println("[ERROR]: Map probably has the wrong format: \n" + e);
         ui.labelMapDiff.setText("There was an error while importing the map!");
         ui.labelMapDiff.setBounds(100, 20, 300, 30);

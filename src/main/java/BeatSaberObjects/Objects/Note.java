@@ -1,5 +1,9 @@
 package BeatSaberObjects.Objects;
 
+import BeatSaberObjects.Objects.Parity.Enums.ParityErrorEnum;
+import DataManager.Parameters;
+import javafx.util.Pair;
+
 import static DataManager.Parameters.*;
 
 
@@ -115,7 +119,11 @@ public class Note implements Comparable<Note>, Serializable {
                 notes.add(new Note(_time, 2, 0, _type, _cutDirection));
                 notes.add(new Note(_time, 3, 1, _type, _cutDirection));
             }
-            case 2, 3, 4, 7, 8 -> notes.add(new Note(this._time, this._lineIndex, this._lineLayer, this._type, this._cutDirection));
+            case 2, 3, 4, 7, 8 -> {
+                notes.add(new Note(this._time, this._lineIndex, this._lineLayer, this._type, this._cutDirection));
+                if (SAVE_DID_NOT_PLACE_STACK_AS_BOOKMARK)
+                    PARITY_ERRORS_LIST.add(new Pair<>(this._time, ParityErrorEnum.DID_NOT_PLACE_STACK));
+            }
         }
 
         return notes.toArray(new Note[0]);
