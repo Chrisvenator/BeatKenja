@@ -25,13 +25,11 @@ public class FileManager {
      * @param filename Filename
      * @return Every line of the File in List form
      */
-    public static List<String> readFile(String filename, boolean... print) {
+    public static List<String> readFile(String filename) {
         Path filePath = Paths.get(filename);
         if (!Files.exists(filePath)) {
-            if (print == null || print.length == 0) {
-                logger.error("File not found!");
-                System.err.println("File not found!");
-            }
+            logger.error("File not found: {}", filename);
+            System.err.println("File not found: " + filename);
             throw new NoSuchElementException("File not found: " + filename + "!");
         }
 

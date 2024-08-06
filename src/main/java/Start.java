@@ -27,10 +27,8 @@ public class Start {
     /**
      *********** Planned Features ***********
      * export as .jar
-     * Random V2 "File not found crash"
-     * Sleep interrupted exception bei linear, one-handed complex
+     * Random V2 infinite loop
      * Verifizieren, dass ToBLueOnlyTimingNotes funktioniert
-     * Möglichkeit .webp als map zu laden XD (╯°□°)╯︵ ┻━┻
      * BatchWavToMaps Testen, ob output noch immer geht
      * lehnen
      * ganzen Ordner zu einer Complex-Map machen
