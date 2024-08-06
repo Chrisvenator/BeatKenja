@@ -4,6 +4,8 @@ import BeatSaberObjects.Objects.Note;
 import DataManager.FileManager;
 import DataManager.Parameters;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -24,15 +26,20 @@ public class RandomPattern {
         Random random = new Random(Parameters.SEED);
 
         double bpm = 120;
+        File infoDat = new File(Parameters.filePath + "/info.dat");
+        System.out.println(infoDat);
         try {
-            List<String> list = FileManager.readFile(Parameters.filePath + "/info.dat");
+            if (!infoDat.exists() || !infoDat.canRead() || !infoDat.isFile()) throw new FileNotFoundException();
+            List<String> list = FileManager.readFile(infoDat.getAbsolutePath());
             for (String s : list) {
-                if (s.contains("\"_beatsPerMinute\" : ")) {
-                    bpm = Double.parseDouble(s.substring(s.indexOf(":") + 1, s.indexOf(",")));
+                if (s.contains("\"_beatsPerMinute\": ") || s.contains("\"_beatsPerMinute\" : ")) {
+                    bpm = Double.parseDouble(s.substring(s.indexOf(": ") + 1, s.indexOf(",")));
                     break;
                 }
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            logger.error("Error reading {} {}. Falling back to {}", infoDat.getAbsolutePath(), e, bpm);
+            System.err.println("Error reading: " + infoDat.getAbsolutePath());
         }
 
         logger.info("Using " + bpm + " bpm");

@@ -1,6 +1,7 @@
 package UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons;
 
 import BeatSaberObjects.Objects.BeatSaberMap;
+import DataManager.Parameters;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Exceptions.WrongFileException;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.GlobalButton;
 import UserInterface.Elements.ElementTypes;
@@ -27,6 +28,8 @@ public class GlobalOpenMapButton extends GlobalButton {
             }
 
             ui.map = BeatSaberMap.newMapFromJSON(f.getAbsolutePath());
+            filePath = f.getParent();
+
             logger.info("Successfully created map from Json");
             successfullyLoaded(f.getAbsolutePath());
         }
