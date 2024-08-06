@@ -204,7 +204,7 @@ public class ComplexPatternFromTemplate {
 
         if (stacks) l = placeStacks(l, removeStacks);
         FixErrorsInPatterns.fixSimpleMappingErrors(pattern);
-        pattern = checkForMappingErrors(l, true);
+        pattern = checkAndFixBasicMappingErrors(l, true);
 
         return pattern;
     }
