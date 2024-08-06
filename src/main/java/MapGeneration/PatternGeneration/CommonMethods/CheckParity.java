@@ -118,7 +118,7 @@ public class CheckParity {
      * @param quiet    Should this function output errors?
      * @return a List without notes inside other notes
      */
-    public static List<Note> checkForMappingErrors(List<Note> allNotes, boolean quiet) {
+    public static List<Note> checkAndFixBasicMappingErrors(List<Note> allNotes, boolean quiet) {
         if (allNotes.size() <= 1) return allNotes;
         Collections.sort(allNotes);
         for (int i = 0; i < allNotes.size() - 1; i++) {

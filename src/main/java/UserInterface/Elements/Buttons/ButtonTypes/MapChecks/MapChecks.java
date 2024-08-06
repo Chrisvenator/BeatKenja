@@ -23,6 +23,6 @@ public class MapChecks extends MyButton {
         Collections.addAll(notes, ui.map._notes);
 
         logger.info("Checking for mapping errors...");
-        CheckParity.checkForMappingErrors(notes, false);
+        CheckParity.checkAndFixBasicMappingErrors(notes, false);
     }
 }

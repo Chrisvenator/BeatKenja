@@ -26,8 +26,7 @@ public class Start {
 
     /**
      *********** Planned Features ***********
-     * public static final boolean PARITY_ERRORS_AS_BOOKMARKS = true; <-- TESTEN
-     * ^ DIDNT_PLACE_STACK in "parityErrorsAsBookmarks"
+     * export config, wenn sie nicht existiert
      * export as .jar
      * Random V2 "File not found crash"
      * Sleep interrupted exception bei linear, one-handed complex
