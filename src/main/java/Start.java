@@ -26,7 +26,6 @@ public class Start {
 
     /**
      *********** Planned Features ***********
-     * export config, wenn sie nicht existiert
      * export as .jar
      * Random V2 "File not found crash"
      * Sleep interrupted exception bei linear, one-handed complex

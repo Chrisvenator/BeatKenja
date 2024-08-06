@@ -1,5 +1,7 @@
 package DataManager;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import static DataManager.Parameters.*;
 
 
@@ -20,12 +22,6 @@ public class CreateAllNecessaryDIRsAndFiles {
             ONSET_GENERATION_FOLDER_PATH_OUTPUT
     };
 
-    public static final String config = """
-            defaultPath:C:/Program Files (x86)/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels //This should link to your WIP folder
-            verbose:false //It is not recommended to change this except for debugging purposes.
-            dark-mode:false
-            save_new_maps_to_default_path:true //If true, new maps will be saved to the default path. If false, new maps will be saved to ./OnsetGeneration/out/""";
-
     public static void createAllNecessaryDIRsAndFiles() {
         //Checking dependencies:
         if (isPipInstalled()) {
@@ -42,23 +38,24 @@ public class CreateAllNecessaryDIRsAndFiles {
         if (f3.exists() && f3.isFile()) {
             logger.info("config file exists");
             return;
+        } else {
+            logger.info("config file does not exist");
+            try {
+                FileManager.overwriteFile(CONFIG_FILE_LOCATION, configLoader.exportConfig());
+            } catch (Exception e) {
+                logger.error("Could not create config File: {}", e.getMessage());
+                System.err.println("Could not create config File: " + e.getMessage());
+                e.printStackTrace();
+            }
         }
+
         logger.info("Creating all necessary directories and files.");
         System.out.println("Creating all necessary directories and files.");
 
 
-        createConfigFile();
         createDirectories(CreateAllNecessaryDIRsAndFiles.directories);
 
         extractFilesFromJar(CreateAllNecessaryDIRsAndFiles.preMadePatternsFilesToCopy);
-    }
-
-    /**
-     * Creates a config file with default values.
-     */
-    private static void createConfigFile() {
-        logger.info("Creating config file.");
-        FileManager.overwriteFile(CONFIG_FILE_LOCATION, config);
     }
 
     /**

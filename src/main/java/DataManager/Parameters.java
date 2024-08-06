@@ -4,7 +4,7 @@ import BeatSaberObjects.Objects.Parity.Enums.ParityErrorEnum;
 import DataManager.Database.DatabaseOperations.DifficultyEntityOperations;
 import DataManager.Database.DatabaseOperations.GenreEntityOperations;
 import DataManager.Database.DatabaseOperations.TagEntityOperations;
-import DataManager.Records.Configuration;
+import DataManager.Config.Configuration;
 import DataManager.Records.PatMetadata;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons.Common.DifficultyFileNameExtensionFilter;
 import javafx.util.Pair;
@@ -27,6 +27,7 @@ import static BeatSaberObjects.Objects.Parity.Enums.ParityErrorEnum.*;
 public class Parameters {
     public static final Logger logger = LogManager.getLogger();
 
+    public static final ConfigLoader configLoader = new ConfigLoader("./config.json");
     private static final Configuration config = new ConfigLoader("./config.json").getConfig();
     private static final Configuration.Colors COLORS = config.colors;
     private static final Configuration.DefaultPaths DEFAULT_PATHS = config.defaultPath;
