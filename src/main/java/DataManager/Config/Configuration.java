@@ -1,7 +1,5 @@
-package DataManager.Records;
+package DataManager.Config;
 
-import DataManager.Config.ColorDeserializer;
-import DataManager.Config.ColorSerializer;
 import DataManager.Database.DatabaseOperations.DifficultyEntityOperations;
 import DataManager.Database.DatabaseOperations.GenreEntityOperations;
 import DataManager.Database.DatabaseOperations.TagEntityOperations;
@@ -150,7 +148,7 @@ public class Configuration
         {
             public String name = "ISeeFire";
             public int bpm = 170;
-            public double nps = 5.91f;
+            public double nps = 5.91;
             public List<String> difficulties = DifficultyEntityOperations.getAllDifficulties();
             public List<String> tags = TagEntityOperations.getAllTags();
             public List<String> genres = GenreEntityOperations.getAllGenres();
