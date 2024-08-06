@@ -1,7 +1,8 @@
 package DataManager;
 
-import DataManager.Records.Configuration;
+import DataManager.Config.Configuration;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
@@ -31,5 +32,10 @@ public class ConfigLoader {
     private Configuration getDefaultConfiguration() {
         // Initialize the default configuration here
         return new Configuration();
+    }
+
+    public String exportConfig() throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this.config);
     }
 }
