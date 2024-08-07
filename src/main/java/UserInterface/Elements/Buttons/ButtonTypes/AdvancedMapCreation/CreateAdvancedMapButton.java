@@ -9,6 +9,7 @@ import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.Exceptions.MapDidnt
 import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.MapCreatorSubButton;
 import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.ElementTypes;
+import UserInterface.UserInterface;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -29,7 +30,6 @@ public class CreateAdvancedMapButton extends MapCreatorSubButton {
     public static final List<String> difficulties = new ArrayList<>();
     private final CreateAdvancedMapNPS npsField;
     private final CreateAdvancedMapBPM bpmField;
-
 
     /**
      * Constructs the button for creating an advanced Beat Saber map.
@@ -58,63 +58,69 @@ public class CreateAdvancedMapButton extends MapCreatorSubButton {
      */
     @Override
     public void onClick() {
+        List<BeatSaberMap> maps = new ArrayList<>();
         ui.manageMap();
-        Arrays.stream(ui.map._notes).forEach(note -> note._cutDirection = 8);
-//            ui.pattern.visualizeAsHeatmap();
-//            ui.pattern.visualizeAsHeatmapNormalized("");
-//            ui.pattern.visualizeAsHeatmapNormalizedLogarithmically();
-//            ui.pattern.visualizeAsHeatmapTruncated();
+        for (BeatSaberMap uiMap : ui.map) {
+            UserInterface.currentDiff = uiMap.difficultyFileName;
+            Arrays.stream(uiMap._notes).forEach(note -> note._cutDirection = 8);
+            //            ui.pattern.visualizeAsHeatmap();
+            //            ui.pattern.visualizeAsHeatmapNormalized("");
+            //            ui.pattern.visualizeAsHeatmapNormalizedLogarithmically();
+            //            ui.pattern.visualizeAsHeatmapTruncated();
 
-        try {
-            int nps = Objects.equals(npsField.getText(), "nps") ? 4 : Integer.parseInt(npsField.getText());
-            int bpm = Objects.equals(bpmField.getText(), "bpm") ? 120 : Integer.parseInt(bpmField.getText());
+            try {
+                int nps = Objects.equals(npsField.getText(), "nps") ? 4 : Integer.parseInt(npsField.getText());
+                int bpm = Objects.equals(bpmField.getText(), "bpm") ? 120 : Integer.parseInt(bpmField.getText());
 
-            logger.info("Settings for Advanced Complex Map: Genres: {}, Tags: {}, Difficulty: {}, NPS: {}, BPM: {}", genres, tags, difficulties, nps, bpm);
+                logger.info("Settings for Advanced Complex Map: Genres: {}, Tags: {}, Difficulty: {}, NPS: {}, BPM: {}", genres, tags, difficulties, nps, bpm);
 
-            logger.debug("Original map: {}", ui.map.exportAsMap());
+                logger.debug("Original map: {}", uiMap.exportAsMap());
 
-            // Create the advanced Beat Saber map using the specified parameters and patterns
-            BeatSaberMap map = new BeatSaberMap(
-                    createAdvancedComplexPattern(
-                            Arrays.stream(ui.map._notes).toList(),
-                            Pattern.adjustVariance(ui.pattern),
-                            false,
-                            true,
-                            null,
-                            null,
-                            new PatMetadata("",
-                                    bpm,
-                                    nps,
-                                    difficulties,
-                                    tags,
-                                    genres
-                            )
-                    )
-            );
+                // Create the advanced Beat Saber map using the specified parameters and patterns
+                BeatSaberMap map = new BeatSaberMap(
+                        createAdvancedComplexPattern(
+                                Arrays.stream(uiMap._notes).toList(),
+                                Pattern.adjustVariance(ui.pattern),
+                                false,
+                                true,
+                                null,
+                                null,
+                                new PatMetadata("",
+                                        bpm,
+                                        nps,
+                                        difficulties,
+                                        tags,
+                                        genres
+                                )
+                        )
+                );
 
-            // Check for unplaced notes and inform the user if there are too many errors
-            int unplacedNotes = map.exportAsMap().split("\"_cutDirection\":8").length;
-            if (unplacedNotes >= 20) {
-                String warningMessage = "There are " + unplacedNotes + " error Notes. You will have to clean them manually. Do you really want to continue? It is recommended to try again";
-                logger.warn(warningMessage);
-                JOptionPane.showMessageDialog(null, warningMessage, "Too many errors Info", JOptionPane.INFORMATION_MESSAGE);
+                // Check for unplaced notes and inform the user if there are too many errors
+                int unplacedNotes = map.exportAsMap().split("\"_cutDirection\":8").length;
+                if (unplacedNotes >= 20) {
+                    String warningMessage = "There are " + unplacedNotes + " error Notes. You will have to clean them manually. Do you really want to continue? It is recommended to try again";
+                    logger.warn(warningMessage);
+                    JOptionPane.showMessageDialog(null, warningMessage, "Too many errors Info", JOptionPane.INFORMATION_MESSAGE);
+                }
+
+                // Check if the map computation succeeded
+                if (map.equals(uiMap)) {
+                    logger.error("The map is the same as the original map! Please try again");
+                    throw new MapDidntComputeException("Something went wrong Map didn't compute...");
+                }
+                else {maps.add(map);}
+
+                logger.debug("New map: {}", map.exportAsMap());
+            }
+            catch (NumberFormatException e) {
+                logger.error("Please enter valid numbers for NPS and BPM. Exception: {}", e.getMessage());
+                JOptionPane.showMessageDialog(null, "Please enter valid numbers for NPS and BPM.", "Input Error", JOptionPane.ERROR_MESSAGE);
+            }
+            catch (IllegalArgumentException | MapDidntComputeException ex) {
+                printException(ex);
             }
 
-            // Check if the map computation succeeded
-            if (map.equals(ui.map)) {
-                logger.error("The map is the same as the original map! Please try again");
-                throw new MapDidntComputeException("Something went wrong Map didn't compute...");
-            }
-            else loadNewlyCreatedMap(map);
-
-            logger.debug("New map: {}", map.exportAsMap());
-
-        } catch (NumberFormatException e) {
-            logger.error("Please enter valid numbers for NPS and BPM. Exception: {}", e.getMessage());
-            JOptionPane.showMessageDialog(null, "Please enter valid numbers for NPS and BPM.", "Input Error", JOptionPane.ERROR_MESSAGE);
-        } catch (IllegalArgumentException | MapDidntComputeException ex) {
-            printException(ex);
         }
-
+        loadNewlyCreatedMaps(maps);
     }
 }
