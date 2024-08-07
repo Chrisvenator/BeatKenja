@@ -58,38 +58,35 @@ public class UIElements {
         return ignoreDDsCheckbox;
     }
 
-    public TextArea statusTextArea() {
+    public StatusCheckTextPane statusTextArea() {
         logger.debug("Creating statusTextArea...");
-        TextArea statusCheck = new TextArea();
-        statusCheck.setBounds(50, 235, 1090, 510);
-        statusCheck.setBackground(darkMode ? Color.BLACK : Color.WHITE);
-        statusCheck.setForeground(darkMode ? Color.WHITE : Color.BLACK);
-        statusCheck.setEditable(false);
+        StatusCheckTextPane statusCheck = new StatusCheckTextPane();
+
         userInterface.add(statusCheck);
 
-        if (!CreateAllNecessaryDIRsAndFiles.isPythonInstalled()) {
-            String error = "[ERROR]: Python could not be found. Please ensure that it is installed and added to the PATH variable or else the Onset Generation will not work!\n";
-            statusCheck.append(error);
-            logger.error("Python not found.");
-        }
-
-        if (!CreateAllNecessaryDIRsAndFiles.isPipInstalled()) {
-            String error = "[ERROR]: PIP could not be found. Please ensure that it is installed or else the Onset Generation will not work!\n";
-            statusCheck.append(error);
-            logger.error("PIP not found.");
-        }
-
-        if (!CreateAllNecessaryDIRsAndFiles.isFFMpegInstalled()) {
-            String error = "[ERROR]: FFMPEG could not be found. Please ensure that it is installed and added to the PATH variable or else the Onset Generation will not work!\n";
-            statusCheck.append(error);
-            logger.error("FFMPEG not found.");
-        }
-
-        if (CreateAllNecessaryDIRsAndFiles.isPythonInstalled() && CreateAllNecessaryDIRsAndFiles.isPipInstalled() && CreateAllNecessaryDIRsAndFiles.isFFMpegInstalled()) {
-            String info = "[INFO]: All necessary dependencies are installed. You can now convert MP3s to timing maps.\n\n";
-            statusCheck.append(info);
-            logger.info("All necessary dependencies are installed.");
-        }
+//        if (!CreateAllNecessaryDIRsAndFiles.isPythonInstalled()) {
+//            String error = "[ERROR]: Python could not be found. Please ensure that it is installed and added to the PATH variable or else the Onset Generation will not work!\n";
+//            statusCheck.append(error);
+//            logger.error("Python not found.");
+//        }
+//
+//        if (!CreateAllNecessaryDIRsAndFiles.isPipInstalled()) {
+//            String error = "[ERROR]: PIP could not be found. Please ensure that it is installed or else the Onset Generation will not work!\n";
+//            statusCheck.append(error);
+//            logger.error("PIP not found.");
+//        }
+//
+//        if (!CreateAllNecessaryDIRsAndFiles.isFFMpegInstalled()) {
+//            String error = "[ERROR]: FFMPEG could not be found. Please ensure that it is installed and added to the PATH variable or else the Onset Generation will not work!\n";
+//            statusCheck.append(error);
+//            logger.error("FFMPEG not found.");
+//        }
+//
+//        if (CreateAllNecessaryDIRsAndFiles.isPythonInstalled() && CreateAllNecessaryDIRsAndFiles.isPipInstalled() && CreateAllNecessaryDIRsAndFiles.isFFMpegInstalled()) {
+//            String info = "[INFO]: All necessary dependencies are installed. You can now convert MP3s to timing maps.\n\n";
+//            statusCheck.append(info);
+//            logger.info("All necessary dependencies are installed.");
+//        }
 
         logger.debug("statusTextArea created successfully.");
         return statusCheck;
