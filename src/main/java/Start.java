@@ -26,13 +26,11 @@ public class Start {
 
     /**
      *********** Planned Features ***********
-     * export as .jar
-     * Random V2 infinite loop
-     * Verifizieren, dass ToBLueOnlyTimingNotes funktioniert
+     * ganzen Ordner zu einer Complex-Map machen
+     * export as .jars
+     * Bei schnellen Sektionen abwechselndes Pattern machen mit gleichen Abständen
      * BatchWavToMaps Testen, ob output noch immer geht
      * lehnen
-     * ganzen Ordner zu einer Complex-Map machen
-     * Bei schnellen Sektionen abwechselndes Pattern machen mit gleichen Abständen
      *****************************************
     **/
 
