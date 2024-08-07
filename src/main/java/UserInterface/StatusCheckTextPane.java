@@ -16,6 +16,7 @@ public class StatusCheckTextPane extends JPanel {
     private Style warnStyle;
     private Style infoStyle;
     private Style debugStyle;
+    private Style checkingMapStyle;
 
     public StatusCheckTextPane() {
         setLayout(new BorderLayout());
@@ -56,6 +57,14 @@ public class StatusCheckTextPane extends JPanel {
 
         debugStyle = textPane.addStyle("DebugStyle", null);
         StyleConstants.setForeground(debugStyle, Parameters.STATUS_TEXT_DEBUG_STYLE);
+
+        checkingMapStyle = textPane.addStyle("CheckingMapStyle", null);
+        StyleConstants.setBackground(checkingMapStyle, Parameters.STATUS_TEXT_CHECKING_MAP_STYLE_BACKGROUND);
+        StyleConstants.setForeground(checkingMapStyle, Parameters.STATUS_TEXT_CHECKING_MAP_STYLE_FOREGROUND);
+//        StyleConstants.setBold(checkingMapStyle, true);
+        StyleConstants.setItalic(checkingMapStyle, true);
+        StyleConstants.setUnderline(checkingMapStyle, true);
+
     }
 
     public void setText(String text) {
@@ -87,11 +96,16 @@ public class StatusCheckTextPane extends JPanel {
     }
 
     private Style determineStyle(String text) {
+        if (text.contains("Checking map:")) return checkingMapStyle;
         if (text.contains("FATAL")) return fatalStyle;
         if (text.contains("ERROR")) return errorStyle;
         if (text.contains("WARN")) return warnStyle;
         if (text.contains("INFO")) return infoStyle;
         if (text.contains("DEBUG")) return debugStyle;
         return infoStyle; // Default style
+    }
+
+    public void clear() {
+        setText("");
     }
 }

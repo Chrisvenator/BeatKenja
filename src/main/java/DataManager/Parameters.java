@@ -1,6 +1,6 @@
 package DataManager;
 
-import BeatSaberObjects.Objects.Parity.Enums.ParityErrorEnum;
+import BeatSaberObjects.Objects.Enums.ParityErrorEnum;
 import DataManager.Database.DatabaseOperations.DifficultyEntityOperations;
 import DataManager.Database.DatabaseOperations.GenreEntityOperations;
 import DataManager.Database.DatabaseOperations.TagEntityOperations;
@@ -16,12 +16,13 @@ import javax.persistence.Persistence;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.logging.Level;
 
-import static BeatSaberObjects.Objects.Parity.Enums.ParityErrorEnum.*;
+import static BeatSaberObjects.Objects.Enums.ParityErrorEnum.*;
 
 @SuppressWarnings("unused")
 public class Parameters {
@@ -107,7 +108,7 @@ public class Parameters {
     public static final List<String> MUSIC_GENRES = GenreEntityOperations.getAllGenres();
     public static final List<String> DIFFICULTIES = DifficultyEntityOperations.getAllDifficulties();
     public static final DifficultyFileNameExtensionFilter MAP_FILE_FORMAT = new DifficultyFileNameExtensionFilter("BeatSaber Maps (*.dat) or Pattern files (*.pat)", new String[]{"dat", "pat"}, new String[]{"info.dat", "BPMInfo.dat"});
-    public static final List<Pair<Float, ParityErrorEnum>> PARITY_ERRORS_LIST = new ArrayList<>();
+    public static final Map<String, List<Pair<Float, ParityErrorEnum>>> PARITY_ERRORS_LIST = new HashMap<>();
 
     public static final Map<ParityErrorEnum, Color> PARITY_ERRORS_COLORS_MAP = Map.of(
             PARITY_BREAK,             Color.RED,
@@ -120,6 +121,7 @@ public class Parameters {
 
     static {
         java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
+        FILE_CHOOSER.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         FILE_CHOOSER.setFileFilter(MAP_FILE_FORMAT);
         if (DARK_MODE) FILE_CHOOSER.setForeground(Color.white);
     }
@@ -132,6 +134,8 @@ public class Parameters {
     public static final Color STATUS_TEXT_WARN_STYLE = new Color(222, 149, 0);
     public static final Color STATUS_TEXT_INFO_STYLE = DARK_MODE ? new Color(255,255,255): new Color(0,0,0);
     public static final Color STATUS_TEXT_DEBUG_STYLE = new Color(128, 128, 128);
+    public static final Color STATUS_TEXT_CHECKING_MAP_STYLE_BACKGROUND = new Color(130, 198, 255, 161);
+    public static final Color STATUS_TEXT_CHECKING_MAP_STYLE_FOREGROUND = new Color(0, 0, 0);
 
 
 

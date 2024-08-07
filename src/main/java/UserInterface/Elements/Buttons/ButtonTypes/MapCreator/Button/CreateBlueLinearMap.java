@@ -1,11 +1,12 @@
 package UserInterface.Elements.Buttons.ButtonTypes.MapCreator.Button;
 
 import BeatSaberObjects.Objects.BeatSaberMap;
-import DataManager.Parameters;
 import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.MapCreatorSubButton;
 import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.ElementTypes;
+import UserInterface.UserInterface;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static MapGeneration.PatternGeneration.LinearSlowPattern.linearSlowPattern;
@@ -17,14 +18,19 @@ public class CreateBlueLinearMap extends MapCreatorSubButton {
 
     @Override
     public void onClick() {
+        List<BeatSaberMap> maps = new ArrayList<>();
         ui.manageMap();
-        ui.map.toBlueLeftBottomRowDotTimings();
+        for (BeatSaberMap uiMap : ui.map) {
+            UserInterface.currentDiff = uiMap.difficultyFileName;
+            uiMap.toBlueLeftBottomRowDotTimings();
 
-        Thread calculateNewMap = new Thread(() -> {
-            BeatSaberMap map = new BeatSaberMap(linearSlowPattern(List.of(ui.map._notes), true, null, null));
-            loadNewlyCreatedMap(map);
-        });
+            Thread calculateNewMap = new Thread(() -> {
+                BeatSaberMap map = new BeatSaberMap(linearSlowPattern(List.of(uiMap._notes), true, null, null));
+                maps.add(map);
+            });
 
-        watchOverThread(calculateNewMap);
+            watchOverThread(calculateNewMap);
+        }
+        loadNewlyCreatedMaps(maps);
     }
 }
