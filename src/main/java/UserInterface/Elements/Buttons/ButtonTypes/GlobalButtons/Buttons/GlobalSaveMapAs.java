@@ -39,6 +39,7 @@ public class GlobalSaveMapAs extends GlobalButton {
             } else filePath += "/" + uiMap.difficultyFileName;
 
             filePath += filePath.contains(".dat") ? "" : ".dat";
+            System.out.println(filePath);
 
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(filePath))) {
                 bw.write(uiMap.exportAsMap());

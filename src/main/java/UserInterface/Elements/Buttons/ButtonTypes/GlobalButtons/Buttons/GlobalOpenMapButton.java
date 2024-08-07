@@ -9,7 +9,6 @@ import UserInterface.UserInterface;
 
 import java.awt.*;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
 
 import static DataManager.Parameters.AUTOLOAD_DEFAULT_MAP_for_testing;
@@ -20,7 +19,6 @@ import static DataManager.Parameters.filePath;
 import static DataManager.Parameters.logger;
 
 public class GlobalOpenMapButton extends GlobalButton {
-    //TODO: Diese Methode
     @lombok.SneakyThrows
     public GlobalOpenMapButton(UserInterface ui) {
         super(ElementTypes.GLOBAL_OPEN_MAP, ui);
