@@ -1,13 +1,15 @@
 package MapGeneration.PatternGeneration.CommonMethods;
 
+import BeatSaberObjects.Objects.Enums.ParityErrorEnum;
 import BeatSaberObjects.Objects.Note;
 import DataManager.Parameters;
+import UserInterface.UserInterface;
 import javafx.util.Pair;
 
 import java.util.Collections;
 import java.util.List;
 
-import static BeatSaberObjects.Objects.Parity.Enums.ParityErrorEnum.*;
+import static BeatSaberObjects.Objects.Enums.ParityErrorEnum.*;
 import static DataManager.Parameters.PARITY_ERRORS_LIST;
 import static DataManager.Parameters.logger;
 import static MapGeneration.PatternGeneration.CommonMethods.PlaceFirstNotes.firstNotePlacement;
@@ -29,12 +31,63 @@ Layer - Index:          Cut direction:
 
 public class CheckParity {
     /**
+     * This function checks the list allNotes if there are 2 or more notes inside one another. If this is true, the red BeatSaberObjects.Objects.Note
+     * will be placed moved one line to the right
+     *
+     * @param allNotes input List where all the notes have been saved
+     * @param quiet    Should this function output errors?
+     * @return a List without notes inside other notes
+     */
+    public static List<Note> checkAndFixBasicMappingErrors(List<Note> allNotes, boolean quiet) {
+        if (allNotes.size() <= 1) return allNotes;
+        Collections.sort(allNotes);
+        for (int i = 0; i < allNotes.size() - 1; i++) {
+            if (allNotes.get(i)._time == allNotes.get(i + 1)._time && allNotes.get(i).equalNotePlacement(allNotes.get(i + 1))) {
+                if (allNotes.get(i)._type == 0) {
+                    if (allNotes.get(i)._lineIndex != 0) allNotes.get(i)._lineIndex--;
+                    else allNotes.get(i)._lineLayer = 2;
+                }
+            }
+            Note n = allNotes.get(i);
+
+            //Checking, if there is a downswing note in the top left or right corner
+            if (n._type == 0 && n._lineIndex == 3 && n._lineLayer == 2 && n._cutDirection == 1) {
+                n._lineLayer = 0;
+                n._lineIndex = 1;
+            }
+            if (n._type == 1 && n._lineIndex == 0 && n._lineLayer == 2 && n._cutDirection == 1) {
+                n._lineLayer = 0;
+                n._lineIndex = 2;
+            }
+
+            if (n._lineIndex < 0 || n._lineIndex >= 4 || n._lineLayer < 0 || n._lineLayer >= 3) {
+                Parameters.PARITY_ERRORS_LIST.get(UserInterface.currentDiff).add(new Pair<>(n._time, ParityErrorEnum.NOTE_OUTSIDE_OF_GRID));
+                if (!quiet)System.err.println("WARNING at beat: " + n._time + " note outside the grid!");
+            }
+
+        }
+
+        //Checking, if some notes inside other notes were missed:
+        for (int i = 0; i < allNotes.size() - 1; i++) {
+            if (allNotes.get(i)._time == allNotes.get(i + 1)._time && allNotes.get(i).equalNotePlacement(allNotes.get(i + 1))) {
+                Parameters.PARITY_ERRORS_LIST.get(UserInterface.currentDiff).add(new Pair<>(allNotes.get(i)._time, ParityErrorEnum.NOTE_INSIDE_ANOTHER_NOTE));
+                if (!quiet) System.err.println("[ERROR] at beat:   " + allNotes.get(i)._time + ": note inside another Note!");
+            }
+        }
+
+        checkBasicParity(allNotes, quiet);
+
+        logger.info("Map checked successfully!");
+        return allNotes;
+    }
+
+    /**
      * This function checks parity and prints an error, if there is a dd somewhere
      *
      * @param notes List of notes that should be checked
      * @param quiet Should this function display error messages?
      */
-    public static void checkBasicParity(List<Note> notes, boolean quiet) {
+    private static void checkBasicParity(List<Note> notes, boolean quiet) {
         Note red = null;
         Note blue = null;
 
@@ -66,14 +119,14 @@ public class CheckParity {
             Note prev = n._type == 0 ? red : blue;
 
             if (isParityBreak(prev, n)) {
-                PARITY_ERRORS_LIST.add(new Pair<>(n._time, PARITY_BREAK));
+                Parameters.PARITY_ERRORS_LIST.get(UserInterface.currentDiff).add(new Pair<>(n._time, PARITY_BREAK));
                 if (!quiet)
                     logger.warn("at beat:   {}: Parity break! prev: {}-{}, current: {}-{}", n._time, prev._time, prev.exportInPatFormat(), n._time, n.exportInPatFormat());
                 if (!quiet) System.err.println("[ERROR] at beat:   " + n._time + ": Parity break! prev: " + prev._time + "-" + prev.exportInPatFormat() + ", current: " + n._time + "-" + n.exportInPatFormat());
             } else
                 // Sharp Angle
                 if (isParitySharpAngle(prev, n)) {
-                    PARITY_ERRORS_LIST.add(new Pair<>(n._time, SHARP_ANGLE));
+                    Parameters.PARITY_ERRORS_LIST.get(UserInterface.currentDiff).add(new Pair<>(n._time, SHARP_ANGLE));
                     if (!quiet) {
                         logger.warn("[NOTICE] at beat:    {}: sharp angle", n._time);
                         System.err.println("[WARN] at beat:    " + n._time + ": sharp angle");
@@ -109,58 +162,6 @@ public class CheckParity {
                 || ((previous._cutDirection == 4 || previous._cutDirection == 2 || previous._cutDirection == 6)
                 && (current._cutDirection == 4 || current._cutDirection == 2 || current._cutDirection == 6));
     }
-
-    /**
-     * This function checks the list allNotes if there are 2 or more notes inside one another. If this is true, the red BeatSaberObjects.Objects.Note
-     * will be placed moved one line to the right
-     *
-     * @param allNotes input List where all the notes have been saved
-     * @param quiet    Should this function output errors?
-     * @return a List without notes inside other notes
-     */
-    public static List<Note> checkAndFixBasicMappingErrors(List<Note> allNotes, boolean quiet) {
-        if (allNotes.size() <= 1) return allNotes;
-        Collections.sort(allNotes);
-        for (int i = 0; i < allNotes.size() - 1; i++) {
-            if (allNotes.get(i)._time == allNotes.get(i + 1)._time && allNotes.get(i).equalNotePlacement(allNotes.get(i + 1))) {
-                if (allNotes.get(i)._type == 0) {
-                    if (allNotes.get(i)._lineIndex != 0) allNotes.get(i)._lineIndex--;
-                    else allNotes.get(i)._lineLayer = 2;
-                }
-            }
-            Note n = allNotes.get(i);
-
-            //Checking, if there is a downswing note in the top left or right corner
-            if (n._type == 0 && n._lineIndex == 3 && n._lineLayer == 2 && n._cutDirection == 1) {
-                n._lineLayer = 0;
-                n._lineIndex = 1;
-            }
-            if (n._type == 1 && n._lineIndex == 0 && n._lineLayer == 2 && n._cutDirection == 1) {
-                n._lineLayer = 0;
-                n._lineIndex = 2;
-            }
-
-            if (n._lineIndex < 0 || n._lineIndex >= 4 || n._lineLayer < 0 || n._lineLayer >= 3) {
-                PARITY_ERRORS_LIST.add(new Pair<>(n._time, NOTE_OUTSIDE_OF_GRID));
-                if (!quiet)System.err.println("WARNING at beat: " + n._time + " note outside the grid!");
-            }
-
-        }
-
-        //Checking, if some notes inside other notes were missed:
-        for (int i = 0; i < allNotes.size() - 1; i++) {
-            if (allNotes.get(i)._time == allNotes.get(i + 1)._time && allNotes.get(i).equalNotePlacement(allNotes.get(i + 1))) {
-                PARITY_ERRORS_LIST.add(new Pair<>(allNotes.get(i)._time, NOTE_INSIDE_ANOTHER_NOTE));
-                if (!quiet) System.err.println("[ERROR] at beat:   " + allNotes.get(i)._time + ": note inside another Note!");
-            }
-        }
-
-        checkBasicParity(allNotes, quiet);
-
-        logger.info("Map checked successfully!");
-        return allNotes;
-    }
-
     /**
      * If there was an error, a timing note is being placed.
      * This function tries to see which note came before the error and places a note accordingly, which does not break parity.

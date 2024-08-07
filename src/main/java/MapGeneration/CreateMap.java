@@ -3,10 +3,11 @@ package MapGeneration;
 import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Bookmark;
 import BeatSaberObjects.Objects.Note;
-import BeatSaberObjects.Objects.Parity.Enums.ParityErrorEnum;
+import BeatSaberObjects.Objects.Enums.ParityErrorEnum;
 import DataManager.Parameters;
 import MapGeneration.PatternGeneration.CommonMethods.FixErrorsInPatterns;
 import MapGeneration.GenerationElements.Pattern;
+import UserInterface.UserInterface;
 import javafx.util.Pair;
 
 import java.util.*;
@@ -167,7 +168,7 @@ public class CreateMap {
             if (!found) {
                 logger.warn("Note at " + timing._time + " was not placed!");
                 System.err.println( "Note at " + timing._time + " was not placed!");
-                Parameters.PARITY_ERRORS_LIST.add(new Pair<>(timing._time, ParityErrorEnum.DID_NOT_PLACE_NOTE));
+                Parameters.PARITY_ERRORS_LIST.get(UserInterface.currentDiff).add(new Pair<>(timing._time, ParityErrorEnum.DID_NOT_PLACE_NOTE));
             }
         }
     }

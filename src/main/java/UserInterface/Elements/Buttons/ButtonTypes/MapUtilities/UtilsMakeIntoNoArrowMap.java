@@ -1,5 +1,6 @@
 package UserInterface.Elements.Buttons.ButtonTypes.MapUtilities;
 
+import BeatSaberObjects.Objects.BeatSaberMap;
 import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.Buttons.MySubButton;
 import UserInterface.Elements.ElementTypes;
@@ -14,9 +15,12 @@ public class UtilsMakeIntoNoArrowMap extends MySubButton {
 
     @Override
     public void onClick() {
-        ui.map.makeNoArrows();
-        logger.info("Map is now a no arrows map");
-        logger.debug("No Arrow Map: {}", ui.map.exportAsMap());
-        System.out.println("No Arrow Map: " + ui.map.exportAsMap());
+        for (BeatSaberMap uiMap : ui.map) {
+
+            uiMap.makeNoArrows();
+            logger.info("Map is now a no arrows map");
+            logger.debug("No Arrow Map: {}", uiMap.exportAsMap());
+            System.out.println("No Arrow Map: " + uiMap.exportAsMap());
+        }
     }
 }

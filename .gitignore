@@ -89,3 +89,4 @@ libs/*
 /src/main/resources/All_Maps_Merged.json
 /OnsetGeneration/mp3Files/
 /database/exported_schema.sql
+config.json

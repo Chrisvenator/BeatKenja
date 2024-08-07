@@ -5,10 +5,13 @@ import MapGeneration.GenerationElements.Pattern;
 import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.MapCreatorSubButton;
 import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.ElementTypes;
+import UserInterface.UserInterface;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static DataManager.Parameters.logger;
 import static MapGeneration.PatternGeneration.RandomV2FromTemplate.randomV2FromTemplate;
-
 
 public class CreateRandomV2Map extends MapCreatorSubButton {
     public CreateRandomV2Map(MyButton parent) {
@@ -18,15 +21,19 @@ public class CreateRandomV2Map extends MapCreatorSubButton {
 
     @Override
     public void onClick() {
+        List<BeatSaberMap> maps = new ArrayList<>();
         ui.manageMap();
-        ui.map.toBlueLeftBottomRowDotTimings();
+        for (BeatSaberMap uiMap : ui.map) {
+            UserInterface.currentDiff = uiMap.difficultyFileName;
+            uiMap.toBlueLeftBottomRowDotTimings();
 
-        try {
-            BeatSaberMap map = new BeatSaberMap(randomV2FromTemplate(ui.map._notes, Pattern.adjustVariance(ui.pattern), false, null, null));
-            loadNewlyCreatedMap(map);
-
-        } catch (IllegalArgumentException ex) {
-            printException(ex);
+            try {
+                maps.add(new BeatSaberMap(randomV2FromTemplate(uiMap._notes, Pattern.adjustVariance(ui.pattern), false, null, null)));
+            }
+            catch (IllegalArgumentException ex) {
+                printException(ex);
+            }
         }
+        loadNewlyCreatedMaps(maps);
     }
 }

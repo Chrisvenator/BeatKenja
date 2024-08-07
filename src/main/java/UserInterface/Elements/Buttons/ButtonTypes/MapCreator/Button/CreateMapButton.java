@@ -6,10 +6,13 @@ import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.Exceptions.MapDidnt
 import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.MapCreatorSubButton;
 import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.ElementTypes;
+import UserInterface.UserInterface;
 
-import static DataManager.Parameters.verbose;
-import static MapGeneration.CreateMap.createMap;
+import java.util.ArrayList;
+import java.util.List;
+
 import static DataManager.Parameters.logger;
+import static MapGeneration.CreateMap.createMap;
 
 public class CreateMapButton extends MapCreatorSubButton {
     public CreateMapButton(MyButton parent) {
@@ -19,26 +22,33 @@ public class CreateMapButton extends MapCreatorSubButton {
 
     @Override
     public void onClick() {
+        List<BeatSaberMap> maps = new ArrayList<>();
         ui.manageMap();
-        ui.map.toBlueLeftBottomRowDotTimings();
-        logger.info("Map management and initial processing done.");
+        for (BeatSaberMap uiMap : ui.map) {
+            UserInterface.currentDiff = uiMap.difficultyFileName;
+            uiMap.toBlueLeftBottomRowDotTimings();
+            logger.info("Map management and initial processing done.");
 
-        try {
-            logger.trace("Original map: {}", ui.map.exportAsMap());
+            try {
+                logger.trace("Original map: {}", uiMap.exportAsMap());
 
-            BeatSaberMap map = createMap(ui.map, Pattern.adjustVariance(ui.pattern), false, false);
+                BeatSaberMap map = createMap(uiMap, Pattern.adjustVariance(ui.pattern), false, false);
 
-            if (ui.map.exportAsMap().split("\"_cutDirection\":8").length >= 20) logger.warn("There are a lot of errors in the map. It is recommended to try again.");
+                if (uiMap.exportAsMap().split("\"_cutDirection\":8").length >= 20)
+                    logger.warn("There are a lot of errors in the map. It is recommended to try again.");
 
-            if (map.equals(ui.map)) {
-                logger.fatal("The map is the same as the original map!");
-                throw new MapDidntComputeException("Something went wrong, Map didn't compute...");
-            } else {
-                loadNewlyCreatedMap(map);
-                logger.info("New map created and loaded successfully.");
+                if (map.equals(uiMap)) {
+                    logger.fatal("The map is the same as the original map!");
+                    throw new MapDidntComputeException("Something went wrong, Map didn't compute...");
+                }
+                else {
+                    maps.add(map);
+                }
             }
-        } catch (IllegalArgumentException | MapDidntComputeException ex) {
-            printException(ex);
+            catch (IllegalArgumentException | MapDidntComputeException ex) {
+                printException(ex);
+            }
         }
+        loadNewlyCreatedMaps(maps);
     }
 }
