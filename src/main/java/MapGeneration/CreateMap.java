@@ -3,15 +3,17 @@ package MapGeneration;
 import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Bookmark;
 import BeatSaberObjects.Objects.Note;
+import BeatSaberObjects.Objects.Parity.Enums.ParityErrorEnum;
 import DataManager.Parameters;
 import MapGeneration.PatternGeneration.CommonMethods.FixErrorsInPatterns;
 import MapGeneration.GenerationElements.Pattern;
+import javafx.util.Pair;
 
 import java.util.*;
 
 import static DataManager.Parameters.logger;
 import static MapGeneration.PatternGeneration.BigJumps.createBigJumps;
-import static MapGeneration.PatternGeneration.CommonMethods.CheckParity.checkForMappingErrors;
+import static MapGeneration.PatternGeneration.CommonMethods.CheckParity.checkAndFixBasicMappingErrors;
 import static MapGeneration.ComplexPatternFromTemplate.complexPatternFromTemplate;
 import static MapGeneration.PatternGeneration.Doubles.createDoubles;
 import static MapGeneration.PatternGeneration.NormalJumps.createNormalJumps;
@@ -118,7 +120,7 @@ public class CreateMap {
         }
 
         FixErrorsInPatterns.fixSimpleMappingErrors(notes);
-        checkForMappingErrors(notes, false);
+        checkAndFixBasicMappingErrors(notes, false);
 
         checkIfEveryNoteIsPlaced(notes, timings);
 
@@ -165,6 +167,7 @@ public class CreateMap {
             if (!found) {
                 logger.warn("Note at " + timing._time + " was not placed!");
                 System.err.println( "Note at " + timing._time + " was not placed!");
+                Parameters.PARITY_ERRORS_LIST.add(new Pair<>(timing._time, ParityErrorEnum.DID_NOT_PLACE_NOTE));
             }
         }
     }

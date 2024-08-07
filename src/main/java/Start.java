@@ -26,17 +26,11 @@ public class Start {
 
     /**
      *********** Planned Features ***********
-     * public static final boolean PARITY_ERRORS_AS_BOOKMARKS = true; <-- TESTEN
-     * ^ DIDNT_PLACE_STACK in "parityErrorsAsBookmarks"
-     * export as .jar
-     * Random V2 "File not found crash"
-     * Sleep interrupted exception bei linear, one-handed complex
-     * Verifizieren, dass ToBLueOnlyTimingNotes funktioniert
-     * Möglichkeit .webp als map zu laden XD (╯°□°)╯︵ ┻━┻
+     * ganzen Ordner zu einer Complex-Map machen
+     * export as .jars
+     * Bei schnellen Sektionen abwechselndes Pattern machen mit gleichen Abständen
      * BatchWavToMaps Testen, ob output noch immer geht
      * lehnen
-     * ganzen Ordner zu einer Complex-Map machen
-     * Bei schnellen Sektionen abwechselndes Pattern machen mit gleichen Abständen
      *****************************************
     **/
 

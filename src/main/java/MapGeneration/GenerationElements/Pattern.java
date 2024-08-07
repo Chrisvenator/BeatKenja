@@ -335,7 +335,10 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
 
             return;
         }
-        if (!useDatabase) throw new RuntimeException("[ERROR]: Database has not been turned on! Shutting down");
+        if (!useDatabase){
+            logger.fatal("Database has not been turned on! Shutting down...");
+            throw new RuntimeException("[ERROR]: Database has not been turned on! Shutting down...");
+        }
 
         this.metadata = metadata;
 
