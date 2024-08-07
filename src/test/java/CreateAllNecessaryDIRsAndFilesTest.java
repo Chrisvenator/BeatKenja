@@ -26,13 +26,6 @@ class CreateAllNecessaryDIRsAndFilesTest {
                 assertTrue(f.isFile());
             }
         }
-
-        File config = new File(CONFIG_FILE_LOCATION);
-        assertTrue(config.exists() && config.isFile());
-
-        StringBuilder configContent = new StringBuilder();
-        for (String s : FileManager.readFile(CONFIG_FILE_LOCATION)) configContent.append(s).append("\n");
-        assertEquals(CreateAllNecessaryDIRsAndFiles.config + "\n", configContent.toString());
     }
 
     @Test

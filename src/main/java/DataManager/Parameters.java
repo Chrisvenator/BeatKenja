@@ -4,7 +4,7 @@ import BeatSaberObjects.Objects.Parity.Enums.ParityErrorEnum;
 import DataManager.Database.DatabaseOperations.DifficultyEntityOperations;
 import DataManager.Database.DatabaseOperations.GenreEntityOperations;
 import DataManager.Database.DatabaseOperations.TagEntityOperations;
-import DataManager.Records.Configuration;
+import DataManager.Config.Configuration;
 import DataManager.Records.PatMetadata;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons.Common.DifficultyFileNameExtensionFilter;
 import javafx.util.Pair;
@@ -27,6 +27,7 @@ import static BeatSaberObjects.Objects.Parity.Enums.ParityErrorEnum.*;
 public class Parameters {
     public static final Logger logger = LogManager.getLogger();
 
+    public static final ConfigLoader configLoader = new ConfigLoader("./config.json");
     private static final Configuration config = new ConfigLoader("./config.json").getConfig();
     private static final Configuration.Colors COLORS = config.colors;
     private static final Configuration.DefaultPaths DEFAULT_PATHS = config.defaultPath;
@@ -45,6 +46,7 @@ public class Parameters {
     public static boolean ignoreDDs = GLOBAL.ignoreDds;
     public static final boolean SAVE_PARITY_ERRORS_AS_BOOKMARKS = GLOBAL.saveParityErrorsAsBookmarks;
     public static final boolean SAVE_PARITY_ERRORS_AS_BOOKMARKS_WILL_OVERWRITE_BOOKMARKS = GLOBAL.saveParityErrorsAsBookmarksWillOverwriteBookmarks;
+    public static final boolean SAVE_DID_NOT_PLACE_STACK_AS_BOOKMARK = GLOBAL.saveDidNotPlaceStackAsBookmark;
     public static final String mapViewerURL = GLOBAL.defaultMapPreviewer; //https://skystudioapps.com/bs-viewer/  or  https://allpoland.github.io/ArcViewer/
 
     // Default paths
@@ -112,7 +114,8 @@ public class Parameters {
             SHARP_ANGLE,              Color.GREEN,
             NOTE_OUTSIDE_OF_GRID,     Color.BLUE,
             NOTE_INSIDE_ANOTHER_NOTE, Color.CYAN,
-            DIDNT_PLACE_STACK,        Color.BLACK
+            DID_NOT_PLACE_NOTE,       Color.WHITE,
+            DID_NOT_PLACE_STACK,      Color.BLACK
     );
 
     static {
@@ -120,6 +123,15 @@ public class Parameters {
         FILE_CHOOSER.setFileFilter(MAP_FILE_FORMAT);
         if (DARK_MODE) FILE_CHOOSER.setForeground(Color.white);
     }
+
+    // Status Text Area Styles:
+    public static final Color STATUS_TEXT_FATAL_STYLE_BACKGROUND = new Color(213, 0, 0);
+    public static final Color STATUS_TEXT_FATAL_STYLE_FOREGROUND = new Color(255,255,255);
+    public static final Color STATUS_TEXT_ERROR_STYLE_BACKGROUND = new Color(255, 115, 0);
+    public static final Color STATUS_TEXT_ERROR_STYLE_FOREGROUND = new Color(255, 255, 255);
+    public static final Color STATUS_TEXT_WARN_STYLE = new Color(222, 149, 0);
+    public static final Color STATUS_TEXT_INFO_STYLE = DARK_MODE ? new Color(255,255,255): new Color(0,0,0);
+    public static final Color STATUS_TEXT_DEBUG_STYLE = new Color(128, 128, 128);
 
 
 

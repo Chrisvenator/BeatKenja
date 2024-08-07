@@ -5,7 +5,7 @@ import BeatSaberObjects.Objects.Note;
 import java.util.ArrayList;
 import java.util.List;
 
-import static MapGeneration.PatternGeneration.CommonMethods.CheckParity.checkForMappingErrors;
+import static MapGeneration.PatternGeneration.CommonMethods.CheckParity.checkAndFixBasicMappingErrors;
 
 public class StackPlacements {
     /**
@@ -22,7 +22,7 @@ public class StackPlacements {
         }
 
         //Check if there is a note inside another note
-        return checkForMappingErrors(toReturn, true);
+        return checkAndFixBasicMappingErrors(toReturn, true);
     }
 
     /**
@@ -95,7 +95,8 @@ public class StackPlacements {
             }
         }
         // Call the createStacks method to finalize and return the list of notes with stacks
-        return createStacks(notes);
+        List<Note> n = createStacks(notes);
+        return n;
     }
 
 }
