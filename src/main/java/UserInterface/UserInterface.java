@@ -36,7 +36,7 @@ public class UserInterface extends JFrame {
 
     //GUI:
     public final JLabel labelMapDiff;
-    public final TextArea statusCheck; //essentially the log
+    public final StatusCheckTextPane statusCheck; //essentially the log
     public boolean mapSuccessfullyLoaded = false;
     public static int patternVariance = 0;
 
