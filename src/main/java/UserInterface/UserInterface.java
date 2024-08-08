@@ -103,8 +103,7 @@ public class UserInterface extends JFrame {
                 if (mapSuccessfullyLoaded) {
                     // Make it so that the logger only logs once when the map was successfully loaded
                     if (!success) {
-                        logger.info("Successfully loaded difficulty");
-                        labelMapDiff.setText("Successfully loaded difficulty");
+//                        logger.info("Successfully loaded difficulty");
                         labelMapDiff.setBackground(Color.GREEN);
                         logger.info("Set all Buttons to visible");
                         success = true;
@@ -149,7 +148,7 @@ public class UserInterface extends JFrame {
             logger.info("Patterns have not been specified. Proceeding with default patterns");
             pattern = new Pattern(DEFAULT_PATTERN_METADATA);
         }
-        map.forEach(m -> m._obstacles = new Obstacle[0]);
+//        map.forEach(m -> m._obstacles = new Obstacle[0]);
         UserInterface.currentDiff = "NULL";
         // map._events = new Events[0]; //Don't remove events because bpm changes are stored in events
         // map._events = Arrays.stream(map._events).filter(event -> event._type == 1000).toArray(Events[]::new); //remove all events EXCEPT for the bpm-changes!

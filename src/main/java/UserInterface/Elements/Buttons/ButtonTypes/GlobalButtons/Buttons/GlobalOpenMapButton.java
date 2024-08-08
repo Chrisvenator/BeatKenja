@@ -112,9 +112,6 @@ public class GlobalOpenMapButton extends GlobalButton {
         this.setText("load another diff");
         this.setBounds(270, 20, 200, 30);
         this.setBackground(Color.GREEN);
-        String successMessage = "Successfully loaded difficulty: \"" + absolutePath + "\"";
-        logger.info(successMessage);
-        ui.statusCheck.append(successMessage);
         ui.mapSuccessfullyLoaded = true;
     }
 }
