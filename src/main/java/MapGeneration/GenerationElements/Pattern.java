@@ -25,8 +25,6 @@ import java.util.stream.Collectors;
 
 import static DataManager.Parameters.*;
 import static MapAnalysation.Distributions.DirichletMultinomialDistribution.*;
-import static MapAnalysation.Distributions.InverseDirichletMultinomialDistribution.estimateDirichletParameters;
-import static MapAnalysation.Distributions.InverseDirichletMultinomialDistribution.estimateMultinomialProbabilities;
 
 public class Pattern implements Iterable<PatternProbability>, Serializable {
     private static final int MAX_ARRAY_SIZE = 109; // lines * layers * cut directions = 4 * 3 * 9 = 108 + 1 (base note)
@@ -1161,17 +1159,6 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
             int[] mle = estimateAlphaMLE(multinomialSample, count[i], N);
 //            System.arraycopy(mle, 0, this.count[i], 0, mle.length);
             System.arraycopy(multinomialSample, 0, this.count[i], 0, multinomialSample.length);
-        }
-        computeProbabilities();
-    }
-
-    @Deprecated
-    public void applyInverseDirichletMultinomial(int N) {
-        for (int[] ints : count) {
-            double[] dirichletSample = estimateDirichletParameters(ints, N);
-            int[] multinomialSample = estimateMultinomialProbabilities(N, dirichletSample);
-            int[] mle = estimateAlphaMLE(multinomialSample, ints, N);
-            System.arraycopy(mle, 0, ints, 0, mle.length);
         }
         computeProbabilities();
     }
