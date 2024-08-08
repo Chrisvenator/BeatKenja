@@ -22,37 +22,6 @@ public class MapCreatorSubButton extends MySubButton {
 
 
     /**
-     * This method watches over a thread and interrupts it if it takes too long.
-     * In essence, it prevents infinite loops.
-     *
-     * @param thread The thread to watch over
-     */
-    @Deprecated
-    protected void watchOverThread(Thread thread) {
-        //DO NOT QUESTION THIS SECTION
-        //IT WAS NECESSARY TO ENSURE THAT THERE IS NO INFINITE LOOP
-
-        Thread watchForInfiniteLoop = new Thread(() -> {
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
-            thread.interrupt();
-            throw new IllegalArgumentException("Took too long lol");
-        });
-
-        try {
-            watchForInfiniteLoop.start();
-            thread.start();
-            watchForInfiniteLoop.interrupt();
-        } catch (IllegalArgumentException ex) {
-            if (ex.getMessage().contains("Took too long lol")) printException(new TookTooLongException("Took too long lol"));
-            else printException(ex);
-        }
-    }
-
-    /**
      * Utility method to run a given Callable task with a specified timeout.
      * If the task does not complete within the specified timeout, it will be aborted.
      *
