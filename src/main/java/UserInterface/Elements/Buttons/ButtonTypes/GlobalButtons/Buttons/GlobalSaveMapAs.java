@@ -24,6 +24,7 @@ public class GlobalSaveMapAs extends GlobalButton {
     @Override
     public void onClick() {
         for (BeatSaberMap uiMap : ui.map) {
+            if (uiMap.difficultyFileName == null || uiMap.difficultyFileName.isEmpty() || uiMap.difficultyFileName.equals("NULL")) continue;
             String filePath = Parameters.filePath;
 
             if (ui.map.isEmpty()) return;

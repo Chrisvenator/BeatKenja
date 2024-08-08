@@ -152,8 +152,8 @@ public class BeatSaberMap {
         try {
             mapInfoJson = new JSONObject(jsonString);
         } catch (JSONException e) {
-            logger.error("Couldn't convert JSON. Something went wrong!");
-            System.err.println("[INFO]: Error parsing BeatSaberMap from Json: Version number not found in the map file!");
+            logger.error("Couldn't convert JSON. Something went wrong for the file: {}", filePath);
+            System.err.println("[INFO]: Error parsing BeatSaberMap from Json: " + filePath);
             return new BeatSaberMap(new ArrayList<>());
         }
 

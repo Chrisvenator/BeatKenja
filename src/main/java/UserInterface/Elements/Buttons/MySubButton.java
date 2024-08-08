@@ -4,6 +4,8 @@ import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Bookmark;
 import UserInterface.UserInterface;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import static DataManager.Parameters.SAVE_PARITY_ERRORS_AS_BOOKMARKS;
@@ -17,27 +19,32 @@ public abstract class MySubButton extends MyButton {
 
     protected void loadNewlyCreatedMaps(List<BeatSaberMap> newmap) {
         for (int i = 0; i < newmap.size(); i++) {
-            BeatSaberMap uimap = ui.map.get(i);
-            BeatSaberMap map = newmap.get(i);
+            BeatSaberMap map = newmap.get(i);   //New Map
 
-            logger.info("Checking map: {}", uimap.difficultyFileName);
+            if (ui.map.get(i).equals(map) || new HashSet<>(Arrays.stream(ui.map.get(i)._notes).toList()).containsAll(Arrays.stream(map._notes).toList())) {
+                logger.error("Map couldn't be loaded!");
+                System.err.println("Map couldn't be loaded!");
+            }
 
-            String ogJson = uimap.originalJSON;
-            String diffName = uimap.difficultyFileName;
-            uimap = map;
-            uimap.originalJSON = ogJson;
-            uimap.bookmarks = uimap.calculateBookmarks();
-            uimap.difficultyFileName = diffName;
-            UserInterface.checkMap(uimap);
+            logger.info("Checking map: {}", ui.map.get(i).difficultyFileName);
+
+            //Copy Original Json from Original Map
+            String ogJson = ui.map.get(i).originalJSON;
+            String diffName = ui.map.get(i).difficultyFileName;
+            ui.map.set(i, map);
+            ui.map.get(i).originalJSON = ogJson;
+            ui.map.get(i).bookmarks = ui.map.get(i).calculateBookmarks();
+            ui.map.get(i).difficultyFileName = diffName;
+            UserInterface.checkMap(ui.map.get(i));
 
             if (SAVE_PARITY_ERRORS_AS_BOOKMARKS) {
-                List<Bookmark> bookmarks = ui.parityErrorsAsBookmarks(uimap.difficultyFileName);
-                uimap.bookmarks.addAll(bookmarks);
+                List<Bookmark> bookmarks = ui.parityErrorsAsBookmarks(ui.map.get(i).difficultyFileName);
+                ui.map.get(i).bookmarks.addAll(bookmarks);
             }
 
             logger.debug("Map creation finished");
-            System.out.println("Created Map: " + uimap.exportAsMap());
-            logger.debug("Created Map: {}", uimap.exportAsMap());
+            System.out.println("Created Map: " + ui.map.get(i).exportAsMap());
+            logger.debug("Created Map: {}", ui.map.get(i).exportAsMap());
 
             logger.info("Newly created map loaded!\n\n");
         }
