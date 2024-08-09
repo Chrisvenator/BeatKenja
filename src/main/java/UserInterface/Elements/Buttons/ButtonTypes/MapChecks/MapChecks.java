@@ -1,5 +1,6 @@
 package UserInterface.Elements.Buttons.ButtonTypes.MapChecks;
 
+import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Note;
 import MapGeneration.PatternGeneration.CommonMethods.CheckParity;
 import UserInterface.Elements.Buttons.MyButton;
@@ -19,10 +20,13 @@ public class MapChecks extends MyButton {
 
     @Override
     public void onClick() {
-        List<Note> notes = new ArrayList<>();
-        Collections.addAll(notes, ui.map._notes);
+        for (BeatSaberMap uiMap : ui.map) {
 
-        logger.info("Checking for mapping errors...");
-        CheckParity.checkAndFixBasicMappingErrors(notes, false);
+            List<Note> notes = new ArrayList<>();
+            Collections.addAll(notes, uiMap._notes);
+
+            logger.info("Checking for mapping errors...");
+            CheckParity.checkAndFixBasicMappingErrors(notes, false);
+        }
     }
 }

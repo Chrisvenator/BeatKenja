@@ -19,9 +19,12 @@ public class UtilsDeleteNoteType extends MySubButton {
 
     @Override
     public void onClick() {
-        ui.map.makeOneHanded((int) Math.round(Double.parseDouble(makeOneHandDeleteType.getText())));
-        logger.info("Removed All Notes with type: {}", makeOneHandDeleteType.getText());
-        logger.debug("One handed diff: : {}", new BeatSaberMap(ui.map._notes).exportAsMap());
-        System.out.println("One handed diff: : " + new BeatSaberMap(ui.map._notes).exportAsMap());
+        for (BeatSaberMap uiMap : ui.map) {
+
+            uiMap.makeOneHanded((int) Math.round(Double.parseDouble(makeOneHandDeleteType.getText())));
+            logger.info("Removed All Notes with type: {}", makeOneHandDeleteType.getText());
+            logger.debug("One handed diff: : {}", new BeatSaberMap(uiMap._notes).exportAsMap());
+            System.out.println("One handed diff: : " + new BeatSaberMap(uiMap._notes).exportAsMap());
+        }
     }
 }

@@ -1,12 +1,13 @@
 package UserInterface.Elements.Buttons.ButtonTypes.MapCreator.Button;
 
 import BeatSaberObjects.Objects.BeatSaberMap;
-import DataManager.Parameters;
 import MapGeneration.GenerationElements.Pattern;
 import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.MapCreatorSubButton;
 import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.ElementTypes;
+import UserInterface.UserInterface;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static MapGeneration.ComplexPatternFromTemplate.complexPatternFromTemplate;
@@ -18,15 +19,20 @@ public class CreateBlueComplexMap extends MapCreatorSubButton {
 
     @Override
     public void onClick() {
+        List<BeatSaberMap> maps = new ArrayList<>();
         ui.manageMap();
-        ui.map.toBlueLeftBottomRowDotTimings();
+        for (BeatSaberMap uiMap : ui.map) {
+            UserInterface.currentDiff = uiMap.difficultyFileName;
+            uiMap.toBlueLeftBottomRowDotTimings();
 
-        try {
-            BeatSaberMap map = new BeatSaberMap(complexPatternFromTemplate(List.of(ui.map._notes), Pattern.adjustVariance(ui.pattern), true, false, false,null, null));
-            loadNewlyCreatedMap(map);
+            try {
+                maps.add(new BeatSaberMap(complexPatternFromTemplate(List.of(uiMap._notes), Pattern.adjustVariance(ui.pattern), true, false, false, null, null)));
 
-        } catch (IllegalArgumentException ex) {
-            printException(ex);
+            }
+            catch (IllegalArgumentException ex) {
+                printException(ex);
+            }
         }
+        loadNewlyCreatedMaps(maps);
     }
 }

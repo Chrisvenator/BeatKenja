@@ -4,9 +4,12 @@ import BeatSaberObjects.Objects.BeatSaberMap;
 import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.MapCreatorSubButton;
 import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.ElementTypes;
+import UserInterface.UserInterface;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static MapGeneration.PatternGeneration.RandomPattern.createRandomPattern;
-
 
 public class CreateRandomMap extends MapCreatorSubButton {
     public CreateRandomMap(MyButton parent) {
@@ -15,14 +18,19 @@ public class CreateRandomMap extends MapCreatorSubButton {
 
     @Override
     public void onClick() {
+        List<BeatSaberMap> maps = new ArrayList<>();
         ui.manageMap();
-        ui.map.toBlueLeftBottomRowDotTimings();
+        for (BeatSaberMap uiMap : ui.map) {
+            UserInterface.currentDiff = uiMap.difficultyFileName;
+            uiMap.toBlueLeftBottomRowDotTimings();
 
-        try {
-            BeatSaberMap map = new BeatSaberMap(createRandomPattern(ui.map._notes, false));
-            loadNewlyCreatedMap(map);
-        } catch (IllegalArgumentException ex) {
-            printException(ex);
+            try {
+                maps.add(new BeatSaberMap(createRandomPattern(uiMap._notes, false)));
+            }
+            catch (IllegalArgumentException ex) {
+                printException(ex);
+            }
         }
+        loadNewlyCreatedMaps(maps);
     }
 }

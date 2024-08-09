@@ -33,7 +33,7 @@ public class BeatSaberMap {
     public Note[] _notes;
     public Obstacle[] _obstacles = new Obstacle[0];
     public List<Bookmark> bookmarks = new ArrayList<>();
-    //    private CustomData[] customData; // not working yet
+    public String difficultyFileName = "NULL";
 
     // <editor-fold desc="constructor methods">
 
@@ -152,8 +152,8 @@ public class BeatSaberMap {
         try {
             mapInfoJson = new JSONObject(jsonString);
         } catch (JSONException e) {
-            logger.error("Couldn't convert JSON. Something went wrong!");
-            System.err.println("[INFO]: Error parsing BeatSaberMap from Json: Version number not found in the map file!");
+            logger.error("Couldn't convert JSON. Something went wrong for the file: {}", filePath);
+            System.err.println("[INFO]: Error parsing BeatSaberMap from Json: " + filePath);
             return new BeatSaberMap(new ArrayList<>());
         }
 
@@ -181,6 +181,7 @@ public class BeatSaberMap {
                 try {
                     Gson gson = new Gson();
                     map = gson.fromJson(mapInfoJson.toString(), BeatSaberMap.class);
+                    map.difficultyFileName = diffFile.getName();
                 } catch (Exception e) {
                     logger.error("Couldn't convert into BeatSaberMap. Something went wrong!");
                     return new BeatSaberMap(new ArrayList<>());
@@ -213,6 +214,7 @@ public class BeatSaberMap {
 
                 //Create Map
                 BeatSaberMap map = new BeatSaberMap(noteList);
+                map.difficultyFileName = diffFile.getName();
                 map._version = versionNumber;
                 map.originalJSON = jsonString;
                 map.calculateBookmarks();

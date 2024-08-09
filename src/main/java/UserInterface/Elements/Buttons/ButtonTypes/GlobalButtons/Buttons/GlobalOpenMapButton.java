@@ -9,8 +9,14 @@ import UserInterface.UserInterface;
 
 import java.awt.*;
 import java.io.File;
+import java.util.ArrayList;
 
-import static DataManager.Parameters.*;
+import static DataManager.Parameters.AUTOLOAD_DEFAULT_MAP_for_testing;
+import static DataManager.Parameters.DEFAULT_PATH_FOR_AUTOLOAD_MAP;
+import static DataManager.Parameters.FILE_CHOOSER;
+import static DataManager.Parameters.MAP_FILE_FORMAT;
+import static DataManager.Parameters.filePath;
+import static DataManager.Parameters.logger;
 
 public class GlobalOpenMapButton extends GlobalButton {
     @lombok.SneakyThrows
@@ -27,7 +33,7 @@ public class GlobalOpenMapButton extends GlobalButton {
                 throw new WrongFileException(DEFAULT_PATH_FOR_AUTOLOAD_MAP, "Wrong file type!");
             }
 
-            ui.map = BeatSaberMap.newMapFromJSON(f.getAbsolutePath());
+            loadMap(f);
             filePath = f.getParent();
 
             logger.info("Successfully created map from Json");
@@ -48,19 +54,48 @@ public class GlobalOpenMapButton extends GlobalButton {
         filePath = FILE_CHOOSER.getCurrentDirectory().toString();
         try {
             File path = FILE_CHOOSER.getSelectedFile();
-            if (path.isDirectory() || path.getAbsolutePath().contains("Info.dat") || !path.getAbsolutePath().contains(".dat")) {
-                logger.error("Wrong file type While loading difficulty: {}", path.getName());
-                throw new WrongFileException(path.getName(), "Wrong file type!");
-            }
+            ui.map.clear();
+            ui.statusCheck.clear();
+            Parameters.PARITY_ERRORS_LIST.clear();
 
-            ui.map = BeatSaberMap.newMapFromJSON(path.getAbsolutePath());
+            if (path.isDirectory()) {
+                File [] files = path.listFiles(MAP_FILE_FORMAT);
+                if (files == null || files.length == 0) {
+                    logger.error("No files found in path: {}", path);
+                    System.err.println("No files found in path: " + path);
+                    errorWhileLoading(new WrongFileException(path.getAbsolutePath(), "Could not find valid files in folder!"));
+                    return;
+                }
+
+                //Change filePath because before, we set it to the parent dir and not the current (working) dir
+                filePath = path.getAbsolutePath();
+                for (File f : files) {
+                    System.out.println("Found file: " + f.getName());
+                    loadMap(f);
+                }
+            } else {
+                if (path.getAbsolutePath().contains("Info.dat") || !path.getAbsolutePath().contains(".dat")) {
+                    logger.error("Wrong file type While loading difficulty: {}", path.getName());
+                    throw new WrongFileException(path.getName(), "Wrong file type!");
+                } else loadMap(path);
+            }
             successfullyLoaded(FILE_CHOOSER.getSelectedFile().getAbsolutePath());
-        }catch (WrongFileException e){
+        }
+        catch (WrongFileException e) {
             errorWhileLoading(e);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             errorWhileLoading(e);
             printException(e);
         }
+    }
+
+    private void loadMap(File path){
+        ui.map.add(BeatSaberMap.newMapFromJSON(path.getAbsolutePath()));
+        Parameters.PARITY_ERRORS_LIST.put(path.getName(), new ArrayList<>());
+
+        logger.info("Successfully loaded: {}/{}", path.getParent(), path.getName());
+        System.out.println("Successfully loaded: " + path.getParent() + "/" + path.getName());
     }
 
     private void errorWhileLoading(Exception e) {
@@ -68,18 +103,15 @@ public class GlobalOpenMapButton extends GlobalButton {
         System.err.println("[ERROR]: Map probably has the wrong format: \n" + e);
         ui.labelMapDiff.setText("There was an error while importing the map!");
         ui.labelMapDiff.setBounds(100, 20, 300, 30);
-        setBounds(320, 20, 300, 30);
-        setBackground(Color.RED);
+        this.setBounds(320, 20, 300, 30);
+        this.setBackground(Color.RED);
         ui.mapSuccessfullyLoaded = false;
     }
 
     private void successfullyLoaded(String absolutePath) {
-        setText("load another diff");
-        setBounds(270, 20, 200, 30);
-        setBackground(Color.GREEN);
-        String successMessage = "Successfully loaded difficulty: \"" + absolutePath + "\"";
-        logger.info(successMessage);
-        ui.statusCheck.setText(successMessage);
+        this.setText("load another diff");
+        this.setBounds(270, 20, 200, 30);
+        this.setBackground(Color.GREEN);
         ui.mapSuccessfullyLoaded = true;
     }
 }

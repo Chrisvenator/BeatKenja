@@ -26,7 +26,7 @@ public class Start {
 
     /**
      *********** Planned Features ***********
-     * ganzen Ordner zu einer Complex-Map machen
+     * ganzen Ordner zu einer Complex-Map machen <-- Testen
      * export as .jars
      * Bei schnellen Sektionen abwechselndes Pattern machen mit gleichen Abständen
      * BatchWavToMaps Testen, ob output noch immer geht
