@@ -6,8 +6,10 @@ import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.GlobalButton;
 import UserInterface.Elements.ElementTypes;
 import UserInterface.UserInterface;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -23,6 +25,7 @@ public class GlobalSaveMapAs extends GlobalButton {
 
     @Override
     public void onClick() {
+        int confirmationPopUp = -1;
         for (BeatSaberMap uiMap : ui.map) {
             if (uiMap.difficultyFileName == null || uiMap.difficultyFileName.isEmpty() || uiMap.difficultyFileName.equals("NULL")) continue;
             String filePath = Parameters.filePath;
@@ -37,10 +40,22 @@ public class GlobalSaveMapAs extends GlobalButton {
                     return;
                 }
                 filePath = FILE_CHOOSER.getSelectedFile().getAbsolutePath();
+
+                if (confirmationPopUp == -1) {
+                    confirmationPopUp = confirmationPupUp();
+                    if (confirmationPopUp == 2) return;
+                } else if (confirmationPopUp == 1) if (!this.createBackup(filePath)) {logger.error("Something went wrong");continue;}
+
             } else filePath += "/" + uiMap.difficultyFileName;
 
             filePath += filePath.contains(".dat") ? "" : ".dat";
             System.out.println(filePath);
+
+            if (confirmationPopUp == -1) {
+                confirmationPopUp = confirmationPupUp();
+                if (confirmationPopUp == 2) return;
+            } else if (confirmationPopUp == 1) if (!this.createBackup(filePath)) {logger.error("Something went wrong");continue;}
+
 
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(filePath))) {
                 bw.write(uiMap.exportAsMap());
@@ -53,5 +68,33 @@ public class GlobalSaveMapAs extends GlobalButton {
                 printException(new IOException("There was an error while saving the map " + filePath + "!", e));
             }
         }
+    }
+
+    //TODO: Es werden nur 3 von 4 gespeichert!
+    private boolean createBackup(String filePath) {
+        File f = new File(filePath);
+        if (!f.exists()) return true;
+
+        int i = 1;
+        while (f.exists()){
+            f = new File(filePath + i);
+            i++;
+        }
+        return new File(filePath).renameTo(f);
+    }
+
+    private int confirmationPupUp(){
+        String[] options = { "YES", "Create Backup", "NO" };
+
+        return JOptionPane.showOptionDialog(
+                ui,
+                "Are you sure you want to save? This will overwrite all files! You can make a backup of your old files with the option \"make backup\"",
+                "Confirmation",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[2]
+        );
     }
 }
