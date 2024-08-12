@@ -3,11 +3,13 @@ package DataManager.Config;
 import DataManager.Database.DatabaseOperations.DifficultyEntityOperations;
 import DataManager.Database.DatabaseOperations.GenreEntityOperations;
 import DataManager.Database.DatabaseOperations.TagEntityOperations;
+import DataManager.Parameters;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.awt.*;
+import java.io.File;
 import java.util.List;
 
 @lombok.Getter @lombok.Setter @lombok.ToString
@@ -54,13 +56,16 @@ public class Configuration
     public static class DefaultPaths
     {
         @JsonProperty("wip-folder")
-        public String wipFolder = "C:/Program Files (x86)/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels/";
+//        public String wipFolder = "C:/Program Files (x86)/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels/";
+        public String wipFolder = new File("CustomWIPLevels").getAbsolutePath();
         @JsonProperty("config")
         public String config = "./config.json";
         @JsonProperty("readme")
         public String readme = "./README.md";
+        @JsonProperty("pattern-folder")
+        public String patternFolder = (Parameters.executedByJar ? "src/main/resources/" : "")  + "Patterns/";
         @JsonProperty("default-pattern")
-        public String defaultPattern = "src/main/resources/MapTemplates/AllGroupedV1; 98; 4;[StandardExpert];NULL;NULL.pat";
+        public String defaultPattern = (Parameters.executedByJar ? "src/main/resources/" : "") + "Patterns/AllGroupedV1; 98; 4;[StandardExpert];NULL;NULL.pat";
     }
 
     @lombok.Getter @lombok.Setter @lombok.ToString
@@ -176,6 +181,6 @@ public class Configuration
         @JsonProperty("autoload-default-map-for-testing")
         public boolean autoloadDefaultMapForTesting = true;
         @JsonProperty("default-path-for-autoload-map")
-        public String defaultPathForAutoloadMap = "src/main/resources/dev/3df62/ExpertPlusStandard.dat";
+        public String defaultPathForAutoloadMap = (Parameters.executedByJar ? "src/main/resources/" : "") + "dev/3df62/ExpertPlusStandard.dat";
     }
 }

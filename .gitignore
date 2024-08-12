@@ -91,3 +91,4 @@ libs/*
 /database/exported_schema.sql
 config.json
 /database/data/*
+/target/

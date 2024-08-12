@@ -53,6 +53,7 @@ public class UserInterface extends JFrame {
     public final StatusCheckTextPane statusCheck; //essentially the log
     public boolean mapSuccessfullyLoaded = false;
     public static int patternVariance = 0;
+    public static float bpm = -1;
     /**
      * This var is used to tell the algorithm in which Difficulty to place the parity breaks.
      */

@@ -1,6 +1,7 @@
 package DataManager;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import DataManager.Config.Configuration;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static DataManager.Parameters.*;
 
@@ -8,18 +9,33 @@ import static DataManager.Parameters.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
 
 public class CreateAllNecessaryDIRsAndFiles {
+    @Deprecated
     public static final String[] preMadePatternsFilesToCopy = {
             DEFAULT_ONSET_GENERATION_FOLDER + "SongToOnsets.py",      //Default value: "OnsetGeneration/SongToOnsets.py",
             DEFAULT_ONSET_GENERATION_FOLDER + "ConvertSong.py",       //Default value: "OnsetGeneration/ConvertSong.py",
-            README_FILE_LOCATION                                      //Default value: "README.md"
+            README_FILE_LOCATION,                                     //Default value: "README.md"
+            DEFAULT_PATTERN_PATH,
     };
+
+    public static final Set<String> foldersToCopyOutOfJar = Set.of(
+            "OnsetGeneration",
+            "README",
+            "Patterns",
+            "dev",
+            "assets"
+    );
 
     public static final String[] directories = {
             DEFAULT_ONSET_GENERATION_FOLDER,
             ONSET_GENERATION_FOLDER_PATH_INPUT,
-            ONSET_GENERATION_FOLDER_PATH_OUTPUT
+            ONSET_GENERATION_FOLDER_PATH_OUTPUT,
+            DEFAULT_PATTERN_FOLDER_PATH
     };
 
     public static void createAllNecessaryDIRsAndFiles() {
@@ -30,15 +46,74 @@ public class CreateAllNecessaryDIRsAndFiles {
         }
         else installPip();
 
+        logger.info("Creating all necessary directories and files.");
+        System.out.println("Creating all necessary directories and files.");
 
+        createConfig();
+        if (DEFAULT_PATH.contains("Steam")) throw new RuntimeException("Hier ist der Fehler: " + DEFAULT_PATH);
+
+//        createDirectories(CreateAllNecessaryDIRsAndFiles.directories); //TODO
+//
+//        extractFilesFromJar(CreateAllNecessaryDIRsAndFiles.preMadePatternsFilesToCopy); //TODO
+
+        try {
+            extractSpecificFolders("./", foldersToCopyOutOfJar);
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    public static void extractSpecificFolders(String destDir, Set<String> foldersToExtract) throws IOException {
+        // Get the path of the running JAR file
+        String jarPath = new File(CreateAllNecessaryDIRsAndFiles.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getAbsolutePath();
+
+        // Open the JAR file as a stream
+        try (JarInputStream jarInputStream = new JarInputStream(Files.newInputStream(Paths.get(jarPath)))) {
+            JarEntry entry;
+
+            // Iterate through the entries in the JAR file
+            while ((entry = jarInputStream.getNextJarEntry()) != null) {
+                // Check if the entry is within one of the specified folders
+                for (String folder : foldersToExtract) {
+                    if (entry.getName().startsWith(folder)) {
+                        // Create the output file
+                        File entryFile = new File(destDir, entry.getName());
+
+                        if (entry.isDirectory()) {
+                            // If the entry is a directory, create the directory
+                            if (!entryFile.exists()) {
+                                entryFile.mkdirs();
+                            }
+                        } else {
+                            // If the entry is a file, extract it
+                            File parentDir = entryFile.getParentFile();
+                            if (!parentDir.exists()) {
+                                parentDir.mkdirs(); // Create parent directories if they don't exist
+                            }
+
+                            try (FileOutputStream outputStream = new FileOutputStream(entryFile)) {
+                                byte[] buffer = new byte[1024];
+                                int bytesRead;
+                                while ((bytesRead = jarInputStream.read(buffer)) != -1) {
+                                    outputStream.write(buffer, 0, bytesRead);
+                                }
+                            }
+                        }
+                        break; // Exit the loop since we found a matching folder
+                    }
+                }
+            }
+        }
+    }
+
+    public static void createConfig(){
         logger.info("Checking if directories exist");
-        //Checking if the directories exist.
-        //If yes, then don't create them again
         File f3 = new File(CONFIG_FILE_LOCATION);             //Default Value: "./config.json"
-        if (f3.exists() && f3.isFile()) {
-            logger.info("config file exists");
-            return;
-        } else {
+        if (f3.exists() && f3.isFile()) logger.info("config file exists");
+        else {
+
             logger.info("config file does not exist");
             try {
                 FileManager.overwriteFile(CONFIG_FILE_LOCATION, configLoader.exportConfig());
@@ -49,18 +124,12 @@ public class CreateAllNecessaryDIRsAndFiles {
             }
         }
 
-        logger.info("Creating all necessary directories and files.");
-        System.out.println("Creating all necessary directories and files.");
-
-
-        createDirectories(CreateAllNecessaryDIRsAndFiles.directories);
-
-        extractFilesFromJar(CreateAllNecessaryDIRsAndFiles.preMadePatternsFilesToCopy);
     }
 
     /**
      * Creates all the directories that are needed for the program to work.
      */
+    @Deprecated
     public static void createDirectories(String[] dirs) {
         try {
             logger.info("Creating directories.");
@@ -81,6 +150,7 @@ public class CreateAllNecessaryDIRsAndFiles {
      *
      * @param filesToCopy String array of the relative file paths of the files that should be moved out of the JAR.
      */
+    @Deprecated
     private static void extractFilesFromJar(String[] filesToCopy) {
         // Get the current ClassLoader
         ClassLoader classLoader = CreateAllNecessaryDIRsAndFiles.class.getClassLoader();
@@ -90,10 +160,11 @@ public class CreateAllNecessaryDIRsAndFiles {
             for (String filePathToCopy : filesToCopy) {
                 logger.info("Extracting file: {}", filePathToCopy);
                 filePathToCopy = filePathToCopy.replaceAll("\\./", "");
-                InputStream inputStream = classLoader.getResourceAsStream(filePathToCopy);
                 File f = new File(filePathToCopy);
                 logger.info("Path: {}", f.getAbsolutePath());
                 System.out.println(f.getAbsolutePath());
+                if (f.isDirectory() && f.list() != null) extractFilesFromJar(f.list());
+                InputStream inputStream = classLoader.getResourceAsStream(filePathToCopy);
 
                 if (inputStream != null) {
 

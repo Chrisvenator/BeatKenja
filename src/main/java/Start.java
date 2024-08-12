@@ -1,8 +1,13 @@
 import DataManager.CreateAllNecessaryDIRsAndFiles;
 import DataManager.Database.DatabaseExport;
+import DataManager.Parameters;
 import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
 import UserInterface.UserInterface;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import java.io.File;
+import java.util.Objects;
 import java.util.Random;
 import java.util.logging.Level;
 
@@ -26,13 +31,14 @@ public class Start {
 
     /**
      *********** Planned Features ***********
-     * ganzen Ordner zu einer Complex-Map machen <-- Testen
-     * export as .jars
+     * export as .jar
+     * SaveMap confirmation button
      * Bei schnellen Sektionen abwechselndes Pattern machen mit gleichen Abständen
-     * BatchWavToMaps Testen, ob output noch immer geht
      * lehnen
      *****************************************
     **/
+
+    public static UserInterface ui;
 
 
     public static void main(String[] args) throws NoteNotValidException {
@@ -45,9 +51,12 @@ public class Start {
         logger.info("Seed: {}", SEED);
         logger.info("Setting Hibernate Logger to warning");
 
-        CreateAllNecessaryDIRsAndFiles.createAllNecessaryDIRsAndFiles();
+        if (executedByJar && !new File("./congi.json").exists()) {
+            logger.info("Found that the program is executed by a jar file.");
+            CreateAllNecessaryDIRsAndFiles.createAllNecessaryDIRsAndFiles();
+        }
 
-        UserInterface ui = new UserInterface();
+        ui = new UserInterface();
         ui.setVisible(true);
 
         if (useDatabase) ui.addWindowListener(new java.awt.event.WindowAdapter() {
