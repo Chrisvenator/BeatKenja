@@ -15,14 +15,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
 public class CreateAllNecessaryDIRsAndFiles {
-    @Deprecated
-    public static final String[] preMadePatternsFilesToCopy = {
-            DEFAULT_ONSET_GENERATION_FOLDER + "SongToOnsets.py",      //Default value: "OnsetGeneration/SongToOnsets.py",
-            DEFAULT_ONSET_GENERATION_FOLDER + "ConvertSong.py",       //Default value: "OnsetGeneration/ConvertSong.py",
-            README_FILE_LOCATION,                                     //Default value: "README.md"
-            DEFAULT_PATTERN_PATH,
-    };
-
     public static final Set<String> foldersToCopyOutOfJar = Set.of(
             "OnsetGeneration",
             "README",
@@ -30,13 +22,6 @@ public class CreateAllNecessaryDIRsAndFiles {
             "dev",
             "assets"
     );
-
-    public static final String[] directories = {
-            DEFAULT_ONSET_GENERATION_FOLDER,
-            ONSET_GENERATION_FOLDER_PATH_INPUT,
-            ONSET_GENERATION_FOLDER_PATH_OUTPUT,
-            DEFAULT_PATTERN_FOLDER_PATH
-    };
 
     public static void createAllNecessaryDIRsAndFiles() {
         //Checking dependencies:
@@ -51,10 +36,6 @@ public class CreateAllNecessaryDIRsAndFiles {
 
         createConfig();
         if (DEFAULT_PATH.contains("Steam")) throw new RuntimeException("Hier ist der Fehler: " + DEFAULT_PATH);
-
-//        createDirectories(CreateAllNecessaryDIRsAndFiles.directories); //TODO
-//
-//        extractFilesFromJar(CreateAllNecessaryDIRsAndFiles.preMadePatternsFilesToCopy); //TODO
 
         try {
             extractSpecificFolders("./", foldersToCopyOutOfJar);
@@ -124,78 +105,6 @@ public class CreateAllNecessaryDIRsAndFiles {
             }
         }
 
-    }
-
-    /**
-     * Creates all the directories that are needed for the program to work.
-     */
-    @Deprecated
-    public static void createDirectories(String[] dirs) {
-        try {
-            logger.info("Creating directories.");
-            for (String dir : dirs) {
-                logger.info("Creating directory: {}", dir);
-                Files.createDirectories(Paths.get(dir));
-            }
-        } catch (IOException e) {
-            logger.fatal("There has been an Exception while creating the directories: {}", e.getMessage());
-            System.err.println("There has been an Exception while creating the files:\n");
-            e.printStackTrace();
-        }
-    }
-
-
-    /**
-     * Extracts files from the JAR and copies them to the destination directory.
-     *
-     * @param filesToCopy String array of the relative file paths of the files that should be moved out of the JAR.
-     */
-    @Deprecated
-    private static void extractFilesFromJar(String[] filesToCopy) {
-        // Get the current ClassLoader
-        ClassLoader classLoader = CreateAllNecessaryDIRsAndFiles.class.getClassLoader();
-        logger.info("Extracting files from jar.");
-
-        try {
-            for (String filePathToCopy : filesToCopy) {
-                logger.info("Extracting file: {}", filePathToCopy);
-                filePathToCopy = filePathToCopy.replaceAll("\\./", "");
-                File f = new File(filePathToCopy);
-                logger.info("Path: {}", f.getAbsolutePath());
-                System.out.println(f.getAbsolutePath());
-                if (f.isDirectory() && f.list() != null) extractFilesFromJar(f.list());
-                InputStream inputStream = classLoader.getResourceAsStream(filePathToCopy);
-
-                if (inputStream != null) {
-
-                    File destinationFile = new File(DEFAULT_EXPORT_PATH + filePathToCopy);
-                    if (!destinationFile.getParentFile().mkdirs()) {
-                        System.err.println("[FATAL]: Something went wrong while trying to create folder!");
-                        logger.fatal("Something went wrong while trying to create folder: {}", destinationFile.getParentFile().getAbsolutePath());
-                    }
-
-                    OutputStream outputStream = new FileOutputStream(destinationFile);
-                    byte[] buffer = new byte[1024];
-                    int bytesRead;
-                    while ((bytesRead = inputStream.read(buffer)) != -1) {
-                        outputStream.write(buffer, 0, bytesRead);
-                    }
-
-                    outputStream.close();
-                    inputStream.close();
-
-                    logger.info("File copied: {}", filePathToCopy);
-                    System.out.println("File copied: " + filePathToCopy);
-                } else {
-                    logger.error("File not found in the JAR: {}", filePathToCopy);
-                    System.out.println("File not found in the JAR: " + filePathToCopy);
-                    return;
-                }
-            }
-        } catch (IOException e) {
-            logger.fatal("There has been an Exception while creating the files: {}", e.toString());
-            e.printStackTrace();
-        }
     }
 
     /**
