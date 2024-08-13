@@ -18,7 +18,7 @@ public class GlobalButton extends MyButton {
 //        init();
     }
 
-    public GlobalButton init() {
+    public void init() {
         this.addChild(new GlobalOpenMapButton(ui));
         this.addChild(globalBPMField);
         this.addChild(new GlobalConvertMP3ToMaps(ui));
@@ -27,7 +27,5 @@ public class GlobalButton extends MyButton {
         this.addChild(new GlobalShowPatterns(ui));
         this.addChild(new MapChecks(ui));
         this.addChild(new GlobalSeedFrame(ui));
-
-        return this;
     }
 }
