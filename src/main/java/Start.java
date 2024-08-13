@@ -49,7 +49,7 @@ public class Start {
         logger.info("Seed: {}", SEED);
         logger.info("Setting Hibernate Logger to warning");
 
-        if (executedByJar && !new File("./congi.json").exists()) {
+        if (executedByJar && !new File("./config.json").exists()) {
             logger.info("Found that the program is executed by a jar file.");
             CreateAllNecessaryDIRsAndFiles.createAllNecessaryDIRsAndFiles();
         }

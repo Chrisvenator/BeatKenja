@@ -86,7 +86,7 @@ libs/*
 /database/.idea/dataSources.xml
 /database/.idea/modules.xml
 /database/.idea/vcs.xml
-/src/main/resources/All_Maps_Merged.json
+/All_Maps_Merged.json
 /OnsetGeneration/mp3Files/
 /database/exported_schema.sql
 config.json

@@ -17,7 +17,7 @@ import java.util.jar.JarInputStream;
 public class CreateAllNecessaryDIRsAndFiles {
     public static final Set<String> foldersToCopyOutOfJar = Set.of(
             "OnsetGeneration",
-            "README",
+            "README.md",
             "Patterns",
             "dev",
             "assets"
@@ -35,7 +35,7 @@ public class CreateAllNecessaryDIRsAndFiles {
         System.out.println("Creating all necessary directories and files.");
 
         createConfig();
-        if (DEFAULT_PATH.contains("Steam")) throw new RuntimeException("Hier ist der Fehler: " + DEFAULT_PATH);
+//        if (DEFAULT_PATH.contains("Steam")) throw new RuntimeException("Hier ist der Fehler: " + DEFAULT_PATH);
 
         try {
             extractSpecificFolders("./", foldersToCopyOutOfJar);
@@ -48,7 +48,7 @@ public class CreateAllNecessaryDIRsAndFiles {
 
     public static void extractSpecificFolders(String destDir, Set<String> foldersToExtract) throws IOException {
         // Get the path of the running JAR file
-        String jarPath = new File(CreateAllNecessaryDIRsAndFiles.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getAbsolutePath();
+        String jarPath = new File(CreateAllNecessaryDIRsAndFiles.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getAbsolutePath().replaceAll("%20", " ");
 
         // Open the JAR file as a stream
         try (JarInputStream jarInputStream = new JarInputStream(Files.newInputStream(Paths.get(jarPath)))) {
