@@ -40,23 +40,20 @@ public class GlobalSaveMapAs extends GlobalButton {
                     return;
                 }
                 filePath = FILE_CHOOSER.getSelectedFile().getAbsolutePath();
-
-                if (confirmationPopUp == -1) {
-                    confirmationPopUp = confirmationPupUp();
-                    if (confirmationPopUp == 2) return;
-                } else if (confirmationPopUp == 1) if (!this.createBackup(filePath)) {logger.error("Something went wrong");continue;}
-
             } else filePath += "/" + uiMap.difficultyFileName;
 
             filePath += filePath.contains(".dat") ? "" : ".dat";
             System.out.println(filePath);
 
+            //Confirmation
             if (confirmationPopUp == -1) {
                 confirmationPopUp = confirmationPupUp();
                 if (confirmationPopUp == 2) return;
-            } else if (confirmationPopUp == 1) if (!this.createBackup(filePath)) {logger.error("Something went wrong");continue;}
+            }
+            if (confirmationPopUp == 1) if (!this.createBackup(filePath)) {logger.error("Something went wrong");continue;}
 
 
+            //Write
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(filePath))) {
                 bw.write(uiMap.exportAsMap());
                 logger.info("Map saved successfully at: {}", filePath);
