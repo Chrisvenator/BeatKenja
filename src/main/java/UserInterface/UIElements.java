@@ -39,7 +39,7 @@ public class UIElements {
     public JLabel labelMapDiff() {
         logger.debug("Creating labelMapDiff...");
         JLabel labelMapDiff = new JLabel("Choose map difficulty file: ");
-        labelMapDiff.setBounds(50, 20, 200, 30);
+        labelMapDiff.setBounds(60, 20, 200, 30);
         if (darkMode) labelMapDiff.setForeground(Color.white);
         userInterface.add(labelMapDiff);
         logger.debug("labelMapDiff created successfully.");
@@ -63,30 +63,6 @@ public class UIElements {
         StatusCheckTextPane statusCheck = new StatusCheckTextPane();
 
         userInterface.add(statusCheck);
-
-//        if (!CreateAllNecessaryDIRsAndFiles.isPythonInstalled()) {
-//            String error = "[ERROR]: Python could not be found. Please ensure that it is installed and added to the PATH variable or else the Onset Generation will not work!\n";
-//            statusCheck.append(error);
-//            logger.error("Python not found.");
-//        }
-//
-//        if (!CreateAllNecessaryDIRsAndFiles.isPipInstalled()) {
-//            String error = "[ERROR]: PIP could not be found. Please ensure that it is installed or else the Onset Generation will not work!\n";
-//            statusCheck.append(error);
-//            logger.error("PIP not found.");
-//        }
-//
-//        if (!CreateAllNecessaryDIRsAndFiles.isFFMpegInstalled()) {
-//            String error = "[ERROR]: FFMPEG could not be found. Please ensure that it is installed and added to the PATH variable or else the Onset Generation will not work!\n";
-//            statusCheck.append(error);
-//            logger.error("FFMPEG not found.");
-//        }
-//
-//        if (CreateAllNecessaryDIRsAndFiles.isPythonInstalled() && CreateAllNecessaryDIRsAndFiles.isPipInstalled() && CreateAllNecessaryDIRsAndFiles.isFFMpegInstalled()) {
-//            String info = "[INFO]: All necessary dependencies are installed. You can now convert MP3s to timing maps.\n\n";
-//            statusCheck.append(info);
-//            logger.info("All necessary dependencies are installed.");
-//        }
 
         logger.debug("statusTextArea created successfully.");
         return statusCheck;

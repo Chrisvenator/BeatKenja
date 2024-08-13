@@ -7,6 +7,7 @@ import DataManager.Database.DatabaseOperations.TagEntityOperations;
 import DataManager.Config.Configuration;
 import DataManager.Records.PatMetadata;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons.Common.DifficultyFileNameExtensionFilter;
+import UserInterface.UserInterface;
 import javafx.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -79,7 +80,8 @@ public class Parameters {
     public static final Color darkModeForegroundColor =  COLORS.darkModeForegroundColor;
 
     //Note Generator settings:
-    public static final double BPM = MAP_GENERATOR.defaultBpm;
+//    public static double BPM = AUTOLOAD_DEFAULT_MAP_for_testing ? 1 : MAP_GENERATOR.defaultBpm;
+    public static double BPM = MAP_GENERATOR.defaultBpm;
     public static final double PLACEMENT_PRECISION = MAP_GENERATOR.defaultPlacementPrecision; //Placement Precision
     public static final boolean FIX_PLACEMENTS = MAP_GENERATOR.fixPlacements; //should the timings be fixed so that BeatSaver doesn't flag it as AI made?
     public static final boolean SHOW_SPECTOGRAM_WHEN_GENERATING_ONSETS = MAP_GENERATOR.showSpectogramWhenGeneratingOnsets;

@@ -49,14 +49,12 @@ public class UserInterface extends JFrame {
     public Pattern pattern;
 
     //GUI:
+    public GlobalButton globalButton;
     public final JLabel labelMapDiff;
     public final StatusCheckTextPane statusCheck; //essentially the log
     public boolean mapSuccessfullyLoaded = false;
     public static int patternVariance = 0;
-    public static float bpm = -1;
-    /**
-     * This var is used to tell the algorithm in which Difficulty to place the parity breaks.
-     */
+    /** "currentDiff" is used to tell the algorithm in which Difficulty to place the parity breaks. */
     public static String currentDiff;
 
     public UserInterface() throws NoteNotValidException {
@@ -76,7 +74,8 @@ public class UserInterface extends JFrame {
         GuiAppender.setUserInterface(this);
         JCheckBox ignoreDDsCheckBox = uiElements.ignoreDDsCheckbox();
 
-        new GlobalButton(this);
+        globalButton = new GlobalButton(this);
+        globalButton.init();
         GlobalSaveMapAs saveMapButton = new GlobalSaveMapAs(this);
         GlobalOpenMapInBrowser openMapInBrowserButton = new GlobalOpenMapInBrowser(this);
         MyGlobalJSlider globalPatternVarianceJSlider = new GlobalPatternVarianceJSlider(this);
@@ -96,6 +95,7 @@ public class UserInterface extends JFrame {
         statusCheck.append("config: \nverbose: " + verbose + "\npath to WIP-Folder: " + DEFAULT_PATH + "\ndark mode:" + DARK_MODE + "\nsave new maps to WIP folder (default path): " + saveNewMapsToDefaultPath + "\n\n");
         ignoreDDsCheckBox.addActionListener(e -> statusCheck.append("\n[INFO]: ignore DDs: " + (ignoreDDs = ignoreDDsCheckBox.isSelected())));
         //</editor-fold desc="Event Listener">
+
 
         //<editor-fold desc="Thread">
         new Thread(() -> {
