@@ -1,7 +1,9 @@
 package UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons;
 
 import BeatSaberObjects.Objects.BeatSaberMap;
+import DataManager.FileManager;
 import DataManager.Parameters;
+import MapGeneration.PatternGeneration.CommonMethods.Parser;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Exceptions.WrongFileException;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.GlobalButton;
 import UserInterface.Elements.ElementTypes;
@@ -10,8 +12,10 @@ import UserInterface.UserInterface;
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import static DataManager.Parameters.AUTOLOAD_DEFAULT_MAP_for_testing;
+import static DataManager.Parameters.BPM;
 import static DataManager.Parameters.DEFAULT_PATH_FOR_AUTOLOAD_MAP;
 import static DataManager.Parameters.FILE_CHOOSER;
 import static DataManager.Parameters.MAP_FILE_FORMAT;
@@ -69,6 +73,7 @@ public class GlobalOpenMapButton extends GlobalButton {
 
                 //Change filePath because before, we set it to the parent dir and not the current (working) dir
                 filePath = path.getAbsolutePath();
+                extractAndSetGlobalBPM(path);
                 for (File f : files) {
                     System.out.println("Found file: " + f.getName());
                     loadMap(f);
@@ -78,7 +83,9 @@ public class GlobalOpenMapButton extends GlobalButton {
                     logger.error("Wrong file type While loading difficulty: {}", path.getName());
                     throw new WrongFileException(path.getName(), "Wrong file type!");
                 } else loadMap(path);
+                extractAndSetGlobalBPM(path.getParentFile());
             }
+
             successfullyLoaded(FILE_CHOOSER.getSelectedFile().getAbsolutePath());
         }
         catch (WrongFileException e) {
@@ -90,19 +97,41 @@ public class GlobalOpenMapButton extends GlobalButton {
         }
     }
 
-    private void loadMap(File path){
+    public void loadMap(File path){
         ui.map.add(BeatSaberMap.newMapFromJSON(path.getAbsolutePath()));
         Parameters.PARITY_ERRORS_LIST.put(path.getName(), new ArrayList<>());
 
         logger.info("Successfully loaded: {}/{}", path.getParent(), path.getName());
         System.out.println("Successfully loaded: " + path.getParent() + "/" + path.getName());
+
+        extractAndSetGlobalBPM(path);
+    }
+
+    private void extractAndSetGlobalBPM (File path){
+        File info = new File(path.getParentFile().getAbsolutePath() + "/info.dat");
+        if (!info.exists() || !info.isFile() || !info.canRead()) {return;}
+
+        List<String> infoFile = FileManager.readFile(info.getAbsolutePath());
+        String searchString = "\"_beatsPerMinute\": ";
+        for (String line : infoFile) {
+            if (line.contains(searchString)){
+                ui.globalButton.globalBPMField.setBPM(
+                        Parser.parseValue(
+                                line.substring(line.indexOf(searchString) + searchString.length(), line.lastIndexOf(",")),
+                                "bpm according to info.at",
+                                Double::parseDouble,
+                                BPM
+                        ) // Parser
+                ); //set bpm
+            }
+        }
     }
 
     private void errorWhileLoading(Exception e) {
         logger.error("Error while loading Map. Map probably has the wrong format: {}", e.getMessage());
         System.err.println("[ERROR]: Map probably has the wrong format: \n" + e);
         ui.labelMapDiff.setText("There was an error while importing the map!");
-        ui.labelMapDiff.setBounds(100, 20, 300, 30);
+        ui.labelMapDiff.setBounds(60, 20, 300, 30);
         this.setBounds(320, 20, 300, 30);
         this.setBackground(Color.RED);
         ui.mapSuccessfullyLoaded = false;

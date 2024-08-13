@@ -67,7 +67,6 @@ public class GlobalSaveMapAs extends GlobalButton {
         }
     }
 
-    //TODO: Es werden nur 3 von 4 gespeichert!
     private boolean createBackup(String filePath) {
         File f = new File(filePath);
         if (!f.exists()) return true;

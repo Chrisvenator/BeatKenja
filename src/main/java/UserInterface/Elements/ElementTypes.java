@@ -59,6 +59,7 @@ public class ElementTypes {
 //    public static final ButtonType GLOBAL_SHOW_PATTERNS_BUTTON = new ButtonType("Show", 415, 75, 70, 20, true);
 
     //Global Text Field Types
-    public static final TextFieldType GLOBAL_SEED_FRAME = new TextFieldType(String.valueOf(Parameters.SEED), 1000, 20, 100, 20, true);
+    public static final TextFieldType GLOBAL_SEED_FIELD = new TextFieldType(String.valueOf(Parameters.SEED), 1000, 20, 100, 20, true);
+    public static final TextFieldType GLOBAL_BPM_FIELD = new TextFieldType(String.valueOf(Parameters.BPM), 100, 50, 100, 20, true);
     public static final SliderTypes GLOBAL_PATTERN_VARIANCE_SLIDER = new SliderTypes(JSlider.HORIZONTAL, 50, 70, 200, 50, true, -50, 50, 0);
 }

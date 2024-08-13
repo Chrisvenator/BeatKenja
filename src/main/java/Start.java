@@ -31,7 +31,6 @@ public class Start {
 
     /**
      *********** Planned Features ***********
-     * SaveMap confirmation button
      * Bei schnellen Sektionen abwechselndes Pattern machen mit gleichen Abständen
      * lehnen
      *****************************************
