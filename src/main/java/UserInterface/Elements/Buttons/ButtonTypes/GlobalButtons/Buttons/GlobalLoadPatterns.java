@@ -28,7 +28,7 @@ public class GlobalLoadPatterns extends GlobalButton {
 
     @Override
     public void onClick() {
-        FILE_CHOOSER.setCurrentDirectory(new File("Patterns/PatternProbabilities"));
+        FILE_CHOOSER.setCurrentDirectory(new File(Parameters.DEFAULT_PATTERN_FOLDER_PATH));
         int option = FILE_CHOOSER.showOpenDialog(this);
         FILE_CHOOSER.setCurrentDirectory(new File(DEFAULT_PATH));
         logger.debug("File chooser opened with option: {}", option);

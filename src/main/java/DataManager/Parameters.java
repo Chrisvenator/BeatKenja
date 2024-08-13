@@ -15,10 +15,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.logging.Level;
 
@@ -26,10 +26,10 @@ import static BeatSaberObjects.Objects.Enums.ParityErrorEnum.*;
 
 @SuppressWarnings("unused")
 public class Parameters {
-    public static final Logger logger = LogManager.getLogger();
+    public static final Logger logger = LogManager.getLogger(Parameters.class);
 
     public static final ConfigLoader configLoader = new ConfigLoader("./config.json");
-    private static final Configuration config = new ConfigLoader("./config.json").getConfig();
+    private static final Configuration config = configLoader.getConfig();
     private static final Configuration.Colors COLORS = config.colors;
     private static final Configuration.DefaultPaths DEFAULT_PATHS = config.defaultPath;
     private static final Configuration.Database DATABASE = config.database;
@@ -56,6 +56,7 @@ public class Parameters {
     public static final String README_FILE_LOCATION = DEFAULT_PATHS.readme;
     public static final String DEFAULT_PATTERN_PATH = DEFAULT_PATHS.defaultPattern;
     //    public static final String DEFAULT_PATTERN_PATH = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\_SongsToTimings\\src\\main\\resources\\MapTemplates\\AllGroupedV1; 98; 4;[StandardExpert];NULL;NULL.pat";
+    public static final String DEFAULT_PATTERN_FOLDER_PATH = DEFAULT_PATHS.patternFolder;
 
     // Program-Paths
     public static final String DEFAULT_ONSET_GENERATION_FOLDER = GENERATED_DEFAULT_PATHS.onsetGenerationFolder;
@@ -99,7 +100,8 @@ public class Parameters {
     //Variables:
     public static long SEED = 133742069;
     public static Random RANDOM = new Random(SEED);
-    public static String filePath;
+    public static String filePath = DEFAULT_PATHS.getWipFolder();
+    public static boolean executedByJar = false;
 
     // Common
     public static final EntityManager entityManager = useDatabase ? Persistence.createEntityManagerFactory("default").createEntityManager() : null;
@@ -119,7 +121,9 @@ public class Parameters {
             DID_NOT_PLACE_STACK,      Color.BLACK
     );
 
+
     static {
+        if (Objects.requireNonNull(Parameters.class.getResource("Parameters.class")).toString().startsWith("jar:")) executedByJar = true;
         java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
         FILE_CHOOSER.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         FILE_CHOOSER.setFileFilter(MAP_FILE_FORMAT);

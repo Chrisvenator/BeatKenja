@@ -38,4 +38,5 @@ public class ConfigLoader {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this.config);
     }
+
 }
