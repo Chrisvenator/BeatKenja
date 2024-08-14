@@ -25,6 +25,7 @@ public class RandomPattern {
         List<Note> notes = new ArrayList<>();
         Random random = new Random(Parameters.SEED);
 
+        //FIXME: Kann man das entfernen? Kann Parameters.BPM nehmen?
         double bpm = 120;
         File infoDat = new File(Parameters.filePath + "/info.dat");
         System.out.println(infoDat);

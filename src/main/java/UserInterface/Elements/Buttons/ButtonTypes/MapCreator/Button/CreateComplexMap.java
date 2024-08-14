@@ -3,8 +3,10 @@ package UserInterface.Elements.Buttons.ButtonTypes.MapCreator.Button;
 import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Events;
 import BeatSaberObjects.Objects.Note;
+import DataManager.Parameters;
 import MapGeneration.GenerationElements.Pattern;
 import MapGeneration.PatternGeneration.CommonMethods.FixErrorsInPatterns;
+import MapGeneration.PatternGeneration.CommonMethods.FixSwingTimings;
 import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.MapCreatorSubButton;
 import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.ElementTypes;
@@ -28,7 +30,10 @@ public class CreateComplexMap extends MapCreatorSubButton {
         ui.manageMap();
         for (BeatSaberMap uiMap : ui.map) {
             UserInterface.currentDiff = uiMap.difficultyFileName;
-            List<Note> notes = new ArrayList<>();
+            List <Note> notes = Parameters.FIX_INCONSISTENT_TIMINGS_IN_FASTER_SECTIONS
+                    ? FixSwingTimings.fixSwingTiming(Arrays.asList(uiMap._notes))
+                    : List.of(uiMap._notes);
+
             Pattern pattern = Pattern.adjustVariance(ui.pattern);
 
             if ((double) Arrays.stream(uiMap._notes).filter(note -> note._cutDirection == 8).count() / uiMap._notes.length >= 0.8) {

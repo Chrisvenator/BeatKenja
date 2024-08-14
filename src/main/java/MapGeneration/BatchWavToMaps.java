@@ -16,9 +16,11 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import AudioAnalysis.SpectrogramCalculator;
 import AudioAnalysis.SpectrogramDisplay;
+import MapGeneration.PatternGeneration.CommonMethods.NpsBpmConverter;
 
 /**
  * This class is used to generate Beat Saber maps from .wav files. It is used to generate maps in bulk.
@@ -333,14 +335,9 @@ public class BatchWavToMaps {
      * @param difficultyName        The name of the current file.
      */
     private static void createDiffFromTimings(String destinationFolderPath, String difficultyName, ArrayList<Double> timings) {
-        List<Note> notes = new ArrayList<>();
+        List<Note> notes = timings.stream().map(t -> new Note(t.floatValue())).collect(Collectors.toList());
 
-        for (double t : timings) {
-            double beat = t * BPM / 60;
-            logger.debug(beat);
-
-            notes.add(new Note((float) beat));
-        }
+        NpsBpmConverter.convertSecondsToBeats(notes);
 
         BeatSaberMap map = new BeatSaberMap(notes);
         if (FIX_PLACEMENTS) map.fixPlacements(PLACEMENT_PRECISION);

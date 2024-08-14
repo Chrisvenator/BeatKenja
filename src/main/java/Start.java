@@ -1,13 +1,9 @@
 import DataManager.CreateAllNecessaryDIRsAndFiles;
 import DataManager.Database.DatabaseExport;
-import DataManager.Parameters;
 import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
 import UserInterface.UserInterface;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.File;
-import java.util.Objects;
 import java.util.Random;
 import java.util.logging.Level;
 
@@ -31,8 +27,14 @@ public class Start {
 
     /**
      *********** Planned Features ***********
-     * Bei schnellen Sektionen abwechselndes Pattern machen mit gleichen Abständen
+     * Random Pattern: das bpm Laden entfernen?
+     * TODOs in Parameters
+     * CreateComplexMap: Immutable Object is modified
+     * bei schnellen Sektionen gleiche Abstände
+     * bei schnellen Sektionen abwechselndes Pattern
+     * bei ganz schnellen sektionen dann predictable patterns
      * lehnen
+     * alle List<Note> zu custom NoteList<Note> Konvertieren?
      *****************************************
     **/
 

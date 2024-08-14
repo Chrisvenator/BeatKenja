@@ -7,7 +7,6 @@ import DataManager.Database.DatabaseOperations.TagEntityOperations;
 import DataManager.Config.Configuration;
 import DataManager.Records.PatMetadata;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons.Common.DifficultyFileNameExtensionFilter;
-import UserInterface.UserInterface;
 import javafx.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -85,6 +84,8 @@ public class Parameters {
     public static final double PLACEMENT_PRECISION = MAP_GENERATOR.defaultPlacementPrecision; //Placement Precision
     public static final boolean FIX_PLACEMENTS = MAP_GENERATOR.fixPlacements; //should the timings be fixed so that BeatSaver doesn't flag it as AI made?
     public static final boolean SHOW_SPECTOGRAM_WHEN_GENERATING_ONSETS = MAP_GENERATOR.showSpectogramWhenGeneratingOnsets;
+    public static final boolean FIX_INCONSISTENT_TIMINGS_IN_FASTER_SECTIONS = true; //TODO: Add to config/ui
+    public static final double FIX_INCONSISTENT_TIMINGS_IN_FASTER_SECTIONS_NPS_THRESHOLD = 6.5; //TODO: Add to config/ui
 
     // Database
     public static final PatMetadata DEFAULT_PATTERN_METADATA = new PatMetadata(DATABASE.defaultPatMetadata.name, DATABASE.defaultPatMetadata.bpm, DATABASE.defaultPatMetadata.nps, DATABASE.defaultPatMetadata.difficulties, DATABASE.defaultPatMetadata.tags, DATABASE.defaultPatMetadata.genres);

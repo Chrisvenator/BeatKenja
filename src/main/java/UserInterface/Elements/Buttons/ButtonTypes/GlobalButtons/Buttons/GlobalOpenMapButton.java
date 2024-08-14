@@ -1,8 +1,11 @@
 package UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons;
 
 import BeatSaberObjects.Objects.BeatSaberMap;
+import BeatSaberObjects.Objects.Note;
 import DataManager.FileManager;
 import DataManager.Parameters;
+import MapGeneration.PatternGeneration.CommonMethods.FixSwingTimings;
+import MapGeneration.PatternGeneration.CommonMethods.NpsBpmConverter;
 import MapGeneration.PatternGeneration.CommonMethods.Parser;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Exceptions.WrongFileException;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.GlobalButton;
@@ -12,6 +15,7 @@ import UserInterface.UserInterface;
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static DataManager.Parameters.AUTOLOAD_DEFAULT_MAP_for_testing;
@@ -138,6 +142,16 @@ public class GlobalOpenMapButton extends GlobalButton {
     }
 
     private void successfullyLoaded(String absolutePath) {
+        if (Parameters.FIX_INCONSISTENT_TIMINGS_IN_FASTER_SECTIONS) ui.map.forEach(map -> {
+
+            // Note placements must be converted to seconds instead of beats
+            List<Note> notes = new ArrayList<>(List.of(ui.map.get(0)._notes));
+            NpsBpmConverter.convertBeatsToSeconds(notes);
+
+            //Plat as multiple overlaying graphs.
+            FixSwingTimings.plotAsGraphs(map.difficultyFileName, Arrays.asList(map._notes));
+        });
+
         this.setText("load another diff");
         this.setBounds(270, 20, 200, 30);
         this.setBackground(Color.GREEN);

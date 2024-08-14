@@ -138,6 +138,19 @@
             <version>23-ea+3</version>
         </dependency>
 
+        <!-- Plotting of the nps graph -->
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.5.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jcommon</artifactId>
+            <version>1.0.24</version>
+        </dependency>
+
+
         <!--audio analysis-->
         <dependency>
             <groupId>be.tarsos.dsp</groupId>
