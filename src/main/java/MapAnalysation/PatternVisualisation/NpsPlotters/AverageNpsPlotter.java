@@ -1,6 +1,7 @@
 package MapAnalysation.PatternVisualisation.NpsPlotters;
 
 import BeatSaberObjects.Objects.Note;
+import DataManager.Parameters;
 import lombok.Getter;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.ui.ApplicationFrame;
@@ -29,7 +30,7 @@ public class AverageNpsPlotter extends ApplicationFrame {
         List<NpsInfo> npsInfos = new ArrayList<>();
 
         float f = notes.size()/notes.get(notes.size() - 1)._time;
-        System.out.println(f);
+        Parameters.logger.debug("Average Nps: {}", f);
         npsInfos.add(new NpsInfo(notes.size()/notes.get(notes.size() - 1)._time, 0, notes.get(notes.size() - 1)._time));
 
         return npsInfos;

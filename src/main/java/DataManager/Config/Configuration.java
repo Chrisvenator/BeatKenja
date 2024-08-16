@@ -174,7 +174,7 @@ public class Configuration
         @JsonProperty("fix-inconsistent-timings-when-map-gets-faster")
         public boolean fixInconsistentTimings = true;
         @JsonProperty("fix-inconsistent-timings-when-map-gets-faster-than-nps")
-        public double fixInconsistentTimingsFasterThan = 6;
+        public double fixInconsistentTimingsFasterThan = 8;
         @JsonProperty("plot-nps-distribution")
         public boolean plotNpsDistribution = true;
     }

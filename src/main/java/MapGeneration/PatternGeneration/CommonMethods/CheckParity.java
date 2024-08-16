@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static BeatSaberObjects.Objects.Enums.ParityErrorEnum.*;
-import static DataManager.Parameters.PARITY_ERRORS_LIST;
 import static DataManager.Parameters.logger;
 import static MapGeneration.PatternGeneration.CommonMethods.PlaceFirstNotes.firstNotePlacement;
 
@@ -77,7 +76,7 @@ public class CheckParity {
 
         checkBasicParity(allNotes, quiet);
 
-        logger.info("Map checked successfully!");
+        if (!quiet) logger.info("Map checked successfully!");
         return allNotes;
     }
 

@@ -141,15 +141,12 @@ public class GlobalOpenMapButton extends GlobalButton {
     }
 
     private void successfullyLoaded() {
-        // Plot nps  distribution
+        // Plot nps distribution
         if (Parameters.FIX_INCONSISTENT_TIMINGS) ui.map.forEach(map -> {
-
-            // Note placements must be converted to seconds instead of beats
-            List<Note> notes = new ArrayList<>(List.of(ui.map.get(0)._notes));
+            List<Note> notes = new ArrayList<>(Arrays.asList(map._notes));
             NpsBpmConverter.convertBeatsToSeconds(notes);
-
-            //Plat as multiple overlaying graphs.
             FixSwingTimings.plotAsGraphs(map.difficultyFileName, Arrays.asList(map._notes));
+            NpsBpmConverter.convertSecondsToBeats(notes);
         });
 
         this.setText("load another diff");
