@@ -27,9 +27,6 @@ public class Start {
 
     /**
      *********** Planned Features ***********
-     * Random Pattern: das bpm Laden entfernen?
-     * TODOs in Parameters
-     * CreateComplexMap: Immutable Object is modified
      * bei schnellen Sektionen gleiche Abstände
      * bei schnellen Sektionen abwechselndes Pattern
      * bei ganz schnellen sektionen dann predictable patterns

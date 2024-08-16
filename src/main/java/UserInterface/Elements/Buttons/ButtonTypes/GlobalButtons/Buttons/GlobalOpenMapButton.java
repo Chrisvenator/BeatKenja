@@ -45,7 +45,7 @@ public class GlobalOpenMapButton extends GlobalButton {
             filePath = f.getParent();
 
             logger.info("Successfully created map from Json");
-            successfullyLoaded(f.getAbsolutePath());
+            successfullyLoaded();
         }
     }
 
@@ -90,7 +90,7 @@ public class GlobalOpenMapButton extends GlobalButton {
                 extractAndSetGlobalBPM(path.getParentFile());
             }
 
-            successfullyLoaded(FILE_CHOOSER.getSelectedFile().getAbsolutePath());
+            successfullyLoaded();
         }
         catch (WrongFileException e) {
             errorWhileLoading(e);
@@ -119,14 +119,13 @@ public class GlobalOpenMapButton extends GlobalButton {
         String searchString = "\"_beatsPerMinute\": ";
         for (String line : infoFile) {
             if (line.contains(searchString)){
-                ui.globalButton.globalBPMField.setBPM(
-                        Parser.parseValue(
-                                line.substring(line.indexOf(searchString) + searchString.length(), line.lastIndexOf(",")),
-                                "bpm according to info.at",
-                                Double::parseDouble,
-                                BPM
-                        ) // Parser
-                ); //set bpm
+                Parameters.BPM = Parser.parseValue(
+                        line.substring(line.indexOf(searchString) + searchString.length(), line.lastIndexOf(",")),
+                        "bpm according to info.at",
+                        Double::parseDouble,
+                        BPM
+                );
+                ui.globalButton.globalBPMField.setBPM(BPM);
             }
         }
     }
@@ -141,8 +140,9 @@ public class GlobalOpenMapButton extends GlobalButton {
         ui.mapSuccessfullyLoaded = false;
     }
 
-    private void successfullyLoaded(String absolutePath) {
-        if (Parameters.FIX_INCONSISTENT_TIMINGS_IN_FASTER_SECTIONS) ui.map.forEach(map -> {
+    private void successfullyLoaded() {
+        // Plot nps  distribution
+        if (Parameters.FIX_INCONSISTENT_TIMINGS) ui.map.forEach(map -> {
 
             // Note placements must be converted to seconds instead of beats
             List<Note> notes = new ArrayList<>(List.of(ui.map.get(0)._notes));

@@ -171,6 +171,12 @@ public class Configuration
         public double defaultPlacementPrecision = (double) 1/16;
         @JsonProperty("show-spectogram-when-generating-onsets")
         public boolean showSpectogramWhenGeneratingOnsets = true;
+        @JsonProperty("fix-inconsistent-timings-when-map-gets-faster")
+        public boolean fixInconsistentTimings = true;
+        @JsonProperty("fix-inconsistent-timings-when-map-gets-faster-than-nps")
+        public double fixInconsistentTimingsFasterThan = 6;
+        @JsonProperty("plot-nps-distribution")
+        public boolean plotNpsDistribution = true;
     }
 
     @lombok.Getter @lombok.Setter @lombok.ToString
