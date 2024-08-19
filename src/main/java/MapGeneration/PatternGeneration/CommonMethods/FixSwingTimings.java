@@ -14,6 +14,7 @@ import MapAnalysation.PatternVisualisation.CombinedPlotter;
 import MapAnalysation.PatternVisualisation.NpsPlotters.AverageNpsPlotter;
 import MapAnalysation.PatternVisualisation.NpsPlotters.DynamicNpsPlotter;
 import MapAnalysation.PatternVisualisation.NpsPlotters.NpsCutOffPlotter;
+import org.jetbrains.annotations.NotNull;
 
 import static DataManager.Parameters.BPM;
 import static DataManager.Parameters.FIX_INCONSISTENT_TIMINGS_FASTER_THAN_NPS_THRESHOLD;
@@ -23,13 +24,14 @@ public class FixSwingTimings {
      * The function fixSwingAlternating takes a List of notes (2-colored).
      * If a certain section passes a threshold set in Parameters.java, it makes the color alternating.
      * For example, if there is a 13 nps section in a map, then this function will take this section and change the color of the notes in the section to be alternating Red and Blue.
-     * Doubles and stacks will be kept.
+     * Doubles and stacks will not be taken into account when calculating the nps.
+     * They will still be kept and NOT removed.
      *
      * @require 2-colored Notes
      * @param notesImmutable A list of notes that should be processed.
      * @return Returns a List of Notes that have been processed
      */
-    public static List<Note> fixSwingAlternating(List<Note> notesImmutable) {
+    public static List<Note> fixSwingAlternating(@NotNull List<Note> notesImmutable) {
         List<Note> notes = new ArrayList<>(notesImmutable);
 
 
@@ -67,12 +69,8 @@ public class FixSwingTimings {
             previousNote = note;
         }
 
-//        List<NpsInfo> info = DynamicNpsPlotter.computeNps(notes, 1,4);
-
-        int amountForFixingThreshold = 4;
-
         for (Map<Integer, Note> fix : toFix) {
-            if (fix.size() <= amountForFixingThreshold) continue;
+            if (fix.size() <= Parameters.FIX_INCONSISTENT_TIMINGS_FASTER_THAN_NPS_AMOUNT_OF_NOTES_THRESHOLD) continue;
 
             int modOffset = 0;
             List<Integer> keys = new ArrayList<>(fix.keySet());

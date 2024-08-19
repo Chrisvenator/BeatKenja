@@ -86,6 +86,7 @@ public class Parameters {
     public static final boolean SHOW_SPECTOGRAM_WHEN_GENERATING_ONSETS = MAP_GENERATOR.showSpectogramWhenGeneratingOnsets;
     public static final boolean FIX_INCONSISTENT_TIMINGS = MAP_GENERATOR.fixInconsistentTimings;
     public static final double FIX_INCONSISTENT_TIMINGS_FASTER_THAN_NPS_THRESHOLD = MAP_GENERATOR.fixInconsistentTimingsFasterThan;
+    public static final double FIX_INCONSISTENT_TIMINGS_FASTER_THAN_NPS_AMOUNT_OF_NOTES_THRESHOLD = MAP_GENERATOR.fixInconsistentTimingsNoteAmountThreshold;
     public static final boolean PLOT_NPS_DISTRIBUTION = MAP_GENERATOR.plotNpsDistribution;
 
     // Database
