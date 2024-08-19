@@ -9,6 +9,9 @@ import java.util.logging.Level;
 
 import static DataManager.Parameters.*;
 
+/**
+ * Default class of this Project. The main of this class is used to start and initialize every component.
+ */
 public class Start {
 
         /*
@@ -25,24 +28,25 @@ public class Start {
     |---|---|---|---|       |---|---|---|
      */
 
-    /**
+    /*
      *********** Planned Features ***********
      * bei schnellen Sektionen gleiche Abstände
      * bei ganz schnellen sektionen dann predictable patterns
      * lehnen
      * alle List<Note> zu custom NoteList<Note> Konvertieren?
      *****************************************
-    **/
+    */
 
+    /**
+     * This variable represents the User Interface.
+     * It is used to display every button and feature
+     */
     public static UserInterface ui;
 
     /**
-     * Default class of this Project.
-     * This class
-     * @param args
-     * @throws NoteNotValidException
+     * Default method of the whole project. main is used to start and initialize everything.
      */
-    public static void main(String[] args) {
+    public static void main(String[] args){
         java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
 
         SEED = (long) (new Random().nextDouble() * 1000000000);

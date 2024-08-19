@@ -42,17 +42,27 @@ import static DataManager.Parameters.saveNewMapsToDefaultPath;
 import static DataManager.Parameters.useDatabase;
 import static DataManager.Parameters.verbose;
 
+/**
+ * UserInterface is the class that is responsible for initializing all graphical elements.
+ * It is also contains common methods that are being used by its buttons.
+ */
 @SuppressWarnings("BusyWait")
 public class UserInterface extends JFrame {
 
+    /** "map" are all map difficulties. They are stored as BeatSaberMaps in a List. */
     public List<BeatSaberMap> map = new ArrayList<>();
+    /** "pattern" is the pattern with which the map will be created.*/
     public Pattern pattern;
 
-    //GUI:
+    /** This is the most topmost button that exists. It can not be pressed and is invisible. It is used so that every "global" button has a button to inherit from. It is also used so that the "default/global" buttons have a "category". Every child of this button should be visible from the start.*/
     public GlobalButton globalButton;
+    /** "labelMapDiff" is used to display the current status of if the map is successfully loaded. */
     public final JLabel labelMapDiff;
-    public final StatusCheckTextPane statusCheck; //essentially the log
+    /** "statusCheck" is essentially the log. It logs important events into the Graphical User Interface. */
+    public final StatusCheckTextPane statusCheck;
+    /** "mapSuccessfullyLoaded" represents the loading status. When set to true, all button categories will be set to visible. */
     public boolean mapSuccessfullyLoaded = false;
+    /** "patternVariance" is used to set the variance of the pattern. It should only be applied on a deep-cloned pattern when generating a map. */
     public static int patternVariance = 0;
     /** "currentDiff" is used to tell the algorithm in which Difficulty to place the parity breaks. */
     public static String currentDiff;
