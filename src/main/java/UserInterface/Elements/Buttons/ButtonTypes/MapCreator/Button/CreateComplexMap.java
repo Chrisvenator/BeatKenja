@@ -31,7 +31,7 @@ public class CreateComplexMap extends MapCreatorSubButton {
         for (BeatSaberMap uiMap : ui.map) {
             UserInterface.currentDiff = uiMap.difficultyFileName;
             List <Note> notes = new ArrayList<>(Parameters.FIX_INCONSISTENT_TIMINGS
-                    ? FixSwingTimings.fixSwingAlternating(List.of(uiMap._notes), ui)
+                    ? FixSwingTimings.fixSwingAlternating(List.of(uiMap._notes))
                     : List.of(uiMap._notes));
 
             Pattern pattern = Pattern.adjustVariance(ui.pattern);

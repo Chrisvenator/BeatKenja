@@ -14,13 +14,22 @@ import MapAnalysation.PatternVisualisation.CombinedPlotter;
 import MapAnalysation.PatternVisualisation.NpsPlotters.AverageNpsPlotter;
 import MapAnalysation.PatternVisualisation.NpsPlotters.DynamicNpsPlotter;
 import MapAnalysation.PatternVisualisation.NpsPlotters.NpsCutOffPlotter;
-import UserInterface.UserInterface;
 
 import static DataManager.Parameters.BPM;
 import static DataManager.Parameters.FIX_INCONSISTENT_TIMINGS_FASTER_THAN_NPS_THRESHOLD;
 
 public class FixSwingTimings {
-    public static List<Note> fixSwingAlternating(List<Note> notesImmutable, UserInterface ui) {
+    /**
+     * The function fixSwingAlternating takes a List of notes (2-colored).
+     * If a certain section passes a threshold set in Parameters.java, it makes the color alternating.
+     * For example, if there is a 13 nps section in a map, then this function will take this section and change the color of the notes in the section to be alternating Red and Blue.
+     * Doubles and stacks will be kept.
+     *
+     * @require 2-colored Notes
+     * @param notesImmutable A list of notes that should be processed.
+     * @return Returns a List of Notes that have been processed
+     */
+    public static List<Note> fixSwingAlternating(List<Note> notesImmutable) {
         List<Note> notes = new ArrayList<>(notesImmutable);
 
 
@@ -38,6 +47,7 @@ public class FixSwingTimings {
             Note note = notes.get(i);
 
             if (note._time - previousNote._time <= minDistanceBetweenNotes) {
+                // Create entry, if it does not exist.
                 if (toFix.isEmpty() || index != toFix.size() - 1 || toFix.get(index) == null) toFix.add(new HashMap<>());
 
                 if (note._time == previousNote._time && note._type != previousNote._type) {toFix.get(index).put(i, new RedTimingNote(note._time));}
@@ -46,6 +56,8 @@ public class FixSwingTimings {
                 toFix.get(index).put(i, new TimingNote(note._time));
             } else {
                 try {
+                    // This line checks, if the entry at index exists. If not, then it will be created a few lines above this one.
+                    // If this line does not throw an IndexOutOfBoundsException, then we know that we have to increment the index
                     toFix.get(index);
                     index++;
                 } catch (IndexOutOfBoundsException ignored) {
@@ -70,31 +82,15 @@ public class FixSwingTimings {
             }
         }
 
-
-        //TODO: Hier weitermachen
-
-
         // List<note> notes (currently in seconds) must be converted back to beats!
         NpsBpmConverter.convertSecondsToBeats(notes);
         return notes;
-    }
-
-    private static Note getPrev(List<Note> notes, int color, int index){
-        if (notes == null || notes.isEmpty()) return null;
-
-        for (int i = index - 1; i >= 0; i--)
-            if (notes.get(i)._type == color) return notes.get(i);
-
-
-        return null;
     }
 
     private static List<Note> fix(List<Note> notes) {
         //TBD
         return notes;
     }
-
-
 
 
     public static void plotAsGraphs(String name, List<Note> notes){

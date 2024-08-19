@@ -28,7 +28,6 @@ public class Start {
     /**
      *********** Planned Features ***********
      * bei schnellen Sektionen gleiche Abstände
-     * bei schnellen Sektionen abwechselndes Pattern
      * bei ganz schnellen sektionen dann predictable patterns
      * lehnen
      * alle List<Note> zu custom NoteList<Note> Konvertieren?
