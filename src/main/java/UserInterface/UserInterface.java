@@ -57,9 +57,7 @@ public class UserInterface extends JFrame {
     /** "currentDiff" is used to tell the algorithm in which Difficulty to place the parity breaks. */
     public static String currentDiff;
 
-    public UserInterface() throws NoteNotValidException {
-        //loading config:
-        pattern = new Pattern(String.valueOf(useDatabase ? DEFAULT_PATTERN_METADATA : DEFAULT_PATTERN_PATH));
+    public UserInterface()  {
 
         //<editor-fold desc="Initialize UI Elements">
         //////////////////////////////

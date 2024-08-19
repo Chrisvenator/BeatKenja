@@ -36,8 +36,13 @@ public class Start {
 
     public static UserInterface ui;
 
-
-    public static void main(String[] args) throws NoteNotValidException {
+    /**
+     * Default class of this Project.
+     * This class
+     * @param args
+     * @throws NoteNotValidException
+     */
+    public static void main(String[] args) {
         java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
 
         SEED = (long) (new Random().nextDouble() * 1000000000);

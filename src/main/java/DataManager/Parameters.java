@@ -45,6 +45,7 @@ public class Parameters {
     public static boolean DARK_MODE = GLOBAL.darkMode;
     public static boolean saveNewMapsToDefaultPath = GLOBAL.saveMapsToWipFolderAfterMp3Conversion;
     public static boolean ignoreDDs = GLOBAL.ignoreDds;
+    public static final boolean AUTOLOAD_DEFAULT_PATTERNS = GLOBAL.autoloadDefaultPattern;
     public static final boolean SAVE_PARITY_ERRORS_AS_BOOKMARKS = GLOBAL.saveParityErrorsAsBookmarks;
     public static final boolean SAVE_PARITY_ERRORS_AS_BOOKMARKS_WILL_OVERWRITE_BOOKMARKS = GLOBAL.saveParityErrorsAsBookmarksWillOverwriteBookmarks;
     public static final boolean SAVE_DID_NOT_PLACE_STACK_AS_BOOKMARK = GLOBAL.saveDidNotPlaceStackAsBookmark;

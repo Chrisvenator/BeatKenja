@@ -58,12 +58,12 @@ public class FixSwingTimings {
                 toFix.get(index).put(i, new TimingNote(note._time));
             } else {
                 try {
-                    // This line checks, if the entry at index exists. If not, then it will be created a few lines above this one.
-                    // If this line does not throw an IndexOutOfBoundsException, then we know that we have to increment the index
+                    // This line checks, if the entry at index exists. If not, an IndexOutOfBoundsException is thrown and the entry will be created a few lines above this one.
+                    // If this line does not throw an IndexOutOfBoundsException, then we know that we have to increment the index.
+                    // The index will only be incremented, when the last hashmap has been filled
                     toFix.get(index);
                     index++;
                 } catch (IndexOutOfBoundsException ignored) {
-//                    index++;
                 }
             }
             previousNote = note;

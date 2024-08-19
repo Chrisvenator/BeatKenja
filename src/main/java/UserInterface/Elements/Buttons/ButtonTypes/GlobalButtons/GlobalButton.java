@@ -1,6 +1,7 @@
 package UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons;
 
 import UserInterface.Elements.Buttons.ButtonType;
+import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Exceptions.MapHasWrongFormatException;
 import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Exceptions.ActionNotSupportedException;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Exceptions.WrongFileException;
@@ -34,8 +35,8 @@ public abstract class GlobalButton extends MyButton {
         else if (e instanceof NumberFormatException) errorMessage = "NumberFormatException!";
         else if (e instanceof URISyntaxException) errorMessage = "Map preview viewing encountered an error! This feature is currently not available :/";
         else if (e instanceof ActionNotSupportedException) errorMessage = "Map preview viewing is not supported on this platform.";
-        else if (e instanceof WrongFileException)
-            errorMessage = "You tried to load \"" + ((WrongFileException) e).filename + "\". This file (-type) is not supported. Please try again!";
+        else if (e instanceof WrongFileException) errorMessage = "You tried to load \"" + ((WrongFileException) e).filename + "\". This file (-type) is not supported. Please try again!";
+        else if (e instanceof MapHasWrongFormatException) errorMessage = "There was an error while importing the patterns! Map probably has the wrong format.";
         else errorMessage = e.getMessage();
 
         printErrorMessage(e, errorMessage);

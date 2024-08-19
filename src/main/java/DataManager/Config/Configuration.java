@@ -50,6 +50,8 @@ public class Configuration
         public String defaultMapPreviewer = "https://skystudioapps.com/bs-viewer/";
         @JsonProperty("secondary-map-previewer")
         public String secondaryMapPreviewer = "https://allpoland.github.io/ArcViewer/";
+        @JsonProperty("autoload-default-pattern")
+        public boolean autoloadDefaultPattern = true;
     }
 
     @lombok.Getter @lombok.Setter @lombok.ToString

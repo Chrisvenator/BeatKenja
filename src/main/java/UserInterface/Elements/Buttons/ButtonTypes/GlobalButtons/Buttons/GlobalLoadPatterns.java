@@ -2,6 +2,7 @@ package UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons;
 
 import BeatSaberObjects.Objects.BeatSaberMap;
 import DataManager.Parameters;
+import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
 import MapGeneration.GenerationElements.Pattern;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Exceptions.MapHasWrongFormatException;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.GlobalButton;
@@ -12,8 +13,11 @@ import java.awt.*;
 import java.io.File;
 
 import static DataManager.Parameters.DEFAULT_PATH;
+import static DataManager.Parameters.DEFAULT_PATTERN_METADATA;
+import static DataManager.Parameters.DEFAULT_PATTERN_PATH;
 import static DataManager.Parameters.FILE_CHOOSER;
 import static DataManager.Parameters.logger;
+import static DataManager.Parameters.useDatabase;
 import static DataManager.Parameters.verbose;
 
 public class GlobalLoadPatterns extends GlobalButton {
@@ -24,6 +28,17 @@ public class GlobalLoadPatterns extends GlobalButton {
             logger.warn("Pattern is null or the default pattern path does not exist, and the database is not in use. Pattern has to be loaded manually");
         }
         logger.debug("GlobalLoadPatterns button initialized.");
+
+        if (Parameters.AUTOLOAD_DEFAULT_PATTERNS) {
+            try {
+                ui.pattern = new Pattern(String.valueOf(useDatabase ? DEFAULT_PATTERN_METADATA : DEFAULT_PATTERN_PATH));
+            } catch (NoteNotValidException e) {
+                setBackground(Color.RED);
+                logger.error("Could not load default pattern. Please do it manually!");
+            }
+        }
+
+
     }
 
     @Override

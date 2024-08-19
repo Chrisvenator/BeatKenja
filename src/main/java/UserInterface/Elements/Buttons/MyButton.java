@@ -38,8 +38,8 @@ public class MyButton extends JButton implements MyElement {
     }
 
     protected void printErrorMessage(Exception e, String errorMessage) {
-        logger.error(e.getMessage());
         logger.error(errorMessage);
+        System.err.println(e.getMessage());
         e.printStackTrace();
     }
 }
