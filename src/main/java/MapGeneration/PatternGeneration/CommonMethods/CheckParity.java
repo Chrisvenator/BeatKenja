@@ -70,7 +70,11 @@ public class CheckParity {
         for (int i = 0; i < allNotes.size() - 1; i++) {
             if (allNotes.get(i)._time == allNotes.get(i + 1)._time && allNotes.get(i).equalNotePlacement(allNotes.get(i + 1))) {
                 Parameters.PARITY_ERRORS_LIST.get(UserInterface.currentDiff).add(new Pair<>(allNotes.get(i)._time, ParityErrorEnum.NOTE_INSIDE_ANOTHER_NOTE));
-                if (!quiet) System.err.println("[ERROR] at beat:   " + allNotes.get(i)._time + ": note inside another Note!");
+                if (!quiet) {
+                    String message = "at beat:   " + allNotes.get(i)._time + ": note inside another Note!";
+                    logger.warn(message);
+                    System.err.println("[ERROR] " + message);
+                }
             }
         }
 

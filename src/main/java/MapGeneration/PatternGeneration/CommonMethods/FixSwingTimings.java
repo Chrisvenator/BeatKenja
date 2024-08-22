@@ -49,7 +49,7 @@ public class FixSwingTimings {
         NpsBpmConverter.convertBeatsToSeconds(notes);
 
         List<Note> result = new ArrayList<>();
-        List<NpsInfo> npbInfos = DynamicNpsPlotter.computeNps(notes, 0.5f, 1, true); //TODO: Macht das sinn so kleine Intervalle zu nehmen?
+        List<NpsInfo> npbInfos = DynamicNpsPlotter.computeNps(notes, 2f, 1, true); //TODO: Macht das sinn so kleine Intervalle zu nehmen?
         List<Pair<NpsInfo, List<Note>>> npsNotePairs = calculateNpsNotePairs(notes, npbInfos);
 
         for (Pair<NpsInfo, List<Note>> npsInfoPair : npsNotePairs) {
@@ -70,7 +70,7 @@ public class FixSwingTimings {
                 Note prev = null;
                 if (!result.isEmpty()) prev = result.get(result.size() - 1);
                 if (result.isEmpty() || prev != null && (prev._time != n._time || prev._type == n._type)) n._time = i;
-                result.add(n);
+                result.add(n.clone());
             }
         }
 

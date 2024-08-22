@@ -32,6 +32,7 @@ public class CreateComplexMap extends MapCreatorSubButton {
             UserInterface.currentDiff = uiMap.difficultyFileName;
             List <Note> notes = new ArrayList<>(Parameters.FIX_INCONSISTENT_TIMINGS
                     ? FixSwingTimings.fixFastMapTimings(List.of(uiMap._notes))
+//                    ? List.of(uiMap._notes)
                     : List.of(uiMap._notes));
 
             Pattern pattern = Pattern.adjustVariance(ui.pattern);
@@ -62,7 +63,7 @@ public class CreateComplexMap extends MapCreatorSubButton {
                 System.out.println("Notes: " + uiMap._notes.length + ". notes created from red notes: " + Arrays.stream(uiMap._notes).filter(note -> note._type == 1).toList().size());
 
                 // Fix errors
-                FixErrorsInPatterns.fixSimpleMappingErrors(notes);
+//                FixErrorsInPatterns.fixSimpleMappingErrors(notes);
             }/**/
 
             try {

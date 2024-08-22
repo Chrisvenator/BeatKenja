@@ -62,8 +62,8 @@ public abstract class MySubButton extends MyButton {
             }
 
             logger.debug("Map creation finished");
-            System.out.println("Created Map: " + ui.map.get(i).exportAsMap());
-            logger.debug("Created Map: {}", ui.map.get(i).exportAsMap());
+//            System.out.println("Created Map: " + ui.map.get(i).exportAsMap());
+//            logger.debug("Created Map: {}", ui.map.get(i).exportAsMap());
 
             logger.info("Newly created map loaded!\n\n");
         }

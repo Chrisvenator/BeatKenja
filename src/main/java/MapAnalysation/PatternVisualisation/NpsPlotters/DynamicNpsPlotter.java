@@ -83,7 +83,7 @@ public class DynamicNpsPlotter extends NpsPlotter {
         float maxTime = notes.get(notes.size() - 1)._time;
         for (float currentTime = 0; currentTime <= maxTime; currentTime += intervalSize) {
             float fromTime = currentTime - rangeIntervals * intervalSize;
-            float toTime = currentTime + rangeIntervals * intervalSize;
+            float toTime = currentTime + rangeIntervals * intervalSize - 0.001f;
             float nps = getNps(notes, fromTime, toTime);
 
             npsInfoList.add(new NpsInfo(nps, fromTime, toTime));
