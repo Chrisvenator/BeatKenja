@@ -26,7 +26,23 @@ import static DataManager.Parameters.MAP_FILE_FORMAT;
 import static DataManager.Parameters.filePath;
 import static DataManager.Parameters.logger;
 
+/**
+ * A button in the user interface responsible for opening and loading Beat Saber map files.
+ * This button provides functionality for selecting and loading a map file, either from a specific file
+ * or an entire directory containing multiple map files. It also handles the automatic loading of a default map for testing purposes.
+ * <p>
+ * The class includes error handling for incorrect file types and ensures that only valid map files are processed.
+ * Once a map is successfully loaded, the button updates the UI and initiates any necessary post-loading processes, such as plotting NPS distribution graphs.
+ */
 public class GlobalOpenMapButton extends GlobalButton {
+
+    /**
+     * Constructs a new GlobalOpenMapButton with the specified user interface context.
+     * If the AUTOLOAD_DEFAULT_MAP_for_testing parameter is set, it automatically loads the default map.
+     *
+     * @param ui The user interface context to which this button belongs.
+     * @throws WrongFileException If the autoload default map file is invalid or cannot be read.
+     */
     @lombok.SneakyThrows
     public GlobalOpenMapButton(UserInterface ui) {
         super(ElementTypes.GLOBAL_OPEN_MAP, ui);
@@ -49,6 +65,10 @@ public class GlobalOpenMapButton extends GlobalButton {
         }
     }
 
+    /**
+     * Handles the onClick event for the button, opening a file chooser dialog for the user to select a map file or directory.
+     * The method validates the selected file, processes it, and updates the UI accordingly.
+     */
     @Override
     public void onClick() {
         int option = FILE_CHOOSER.showOpenDialog(this);
@@ -101,6 +121,12 @@ public class GlobalOpenMapButton extends GlobalButton {
         }
     }
 
+    /**
+     * Loads a map from the specified file path and adds it to the user interface's map collection.
+     * Also initializes the parity error list for the loaded map.
+     *
+     * @param path The file path from which to load the map.
+     */
     public void loadMap(File path){
         ui.map.add(BeatSaberMap.newMapFromJSON(path.getAbsolutePath()));
         Parameters.PARITY_ERRORS_LIST.put(path.getName(), new ArrayList<>());
@@ -111,6 +137,12 @@ public class GlobalOpenMapButton extends GlobalButton {
         extractAndSetGlobalBPM(path);
     }
 
+    /**
+     * Extracts the global BPM (beats per minute) value from the map's info.dat file and updates the user interface.
+     * This method reads the BPM from the info.dat file located in the parent directory of the provided path.
+     *
+     * @param path The file or directory path from which to extract the global BPM.
+     */
     private void extractAndSetGlobalBPM (File path){
         File info = new File(path.getParentFile().getAbsolutePath() + "/info.dat");
         if (!info.exists() || !info.isFile() || !info.canRead()) {return;}
@@ -130,6 +162,11 @@ public class GlobalOpenMapButton extends GlobalButton {
         }
     }
 
+    /**
+     * Handles errors that occur during the map loading process, logging the error and updating the UI to indicate failure.
+     *
+     * @param e The exception that occurred during the map loading process.
+     */
     private void errorWhileLoading(Exception e) {
         logger.error("Error while loading Map. Map probably has the wrong format: {}", e.getMessage());
         System.err.println("[ERROR]: Map probably has the wrong format: \n" + e);
@@ -140,6 +177,10 @@ public class GlobalOpenMapButton extends GlobalButton {
         ui.mapSuccessfullyLoaded = false;
     }
 
+    /**
+     * Finalizes the successful loading of a map by updating the UI and initiating any necessary processes such as plotting the NPS distribution.
+     * If the FIX_INCONSISTENT_TIMINGS parameter is enabled, the method plots the note timings as graphs.
+     */
     private void successfullyLoaded() {
         // Plot nps distribution
         if (Parameters.FIX_INCONSISTENT_TIMINGS) ui.map.forEach(map -> {
