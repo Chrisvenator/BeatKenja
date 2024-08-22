@@ -19,22 +19,39 @@ import java.util.List;
  * Probably the most realistic representation of the nps.
  * It takes the previous and following X notes into account.
  * This function should be used to calculate nps!
+ * <p>
+ * A class that visualizes the dynamic Notes Per Second (NPS) of a given set of notes.
+ * The NPS is calculated by considering a specified range of notes around each time interval,
+ * providing a more realistic representation of note density over time.
+ * <p>
+ * This class is designed to plot the NPS data using a graphical chart,
+ * with the ability to adjust the size of the time intervals and the range of notes considered.
+ * <p>
+ * The visualization is built using the JFreeChart library, and it displays the NPS
+ * on a line chart, where the x-axis represents time and the y-axis represents the NPS.
+ * <p>
+ * This class is intended for analyzing the note density in rhythm games such as Beat Saber.
  */
 @Getter
-public class DynamicNpsPlotter extends ApplicationFrame {
-    private final XYSeries series;
+public class DynamicNpsPlotter extends NpsPlotter {
 
     private final List<Note> notes;
     private final float intervalSize;
     private final int rangeIntervals;
 
+    /**
+     * Constructs a new DynamicNpsPlotter with the specified title and parameters for NPS calculation.
+     *
+     * @param title          The title of the plot, which will also be used as the title of the window.
+     * @param notes          The list of notes to analyze. Each note must have a time attribute that indicates when it occurs.
+     * @param intervalSize   The size of the time interval (in seconds) over which to calculate the NPS. This value determines how the time is divided into intervals.
+     * @param rangeIntervals The number of intervals before and after the current time to consider when calculating the NPS.
+     */
     public DynamicNpsPlotter(String title, List<Note> notes, float intervalSize, int rangeIntervals) {
-        super(title);
+        super(title, "Notes Per Second (NPS)");
         this.notes = notes;
         this.intervalSize = intervalSize;
         this.rangeIntervals = rangeIntervals;
-
-        series = new XYSeries(super.getTitle());
 
         List<NpsInfo> npsInfoList = computeNps(notes, intervalSize, rangeIntervals);
 
@@ -43,6 +60,18 @@ public class DynamicNpsPlotter extends ApplicationFrame {
         }
     }
 
+    /**
+     * Computes the Notes Per Second (NPS) for a given list of notes over specified time intervals.
+     * The method calculates the NPS by analyzing how many notes fall within a sliding time window.
+     * <br>
+     * The timings of the Notes should be in Seconds to get the NPS.
+     * The function returns NPB (Notes per Beat), when the timings are in Beats
+     *
+     * @param notes          The list of notes to analyze. Each note must have a time attribute that indicates when it occurs.
+     * @param intervalSize   The size of the time interval (in seconds) over which to calculate the NPS. This value determines how the time is divided into intervals.
+     * @param rangeIntervals The number of intervals before and after the current time to consider when calculating the NPS.
+     * @return A list of {@code NpsInfo} objects, each containing the NPS value for a specific time range, along with the start and end times of that range.
+     */
     public static List<NpsInfo> computeNps(List<Note> notes, float intervalSize, int rangeIntervals) {
         List<NpsInfo> npsInfoList = new ArrayList<>();
         if (notes.isEmpty())
@@ -68,26 +97,5 @@ public class DynamicNpsPlotter extends ApplicationFrame {
         }
 
         return npsInfoList;
-    }
-
-    public void visualize() {
-        XYSeriesCollection dataset = new XYSeriesCollection();
-        dataset.addSeries(series);
-
-        JFreeChart xylineChart = ChartFactory.createXYLineChart(
-                "Notes Per Second (NPS)",
-                "Time (Seconds)",
-                "NPS",
-                dataset,
-                PlotOrientation.VERTICAL,
-                true, true, false);
-
-        ChartPanel chartPanel = new ChartPanel(xylineChart);
-        chartPanel.setPreferredSize(new java.awt.Dimension(800, 600));
-        setContentPane(chartPanel);
-
-        this.pack();
-        RefineryUtilities.centerFrameOnScreen(this);
-        this.setVisible(true);
     }
 }
