@@ -248,6 +248,7 @@ public class Note implements Comparable<Note>, Serializable {
 
     @Override
     public int compareTo(Note o) {
+        if (this._time == o._time) return Float.compare(this._type, o._type);
         return Float.compare(this._time, o._time);
     }
 

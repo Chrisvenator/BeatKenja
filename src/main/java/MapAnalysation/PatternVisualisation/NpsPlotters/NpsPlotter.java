@@ -64,7 +64,7 @@ public abstract class NpsPlotter extends ApplicationFrame {
 
         this.pack();
         RefineryUtilities.centerFrameOnScreen(this);
+        this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         this.setVisible(true);
-
     }
 }

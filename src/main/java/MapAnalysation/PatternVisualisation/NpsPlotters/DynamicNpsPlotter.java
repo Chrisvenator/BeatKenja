@@ -53,7 +53,7 @@ public class DynamicNpsPlotter extends NpsPlotter {
         this.intervalSize = intervalSize;
         this.rangeIntervals = rangeIntervals;
 
-        List<NpsInfo> npsInfoList = computeNps(notes, intervalSize, rangeIntervals);
+        List<NpsInfo> npsInfoList = computeNps(notes, intervalSize, rangeIntervals, true);
 
         for (NpsInfo npsInfo : npsInfoList) {
             series.add((npsInfo.fromTime() + npsInfo.toTime()) / 2, npsInfo.nps());
@@ -62,17 +62,17 @@ public class DynamicNpsPlotter extends NpsPlotter {
 
     /**
      * Computes the Notes Per Second (NPS) for a given list of notes over specified time intervals.
-     * The method calculates the NPS by analyzing how many notes fall within a sliding time window.
+     *The method calculates the NPS by analyzing how many notes fall within a sliding time window.
      * <br>
      * The timings of the Notes should be in Seconds to get the NPS.
-     * The function returns NPB (Notes per Beat), when the timings are in Beats
+     * !! IMPORTANT: !! The function returns NPB (Notes per Beat), when the timings are have not been converted to seconds instead of beats.
      *
      * @param notes          The list of notes to analyze. Each note must have a time attribute that indicates when it occurs.
      * @param intervalSize   The size of the time interval (in seconds) over which to calculate the NPS. This value determines how the time is divided into intervals.
      * @param rangeIntervals The number of intervals before and after the current time to consider when calculating the NPS.
      * @return A list of {@code NpsInfo} objects, each containing the NPS value for a specific time range, along with the start and end times of that range.
      */
-    public static List<NpsInfo> computeNps(List<Note> notes, float intervalSize, int rangeIntervals) {
+    public static List<NpsInfo> computeNps(List<Note> notes, float intervalSize, int rangeIntervals, boolean ignoreStacksAndSliders) {
         List<NpsInfo> npsInfoList = new ArrayList<>();
         if (notes.isEmpty())
             return npsInfoList;
@@ -84,18 +84,30 @@ public class DynamicNpsPlotter extends NpsPlotter {
         for (float currentTime = 0; currentTime <= maxTime; currentTime += intervalSize) {
             float fromTime = currentTime - rangeIntervals * intervalSize;
             float toTime = currentTime + rangeIntervals * intervalSize;
-            int noteCount = 0;
+            float nps = getNps(notes, fromTime, toTime);
 
-            for (Note note : notes) {
-                if (note._time >= fromTime && note._time < toTime) {
-                    noteCount++;
-                }
-            }
-
-            float nps = noteCount / (toTime - fromTime);
             npsInfoList.add(new NpsInfo(nps, fromTime, toTime));
         }
 
         return npsInfoList;
+    }
+
+    private static float getNps(List<Note> notes, float fromTime, float toTime) {
+        int noteCount = 0;
+
+        Note prev = null;
+        for (Note note : notes) {
+            if ((note._time >= fromTime && note._time < toTime)) {
+                if (prev != null) {
+                    float timeDiff = Math.abs(note._time - fromTime);
+                    if (timeDiff >= (1.1/16)) { //SLiders are normally placed at 1/16 beats
+                        noteCount++;
+                    }
+                }
+            }
+            prev = note;
+        }
+
+        return noteCount / (toTime - fromTime);
     }
 }

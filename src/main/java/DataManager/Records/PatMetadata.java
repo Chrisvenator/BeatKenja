@@ -20,8 +20,6 @@ import java.util.Objects;
  * @param tags       A list of tags associated with the pattern.
  * @param genre      A list of genres associated with the pattern.
  */
-@Getter
-@Setter
 public record PatMetadata(String name, double bpm, double nps, List<String> difficulty, List<String> tags, List<String> genre) implements Serializable {
 
     /**
