@@ -51,6 +51,8 @@ public class UserInterface extends JFrame {
     /** The pattern used to generate the map. If no pattern is specified, a default pattern is used.*/
     public Pattern pattern;
     /** The topmost, invisible button that serves as a parent for all global buttons. This button cannot be pressed and provides a category for "default/global" buttons. All child buttons of this button should be visible from the start.*/
+    public static Pattern easyPattern;
+    /** The topmost, invisible button that serves as a parent for all global buttons. This button cannot be pressed and provides a category for "default/global" buttons. All child buttons of this button should be visible from the start.*/
     public GlobalButton globalButton;
     /** A label that displays the current status of whether the map is successfully loaded.*/
     public final JLabel labelMapDiff;

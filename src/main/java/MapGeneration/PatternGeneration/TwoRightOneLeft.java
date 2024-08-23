@@ -2,6 +2,7 @@ package MapGeneration.PatternGeneration;
 
 import BeatSaberObjects.Objects.Note;
 import MapGeneration.GenerationElements.Pattern;
+import UserInterface.UserInterface;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,7 +13,7 @@ import static MapGeneration.PatternGeneration.CommonMethods.CheckParity.invalidP
 import static MapGeneration.PatternGeneration.CommonMethods.CheckParity.nextNoteAfterTimingNote;
 import static MapGeneration.PatternGeneration.CommonMethods.PlaceFirstNotes.firstNotePlacement;
 import static MapGeneration.PatternGeneration.CommonMethods.StackPlacements.createStacks;
-import static MapGeneration.ComplexPatternFromTemplate.complexPatternFromTemplate;
+import static MapGeneration.ComplexPattern.complexPattern;
 import static MapGeneration.PatternGeneration.NextLinearNote.nextLinearNote;
 
 public class TwoRightOneLeft {
@@ -31,7 +32,7 @@ public class TwoRightOneLeft {
         List<Note> redNotes = new ArrayList<>();
 
         // Right-hand swings:
-        List<Note> complexPattern = complexPatternFromTemplate(timings, p, true, stacks, false,prevBlue, null);
+        List<Note> complexPattern = complexPattern(timings, p, UserInterface.easyPattern, true, true, stacks, false,prevBlue, null);
 
         // Define the previous note that came before this function was called
         if (prevRed == null) firstNotePlacement(timings.get(0)._time);

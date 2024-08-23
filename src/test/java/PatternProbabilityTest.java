@@ -13,7 +13,7 @@ class PatternProbabilityTest {
 
     @Test
     void removeNulls() throws NoteNotValidException {
-        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
+        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Patterns/Normal_Pattern_ISeeFire.txt").get(0), BeatSaberMap.class);
         Pattern p = new Pattern(map._notes, 1);
 
         for (Note n : new PatternProbability(p.patterns[10], p.probabilities[10]).notes) assertNotNull(n);
@@ -29,7 +29,7 @@ class PatternProbabilityTest {
 
     @Test
     void testToString() throws NoteNotValidException {
-        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
+        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Patterns/Normal_Pattern_ISeeFire.txt").get(0), BeatSaberMap.class);
         Pattern p = new Pattern(map._notes, 1);
 
         assertEquals("""

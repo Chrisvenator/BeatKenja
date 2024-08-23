@@ -3,13 +3,13 @@ package MapGeneration.PatternGeneration;
 import BeatSaberObjects.Objects.Note;
 import MapGeneration.GenerationElements.Pattern;
 import MapGeneration.PatternGeneration.CommonMethods.FixErrorsInPatterns;
+import UserInterface.UserInterface;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static DataManager.Parameters.ignoreDDs;
 import static MapGeneration.PatternGeneration.CommonMethods.StackPlacements.createStacks;
-import static MapGeneration.ComplexPatternFromTemplate.complexPatternFromTemplate;
+import static MapGeneration.ComplexPattern.complexPattern;
 import static MapGeneration.PatternGeneration.RandomPattern.createRandomPattern;
 
 public class RandomV2FromTemplate {
@@ -26,8 +26,8 @@ public class RandomV2FromTemplate {
         splitNotesByType(randomNotes, blueNotes, redNotes);
 
         // Create complex notes from the random placements
-        List<Note> complexBlue = complexPatternFromTemplate(blueNotes, p, true, false, false, prevBlue, null);
-        List<Note> complexRed = complexPatternFromTemplate(redNotes, p, true, false, false, prevRed, null);
+        List<Note> complexBlue = complexPattern(blueNotes, p, UserInterface.easyPattern, true, true, false, false, prevBlue, null);
+        List<Note> complexRed = complexPattern(redNotes, p, UserInterface.easyPattern, true, true, false, false, prevRed, null);
         complexRed.forEach(Note::invertNote);
 
         // Copy the lineIndex and the lineLayer from the randomly generated map and copy them into the complex-generated map

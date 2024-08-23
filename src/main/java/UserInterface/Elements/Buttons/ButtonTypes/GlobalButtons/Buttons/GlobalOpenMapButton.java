@@ -54,7 +54,8 @@ public class GlobalOpenMapButton extends GlobalButton {
             File f = new File(DEFAULT_PATH_FOR_AUTOLOAD_MAP);
             if (!f.exists() || f.isDirectory() || !f.isFile() || !f.canRead()) {
                 logger.error("Wrong file type while initializing GlobalOpenMapButton: {}", DEFAULT_PATH_FOR_AUTOLOAD_MAP);
-                throw new WrongFileException(DEFAULT_PATH_FOR_AUTOLOAD_MAP, "Wrong file type!");
+                errorWhileLoading(new WrongFileException(DEFAULT_PATH_FOR_AUTOLOAD_MAP, "Wrong file type!"));
+                return;
             }
 
             loadMap(f);

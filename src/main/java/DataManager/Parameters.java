@@ -56,7 +56,8 @@ public class Parameters {
     public static final String CONFIG_FILE_LOCATION = DEFAULT_PATHS.config;
     public static final String README_FILE_LOCATION = DEFAULT_PATHS.readme;
     public static final String DEFAULT_PATTERN_PATH = DEFAULT_PATHS.defaultPattern;
-    //    public static final String DEFAULT_PATTERN_PATH = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\_SongsToTimings\\src\\main\\resources\\MapTemplates\\AllGroupedV1; 98; 4;[StandardExpert];NULL;NULL.pat";
+    public static final String DEFAULT_EASY_PATTERN_PATH = DEFAULT_PATHS.defaultEasyPattern;
+    //    public static final String DEFAULT_PATTERN_PATH = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\_SongsToTimings\\src\\main\\resources\\MapTemplates\\Easy_Pattern_AllGroupedV1.pat";
     public static final String DEFAULT_PATTERN_FOLDER_PATH = DEFAULT_PATHS.patternFolder;
 
     // Program-Paths
@@ -126,6 +127,11 @@ public class Parameters {
             DID_NOT_PLACE_NOTE,       Color.WHITE,
             DID_NOT_PLACE_STACK,      Color.BLACK
     );
+
+    // NPS Computation
+    public static final float   NPS_COMPUTATION__INTERVAL_SIZE = 2f;
+    public static final int     NPS_COMPUTATION__RANGE_INTERVALS = 1;
+    public static final boolean NPS_COMPUTATION__IGNORE_STACKS_AND_SLIDERS = true;
 
 
     static {

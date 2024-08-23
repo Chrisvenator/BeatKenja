@@ -30,8 +30,8 @@ public class Start {
 
     /*
      *********** Planned Features ***********
-     * bei schnellen Sektionen gleiche Abstände
-     * bei ganz schnellen sektionen dann predictable patterns
+     * bei schnellen Sektionen gleiche Abstände <-- Parity Breaks & Note inside Note Ursachen finden
+     * bei ganz schnellen sektionen dann predictable patterns <-- Testen
      * lehnen
      * alle List<Note> zu custom NoteList<Note> Konvertieren?
      *****************************************
@@ -52,7 +52,7 @@ public class Start {
         SEED = (long) (new Random().nextDouble() * 1000000000);
         RANDOM = new Random(SEED);
 
-        logger.info("Starting Start...");
+        logger.info("Starting up BeatKenja...");
         logger.info("Seed: {}", SEED);
         logger.info("Setting Hibernate Logger to warning");
 
