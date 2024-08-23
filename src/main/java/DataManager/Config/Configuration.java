@@ -50,6 +50,8 @@ public class Configuration
         public String defaultMapPreviewer = "https://skystudioapps.com/bs-viewer/";
         @JsonProperty("secondary-map-previewer")
         public String secondaryMapPreviewer = "https://allpoland.github.io/ArcViewer/";
+        @JsonProperty("autoload-default-pattern")
+        public boolean autoloadDefaultPattern = true;
     }
 
     @lombok.Getter @lombok.Setter @lombok.ToString
@@ -65,7 +67,9 @@ public class Configuration
         @JsonProperty("pattern-folder")
         public String patternFolder = (Parameters.executedByJar ? "src/main/resources/" : "")  + "Patterns/";
         @JsonProperty("default-pattern")
-        public String defaultPattern = (Parameters.executedByJar ? "src/main/resources/" : "") + "Patterns/AllGroupedV1; 98; 4;[StandardExpert];NULL;NULL.pat";
+        public String defaultPattern = (Parameters.executedByJar ? "src/main/resources/" : "") + "Patterns/Normal_Pattern_ISeeFire.txt";
+        @JsonProperty("easy-default-pattern")
+        public String defaultEasyPattern = (Parameters.executedByJar ? "src/main/resources/" : "") + "Patterns/Easy_Pattern_AllGroupedV1.pat";
     }
 
     @lombok.Getter @lombok.Setter @lombok.ToString
@@ -174,7 +178,9 @@ public class Configuration
         @JsonProperty("fix-inconsistent-timings-when-map-gets-faster")
         public boolean fixInconsistentTimings = true;
         @JsonProperty("fix-inconsistent-timings-when-map-gets-faster-than-nps")
-        public double fixInconsistentTimingsFasterThan = 6;
+        public double fixInconsistentTimingsFasterThan = 8;
+        @JsonProperty("fix-inconsistent-timings-when-more-than-X-notes-are-in-the-section")
+        public double fixInconsistentTimingsNoteAmountThreshold = 4;
         @JsonProperty("plot-nps-distribution")
         public boolean plotNpsDistribution = true;
     }
@@ -187,6 +193,6 @@ public class Configuration
         @JsonProperty("autoload-default-map-for-testing")
         public boolean autoloadDefaultMapForTesting = true;
         @JsonProperty("default-path-for-autoload-map")
-        public String defaultPathForAutoloadMap = (Parameters.executedByJar ? "src/main/resources/" : "") + "dev/3df62/ExpertPlusStandard.dat";
+        public String defaultPathForAutoloadMap = (Parameters.executedByJar ? "src/main/resources/" : "") + "Beat Saber_Data/CustomWIPLevels/3df62/ExpertPlusStandard.dat";
     }
 }

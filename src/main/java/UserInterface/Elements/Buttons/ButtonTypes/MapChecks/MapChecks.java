@@ -13,6 +13,11 @@ import java.util.List;
 
 import static DataManager.Parameters.logger;
 
+/**
+ * The `MapChecks` class extends `MyButton` and is responsible for performing checks on maps within the user interface.
+ * Specifically, it checks for basic mapping errors in the notes of each `BeatSaberMap` loaded in the UI.
+ * When the button is clicked, it initiates the checking process and logs the results.
+ */
 public class MapChecks extends MyButton {
     public MapChecks(UserInterface ui) {
         super(ElementTypes.MAP_CHECKS_MAP_CHECKS, ui);

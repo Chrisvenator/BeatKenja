@@ -4,13 +4,14 @@ import BeatSaberObjects.Objects.Note;
 import DataManager.Records.PatMetadata;
 import MapGeneration.PatternGeneration.CommonMethods.FixErrorsInPatterns;
 import MapGeneration.GenerationElements.Pattern;
+import UserInterface.UserInterface;
 
 import java.util.*;
 
 import static DataManager.Parameters.logger;
 import static MapGeneration.PatternGeneration.CommonMethods.StackPlacements.placeStacks;
 import static MapGeneration.PatternGeneration.CommonMethods.StackPlacements.removeStacks;
-import static MapGeneration.ComplexPatternFromTemplate.complexPatternFromTemplate;
+import static MapGeneration.ComplexPattern.complexPattern;
 import static MapGeneration.PatternGeneration.NextLinearNote.nextLinearNote;
 
 public class AdvancedComplexMap {
@@ -59,10 +60,10 @@ public class AdvancedComplexMap {
                     ));
                 } else {
                     // Create a new PatMetadata instance with the calculated NPS
-                    notes.addAll(complexPatternFromTemplate(
+                    notes.addAll(complexPattern(
                             timings.subList(i, timings.size()),
                             fallbackPattern,
-                            oneHanded,
+                            UserInterface.easyPattern, true, oneHanded,
                             stacks,
                             false,
                             prevBlue,
@@ -77,10 +78,10 @@ public class AdvancedComplexMap {
             Pattern p = getCachedPattern(newMetadata, fallbackPattern, patternCache);
 
             // Add the generated notes to the list
-            notes.addAll(complexPatternFromTemplate(
+            notes.addAll(complexPattern(
                     timings.subList(i, i + 4),
                     p,
-                    oneHanded,
+                    UserInterface.easyPattern, true, oneHanded,
                     stacks,
                     false,
                     prevBlue,

@@ -10,6 +10,12 @@ import java.util.Arrays;
 
 import static DataManager.Parameters.logger;
 
+/**
+ * The `ToBlueOnlyTimingNotes` class is a specialized sub-button that extends `MySubButton`.
+ * This button converts all the notes in each `BeatSaberMap` loaded in the user interface into blue timing notes placed on the left bottom row.
+ * When the button is clicked, the conversion is applied, and the process is logged.
+ * It also verifies that the conversion was successful by checking the number of timing notes.
+ */
 public class ToBlueOnlyTimingNotes extends MySubButton {
     public ToBlueOnlyTimingNotes(MyButton parent) {
         super(ElementTypes.TIMING_NOTES_TO_BLUE_ONLY_TIMING_NOTES, parent);

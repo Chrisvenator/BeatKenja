@@ -9,25 +9,32 @@ import java.nio.file.Paths;
 
 import static DataManager.Parameters.logger;
 
+/**
+ * A utility class for merging JSON files. This class provides methods to merge multiple JSON files into a single JSON file
+ * or to merge the contents of one JSON file into another.
+ * The files are expected to be stored in a specified download directory.
+ */
 public class JsonFileMerger {
     public static void main(String[] args) {
         JsonFileMerger merger = new JsonFileMerger();
         merger.mergeAll("src/DataManager/merged.json", 200000, 201000);
     }
 
-
+    /** The directory where the JSON files to be merged are located.*/
     private final String DOWNLOAD_DIRECTORY;
 
+    /** Constructs a `JsonFileMerger` with the default download directory specified in the application parameters.*/
     public JsonFileMerger() {
         this.DOWNLOAD_DIRECTORY = Parameters.DEFAULT_BEATSAVER_MAP_INFO_PATH;
     }
 
     /**
-     * Merges all files in the download directory from start to end into one json file.
+     * Merges all JSON files within the specified range of names (converted from decimal to hexadecimal) into a single JSON file.
+     * The merged content is stored in the specified output file.
      *
-     * @param outputFile path of the output file
-     * @param start      beginning of the range (inclusive) in decimal (will be converted to hexadecimal)
-     * @param end        end of the range (exclusive) in decimal (will be converted to hexadecimal)
+     * @param outputFile The path of the output file where the merged JSON content will be saved.
+     * @param start      The beginning of the range (inclusive) in decimal, which will be converted to hexadecimal.
+     * @param end        The end of the range (exclusive) in decimal, which will be converted to hexadecimal.
      */
     public void mergeAll(String outputFile, int start, int end) {
         assert start - end >= 1;
@@ -63,6 +70,7 @@ public class JsonFileMerger {
 
     /**
      * Merges file2 into file 1.
+     * The merged content replaces the content of the first file.
      *
      * @param f1 file to merge into
      * @param f2 file to merge

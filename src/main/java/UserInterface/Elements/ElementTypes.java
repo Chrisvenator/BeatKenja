@@ -7,6 +7,7 @@ import UserInterface.Elements.TextFields.TextFieldType;
 
 import javax.swing.*;
 
+/** Defines all Values for all Types of UI Elements */
 public class ElementTypes {
     //Button Types
     public static final ButtonType MAP_CREATOR_BUTTON = new ButtonType("Map creator", 650, 200, 190, 30, false);

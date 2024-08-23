@@ -21,7 +21,9 @@ import java.util.function.Predicate;
 import static DataManager.Parameters.logger;
 
 /**
- * Downloads the map into its own folder in DOWNLOAD_DIRECTORY
+ * Downloads Beat Saber maps into their own folders within a specified download directory.
+ * This class provides methods to filter and download maps based on specific criteria, as well as to download maps from a bplist file.
+ * It supports downloading map information, verifying URLs, and optionally cleaning up unnecessary files after download.
  */
 public class BeatSaverMapDownloader {
     public static void main(String[] args) throws JSONException {
@@ -49,7 +51,9 @@ public class BeatSaverMapDownloader {
 //        System.out.println("Are all filters true? " + allFiltersTrue);
     }
 
+    /** The directory where map information (JSON files) is stored.*/
     private final String MAP_INFO_DIRECTORY;
+    /** The directory where downloaded maps will be stored.*/
     private final String DOWNLOAD_DIRECTORY;
 
     public BeatSaverMapDownloader() {

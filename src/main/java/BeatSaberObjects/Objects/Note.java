@@ -221,6 +221,11 @@ public class Note implements Comparable<Note>, Serializable {
                 "}\n";
     }
 
+    @Override
+    public Note clone() {
+        return new Note(this._time, this._lineIndex, this._lineLayer, this._type, this._cutDirection);
+    }
+
     public String toV3String() {
         return "{\"b\":" + _time + ",\"x\":" + _lineIndex + ",\"y\":" + _lineLayer + ",\"a\":" + 0 + ",\"c\":" + _type + ",\"d\":" + _cutDirection + "}";
     }
@@ -248,6 +253,7 @@ public class Note implements Comparable<Note>, Serializable {
 
     @Override
     public int compareTo(Note o) {
+        if (this._time == o._time) return Float.compare(this._type, o._type);
         return Float.compare(this._time, o._time);
     }
 

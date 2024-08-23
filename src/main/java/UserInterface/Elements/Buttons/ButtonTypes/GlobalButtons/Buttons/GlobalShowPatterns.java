@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+import static DataManager.Parameters.DEFAULT_PATTERN_PATH;
 import static DataManager.Parameters.logger;
 
 public class GlobalShowPatterns extends GlobalButton {
@@ -20,7 +21,7 @@ public class GlobalShowPatterns extends GlobalButton {
         super(ElementTypes.GLOBAL_SHOW_PATTERNS_BUTTON, ui);
         if (ui.pattern == null || (!new File(Parameters.DEFAULT_PATTERN_PATH).exists() && !Parameters.useDatabase)) {
             setBackground(Color.RED);
-            logger.warn("Pattern is null or the default pattern path does not exist, and the database is not in use.");
+            logger.warn("Pattern is null or the default pattern path does not exist, and the database is not in use: " + DEFAULT_PATTERN_PATH);
         }
         logger.debug("GlobalShowPatterns button initialized.");
     }
