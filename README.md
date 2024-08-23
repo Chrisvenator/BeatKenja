@@ -161,33 +161,43 @@ TODO: Explain what load patterns does<br>
 
 ## Known Issues:
 
-+ **V3 Maps are not supported** YET
++ **V3 Maps are finally supported** YAY
 + **There are holes in the map:** No Algorithm is perfect. But I will fix that sometime in the future
 + **Map won't load in Beat Saber:** There may be something wrong with a difficulty file. Just go into the editor of your
   choice and open and save every difficulty. That should fix it.
 + **The map I generated doesn't show up in the editor:** TBD
 + **The map didn't change after generating a new one:** There may be 2 possibilities:
   1. The Program didn't feel like generating something
-  2. Chromapper caches difficulties. If this is the case, then exit and reopen the diff. that should fix it.
+  2. Chromapper caches difficulties. If this is the case, exit and then reopen the difficulty. That should fix it.
 
 ----
 
 ## Currently under construction:
-- [ ] Migrate to Database instead of using files
+- [ ] Advanced Complex Map generation (wip)
+- [ ] Change to another Pattern when the map gets faster (wip)
+- [ ] Fix timings & swing patterns when the map gets faster (wip)
 
 ## TODOs:
 
 - [ ] creating new pattern types:
   - [x] doubles
   - [x] (small, normal big) jumps
-  - [ ] saving and loading patterns (or Sequences as I called them because me dumb)
   - [ ] more variation
-  - [ ] stacks
+  - [x] stacks
+- [x] Variation Slider
+- [x] Audio Analysis via Spectograms
 - [ ] Better music onsets
+- [x] Database Support
+- [x] Parity checking
+- [x] Ignore DDs
+- [x] proper logging
+- [x] Added a config
+- [x] open all maps in directory
 - [x] Dark Mode
 - [x] Finish README.MD
 - [x] FIX BIG JUMPS
-- [ ] add V3 support
+- [x] .pat file extension format loading
+- [x] add V3 support
 - [ ] mouse over support
 - [x] Aim of the tool?
 - [x] Error message: "No audio files found in '/OnsetGeneration/wavFiles'"
