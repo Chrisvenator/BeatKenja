@@ -95,8 +95,7 @@ public class StackPlacements {
             }
         }
         // Call the createStacks method to finalize and return the list of notes with stacks
-        List<Note> n = createStacks(notes);
-        return n;
+        return createStacks(notes);
     }
 
 }

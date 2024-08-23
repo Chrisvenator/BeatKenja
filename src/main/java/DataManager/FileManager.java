@@ -16,14 +16,19 @@ import java.nio.file.Paths;
 import static DataManager.Parameters.logger;
 import static DataManager.Parameters.verbose;
 
+/**
+ * A utility class that provides various file management operations, such as reading, writing, downloading, compressing, and extracting files.
+ * The class also includes methods for filtering files based on their extensions and removing unnecessary files from directories.
+ */
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class FileManager {
 
     /**
-     * Reads the file and returns a String-List
+     * Reads the contents of a file and returns them as a list of strings, where each string represents a line in the file.
      *
-     * @param filename Filename
-     * @return Every line of the File in List form
+     * @param filename The name or path of the file to read.
+     * @return A list of strings, each representing a line in the file. If the file cannot be read, an empty list is returned.
+     * @throws NoSuchElementException If the file does not exist.
      */
     public static List<String> readFile(String filename) {
         Path filePath = Paths.get(filename);
@@ -44,10 +49,11 @@ public class FileManager {
 
 
     /**
-     * Overwrites a file with the String data
+     * Overwrites the specified file with the provided string data.
      *
-     * @param filePath Path to the file
-     * @param data     the string data with which the File should be overwritten
+     * @param filePath The path to the file to be overwritten.
+     * @param data     The string data to write to the file.
+     * @param print    An optional boolean parameter. If true, a success message is printed; otherwise, it is not.
      */
     public static void overwriteFile(String filePath, String data, boolean... print) {
         File file = new File(filePath);
@@ -70,6 +76,14 @@ public class FileManager {
         }
     }
 
+    /**
+     * Downloads a file from the specified URL and saves it to the given file path.
+     *
+     * @param URL      The URL from which to download the file.
+     * @param filePath The path where the downloaded file should be saved.
+     * @throws IOException        If an I/O error occurs during the download.
+     * @throws URISyntaxException If the URL is not properly formatted.
+     */
     public static void downloadFile(String URL, String filePath) throws IOException, URISyntaxException {
         BufferedInputStream in = new BufferedInputStream(new URI(URL).toURL().openStream());
         FileOutputStream fileOutputStream = new FileOutputStream(filePath);
@@ -84,11 +98,12 @@ public class FileManager {
     }
 
     /**
-     * Creates a zip file from a directory. The zip file will not include subdirectories.
+     * Creates a zip file from the contents of a directory. Subdirectories are not included in the zip file.
      *
-     * @param directoryPath The path to the directory.
-     * @param filename      The name of the zip file.
-     * @throws IOException If an I/O error has occurred.
+     * @param directoryPath The path to the directory whose contents should be compressed.
+     * @param filename      The name of the resulting zip file.
+     * @throws IOException           If an I/O error occurs during the creation of the zip file.
+     * @throws ZipCreationException  If the directory is empty or contains fewer than three files.
      */
     public static void createZipFileFromDirectory(String directoryPath, String filename) throws IOException {
         String sourceDir = new File(directoryPath).getAbsolutePath();
@@ -126,11 +141,12 @@ public class FileManager {
 
 
     /**
-     * Extracts a zip file into a directory. If the directory does not exist, it will be created. The zip file will not create a subdirectory.
+     * Extracts the contents of a zip file into the specified directory. Creates the directory if it does not exist.
+     * The extracted files will be placed directly in the specified directory without creating a subdirectory.
      *
-     * @param zipFilePath      The path to the zip file.
-     * @param outputFolderPath The path to the output folder.
-     * @throws IOException If an I/O error has occurred.
+     * @param zipFilePath      The path to the zip file to be extracted.
+     * @param outputFolderPath The path to the directory where the contents should be extracted.
+     * @throws IOException If an I/O error occurs during extraction.
      */
     public static void extractZipFilesIntoDirectory(String zipFilePath, String outputFolderPath) throws IOException {
         File outputFolder = new File(outputFolderPath);
@@ -175,10 +191,11 @@ public class FileManager {
     }
 
     /**
-     * Removes all files in a directory that do not have the specified extensions.
+     * Removes all files from a directory that do not have the specified extensions.
+     * This method is useful for cleaning up directories by removing unwanted file types.
      *
-     * @param directoryPath      The path to the directory.
-     * @param possibleExtensions The extensions of the files that should be kept.
+     * @param directoryPath      The path to the directory from which files should be removed.
+     * @param possibleExtensions The extensions of the files that should be kept. All other files are deleted.
      */
     public static void removeUnnecessaryFiles(String directoryPath, String... possibleExtensions) {
         File dir = new File(directoryPath);

@@ -21,7 +21,7 @@ class PatternTest {
 
     @Test
     void analyzePattern() throws NoteNotValidException {
-        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
+        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Patterns/Normal_Pattern_ISeeFire.txt").get(0), BeatSaberMap.class);
         Pattern p = new Pattern(map._notes, 2);
 
         p.count = new int[108][108];
@@ -40,7 +40,7 @@ class PatternTest {
 
     @Test
     void testToString() throws NoteNotValidException {
-        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
+        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Patterns/Normal_Pattern_ISeeFire.txt").get(0), BeatSaberMap.class);
         Pattern p = new Pattern(map._notes, 1);
 
         String replace = p.toString()
@@ -50,13 +50,13 @@ class PatternTest {
         assertEquals(jsonExample.replace("\n", "").replace(" ", ""), replace);
 
 
-        Pattern p2 = new Pattern("src/test/resources/Template--ISeeFire.txt");
+        Pattern p2 = new Pattern("src/test/resources/Patterns/Normal_Pattern_ISeeFire.txt");
         assertEquals(replace, p2.toString().replace("\n", "").replace(" ", ""));
     }
 
     @Test
     void TestExportInPatFormatAndReadInPatFormat() throws NoteNotValidException {
-        String path = "src/test/resources/Template--ISeeFire.txt";
+        String path = "src/test/resources/Patterns/Normal_Pattern_ISeeFire.txt";
         BeatSaberMap map = new Gson().fromJson(FileManager.readFile(path).get(0), BeatSaberMap.class);
 
         Pattern p = new Pattern(map._notes, 1);
@@ -66,7 +66,7 @@ class PatternTest {
 
     @Test
     void removeXTimes() throws NoteNotValidException {
-        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
+        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Patterns/Normal_Pattern_ISeeFire.txt").get(0), BeatSaberMap.class);
         Pattern p = new Pattern(map._notes, 1);
         p.removeXTimes(1);
         assertEquals(26, p.asList().size());
@@ -95,7 +95,7 @@ class PatternTest {
 
     @Test
     void computeProbabilities() throws NoteNotValidException {
-        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
+        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Patterns/Normal_Pattern_ISeeFire.txt").get(0), BeatSaberMap.class);
         Pattern p = new Pattern(map._notes, 1);
 
         p.computeProbabilities();
@@ -112,7 +112,7 @@ class PatternTest {
 
     @Test
     void getProbabilityOf() throws NoteNotValidException {
-        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
+        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Patterns/Normal_Pattern_ISeeFire.txt").get(0), BeatSaberMap.class);
         Pattern p = new Pattern(map._notes, 1);
 
         assertEquals("""
@@ -123,14 +123,14 @@ class PatternTest {
 
     @Test
     void testMergePatterns() throws NoteNotValidException {
-        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
+        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Patterns/Normal_Pattern_ISeeFire.txt").get(0), BeatSaberMap.class);
         Pattern p1 = new Pattern(map._notes, 1);
         Pattern p2 = new Pattern(map._notes, 1);
         assertEquals(p1.toString(), p2.toString());
 
-        Pattern pattern1 = new Pattern("src/test/resources/patterns/test1.pat");
-        Pattern pattern2 = new Pattern("src/test/resources/patterns/test2.pat");
-        Pattern pattern3 = new Pattern("src/test/resources/patterns/test3.pat");
+        Pattern pattern1 = new Pattern("src/test/resources/Patterns/patterns/test1.pat");
+        Pattern pattern2 = new Pattern("src/test/resources/Patterns/patterns/test2.pat");
+        Pattern pattern3 = new Pattern("src/test/resources/Patterns/patterns/test3.pat");
 
         pattern1.merge(pattern2);
         assertNotEquals(pattern1.toString(), pattern2.toString());
@@ -175,7 +175,7 @@ class PatternTest {
 
     @Test
     void asList() throws NoteNotValidException {
-        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").get(0), BeatSaberMap.class);
+        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Patterns/Normal_Pattern_ISeeFire.txt").get(0), BeatSaberMap.class);
         Pattern p = new Pattern(map._notes, 1);
         assertEquals("""
                 [[{"_time":0.0,"_lineIndex":2,"_lineLayer":0,"_type":1,"_cutDirection":1}

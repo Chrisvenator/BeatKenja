@@ -1,15 +1,13 @@
 package MapGeneration.PatternGeneration;
 
 import BeatSaberObjects.Objects.Note;
-import DataManager.FileManager;
 import DataManager.Parameters;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import static DataManager.Parameters.BPM;
 import static DataManager.Parameters.ignoreDDs;
 import static DataManager.Parameters.logger;
 
@@ -25,25 +23,8 @@ public class RandomPattern {
         List<Note> notes = new ArrayList<>();
         Random random = new Random(Parameters.SEED);
 
-        double bpm = 120;
-        File infoDat = new File(Parameters.filePath + "/info.dat");
-        System.out.println(infoDat);
-        try {
-            if (!infoDat.exists() || !infoDat.canRead() || !infoDat.isFile()) throw new FileNotFoundException();
-            List<String> list = FileManager.readFile(infoDat.getAbsolutePath());
-            for (String s : list) {
-                if (s.contains("\"_beatsPerMinute\": ") || s.contains("\"_beatsPerMinute\" : ")) {
-                    bpm = Double.parseDouble(s.substring(s.indexOf(": ") + 1, s.indexOf(",")));
-                    break;
-                }
-            }
-        } catch (Exception e) {
-            logger.error("Error reading {} {}. Falling back to {}", infoDat.getAbsolutePath(), e, bpm);
-            System.err.println("Error reading: " + infoDat.getAbsolutePath());
-        }
-
-        logger.info("Using " + bpm + " bpm");
-        System.out.println("Using " + bpm + " bpm");
+        logger.info("Using " + BPM + " BPM");
+        System.out.println("Using " + BPM + " BPM");
 
         for (int i = 0; i < timings.length; i++) {
 
@@ -55,8 +36,8 @@ public class RandomPattern {
             n._cutDirection = random.nextInt(8);
 
             if (i < timings.length - 1) {
-                float time = (float) (timings[i]._time / bpm * 60);
-                float timeNext = (float) (timings[i + 1]._time / bpm * 60);
+                float time = (float) (timings[i]._time / BPM * 60);
+                float timeNext = (float) (timings[i + 1]._time / BPM * 60);
 
                 if (timeNext - time < 0.5) {
                     if (n._lineIndex == 1 && n._lineLayer == 1) n._lineIndex--;

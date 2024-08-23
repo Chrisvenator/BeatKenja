@@ -4,9 +4,7 @@ import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Bookmark;
 import BeatSaberObjects.Objects.Enums.ParityErrorEnum;
 import BeatSaberObjects.Objects.Note;
-import BeatSaberObjects.Objects.Obstacle;
 import DataManager.Logger.GuiAppender;
-import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
 import MapGeneration.GenerationElements.Pattern;
 import MapGeneration.PatternGeneration.CommonMethods.CheckParity;
 import UserInterface.Elements.Buttons.ButtonTypes.AdvancedMapCreatorButton;
@@ -32,34 +30,46 @@ import java.util.List;
 import static DataManager.Parameters.DARK_MODE;
 import static DataManager.Parameters.DEFAULT_PATH;
 import static DataManager.Parameters.DEFAULT_PATTERN_METADATA;
-import static DataManager.Parameters.DEFAULT_PATTERN_PATH;
 import static DataManager.Parameters.PARITY_ERRORS_COLORS_MAP;
 import static DataManager.Parameters.PARITY_ERRORS_LIST;
 import static DataManager.Parameters.SAVE_PARITY_ERRORS_AS_BOOKMARKS_WILL_OVERWRITE_BOOKMARKS;
 import static DataManager.Parameters.ignoreDDs;
 import static DataManager.Parameters.logger;
 import static DataManager.Parameters.saveNewMapsToDefaultPath;
-import static DataManager.Parameters.useDatabase;
 import static DataManager.Parameters.verbose;
 
+/**
+ * The `UserInterface` class is responsible for initializing and managing the graphical user interface (GUI) components of the application.
+ * It provides common methods that are used by various buttons and elements within the GUI, and it handles the overall interaction with the user.
+ * The class also manages map loading, error checking, and event listeners related to the UI.
+ */
 @SuppressWarnings("BusyWait")
 public class UserInterface extends JFrame {
 
+    /** A list of all map difficulties, stored as `BeatSaberMap` objects. These maps are manipulated and displayed within the UI.*/
     public List<BeatSaberMap> map = new ArrayList<>();
+    /** The pattern used to generate the map. If no pattern is specified, a default pattern is used.*/
     public Pattern pattern;
-
-    //GUI:
+    /** The topmost, invisible button that serves as a parent for all global buttons. This button cannot be pressed and provides a category for "default/global" buttons. All child buttons of this button should be visible from the start.*/
+    public static Pattern easyPattern;
+    /** The topmost, invisible button that serves as a parent for all global buttons. This button cannot be pressed and provides a category for "default/global" buttons. All child buttons of this button should be visible from the start.*/
     public GlobalButton globalButton;
+    /** A label that displays the current status of whether the map is successfully loaded.*/
     public final JLabel labelMapDiff;
-    public final StatusCheckTextPane statusCheck; //essentially the log
+    /** A text pane that acts as a log, displaying important events within the GUI.*/
+    public final StatusCheckTextPane statusCheck;
+    /** A flag representing the loading status of the map. When set to true, all button categories will be set to visible.*/
     public boolean mapSuccessfullyLoaded = false;
+    /** A slider used to set the variance of the pattern. It should only be applied to a deep-cloned pattern when generating a map.*/
     public static int patternVariance = 0;
-    /** "currentDiff" is used to tell the algorithm in which Difficulty to place the parity breaks. */
+    /** The current difficulty used by the algorithm to determine where to place parity breaks.*/
     public static String currentDiff;
 
-    public UserInterface() throws NoteNotValidException {
-        //loading config:
-        pattern = new Pattern(String.valueOf(useDatabase ? DEFAULT_PATTERN_METADATA : DEFAULT_PATTERN_PATH));
+    /**
+     * Constructs and initializes the user interface, setting up all graphical elements and their respective event listeners.
+     * A background thread is started to monitor the loading status of the map and update the visibility of UI components accordingly.
+     */
+    public UserInterface()  {
 
         //<editor-fold desc="Initialize UI Elements">
         //////////////////////////////
@@ -138,9 +148,9 @@ public class UserInterface extends JFrame {
     }
 
     /**
-     * Redirects the error stream to the statusCheck text area, <br>
-     * Removes all Obstacles and Events from the map, <br>
-     * Checks if the pattern is set and if not, loads the default pattern.<br>
+     * Manages the map by performing initial setup tasks such as clearing obstacles and events,
+     * loading the default pattern if none is specified, and resetting the current difficulty.
+     * It also redirects the error stream to the `statusCheck` text area.
      */
     public void manageMap() {
         //Clear errors before loading processing another map
@@ -155,6 +165,13 @@ public class UserInterface extends JFrame {
         // map._events = Arrays.stream(map._events).filter(event -> event._type == 1000).toArray(Events[]::new); //remove all events EXCEPT for the bpm-changes!
     }
 
+    /**
+     * Converts detected parity errors into bookmarks that can be used within the map editor.
+     * If the `SAVE_PARITY_ERRORS_AS_BOOKMARKS_WILL_OVERWRITE_BOOKMARKS` flag is set, existing bookmarks will be cleared before adding new ones.
+     *
+     * @param diffName The name of the difficulty for which to create bookmarks.
+     * @return A list of `Bookmark` objects representing the parity errors.
+     */
     public List<Bookmark> parityErrorsAsBookmarks(String diffName) {
         if (SAVE_PARITY_ERRORS_AS_BOOKMARKS_WILL_OVERWRITE_BOOKMARKS) this.map.forEach(b -> b.bookmarks = new ArrayList<>());
 
@@ -175,7 +192,10 @@ public class UserInterface extends JFrame {
     }
 
     /**
-     * Checks the map for errors and prints them to the statusCheck text area.
+     * Checks the map for errors and prints any detected issues to the `statusCheck` text area.
+     * This method is typically used to ensure the integrity of the map before saving or exporting it.
+     *
+     * @param map The `BeatSaberMap` to check for errors.
      */
     public static void checkMap(BeatSaberMap map) {
         List<Note> notes = new ArrayList<>();

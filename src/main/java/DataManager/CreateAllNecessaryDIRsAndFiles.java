@@ -1,15 +1,11 @@
 package DataManager;
 
-import DataManager.Config.Configuration;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import static DataManager.Parameters.*;
 
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
@@ -19,7 +15,7 @@ public class CreateAllNecessaryDIRsAndFiles {
             "OnsetGeneration",
             "README.md",
             "Patterns",
-            "dev",
+            "CustomLevels",
             "assets"
     );
 

@@ -56,8 +56,8 @@ public class GlobalSaveMapAs extends GlobalButton {
             //Write
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(filePath))) {
                 bw.write(uiMap.exportAsMap());
-                logger.info("Map saved successfully at: {}", filePath);
-                logger.debug("Map saved successfully: {}", uiMap.exportAsMap());
+//                logger.info("Map saved successfully at: {}", filePath);
+//                logger.debug("Map saved successfully: {}", uiMap.exportAsMap());
                 System.out.println("Map saved successfully: " + uiMap.exportAsMap());
             }
             catch (IOException e) {

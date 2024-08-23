@@ -15,7 +15,7 @@ import java.util.*;
 import static DataManager.Parameters.logger;
 import static MapGeneration.PatternGeneration.BigJumps.createBigJumps;
 import static MapGeneration.PatternGeneration.CommonMethods.CheckParity.checkAndFixBasicMappingErrors;
-import static MapGeneration.ComplexPatternFromTemplate.complexPatternFromTemplate;
+import static MapGeneration.ComplexPattern.complexPattern;
 import static MapGeneration.PatternGeneration.Doubles.createDoubles;
 import static MapGeneration.PatternGeneration.NormalJumps.createNormalJumps;
 import static MapGeneration.PatternGeneration.LinearSlowPattern.linearSlowPattern;
@@ -59,7 +59,7 @@ public class CreateMap {
 
         //If the map is one-handed or there are no bookmarks, then there is not that much to do
         if (oneHanded)
-            return new BeatSaberMap(complexPatternFromTemplate(List.of(map._notes), p, true, stacks, false,null, null), map.originalJSON);
+            return new BeatSaberMap(complexPattern(List.of(map._notes), p, UserInterface.easyPattern, true, true, stacks, false,null, null), map.originalJSON);
         if (bookmarks.isEmpty()) {
             Random random = new Random(Parameters.SEED);
             int min = 10;
@@ -93,7 +93,7 @@ public class CreateMap {
             try {
                 switch (bookmarks.get(i)._name.toLowerCase()) {
                     case "l", "linear" -> notes.addAll(linearSlowPattern(currentNotes, false, prevBlue, prevRed));
-                    case "c", "complex" -> notes.addAll(complexPatternFromTemplate(currentNotes, p, false, stacks, false,prevBlue, prevRed));
+                    case "c", "complex" -> notes.addAll(complexPattern(currentNotes, p, UserInterface.easyPattern, true, false, stacks, false,prevBlue, prevRed));
                     case "1-2" -> notes.addAll(twoRightOneLeft(currentNotes, p, prevBlue, prevRed, stacks));
                     case "2-1" -> notes.addAll(twoRightOneLeft(currentNotes, p, prevRed, prevBlue, stacks).stream().map(Note::invertNote).toList());
                     case "2-2" -> notes.addAll(twoLeftTwoRight(currentNotes, prevBlue, prevRed));
@@ -107,7 +107,7 @@ public class CreateMap {
                         logger.warn("Supported types: " + Arrays.toString(supportedTypes));
                         System.err.println("There is no such flag as: \"" + bookmarks.get(i)._name + "\" with " + currentNotes.size() + " notes. Please have a look at the supported ones in the README");
                         System.err.println("Supported types: " + Arrays.toString(supportedTypes));
-                        notes.addAll(complexPatternFromTemplate(currentNotes, p, false, stacks, false,prevBlue, prevRed));
+                        notes.addAll(complexPattern(currentNotes, p, UserInterface.easyPattern, true, false, stacks, false,prevBlue, prevRed));
 
                     }
                 }

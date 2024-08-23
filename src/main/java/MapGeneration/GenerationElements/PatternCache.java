@@ -2,11 +2,12 @@ package MapGeneration.GenerationElements;
 
 import BeatSaberObjects.Objects.Note;
 import DataManager.Parameters;
-import MapGeneration.ComplexPatternFromTemplate;
+import MapGeneration.ComplexPattern;
+import UserInterface.UserInterface;
 
 import java.util.*;
 
-import static MapGeneration.ComplexPatternFromTemplate.complexPatternFromTemplate;
+import static MapGeneration.ComplexPattern.complexPattern;
 
 public class PatternCache {
     private final int LENGTH_OF_PATTERN; //cache.size();
@@ -40,9 +41,11 @@ public class PatternCache {
 
         for (int i = 0; i < SIZE_OF_CACHE; i++) {
             List<Note> l = new ArrayList<>(
-                    complexPatternFromTemplate(
+                    complexPattern(
                             timings.subList(0, LENGTH_OF_PATTERN - 1),
                             p,
+                            UserInterface.easyPattern,
+                            true,
                             true,
                             false,
                             false,
@@ -63,7 +66,7 @@ public class PatternCache {
 
         Pair<Note, Boolean> next = cache.get(cacheNumber).get(patternPosition);
         if (next.bool)
-            next.note = ComplexPatternFromTemplate.getComplexNote(p, previous, invalidPlacesInARow, timing);
+            next.note = ComplexPattern.getComplexNote(p, previous, invalidPlacesInARow, timing);
 
 
         if (invalidPlacesInARow == 0) patternPosition++;

@@ -2,14 +2,22 @@ package MapGeneration;
 
 import BeatSaberObjects.Objects.Note;
 import BeatSaberObjects.Objects.TimingNote;
+import DataManager.Parameters;
+import MapAnalysation.PatternVisualisation.NpsPlotters.DynamicNpsPlotter;
+import MapAnalysation.PatternVisualisation.NpsPlotters.NpsInfo;
 import MapGeneration.GenerationElements.PatternCache;
 import MapGeneration.PatternGeneration.CommonMethods.FixErrorsInPatterns;
 import MapGeneration.GenerationElements.Pattern;
 import MapGeneration.GenerationElements.PatternProbability;
+import UserInterface.UserInterface;
 
 import java.util.*;
 import java.util.stream.IntStream;
 
+import static DataManager.Parameters.FIX_INCONSISTENT_TIMINGS_FASTER_THAN_NPS_THRESHOLD;
+import static DataManager.Parameters.NPS_COMPUTATION__IGNORE_STACKS_AND_SLIDERS;
+import static DataManager.Parameters.NPS_COMPUTATION__INTERVAL_SIZE;
+import static DataManager.Parameters.NPS_COMPUTATION__RANGE_INTERVALS;
 import static DataManager.Parameters.RANDOM;
 import static DataManager.Parameters.ignoreDDs;
 import static DataManager.Parameters.logger;
@@ -20,7 +28,7 @@ import static MapGeneration.PatternGeneration.CommonMethods.StackPlacements.plac
 import static MapGeneration.PatternGeneration.CommonMethods.StackPlacements.removeStacks;
 import static MapGeneration.PatternGeneration.NextLinearNote.nextLinearNote;
 
-public class ComplexPatternFromTemplate {
+public class ComplexPattern {
 
         /*
     Red: 0
@@ -45,23 +53,29 @@ public class ComplexPatternFromTemplate {
     /**
      * This method creates a pattern on the basis of the original Pattern.
      *
-     * @param timingsImmutable where the notes should be placed
-     * @param p                p are the probabilities that which note follows that. It must be in the "Pattern"-Format
-     * @param oneHanded        is the map one-handed?
-     * @param prevBlue         What the previous blue note was
-     * @param prevRed          What the previous red note was
+     * @param timingsImmutable               where the notes should be placed
+     * @param pattern                        pattern is the collection of probabilities that which note follows that. It must be in the "Pattern"-Format
+     * @param easyPattern
+     * @param useEasyPatternInFasterSections
+     * @param oneHanded                      is the map one-handed?
+     * @param prevBlue                       What the previous blue note was
+     * @param prevRed                        What the previous red note was
      * @return A List of all notes that have been generated
      */
-    public static List<Note> complexPatternFromTemplate(List<Note> timingsImmutable, Pattern p, boolean oneHanded, boolean stacks, boolean usePatternCache, Note prevBlue, Note prevRed) throws IllegalArgumentException {
+    public static List<Note> complexPattern(List<Note> timingsImmutable, Pattern pattern, Pattern easyPattern, boolean useEasyPatternInFasterSections , boolean oneHanded, boolean stacks, boolean usePatternCache, Note prevBlue, Note prevRed) throws IllegalArgumentException {
         if (timingsImmutable == null || timingsImmutable.isEmpty()) return new ArrayList<>();
         List<Note> timings = new ArrayList<>(timingsImmutable);
+
+        Pattern p = pattern;
+        Iterator<NpsInfo> npsInfoList = DynamicNpsPlotter.computeNps(timings, NPS_COMPUTATION__INTERVAL_SIZE, NPS_COMPUTATION__RANGE_INTERVALS, NPS_COMPUTATION__IGNORE_STACKS_AND_SLIDERS).listIterator();
+        NpsInfo npsInfo = npsInfoList.next();
 
         logger.debug("Creating complex pattern from template with " + timings.size() + " notes");
         List<Note> removeStacks = removeStacks(timings);
         logger.debug("Removed " + removeStacks.size() + " stack placements");
         logger.debug("New timings size: " + timings.size());
 
-        List<Note> pattern = new ArrayList<>(timings.size());
+        List<Note> notes = new ArrayList<>(timings.size());
         if (usePatternCache) patternCache = new PatternCache(timings, p, NUMBER_OF_PATTERNS, LENGTH_OF_PATTERN, NUMBER_OF_NOTES_TO_BE_CHANGED);
 
 
@@ -69,12 +83,12 @@ public class ComplexPatternFromTemplate {
         int j = oneHanded ? 1 : 2; //One-handed or not. If not one-handed, then every second note will be blue and every other will be red
 
 
-        placeInitialNoteBasedOnPrevNote(pattern, prevBlue, timings.get(0)._time); // Handling Blue
-        if (!oneHanded) placeInitialNoteBasedOnPrevNote(pattern, prevRed, timings.get(1)._time); // Handling Red
+        placeInitialNoteBasedOnPrevNote(notes, prevBlue, timings.get(0)._time); // Handling Blue
+        if (!oneHanded) placeInitialNoteBasedOnPrevNote(notes, prevRed, timings.get(1)._time); // Handling Red
 
 
         for (int i = j; i < timings.size(); i++) {
-            pattern.add(null);
+            notes.add(null);
         }
 
 
@@ -82,12 +96,15 @@ public class ComplexPatternFromTemplate {
         int redHorizontalsInARow = 0;  // prevent parity breaks for red notes
         int invalidPlacesInARow = 0;   // prevent infinite loops
 
-        boolean[] palmDirection = {determineInitialPalmDirection(pattern.get(0)), determineInitialPalmDirection(pattern.size() >= 2 ? pattern.get(1) : null)}; //true is up and false is down, [0] is red and [1] is blue
+        boolean[] palmDirection = {determineInitialPalmDirection(notes.get(0)), determineInitialPalmDirection(notes.size() >= 2 ? notes.get(1) : null)}; //true is up and false is down, [0] is red and [1] is blue
         int[] inversePlacementCount = {0, 0}; //[0] is red and [1] is blue
 
         List<Note> blueNotesFirstFix = new ArrayList<>();
         for (int i = j; i < timings.size(); i++) {
             boolean inValidPlacement = false;
+            if (Parameters.FIX_INCONSISTENT_TIMINGS && npsInfoList.hasNext() && timings.get(i)._time > npsInfo.toTime()) npsInfo = npsInfoList.next();
+            if (Parameters.FIX_INCONSISTENT_TIMINGS && npsInfoList.hasNext() && npsInfo.nps() >= FIX_INCONSISTENT_TIMINGS_FASTER_THAN_NPS_THRESHOLD && easyPattern != null) p = easyPattern;
+            else p = pattern;
 
             // manual error handling:
             // When there exists an infinite loop:
@@ -95,75 +112,75 @@ public class ComplexPatternFromTemplate {
             if ((oneHanded && i >= 2 || i >= 4) && invalidPlacesInARow >= 500) {
                 logger.warn("at beat: potential parity break" + timings.get(i)._time);
                 System.err.println("[ERROR] at beat: " + timings.get(i)._time);
-                pattern.set(i, new TimingNote(timings.get(i)._time));
+                notes.set(i, new TimingNote(timings.get(i)._time));
                 invalidPlacesInARow = 0;
                 continue;
             } else if (invalidPlacesInARow >= 500)
                 throw new IllegalArgumentException("Infinite Loop while creating map! Please try again.(Error occurred in \"complex\")");
-            if ((oneHanded && i >= 2 || i >= 4) && Objects.requireNonNull(pattern.get(i - j))._cutDirection == 8) {
-                pattern.set(i, nextNoteAfterTimingNote(pattern, timings.get(i)._time, i, j));
+            if ((oneHanded && i >= 2 || i >= 4) && Objects.requireNonNull(notes.get(i - j))._cutDirection == 8) {
+                notes.set(i, nextNoteAfterTimingNote(notes, timings.get(i)._time, i, j));
                 continue;
             }
 
-            Note previous = pattern.get(i - j);
+            Note previous = notes.get(i - j);
             Note next;
             if (usePatternCache) {// alle false noch einmal evaluieren
                 next = patternCache.getNext(previous, invalidPlacesInARow, timings.get(i)._time);
             } else
                 next = getComplexNote(p, previous, invalidPlacesInARow, timings.get(i)._time);
-            pattern.set(i, next);
+            notes.set(i, next);
 
 
-            if (pattern.get(i) == null) {
+            if (notes.get(i) == null) {
                 logger.warn("NULL: " + timings.get(i)._time);
                 System.err.println("note is NULL");
             }
-            if (previous.isDD(pattern.get(i))) inValidPlacement = true;
-            if (!ignoreDDs && previous._cutDirection == pattern.get(i)._cutDirection) inValidPlacement = true;
-            if (invalidPlacement(pattern, i, oneHanded)) inValidPlacement = true;
+            if (previous.isDD(notes.get(i))) inValidPlacement = true;
+            if (!ignoreDDs && previous._cutDirection == notes.get(i)._cutDirection) inValidPlacement = true;
+            if (invalidPlacement(notes, i, oneHanded)) inValidPlacement = true;
             if (inValidPlacement) {
-                pattern.set(i, null);
+                notes.set(i, null);
                 i--;
                 invalidPlacesInARow++;
                 continue;
             } else {
                 invalidPlacesInARow = 0;
             }
-            if (previous._cutDirection == pattern.get(i)._cutDirection) throw new IllegalArgumentException("hä?");
+            if (previous._cutDirection == notes.get(i)._cutDirection) throw new IllegalArgumentException("hä?");
 
 
             // Check if the horizontal placement is correct or if there is a parity break.
             // For further info, have a look at: endHorizontalPlacements()
-            if ((redHorizontalsInARow >= 2 || blueHorizontalsInARow >= 2) && (pattern.get(i)._cutDirection != 2 && pattern.get(i)._cutDirection != 3)) {
-                Note noteAfterHorizontal = endHorizontalPlacements(pattern, i, j);
-                pattern.set(i, noteAfterHorizontal != null ? noteAfterHorizontal : pattern.get(i));
+            if ((redHorizontalsInARow >= 2 || blueHorizontalsInARow >= 2) && (notes.get(i)._cutDirection != 2 && notes.get(i)._cutDirection != 3)) {
+                Note noteAfterHorizontal = endHorizontalPlacements(notes, i, j);
+                notes.set(i, noteAfterHorizontal != null ? noteAfterHorizontal : notes.get(i));
                 if (i % 2 == 0) blueHorizontalsInARow = 0;
                 if (i % 2 == 1) redHorizontalsInARow = 0;
             }
-            if (i % 2 == 0 && (pattern.get(i)._cutDirection == 2 || pattern.get(i)._cutDirection == 3)) blueHorizontalsInARow++;
-            if (i % 2 == 1 && (pattern.get(i)._cutDirection == 2 || pattern.get(i)._cutDirection == 3) && !oneHanded)
+            if (i % 2 == 0 && (notes.get(i)._cutDirection == 2 || notes.get(i)._cutDirection == 3)) blueHorizontalsInARow++;
+            if (i % 2 == 1 && (notes.get(i)._cutDirection == 2 || notes.get(i)._cutDirection == 3) && !oneHanded)
                 redHorizontalsInARow++;
 
             // creating the flag, so that a stack may be done later;
-            pattern.get(i).amountOfStackedNotes = timings.get(i).amountOfStackedNotes;
+            notes.get(i).amountOfStackedNotes = timings.get(i).amountOfStackedNotes;
 
             //Make it so that a blue swing is always first
             if (!oneHanded && i >= 6 && i + 1 < timings.size()) {
                 // The i%2 is necessary, because every second note will be inverted. And we only want to fix blue notes
-                if (i % 2 == 0 && pattern.get(i)._time - pattern.get(i - 1)._time >= 0.4 && (
-                        ((pattern.get(i)._cutDirection == 6 || pattern.get(i)._cutDirection == 1 || pattern.get(i)._cutDirection == 7) && (pattern.get(i - 1)._cutDirection == 6 || pattern.get(i - 1)._cutDirection == 1 || pattern.get(i - 1)._cutDirection == 7)) ||
-                                ((pattern.get(i)._cutDirection == 4 || pattern.get(i)._cutDirection == 0 || pattern.get(i)._cutDirection == 5) && (pattern.get(i - 1)._cutDirection == 4 || pattern.get(i - 1)._cutDirection == 0 || pattern.get(i - 1)._cutDirection == 5))
+                if (i % 2 == 0 && notes.get(i)._time - notes.get(i - 1)._time >= 0.4 && (
+                        ((notes.get(i)._cutDirection == 6 || notes.get(i)._cutDirection == 1 || notes.get(i)._cutDirection == 7) && (notes.get(i - 1)._cutDirection == 6 || notes.get(i - 1)._cutDirection == 1 || notes.get(i - 1)._cutDirection == 7)) ||
+                                ((notes.get(i)._cutDirection == 4 || notes.get(i)._cutDirection == 0 || notes.get(i)._cutDirection == 5) && (notes.get(i - 1)._cutDirection == 4 || notes.get(i - 1)._cutDirection == 0 || notes.get(i - 1)._cutDirection == 5))
                 )) {
 
                     Note noteNew = new Note(
                             timings.get(i + 1)._time,
-                            pattern.get(i)._lineIndex,
-                            pattern.get(i)._lineLayer,
-                            pattern.get(i)._type,
-                            (pattern.get(i)._cutDirection == 6 || pattern.get(i)._cutDirection == 1 || pattern.get(i)._cutDirection == 7) ? 0 : 1); //cutDirection
+                            notes.get(i)._lineIndex,
+                            notes.get(i)._lineLayer,
+                            notes.get(i)._type,
+                            (notes.get(i)._cutDirection == 6 || notes.get(i)._cutDirection == 1 || notes.get(i)._cutDirection == 7) ? 0 : 1); //cutDirection
 
-                    blueNotesFirstFix.add(pattern.get(i));
-                    pattern.set(i, noteNew);
+                    blueNotesFirstFix.add(notes.get(i));
+                    notes.set(i, noteNew);
                     logger.debug("Made it so that a blue swing is first. Added new Note: " + noteNew.toString().replace("\n",""));
                     System.out.println("Made it so that a blue swing is first. Added new Note: " + noteNew);
 
@@ -172,15 +189,15 @@ public class ComplexPatternFromTemplate {
                 }
             }
 
-            int checkPalmDirection = checkPalmDirection(palmDirection[i % j], pattern.get(i));
+            int checkPalmDirection = checkPalmDirection(palmDirection[i % j], notes.get(i));
             if (checkPalmDirection == 1) inversePlacementCount[i % j]++; //parity break
             if (checkPalmDirection == 0) inversePlacementCount[i % j] = 0; //everything okay
             if (!ignoreDDs && inversePlacementCount[i % j] >= 1) { //TODO: War 2
-//                Note noteNew = new Note(pattern.get(i)._time, pattern.get(i - j)._lineIndex, pattern.get(i - j)._lineLayer, pattern.get(i - j)._type, pattern.get(i - j)._cutDirection);
-//                pattern.set(i, noteNew); //If there is a parity break, duplicate the current note. It will be taken care of later :P
-                pattern.get(i).invertCutDirection();
-                logger.debug("Fixed horizontal parity break at: " + pattern.get(i)._time + "\n");
-                if (verbose) System.out.println("Fixed horizontal parity break at: " + pattern.get(i)._time + "\n");
+//                Note noteNew = new Note(notes.get(i)._time, notes.get(i - j)._lineIndex, notes.get(i - j)._lineLayer, notes.get(i - j)._type, notes.get(i - j)._cutDirection);
+//                notes.set(i, noteNew); //If there is a parity break, duplicate the current note. It will be taken care of later :P
+                notes.get(i).invertCutDirection();
+                logger.debug("Fixed horizontal parity break at: " + notes.get(i)._time + "\n");
+                if (verbose) System.out.println("Fixed horizontal parity break at: " + notes.get(i)._time + "\n");
 
                 inversePlacementCount[i % j] = 0;
                 palmDirection[i % j] = !palmDirection[i % j];
@@ -194,19 +211,19 @@ public class ComplexPatternFromTemplate {
 
         // make every second note red:
         if (!oneHanded) {
-            for (int i = 1; i < pattern.size(); i += 2) pattern.get(i).invertNote();
+            for (int i = 1; i < notes.size(); i += 2) notes.get(i).invertNote();
         }
 
         // Check, if one note is inside another note
-        List<Note> l = new ArrayList<>(pattern);
+        List<Note> l = new ArrayList<>(notes);
         l.addAll(blueNotesFirstFix);
         l.sort(Comparator.comparingDouble(n -> n._time));
 
         if (stacks) l = placeStacks(l, removeStacks);
-        FixErrorsInPatterns.fixSimpleMappingErrors(pattern);
-        pattern = checkAndFixBasicMappingErrors(l, true);
+        FixErrorsInPatterns.fixSimpleMappingErrors(notes);
+        notes = checkAndFixBasicMappingErrors(l, true);
 
-        return pattern;
+        return notes;
     }
 
     /**

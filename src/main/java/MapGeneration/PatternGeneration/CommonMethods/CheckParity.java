@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static BeatSaberObjects.Objects.Enums.ParityErrorEnum.*;
-import static DataManager.Parameters.PARITY_ERRORS_LIST;
 import static DataManager.Parameters.logger;
 import static MapGeneration.PatternGeneration.CommonMethods.PlaceFirstNotes.firstNotePlacement;
 
@@ -71,13 +70,17 @@ public class CheckParity {
         for (int i = 0; i < allNotes.size() - 1; i++) {
             if (allNotes.get(i)._time == allNotes.get(i + 1)._time && allNotes.get(i).equalNotePlacement(allNotes.get(i + 1))) {
                 Parameters.PARITY_ERRORS_LIST.get(UserInterface.currentDiff).add(new Pair<>(allNotes.get(i)._time, ParityErrorEnum.NOTE_INSIDE_ANOTHER_NOTE));
-                if (!quiet) System.err.println("[ERROR] at beat:   " + allNotes.get(i)._time + ": note inside another Note!");
+                if (!quiet) {
+                    String message = "at beat:   " + allNotes.get(i)._time + ": note inside another Note!";
+                    logger.warn(message);
+                    System.err.println("[ERROR] " + message);
+                }
             }
         }
 
         checkBasicParity(allNotes, quiet);
 
-        logger.info("Map checked successfully!");
+        if (!quiet) logger.info("Map checked successfully!");
         return allNotes;
     }
 
@@ -118,20 +121,15 @@ public class CheckParity {
             // Check for Double-Directionals
             Note prev = n._type == 0 ? red : blue;
 
-            if (isParityBreak(prev, n)) {
+            if (isSharpAngle(prev, n)){
+                Parameters.PARITY_ERRORS_LIST.get(UserInterface.currentDiff).add(new Pair<>(n._time, SHARP_ANGLE));
+                if (!quiet) logger.info("[NOTICE] at beat: {}: Sharp angle! prev: {}-{}, current: {}-{}", n._time, prev._time, prev.exportInPatFormat(), n._time, n.exportInPatFormat());
+                if (!quiet) System.err.println("[WARN] at beat:    " + n._time + ": Sharp angle!  prev: " + prev._time + "-" + prev.exportInPatFormat() + ", current: " + n._time + "-" + n.exportInPatFormat());
+            } else if (isParityBreak(prev, n)) {
                 Parameters.PARITY_ERRORS_LIST.get(UserInterface.currentDiff).add(new Pair<>(n._time, PARITY_BREAK));
-                if (!quiet)
-                    logger.warn("at beat:   {}: Parity break! prev: {}-{}, current: {}-{}", n._time, prev._time, prev.exportInPatFormat(), n._time, n.exportInPatFormat());
+                if (!quiet) logger.warn("at beat:   {}: Parity break! prev: {}-{}, current: {}-{}", n._time, prev._time, prev.exportInPatFormat(), n._time, n.exportInPatFormat());
                 if (!quiet) System.err.println("[ERROR] at beat:   " + n._time + ": Parity break! prev: " + prev._time + "-" + prev.exportInPatFormat() + ", current: " + n._time + "-" + n.exportInPatFormat());
-            } else
-                // Sharp Angle
-                if (isParitySharpAngle(prev, n)) {
-                    Parameters.PARITY_ERRORS_LIST.get(UserInterface.currentDiff).add(new Pair<>(n._time, SHARP_ANGLE));
-                    if (!quiet) {
-                        logger.warn("[NOTICE] at beat:    {}: sharp angle", n._time);
-                        System.err.println("[WARN] at beat:    " + n._time + ": sharp angle");
-                    }
-                }
+            }
 
 
             if (n._type == 0) red = n;
@@ -144,6 +142,7 @@ public class CheckParity {
         }
     }
 
+    @Deprecated
     private static boolean isParitySharpAngle(Note previous, Note current) {
         return (previous._cutDirection == 6 && current._cutDirection == 4 ||
                 previous._cutDirection == 4 && current._cutDirection == 6 ||
@@ -151,6 +150,7 @@ public class CheckParity {
                 previous._cutDirection == 5 && current._cutDirection == 7);
     }
 
+    // if (isSharpAngle) {...} else if (isParityBreak) {...}!!!!
     private static boolean isParityBreak(Note previous, Note current) {
         return previous._cutDirection == current._cutDirection
                 || ((previous._cutDirection == 6 || previous._cutDirection == 1 || previous._cutDirection == 7)
@@ -162,6 +162,18 @@ public class CheckParity {
                 || ((previous._cutDirection == 4 || previous._cutDirection == 2 || previous._cutDirection == 6)
                 && (current._cutDirection == 4 || current._cutDirection == 2 || current._cutDirection == 6));
     }
+
+    private static boolean isSharpAngle (Note previous, Note current){
+        return previous._cutDirection == 6 && current._cutDirection == 4 ||
+                previous._cutDirection == 4 && current._cutDirection == 6 ||
+                previous._cutDirection == 4 && current._cutDirection == 5 ||
+                previous._cutDirection == 5 && current._cutDirection == 4 ||
+                previous._cutDirection == 5 && current._cutDirection == 7 ||
+                previous._cutDirection == 7 && current._cutDirection == 5 ||
+                previous._cutDirection == 7 && current._cutDirection == 6 ||
+                previous._cutDirection == 6 && current._cutDirection == 7;
+    }
+
     /**
      * If there was an error, a timing note is being placed.
      * This function tries to see which note came before the error and places a note accordingly, which does not break parity.

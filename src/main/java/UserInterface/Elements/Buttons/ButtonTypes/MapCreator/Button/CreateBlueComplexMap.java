@@ -10,7 +10,7 @@ import UserInterface.UserInterface;
 import java.util.ArrayList;
 import java.util.List;
 
-import static MapGeneration.ComplexPatternFromTemplate.complexPatternFromTemplate;
+import static MapGeneration.ComplexPattern.complexPattern;
 
 public class CreateBlueComplexMap extends MapCreatorSubButton {
     public CreateBlueComplexMap(MyButton parent) {
@@ -26,7 +26,7 @@ public class CreateBlueComplexMap extends MapCreatorSubButton {
             uiMap.toBlueLeftBottomRowDotTimings();
 
             try {
-                maps.add(new BeatSaberMap(complexPatternFromTemplate(List.of(uiMap._notes), Pattern.adjustVariance(ui.pattern), true, false, false, null, null)));
+                maps.add(new BeatSaberMap(complexPattern(List.of(uiMap._notes), Pattern.adjustVariance(ui.pattern), UserInterface.easyPattern, true, true, false, false, null, null)));
 
             }
             catch (IllegalArgumentException ex) {

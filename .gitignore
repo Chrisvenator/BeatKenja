@@ -92,3 +92,6 @@ libs/*
 config.json
 /database/data/*
 /target/
+/src/main/resources/Beat Saber_Data/CustomWIPLevels/
+/src/main/resources/UserData/SongCore/SongDurationCache.dat
+/src/main/resources/UserData/
