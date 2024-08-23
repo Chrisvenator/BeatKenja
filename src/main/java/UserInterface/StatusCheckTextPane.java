@@ -20,6 +20,7 @@ public class StatusCheckTextPane extends JPanel {
     private Style fatalStyle;
     private Style errorStyle;
     private Style warnStyle;
+    private Style noticeStyle;
     private Style infoStyle;
     private Style debugStyle;
     private Style checkingMapStyle;
@@ -66,6 +67,9 @@ public class StatusCheckTextPane extends JPanel {
         warnStyle = textPane.addStyle("WarnStyle", null);
         StyleConstants.setForeground(warnStyle, Parameters.STATUS_TEXT_WARN_STYLE);
 
+        noticeStyle = textPane.addStyle("NoticeStyle", null);
+        StyleConstants.setForeground(noticeStyle, Parameters.STATUS_TEXT_NOTICE_STYLE);
+
         infoStyle = textPane.addStyle("InfoStyle", null);
         StyleConstants.setForeground(infoStyle, Parameters.STATUS_TEXT_INFO_STYLE);
 
@@ -108,6 +112,7 @@ public class StatusCheckTextPane extends JPanel {
      */
     public void append(String... strings) {
         for (String s : strings) {
+            if (s.contains("NOTICE")) s = s.substring(s.indexOf("[NOTICE]"));
             Style style = determineStyle(s);
             try {
                 doc.insertString(doc.getLength(), s, style);
@@ -133,6 +138,7 @@ public class StatusCheckTextPane extends JPanel {
         if (text.contains("FATAL")) return fatalStyle;
         if (text.contains("ERROR")) return errorStyle;
         if (text.contains("WARN")) return warnStyle;
+        if (text.contains("NOTICE")) return noticeStyle;
         if (text.contains("INFO")) return infoStyle;
         if (text.contains("DEBUG")) return debugStyle;
         return infoStyle; // Default style

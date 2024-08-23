@@ -148,6 +148,7 @@ public class Parameters {
     public static final Color STATUS_TEXT_ERROR_STYLE_BACKGROUND = new Color(255, 115, 0);
     public static final Color STATUS_TEXT_ERROR_STYLE_FOREGROUND = new Color(255, 255, 255);
     public static final Color STATUS_TEXT_WARN_STYLE = new Color(222, 149, 0);
+    public static final Color STATUS_TEXT_NOTICE_STYLE = new Color(183, 177, 0);
     public static final Color STATUS_TEXT_INFO_STYLE = DARK_MODE ? new Color(255,255,255): new Color(0,0,0);
     public static final Color STATUS_TEXT_DEBUG_STYLE = new Color(128, 128, 128);
     public static final Color STATUS_TEXT_CHECKING_MAP_STYLE_BACKGROUND = new Color(130, 198, 255, 161);

@@ -25,6 +25,21 @@ import org.jetbrains.annotations.NotNull;
 
 import static DataManager.Parameters.BPM;
 import static DataManager.Parameters.FIX_INCONSISTENT_TIMINGS_FASTER_THAN_NPS_THRESHOLD;
+        /*
+    Red: 0
+    Blue: 1
+
+    Index - Layer:          Cut direction:
+    |---|---|---|---|       |---|---|---|
+    |   |   |   |3-2|       | 4 | 0 | 5 |
+    |---|---|---|---|       |---|---|---|
+    |   |   |   |3-1|       | 2 | 8 | 3 |
+    |---|---|---|---|       |---|---|---|
+    |0-0|1-0|2-0|3-0|       | 6 | 1 | 7 |
+    |---|---|---|---|       |---|---|---|
+     */
+
+
 
 public class FixSwingTimings {
     public static List<Note> fixFastMapTimings(List<Note> notesImmutable){
