@@ -5,6 +5,7 @@ import BeatSaberObjects.Objects.Enums.ParityErrorEnum;
 import DataManager.Parameters;
 import UserInterface.UserInterface;
 import javafx.util.Pair;
+import lombok.extern.log4j.Log4j2;
 
 import static DataManager.Parameters.*;
 

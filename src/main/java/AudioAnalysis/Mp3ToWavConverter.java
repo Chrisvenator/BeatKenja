@@ -28,7 +28,7 @@ public class Mp3ToWavConverter {
         File file = new File(mp3FilePath);
         @Cleanup FileInputStream fis = new FileInputStream(file);
         @Cleanup BufferedInputStream bis = new BufferedInputStream(fis);
-        try (@Cleanup AudioInputStream outAIS = getAudioInputStream(bis)) {
+        try (AudioInputStream outAIS = getAudioInputStream(bis)) {
             File outFile = new File(wavFilePath);
             AudioSystem.write(outAIS, AudioFileFormat.Type.WAVE, outFile);
         }
@@ -42,7 +42,7 @@ public class Mp3ToWavConverter {
      * @return An {@link AudioInputStream} containing the decoded PCM data.
      */
     private static AudioInputStream getAudioInputStream(InputStream is) {
-        @Cleanup Bitstream bitstream = new Bitstream(is);
+        Bitstream bitstream = new Bitstream(is);
         Decoder decoder = new Decoder();
 
         AudioFormat baseFormat = new AudioFormat(decoder.getOutputFrequency(),

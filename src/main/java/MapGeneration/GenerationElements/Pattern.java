@@ -10,12 +10,11 @@ import DataManager.Parameters;
 import DataManager.Records.PatMetadata;
 import MapAnalysation.PatternVisualisation.DirichletMultinomialDistributionVisualizer;
 import MapAnalysation.PatternVisualisation.PatternVisualisationHeatMap;
-import MapGeneration.GenerationElements.Exceptions.MalformattedFileException;
+import MapGeneration.GenerationElements.Exceptions.MalformedFileException;
 import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
 import UserInterface.UserInterface;
 import com.google.gson.Gson;
 import lombok.Cleanup;
-import lombok.val;
 
 import javax.persistence.*;
 import java.awt.*;
@@ -293,7 +292,7 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
         if (f.exists() && (f.isDirectory() || pathToPatternFile.endsWith(".pat"))) {
             try {
                 readFromPatFile(pathToPatternFile);
-            } catch (MalformattedFileException e) {
+            } catch (MalformedFileException e) {
                 throw new RuntimeException(e);
             }
             return;
@@ -544,7 +543,7 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
      *
      * @param pathToPatternFile The path to the pattern file
      */
-    private void readFromPatFile(String pathToPatternFile) throws MalformattedFileException {
+    private void readFromPatFile(String pathToPatternFile) throws MalformedFileException {
         List<String> lines = FileManager.readFile(pathToPatternFile);
 
         String[] metadata = lines.get(0).split(";");
@@ -572,7 +571,7 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
                     metadata[5].contains(",") ? List.of(metadata[5].split(",")) : List.of(metadata[5])
             );
         } else {
-            throw new MalformattedFileException("The file is not in the correct format. The metadata is not correct.");
+            throw new MalformedFileException("The file is not in the correct format. The metadata is not correct.");
         }
 
         this.metadata.tags().stream().filter(tag -> !Parameters.MAP_TAGS.contains(tag)).forEach(tag -> logger.error("Unknown tag: {}", tag));
@@ -581,7 +580,7 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
         this.metadata.genre().stream().filter(genre -> !Parameters.MUSIC_GENRES.contains(genre)).forEach(genre -> System.err.println("Unknown genre: " + genre));
 
         for (int lineIndex = 1, i = 0; lineIndex < lines.size(); lineIndex++, i++) {
-            if (lines.get(lineIndex).contains(".")) throw new MalformattedFileException("The file contains a dot (.) in line " + lineIndex + ". This is not allowed in the .pat file format.");
+            if (lines.get(lineIndex).contains(".")) throw new MalformedFileException("The file contains a dot (.) in line " + lineIndex + ". This is not allowed in the .pat file format.");
 
             String[] split = lines.get(lineIndex).split(";");
             patterns[i][0] = new Note(0,

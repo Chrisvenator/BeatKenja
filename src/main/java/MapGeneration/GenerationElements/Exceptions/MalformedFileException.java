@@ -3,8 +3,8 @@ package MapGeneration.GenerationElements.Exceptions;
 import lombok.experimental.StandardException;
 
 @StandardException
-public class MalformedSequenceException extends MapGenerationException {
-    public MalformedSequenceException(String message) {
+public class MalformedFileException extends MapGenerationException {
+    public MalformedFileException(String message) {
         super(message);
     }
 }

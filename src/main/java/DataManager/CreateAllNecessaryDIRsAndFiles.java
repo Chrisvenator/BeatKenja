@@ -49,7 +49,7 @@ public class CreateAllNecessaryDIRsAndFiles {
         String jarPath = new File(CreateAllNecessaryDIRsAndFiles.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getAbsolutePath().replaceAll("%20", " ");
 
         // Open the JAR file as a stream
-        try (@Cleanup JarInputStream jarInputStream = new JarInputStream(Files.newInputStream(Paths.get(jarPath)))) {
+        try (JarInputStream jarInputStream = new JarInputStream(Files.newInputStream(Paths.get(jarPath)))) {
             JarEntry entry;
 
             // Iterate through the entries in the JAR file
