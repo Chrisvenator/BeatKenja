@@ -15,6 +15,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -112,7 +113,7 @@ public class Parameters {
 
     // Common
     public static final EntityManager entityManager = useDatabase ? Persistence.createEntityManagerFactory("default").createEntityManager() : null;
-    public static final JFileChooser FILE_CHOOSER = new JFileChooser(DEFAULT_PATH.trim());
+    public static final JFileChooser FILE_CHOOSER = new JFileChooser(new File(DEFAULT_PATH.trim()));
     public static final List<String> MAP_TAGS = TagEntityOperations.getAllTags();
     public static final List<String> MUSIC_GENRES = GenreEntityOperations.getAllGenres();
     public static final List<String> DIFFICULTIES = DifficultyEntityOperations.getAllDifficulties();
@@ -140,6 +141,7 @@ public class Parameters {
         FILE_CHOOSER.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         FILE_CHOOSER.setFileFilter(MAP_FILE_FORMAT);
         if (DARK_MODE) FILE_CHOOSER.setForeground(Color.white);
+        assert new File(DEFAULT_PATHS.getWipFolder()).exists();
     }
 
     // Status Text Area Styles:
