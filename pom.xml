@@ -68,31 +68,39 @@
             <artifactId>hibernate-core</artifactId>
             <version>5.4.25.Final</version>
         </dependency>
-        <!-- junit jupiter -->
+
+        <!-- Unit Tests -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>${junit.version}</version>
-            <!--            <scope>test</scope>--> <!-- This breaks things... -->
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>${junit.version}</version>
-            <!--            <scope>test</scope>-->
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
             <version>${junit.version}</version>
-            <!--            <scope>test</scope>-->
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>${junit.version}</version>
-            <!--            <scope>test</scope>-->
         </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>1.14.4</version> <!-- Use the latest stable version -->
+        </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy-agent</artifactId>
+            <version>1.14.4</version> <!-- Use the latest stable version -->
+        </dependency>
+
         <!-- glassfish -->
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
