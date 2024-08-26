@@ -203,7 +203,7 @@ Example of very high variance:
 
 - [ ] creating new pattern types:
   - [x] doubles
-  - [x] (small, normal big) jumps
+  - [x] (small, normal, big) jumps
   - [ ] more variation
   - [x] stacks
 - [x] Variation Slider

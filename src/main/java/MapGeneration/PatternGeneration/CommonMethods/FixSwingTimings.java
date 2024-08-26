@@ -23,8 +23,11 @@ import javafx.util.Pair;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
+
 import static DataManager.Parameters.BPM;
 import static DataManager.Parameters.FIX_INCONSISTENT_TIMINGS_FASTER_THAN_NPS_THRESHOLD;
+import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
         /*
     Red: 0
     Blue: 1

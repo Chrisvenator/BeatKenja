@@ -10,8 +10,8 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
 
+import javax.swing.*;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * An abstract class that serves as a base for different types of Notes Per Second (NPS) plotters.
@@ -36,6 +36,7 @@ public abstract class NpsPlotter extends ApplicationFrame {
         super(title);
         this.series = new XYSeries(super.getTitle());
         this.freeChartTitle = freeChartTitle;
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     }
 
     /**
@@ -64,7 +65,6 @@ public abstract class NpsPlotter extends ApplicationFrame {
 
         this.pack();
         RefineryUtilities.centerFrameOnScreen(this);
-        this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         this.setVisible(true);
     }
 }

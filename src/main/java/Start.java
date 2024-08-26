@@ -2,6 +2,7 @@ import DataManager.CreateAllNecessaryDIRsAndFiles;
 import DataManager.Database.DatabaseExport;
 import UserInterface.UserInterface;
 
+import javax.swing.*;
 import java.io.File;
 import java.util.Random;
 import java.util.logging.Level;
