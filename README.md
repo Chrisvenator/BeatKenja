@@ -23,7 +23,7 @@ This tool is still in its early stages and will be improved.
 
 ### Prerequisites
 
-1. [Java 17](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
+1. [Java 21](https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html)
 2. [Python 3.11+](https://www.python.org/downloads/) (Only needed for onset generation)
 3. Install pip (only needed for onsets)
     ```bash
@@ -33,7 +33,7 @@ This tool is still in its early stages and will be improved.
 
     ```bash
     pip install librosa
-    pip install ffmpeg #or install it from: https://ffmpeg.org/download.html (and add it to PATH)
+    pip install ffmpeg # if this fails, install it from: https://ffmpeg.org/download.html (and add it to PATH)
     pip install pydub
     ```
    Note that you may need to install ffmpeg manually and add it to PATH. Here is a tutorial for Windows [tutorial](https://phoenixnap.com/kb/ffmpeg-windows)
@@ -121,7 +121,7 @@ When you click on Map creator you will then have a few options:<br>
   meantime.
 
   | **bookmark name & description**                                                                                                                                                                                                                                                                                | **GIF**                                        |
-    |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------|
+  |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------|
   | **`linear`**<br>Linear quite boring pattern                                                                                                                                                                                                                                                                    | ![linear gif](./assets/linear.gif)             |
   | **`complex`**<br>A little bit more complex patterns. But nothing too complex.<br>**THERE MAY BE RESETS AND DDs**. So always check the map!                                                                                                                                                                     | ![complex gif](./assets/complex.gif)           |
   | **`1-2`**<br>Twice as many blue notes as red notes.<br>The red note will always spawn at the same beat as the blue one.<br>In between red notes there will always be a blue note.<br><br>Red notes generate like "linear" and blue notes generate like "complex".                                              | ![1 2 gif](./assets/1-2.gif)                   |
@@ -142,9 +142,31 @@ diff!
 ### Pattern customisation
 
 It is possible to change the patterns of "Create Complex Map" and "Create Map".
-There is a button named "load patterns". just simply load a .dat file and watch the patterns change.
+There is a button named "load patterns". just simply load a .pat file and watch the patterns change.
+Additionally, you can also load a difficulty file from a map.
 
 TODO: Explain what load patterns does<br>
+
+----
+### Variance Slider & Visualizing Pattern Distribution
+
+It is possible to change the variance of the pattern.
+- When the variance is low, the program will always generate a similar pattern and often repeat certain notes. There is a low chance of parity breaks.
+- When the variance is high, the program will generate a variety of different notes and patterns. There is a high chance of mapping errors and parity breaks!
+
+You can always display the Pattern under "Visualize Pattern" and then "Normalized Heatmap".
+The more intense the color blue is, the higher the chance that it will get picked.
+
+_Note that if the Slider only works as intended, if it has seen all notes it is supposed to generate._
+
+Example of low variance:
+![Low Variance Example](assets/variance_low_variance.png)
+
+Example of high variance:
+![High Variance Example.png](assets/variance_high_variance.png)
+
+Example of very high variance:
+![Very High Variance Example.png](assets/variance_very_high_variance.png)
 
 ----
 

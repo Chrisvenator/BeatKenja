@@ -57,6 +57,7 @@ public class ElementTypes {
     public static final ButtonType GLOBAL_OPEN_FOLDER = new ButtonType("open folder", 705, 22, 110, 26, true);
     public static final ButtonType GLOBAL_LOAD_PATTERNS_BUTTON = new ButtonType("Load Patterns File", 270, 70, 140, 30, true);
     public static final ButtonType GLOBAL_SHOW_PATTERNS_BUTTON = new ButtonType("Visualize Pattern", 275, 105, 130, 15, true);
+    public static final ButtonType GLOBAL_SHOW_README_BUTTON = new ButtonType("Show Readme", 975, 132, 150, 30, true);
 //    public static final ButtonType GLOBAL_SHOW_PATTERNS_BUTTON = new ButtonType("Show", 415, 75, 70, 20, true);
 
     //Global Text Field Types

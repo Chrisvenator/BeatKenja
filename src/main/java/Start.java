@@ -1,6 +1,5 @@
 import DataManager.CreateAllNecessaryDIRsAndFiles;
 import DataManager.Database.DatabaseExport;
-import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
 import UserInterface.UserInterface;
 
 import java.io.File;
@@ -34,6 +33,7 @@ public class Start {
      * bei ganz schnellen sektionen dann predictable patterns <-- Testen
      * lehnen
      * alle List<Note> zu custom NoteList<Note> Konvertieren?
+     * Schreiben eines Tutorials
      *****************************************
     */
 
@@ -60,6 +60,8 @@ public class Start {
             logger.info("Found that the program is executed by a jar file.");
             CreateAllNecessaryDIRsAndFiles.createAllNecessaryDIRsAndFiles();
         }
+
+
 
         ui = new UserInterface();
         ui.setVisible(true);
