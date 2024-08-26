@@ -1,8 +1,10 @@
 package BeatSaberObjects.Objects;
 
+import BeatSaberObjects.BeatsaberObject;
+
 import java.util.Objects;
 
-public class Obstacle {
+public class Obstacle extends BeatsaberObject {
     protected final float _time;
     protected final String _lineIndex;
     protected final int _type;

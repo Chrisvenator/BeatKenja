@@ -4,7 +4,7 @@ import BeatSaberObjects.BeatsaberObject;
 
 import java.util.Objects;
 
-public class Events implements BeatsaberObject {
+public class Events extends BeatsaberObject {
     public final float _time;
     public final int _type;
     public final float _floatValue;

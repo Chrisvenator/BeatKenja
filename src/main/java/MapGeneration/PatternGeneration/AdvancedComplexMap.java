@@ -2,6 +2,7 @@ package MapGeneration.PatternGeneration;
 
 import BeatSaberObjects.Objects.Note;
 import DataManager.Records.PatMetadata;
+import MapGeneration.MapGenerator;
 import MapGeneration.PatternGeneration.CommonMethods.FixErrorsInPatterns;
 import MapGeneration.GenerationElements.Pattern;
 import UserInterface.UserInterface;
@@ -14,7 +15,7 @@ import static MapGeneration.PatternGeneration.CommonMethods.StackPlacements.remo
 import static MapGeneration.ComplexPattern.complexPattern;
 import static MapGeneration.PatternGeneration.NextLinearNote.nextLinearNote;
 
-public class AdvancedComplexMap {
+public class AdvancedComplexMap extends MapGenerator {
     /**
      * Creates an advanced complex pattern for a Beat Saber map based on the provided notes, pattern, and metadata.
      * This method processes the notes in chunks to generate a complex pattern, calculates notes per second (NPS),

@@ -1,12 +1,13 @@
 package MapGeneration.PatternGeneration;
 
 import BeatSaberObjects.Objects.Note;
+import MapGeneration.MapGenerator;
 
 import java.util.List;
 
 import static MapGeneration.PatternGeneration.SmallJumps.createSmallJumps;
 
-public class NormalJumps {
+public class NormalJumps extends MapGenerator {
     /**
      * This function creates a jump-pattern where the jumps are "normally-big". That means, there is 1 air block in between the jumps
      *

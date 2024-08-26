@@ -2,6 +2,7 @@ package MapGeneration.PatternGeneration;
 
 import BeatSaberObjects.Objects.Note;
 import BeatSaberObjects.Objects.TimingNote;
+import MapGeneration.MapGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +13,7 @@ import static MapGeneration.PatternGeneration.CommonMethods.CheckParity.nextNote
 import static MapGeneration.PatternGeneration.CommonMethods.PlaceFirstNotes.firstNotePlacement;
 import static MapGeneration.PatternGeneration.NextLinearNote.nextLinearNote;
 
-public class LinearSlowPattern {
+public class LinearSlowPattern extends MapGenerator {
     /**
      * Creates a really linear two-handed mid-speed pattern.
      *

@@ -9,7 +9,7 @@ import static DataManager.Parameters.logger;
  * It uses functional programming concepts to allow for flexible parsing of different numeric types,
  * with error handling and logging integrated into the process.
  */
-public class Parser {
+public class Parser extends MapGeneratorCommons {
 
     /**
      * Parses a string input into a numeric value of the specified type.

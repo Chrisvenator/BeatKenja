@@ -1,5 +1,7 @@
 package BeatSaberObjects.Objects.Enums;
 
+import BeatSaberObjects.BeatsaberObject;
+
 public enum ParityErrorEnum {
     PARITY_BREAK,
     SHARP_ANGLE,

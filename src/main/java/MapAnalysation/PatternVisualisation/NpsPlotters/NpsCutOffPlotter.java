@@ -27,6 +27,11 @@ public class NpsCutOffPlotter extends NpsPlotter {
      */
     public NpsCutOffPlotter(String title, double threshold, float from, float to) {
         super(title, "NPS Cut Off");
+        if (from > to) {
+            float temp = from;
+            from = to;
+            to = temp;
+        }
 
         series.add(from, threshold);
         series.add(to, threshold);

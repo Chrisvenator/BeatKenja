@@ -28,7 +28,7 @@ Layer - Index:          Cut direction:
  */
 
 
-public class CheckParity {
+public class CheckParity extends MapGeneratorCommons {
     /**
      * This function checks the list allNotes if there are 2 or more notes inside one another. If this is true, the red BeatSaberObjects.Objects.Note
      * will be placed moved one line to the right

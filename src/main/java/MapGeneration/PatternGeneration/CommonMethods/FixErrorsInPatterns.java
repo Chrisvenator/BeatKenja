@@ -7,7 +7,7 @@ import java.util.List;
 
 import static DataManager.Parameters.logger;
 
-public class FixErrorsInPatterns {
+public class FixErrorsInPatterns extends MapGeneratorCommons {
     public static void fixSimpleMappingErrors(List<Note> notes) {
         notes.sort(Comparator.comparingDouble(n -> n._time));
         //We need to run this twice, because the first run might create new errors

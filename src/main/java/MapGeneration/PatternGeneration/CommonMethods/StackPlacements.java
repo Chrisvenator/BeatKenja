@@ -7,7 +7,7 @@ import java.util.List;
 
 import static MapGeneration.PatternGeneration.CommonMethods.CheckParity.checkAndFixBasicMappingErrors;
 
-public class StackPlacements {
+public class StackPlacements extends MapGeneratorCommons {
     /**
      * This function creates stacks for every note in notes. Stacks will only be placed if the flag has been set.
      * The flag can be set with: note.amountOfStackedNotes = 2

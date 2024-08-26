@@ -1,5 +1,6 @@
 package MapGeneration.GenerationElements;
 
+import BeatSaberObjects.BeatsaberObject;
 import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Note;
 import DataManager.Database.DatabaseEntities.*;
@@ -13,6 +14,8 @@ import MapGeneration.GenerationElements.Exceptions.MalformattedFileException;
 import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
 import UserInterface.UserInterface;
 import com.google.gson.Gson;
+import lombok.Cleanup;
+import lombok.val;
 
 import javax.persistence.*;
 import java.awt.*;
@@ -26,7 +29,7 @@ import java.util.stream.Collectors;
 import static DataManager.Parameters.*;
 import static MapAnalysation.Distributions.DirichletMultinomialDistribution.*;
 
-public class Pattern implements Iterable<PatternProbability>, Serializable {
+public class Pattern extends BeatsaberObject implements Iterable<PatternProbability>, Serializable {
     private static final int MAX_ARRAY_SIZE = 109; // lines * layers * cut directions = 4 * 3 * 9 = 108 + 1 (base note)
 
     // In this variable, all the possible notes are stored as patterns
@@ -698,6 +701,20 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
         }
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Pattern pattern = (Pattern) o;
+        return Objects.deepEquals(patterns, pattern.patterns) && Objects.deepEquals(count, pattern.count) && Objects.deepEquals(probabilities, pattern.probabilities) && Objects.equals(metadata, pattern.metadata);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(Arrays.deepHashCode(patterns), Arrays.deepHashCode(count), Arrays.deepHashCode(probabilities), metadata);
+    }
 
     /**
      * Returns a string representation of the pattern analysis results.
@@ -970,11 +987,11 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
             oos.flush();
             oos.close();
 
-            ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-            ObjectInputStream ois = new ObjectInputStream(bis);
+            @Cleanup ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+            @Cleanup ObjectInputStream ois = new ObjectInputStream(bis);
             Pattern p = (Pattern) ois.readObject();
-            bis.close();
-            ois.close();
+//            bis.close();
+//            ois.close();
 
             return p;
         } catch (IOException | ClassNotFoundException e) {

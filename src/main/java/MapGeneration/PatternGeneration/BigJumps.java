@@ -1,12 +1,13 @@
 package MapGeneration.PatternGeneration;
 
 import BeatSaberObjects.Objects.Note;
+import MapGeneration.MapGenerator;
 
 import java.util.List;
 
 import static MapGeneration.PatternGeneration.NormalJumps.createNormalJumps;
 
-public class BigJumps {
+public class BigJumps extends NormalJumps {
     /**
      * This function creates a jump-pattern where the jumps are huge. Use with caution!
      *

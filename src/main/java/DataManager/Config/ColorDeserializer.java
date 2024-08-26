@@ -3,10 +3,12 @@ package DataManager.Config;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * A custom deserializer for the `Color` class, used to convert a hex string representation of a color from JSON into a `Color` object.
@@ -27,8 +29,15 @@ public class ColorDeserializer extends JsonDeserializer<Color> {
      */
     @Override
     public Color deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
-        JsonNode node = jsonParser.getCodec().readTree(jsonParser);
-        String colorHex = node.asText();
-        return Color.decode(colorHex);
+        String colorHex = jsonParser.getText();
+        if (colorHex == null) return null;
+        if (colorHex.isEmpty()) throw new NumberFormatException();
+        if (colorHex.charAt(0) != '#') colorHex = "#" + colorHex;
+
+        try {
+            return Color.decode(colorHex);
+        }catch (NumberFormatException e) {
+            throw new NumberFormatException(e.getMessage());
+        }
     }
 }

@@ -64,4 +64,7 @@ public class ConfigLoader {
         return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this.config);
     }
 
+    public void setConfig(Configuration mockConfiguration) {
+        this.config = mockConfiguration;
+    }
 }

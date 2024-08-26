@@ -37,7 +37,7 @@ public class CombinedPlotter extends NpsPlotter {
      *
      * @return A combined {@code XYSeriesCollection} containing all the series provided to this plotter.
      */
-    private XYSeriesCollection getCombinedDataset() {
+    XYSeriesCollection getCombinedDataset() {
         XYSeriesCollection dataset = new XYSeriesCollection();
         seriesList.forEach(dataset::addSeries);
         return dataset;

@@ -1,6 +1,7 @@
 package DataManager;
 
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Exceptions.ZipCreationException;
+import lombok.Cleanup;
 
 import java.io.*;
 import java.net.URI;
@@ -85,15 +86,15 @@ public class FileManager {
      * @throws URISyntaxException If the URL is not properly formatted.
      */
     public static void downloadFile(String URL, String filePath) throws IOException, URISyntaxException {
-        BufferedInputStream in = new BufferedInputStream(new URI(URL).toURL().openStream());
-        FileOutputStream fileOutputStream = new FileOutputStream(filePath);
+        @Cleanup BufferedInputStream in = new BufferedInputStream(new URI(URL).toURL().openStream());
+        @Cleanup FileOutputStream fileOutputStream = new FileOutputStream(filePath);
         byte[] dataBuffer = new byte[1024];
         int bytesRead;
         while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
             fileOutputStream.write(dataBuffer, 0, bytesRead);
         }
-        fileOutputStream.close();
-        in.close();
+//        fileOutputStream.close();
+//        in.close();
 
     }
 
@@ -127,12 +128,12 @@ public class FileManager {
             ZipEntry zipEntry = new ZipEntry(file.getName());
             zipOut.putNextEntry(zipEntry);
 
-            FileInputStream fis = new FileInputStream(file);
+            @Cleanup FileInputStream fis = new FileInputStream(file);
             int length;
             while ((length = fis.read(buffer)) > 0) {
                 zipOut.write(buffer, 0, length);
             }
-            fis.close();
+//            fis.close();
         }
 
         zipOut.close();
@@ -154,8 +155,8 @@ public class FileManager {
             outputFolder.mkdirs();
         }
 
-        FileInputStream fileInputStream = new FileInputStream(zipFilePath);
-        ZipInputStream zipInputStream = new ZipInputStream(fileInputStream);
+        @Cleanup FileInputStream fileInputStream = new FileInputStream(zipFilePath);
+        @Cleanup ZipInputStream zipInputStream = new ZipInputStream(fileInputStream);
 
         ZipEntry zipEntry;
         while ((zipEntry = zipInputStream.getNextEntry()) != null) {
@@ -172,20 +173,20 @@ public class FileManager {
 
 
                 // Extract the entry's contents
-                FileOutputStream fileOutputStream = new FileOutputStream(entryFile);
+                @Cleanup FileOutputStream fileOutputStream = new FileOutputStream(entryFile);
                 byte[] buffer = new byte[1024];
                 int bytesRead;
                 while ((bytesRead = zipInputStream.read(buffer)) != -1) {
                     fileOutputStream.write(buffer, 0, bytesRead);
                 }
-                fileOutputStream.close();
+//                fileOutputStream.close();
             }
 
-            zipInputStream.closeEntry();
+//            zipInputStream.closeEntry();
         }
 
-        zipInputStream.close();
-        fileInputStream.close();
+//        zipInputStream.close();
+//        fileInputStream.close();
 
         logger.info("Zip file extracted successfully to: {}", outputFolderPath);
     }

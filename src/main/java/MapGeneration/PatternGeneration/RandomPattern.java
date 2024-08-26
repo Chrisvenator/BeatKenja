@@ -2,6 +2,7 @@ package MapGeneration.PatternGeneration;
 
 import BeatSaberObjects.Objects.Note;
 import DataManager.Parameters;
+import MapGeneration.MapGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +12,7 @@ import static DataManager.Parameters.BPM;
 import static DataManager.Parameters.ignoreDDs;
 import static DataManager.Parameters.logger;
 
-public class RandomPattern {
+public class RandomPattern extends MapGenerator {
     /**
      * createRandomPattern is a function that creates random Notes with the timings given
      *

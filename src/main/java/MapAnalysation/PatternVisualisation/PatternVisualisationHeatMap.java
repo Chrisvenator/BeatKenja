@@ -1,6 +1,7 @@
 package MapAnalysation.PatternVisualisation;
 
 import MapGeneration.GenerationElements.Pattern;
+import lombok.Getter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,11 +14,12 @@ import java.awt.*;
  * The class provides multiple static methods for launching the visualization in various modes.
  * The visualization is rendered in a Swing window, with each value in the count array represented by a colored rectangle.
  */
+@Getter
 public class PatternVisualisationHeatMap extends JFrame {
     /** The maximum size of the array to be visualized, defining the grid dimensions for the heatmap. This value determines the number of cells (rows and columns) in the heatmap. */
-    private static final int MAX_ARRAY_SIZE = 109;
+    protected static final int MAX_ARRAY_SIZE = 109;
     /** The size of each rectangle (cell) in the heatmap, in pixels. This value determines the resolution of the visualization, with larger values creating bigger cells. */
-    private static final int RECT_SIZE = 10;
+    protected static final int RECT_SIZE = 10;
     /** A 2D array representing the count data to be visualized. Each element in the array corresponds to a specific count value that will be mapped to a color on the heatmap.*/
     private final int[][] count;
     /** A flag indicating whether the count array values should be normalized. If true, the values will be scaled to a standard range, typically between 0 and 255, for visualization.*/
@@ -94,7 +96,7 @@ public class PatternVisualisationHeatMap extends JFrame {
      * @param p         The pattern to visualize.
      * @param name      The title of the window.
      */
-    private PatternVisualisationHeatMap(boolean normalize, boolean truncate, boolean log, Pattern p, String name) {
+    PatternVisualisationHeatMap(boolean normalize, boolean truncate, boolean log, Pattern p, String name) {
         this.normalize = normalize;
         this.truncate = truncate;
         this.logarithmic = log;
@@ -123,7 +125,7 @@ public class PatternVisualisationHeatMap extends JFrame {
      * @param original The original 2D array to copy.
      * @return A deep copy of the original 2D array.
      */
-    private int[][] copyArray(int[][] original) {
+    int[][] copyArray(int[][] original) {
         int[][] copy = new int[original.length][];
         for (int i = 0; i < original.length; i++) {
             copy[i] = original[i].clone();
@@ -135,7 +137,7 @@ public class PatternVisualisationHeatMap extends JFrame {
      * Normalizes the count array if normalization is enabled.
      * The normalization can be either linear or logarithmic, depending on the provided parameters.
      */
-    private void normalizeCountArray() {
+    void normalizeCountArray() {
         Pattern.normalizeCountArray(count, logarithmic);
     }
 
@@ -144,7 +146,7 @@ public class PatternVisualisationHeatMap extends JFrame {
      * A JPanel subclass that draws the heatmap based on the count array values.
      * The heatmap is displayed as a grid of colored rectangles, with the color intensity representing the value in the count array.
      */
-    private class HeatmapPanel extends JPanel {
+    class HeatmapPanel extends JPanel {
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -167,7 +169,7 @@ public class PatternVisualisationHeatMap extends JFrame {
          * @param value The value to interpret as a color.
          * @return The color corresponding to the value.
          */
-        private Color getColorForValue(int value) {
+        Color getColorForValue(int value) {
             // Normalized values have a range from 0 to 255. We don't need to truncate the value anymore
             if (normalize) new Color(0, 0, value);
 

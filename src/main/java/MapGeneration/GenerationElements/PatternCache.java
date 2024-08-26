@@ -1,15 +1,17 @@
 package MapGeneration.GenerationElements;
 
+import BeatSaberObjects.BeatsaberObject;
 import BeatSaberObjects.Objects.Note;
 import DataManager.Parameters;
 import MapGeneration.ComplexPattern;
 import UserInterface.UserInterface;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 
 import static MapGeneration.ComplexPattern.complexPattern;
 
-public class PatternCache {
+public class PatternCache extends BeatsaberObject {
     private final int LENGTH_OF_PATTERN; //cache.size();
     private final int SIZE_OF_CACHE; // cache.get(i).size(); must be >= 3
     private final int NUMBER_OF_NOTES_TO_BE_CHANGED;
@@ -103,4 +105,36 @@ public class PatternCache {
             this.bool = second;
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        PatternCache that = (PatternCache) o;
+        return LENGTH_OF_PATTERN == that.LENGTH_OF_PATTERN && SIZE_OF_CACHE == that.SIZE_OF_CACHE && NUMBER_OF_NOTES_TO_BE_CHANGED == that.NUMBER_OF_NOTES_TO_BE_CHANGED && cacheNumber == that.cacheNumber && patternPosition == that.patternPosition && Objects.equals(timings, that.timings)
+                && Objects.equals(p, that.p) && Objects.equals(cache, that.cache);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(LENGTH_OF_PATTERN, SIZE_OF_CACHE, NUMBER_OF_NOTES_TO_BE_CHANGED, cacheNumber, patternPosition, timings, p, cache);
+    }
+
+    @Override
+    public String toString() {
+        return "PatternCache{" +
+                "LENGTH_OF_PATTERN=" + LENGTH_OF_PATTERN +
+                ", SIZE_OF_CACHE=" + SIZE_OF_CACHE +
+                ", NUMBER_OF_NOTES_TO_BE_CHANGED=" + NUMBER_OF_NOTES_TO_BE_CHANGED +
+                ", cacheNumber=" + cacheNumber +
+                ", patternPosition=" + patternPosition +
+                ", timings=" + timings +
+                ", p=" + p +
+                ", cache=" + cache +
+                '}';
+    }
+
+
 }

@@ -2,6 +2,7 @@ package MapGeneration.PatternGeneration;
 
 import BeatSaberObjects.Objects.Note;
 import MapGeneration.GenerationElements.Pattern;
+import MapGeneration.MapGenerator;
 import MapGeneration.PatternGeneration.CommonMethods.FixErrorsInPatterns;
 import UserInterface.UserInterface;
 
@@ -12,7 +13,7 @@ import static MapGeneration.PatternGeneration.CommonMethods.StackPlacements.crea
 import static MapGeneration.ComplexPattern.complexPattern;
 import static MapGeneration.PatternGeneration.RandomPattern.createRandomPattern;
 
-public class RandomV2FromTemplate {
+public class RandomV2FromTemplate extends MapGenerator {
     public static List<Note> randomV2FromTemplate(Note[] timings, Pattern p, boolean stacks, Note prevBlue, Note prevRed) throws IllegalArgumentException {
         List<Note> notes = new ArrayList<>();
 

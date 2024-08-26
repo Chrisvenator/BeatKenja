@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import AudioAnalysis.SpectrogramCalculator;
 import AudioAnalysis.SpectrogramDisplay;
 import MapGeneration.PatternGeneration.CommonMethods.NpsBpmConverter;
+import lombok.Cleanup;
 
 /**
  * This class is used to generate Beat Saber maps from .wav files. It is used to generate maps in bulk.
@@ -270,8 +271,8 @@ public class BatchWavToMaps {
                 System.out.println("Python script execution failed with exit code: " + exitCode);
 
                 // Capture and print the error output of the script
-                InputStream errorStream = process.getErrorStream();
-                BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream));
+                @Cleanup InputStream errorStream = process.getErrorStream();
+                @Cleanup BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream));
                 String line;
                 while ((line = errorReader.readLine()) != null) {
                     logger.info(line);
@@ -315,8 +316,8 @@ public class BatchWavToMaps {
             logger.info("Error while Executing the script. Exit-Code: {}", exitCode);
             System.out.println("Error while Executing the script. Exit-Code: " + exitCode);
 
-            InputStream errorStream = process.getErrorStream();
-            BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream));
+            @Cleanup InputStream errorStream = process.getErrorStream();
+            @Cleanup BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream));
             String line;
             while ((line = errorReader.readLine()) != null) {
                 logger.info(line);
