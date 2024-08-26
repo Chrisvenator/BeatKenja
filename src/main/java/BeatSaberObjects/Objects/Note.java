@@ -1,9 +1,11 @@
 package BeatSaberObjects.Objects;
 
+import BeatSaberObjects.BeatsaberObject;
 import BeatSaberObjects.Objects.Enums.ParityErrorEnum;
 import DataManager.Parameters;
 import UserInterface.UserInterface;
 import javafx.util.Pair;
+import lombok.extern.log4j.Log4j2;
 
 import static DataManager.Parameters.*;
 
@@ -26,7 +28,7 @@ Layer - Index:          Cut direction:
 |0-0|1-0|2-0|3-0|       | 6 | 1 | 7 |
 |---|---|---|---|       |---|---|---|
  */
-public class Note implements Comparable<Note>, Serializable {
+public class Note extends BeatsaberObject implements Comparable<Note>, Serializable {
     public float _time;
     public double _lineIndex;
     public double _lineLayer;

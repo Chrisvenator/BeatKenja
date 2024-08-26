@@ -2,6 +2,7 @@ package MapGeneration.PatternGeneration;
 
 import BeatSaberObjects.Objects.Note;
 import MapGeneration.GenerationElements.Pattern;
+import MapGeneration.MapGenerator;
 import UserInterface.UserInterface;
 
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ import static MapGeneration.PatternGeneration.CommonMethods.StackPlacements.crea
 import static MapGeneration.ComplexPattern.complexPattern;
 import static MapGeneration.PatternGeneration.NextLinearNote.nextLinearNote;
 
-public class TwoRightOneLeft {
+public class TwoRightOneLeft extends MapGenerator {
     /**
      * This methode creates a pattern, where there is one right-hand swing followed by a both-hand swing followed by a right-hand swing.
      * This repeats until the end of timings[] is reached

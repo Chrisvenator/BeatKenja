@@ -8,7 +8,7 @@ import static DataManager.Parameters.RANDOM;
 import static DataManager.Parameters.logger;
 import static MapGeneration.PatternGeneration.NextLinearNote.nextLinearNote;
 
-public class PlaceFirstNotes {
+public class PlaceFirstNotes extends MapGeneratorCommons {
     /**
      * If there is no note placed yet, then this function will always generate a down-swing note
      *

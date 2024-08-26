@@ -1,9 +1,11 @@
 package BeatSaberObjects.Objects;
 
+import BeatSaberObjects.BeatsaberObject;
+
 import java.util.Arrays;
 import java.util.Objects;
 
-public class Bookmark {
+public class Bookmark extends BeatsaberObject {
     public final float _time;
     public final String _name;
     protected final float[] _color;

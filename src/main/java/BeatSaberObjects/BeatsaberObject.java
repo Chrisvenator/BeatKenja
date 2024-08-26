@@ -15,14 +15,13 @@ Layer - Index:          Cut direction:
 |0-0|1-0|2-0|3-0|       | 6 | 1 | 7 |
 |---|---|---|---|       |---|---|---|
  */
-public interface BeatsaberObject {
-    String _version = "2.2.0";
+public abstract class BeatsaberObject {
+    @Override
+    public abstract boolean equals(Object o);
 
     @Override
-    boolean equals(Object o);
+    public abstract int hashCode();
 
     @Override
-    int hashCode();
-
-    String toString();
+    public abstract String toString();
 }

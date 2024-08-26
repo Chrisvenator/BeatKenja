@@ -44,7 +44,7 @@ import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
 
 
 
-public class FixSwingTimings {
+public class FixSwingTimings extends MapGeneratorCommons {
     public static List<Note> fixFastMapTimings(List<Note> notesImmutable){
         List<Note> notes = new ArrayList<>(notesImmutable);
 

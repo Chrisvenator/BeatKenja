@@ -55,7 +55,7 @@ public class StaticNpsPlotter extends NpsPlotter {
      * @param npsMap A map where the key is the time in seconds and the value is the NPS value.
      * @return A list of NpsInfo objects representing the NPS data.
      */
-    private static List<NpsInfo> toNpsInfo(Map<Integer, Integer> npsMap) {
+    static List<NpsInfo> toNpsInfo(Map<Integer, Integer> npsMap) {
         List<NpsInfo> npsInfos = new ArrayList<>();
         for (Map.Entry<Integer, Integer> entry : npsMap.entrySet()) {
             int fromTime = npsMap.isEmpty() ? 0 : npsMap.get(entry.getKey());

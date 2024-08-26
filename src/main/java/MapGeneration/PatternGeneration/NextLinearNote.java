@@ -1,11 +1,12 @@
 package MapGeneration.PatternGeneration;
 
 import BeatSaberObjects.Objects.Note;
+import MapGeneration.MapGenerator;
 
 import static DataManager.Parameters.RANDOM;
 import static DataManager.Parameters.logger;
 
-public class NextLinearNote {
+public class NextLinearNote extends MapGenerator {
     /**
      * This function creates a note based on the previous note that doesn't break parity.
      * It only creates really linear patterns

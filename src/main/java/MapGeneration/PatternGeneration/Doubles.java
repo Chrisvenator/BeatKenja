@@ -2,6 +2,7 @@ package MapGeneration.PatternGeneration;
 
 import BeatSaberObjects.Objects.Note;
 import BeatSaberObjects.Objects.TimingNote;
+import MapGeneration.MapGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +12,7 @@ import static MapGeneration.PatternGeneration.CommonMethods.CheckParity.nextNote
 import static MapGeneration.PatternGeneration.CommonMethods.PlaceFirstNotes.placeInitialNoteBasedOnPrevNote;
 import static MapGeneration.PatternGeneration.NextLinearNote.nextLinearNote;
 
-public class Doubles {
+public class Doubles extends MapGenerator {
     public static List<Note> createDoubles(List<Note> timings, Note prevBlue, Note prevRed) {
         List<Note> notes = new ArrayList<>();
 

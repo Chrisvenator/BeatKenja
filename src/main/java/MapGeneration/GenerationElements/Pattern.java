@@ -1,5 +1,6 @@
 package MapGeneration.GenerationElements;
 
+import BeatSaberObjects.BeatsaberObject;
 import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Note;
 import DataManager.Database.DatabaseEntities.*;
@@ -9,10 +10,11 @@ import DataManager.Parameters;
 import DataManager.Records.PatMetadata;
 import MapAnalysation.PatternVisualisation.DirichletMultinomialDistributionVisualizer;
 import MapAnalysation.PatternVisualisation.PatternVisualisationHeatMap;
-import MapGeneration.GenerationElements.Exceptions.MalformattedFileException;
+import MapGeneration.GenerationElements.Exceptions.MalformedFileException;
 import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
 import UserInterface.UserInterface;
 import com.google.gson.Gson;
+import lombok.Cleanup;
 
 import javax.persistence.*;
 import java.awt.*;
@@ -26,7 +28,7 @@ import java.util.stream.Collectors;
 import static DataManager.Parameters.*;
 import static MapAnalysation.Distributions.DirichletMultinomialDistribution.*;
 
-public class Pattern implements Iterable<PatternProbability>, Serializable {
+public class Pattern extends BeatsaberObject implements Iterable<PatternProbability>, Serializable {
     private static final int MAX_ARRAY_SIZE = 109; // lines * layers * cut directions = 4 * 3 * 9 = 108 + 1 (base note)
 
     // In this variable, all the possible notes are stored as patterns
@@ -290,7 +292,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
         if (f.exists() && (f.isDirectory() || pathToPatternFile.endsWith(".pat"))) {
             try {
                 readFromPatFile(pathToPatternFile);
-            } catch (MalformattedFileException e) {
+            } catch (MalformedFileException e) {
                 throw new RuntimeException(e);
             }
             return;
@@ -541,7 +543,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
      *
      * @param pathToPatternFile The path to the pattern file
      */
-    private void readFromPatFile(String pathToPatternFile) throws MalformattedFileException {
+    private void readFromPatFile(String pathToPatternFile) throws MalformedFileException {
         List<String> lines = FileManager.readFile(pathToPatternFile);
 
         String[] metadata = lines.get(0).split(";");
@@ -569,7 +571,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
                     metadata[5].contains(",") ? List.of(metadata[5].split(",")) : List.of(metadata[5])
             );
         } else {
-            throw new MalformattedFileException("The file is not in the correct format. The metadata is not correct.");
+            throw new MalformedFileException("The file is not in the correct format. The metadata is not correct.");
         }
 
         this.metadata.tags().stream().filter(tag -> !Parameters.MAP_TAGS.contains(tag)).forEach(tag -> logger.error("Unknown tag: {}", tag));
@@ -578,7 +580,7 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
         this.metadata.genre().stream().filter(genre -> !Parameters.MUSIC_GENRES.contains(genre)).forEach(genre -> System.err.println("Unknown genre: " + genre));
 
         for (int lineIndex = 1, i = 0; lineIndex < lines.size(); lineIndex++, i++) {
-            if (lines.get(lineIndex).contains(".")) throw new MalformattedFileException("The file contains a dot (.) in line " + lineIndex + ". This is not allowed in the .pat file format.");
+            if (lines.get(lineIndex).contains(".")) throw new MalformedFileException("The file contains a dot (.) in line " + lineIndex + ". This is not allowed in the .pat file format.");
 
             String[] split = lines.get(lineIndex).split(";");
             patterns[i][0] = new Note(0,
@@ -698,6 +700,20 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
         }
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Pattern pattern = (Pattern) o;
+        return Objects.deepEquals(patterns, pattern.patterns) && Objects.deepEquals(count, pattern.count) && Objects.deepEquals(probabilities, pattern.probabilities) && Objects.equals(metadata, pattern.metadata);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(Arrays.deepHashCode(patterns), Arrays.deepHashCode(count), Arrays.deepHashCode(probabilities), metadata);
+    }
 
     /**
      * Returns a string representation of the pattern analysis results.
@@ -970,11 +986,11 @@ public class Pattern implements Iterable<PatternProbability>, Serializable {
             oos.flush();
             oos.close();
 
-            ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-            ObjectInputStream ois = new ObjectInputStream(bis);
+            @Cleanup ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+            @Cleanup ObjectInputStream ois = new ObjectInputStream(bis);
             Pattern p = (Pattern) ois.readObject();
-            bis.close();
-            ois.close();
+//            bis.close();
+//            ois.close();
 
             return p;
         } catch (IOException | ClassNotFoundException e) {

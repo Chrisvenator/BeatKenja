@@ -25,7 +25,7 @@ import static MapGeneration.PatternGeneration.TwoRightOneLeft.twoRightOneLeft;
 
 
 
-public class CreateMap {
+public class CreateMap extends MapGenerator {
 
 
     /*

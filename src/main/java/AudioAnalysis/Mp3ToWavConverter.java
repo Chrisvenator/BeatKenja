@@ -3,6 +3,7 @@ package AudioAnalysis;
 import javazoom.jl.decoder.Bitstream;
 import javazoom.jl.decoder.Decoder;
 import javazoom.jl.decoder.SampleBuffer;
+import lombok.Cleanup;
 
 import javax.sound.sampled.*;
 import java.io.*;
@@ -25,8 +26,8 @@ public class Mp3ToWavConverter {
      */
     public static void convert(String mp3FilePath, String wavFilePath) throws IOException {
         File file = new File(mp3FilePath);
-        FileInputStream fis = new FileInputStream(file);
-        BufferedInputStream bis = new BufferedInputStream(fis);
+        @Cleanup FileInputStream fis = new FileInputStream(file);
+        @Cleanup BufferedInputStream bis = new BufferedInputStream(fis);
         try (AudioInputStream outAIS = getAudioInputStream(bis)) {
             File outFile = new File(wavFilePath);
             AudioSystem.write(outAIS, AudioFileFormat.Type.WAVE, outFile);

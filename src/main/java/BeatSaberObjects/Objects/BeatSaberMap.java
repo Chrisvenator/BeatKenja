@@ -1,5 +1,6 @@
 package BeatSaberObjects.Objects;
 
+import BeatSaberObjects.BeatsaberObject;
 import DataManager.FileManager;
 import com.google.gson.Gson;
 import org.json.JSONArray;
@@ -26,7 +27,7 @@ import java.util.*;
     |---|---|---|---|       |---|---|---|
      */
 
-public class BeatSaberMap {
+public class BeatSaberMap extends BeatsaberObject {
     public String originalJSON;
     public String _version = "2.2.0";
     public Events[] _events = new Events[0];

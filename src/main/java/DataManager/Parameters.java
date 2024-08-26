@@ -141,7 +141,6 @@ public class Parameters {
         FILE_CHOOSER.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         FILE_CHOOSER.setFileFilter(MAP_FILE_FORMAT);
         if (DARK_MODE) FILE_CHOOSER.setForeground(Color.white);
-        assert new File(DEFAULT_PATHS.getWipFolder()).exists();
     }
 
     // Status Text Area Styles:

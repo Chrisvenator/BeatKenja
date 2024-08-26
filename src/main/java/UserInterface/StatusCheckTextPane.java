@@ -150,4 +150,8 @@ public class StatusCheckTextPane extends JPanel {
     public void clear() {
         setText("");
     }
+
+    public String getText() {
+        return this.textPane.getText();
+    }
 }

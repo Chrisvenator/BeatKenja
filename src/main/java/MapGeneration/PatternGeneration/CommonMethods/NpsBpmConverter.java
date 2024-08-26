@@ -7,7 +7,7 @@ import java.util.List;
 import static DataManager.Parameters.BPM;
 import static DataManager.Parameters.logger;
 
-public class NpsBpmConverter {
+public class NpsBpmConverter extends MapGeneratorCommons {
     public static void convertSecondsToBeats(List<Note> notes) {
         logger.info("Start converting seconds to beats.");
 

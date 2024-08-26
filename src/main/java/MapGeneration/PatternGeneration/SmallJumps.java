@@ -2,11 +2,13 @@ package MapGeneration.PatternGeneration;
 
 import BeatSaberObjects.Objects.Note;
 import BeatSaberObjects.Objects.TimingNote;
+import MapGeneration.MapGenerator;
+import org.hibernate.mapping.Map;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SmallJumps {
+public class SmallJumps extends NormalJumps {
     /**
      * This function creates a jump-pattern where the jumps are not that big
      *

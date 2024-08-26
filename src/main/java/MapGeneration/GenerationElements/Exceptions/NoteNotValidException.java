@@ -1,6 +1,9 @@
 package MapGeneration.GenerationElements.Exceptions;
 
-public class NoteNotValidException extends Exception {
+import lombok.experimental.StandardException;
+
+@StandardException
+public class NoteNotValidException extends MapGenerationException {
     public NoteNotValidException(String message) {
         super(message);
     }

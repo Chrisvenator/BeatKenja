@@ -28,7 +28,7 @@ import static MapGeneration.PatternGeneration.CommonMethods.StackPlacements.plac
 import static MapGeneration.PatternGeneration.CommonMethods.StackPlacements.removeStacks;
 import static MapGeneration.PatternGeneration.NextLinearNote.nextLinearNote;
 
-public class ComplexPattern {
+public class ComplexPattern extends MapGenerator {
 
         /*
     Red: 0
