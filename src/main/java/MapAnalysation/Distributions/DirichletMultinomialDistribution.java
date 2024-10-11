@@ -6,6 +6,8 @@ import java.util.Arrays;
 import java.util.Random;
 
 import static DataManager.Parameters.logger;
+import static org.apache.commons.math3.special.Gamma.digamma;
+import static org.apache.commons.math3.special.Gamma.trigamma;
 
 /**
  * The `DirichletMultinomialDistribution` class provides methods for generating samples from Dirichlet and Multinomial distributions,
@@ -212,32 +214,39 @@ public class DirichletMultinomialDistribution {
         int[] alpha = Arrays.copyOf(alphaInit, K);
         double[] g = new double[K];
         double[] h = new double[K];
-        int[] newAlpha = new int[K];
-
+        double[] newAlpha = new double[K];
+        
         for (int iter = 0; iter < MAX_ITERATIONS; iter++) {
             Arrays.fill(g, 0);
             Arrays.fill(h, 0);
             double sumAlpha = 0.0;
-
-            for (double a : alpha) {
-                sumAlpha += a;
+            double sumData = 0.0;
+            
+            for (double a : alpha) sumAlpha += a;
+            for (int d : data) sumData += d;
+            
+            for (int k = 0; k < K; k++) {
+                double alphaK = alpha[k];
+                double dataK = data[k];
+                
+                // Gradient (g[k])
+                g[k] = digamma(alphaK + dataK) - digamma(alphaK) - (digamma(sumAlpha + sumData) - digamma(sumAlpha));
+                
+                // Hessian (h[k])
+                h[k] = -trigamma(alphaK + dataK) + trigamma(alphaK);
             }
-
-                for (int k = 0; k < K; k++) {
-                    g[k] += (data[k] - N * (alpha[k] / sumAlpha));
-                    h[k] += (N * (alpha[k] / sumAlpha) * (1 - (alpha[k] / sumAlpha)));
-                }
-
+            
             boolean converged = true;
             for (int k = 0; k < K; k++) {
-                newAlpha[k] = (int) Math.round(alpha[k] + g[k] / h[k]);
+                newAlpha[k] = alpha[k] - g[k] / h[k];  // Newton's update step
                 if (Math.abs(newAlpha[k] - alpha[k]) > TOLERANCE) {
                     converged = false;
                 }
             }
-
+            
             if (converged) break;
-            alpha = Arrays.copyOf(newAlpha, K);
+            int[] newAlphaInt = Arrays.stream(newAlpha).mapToInt(x -> (int) Math.round(x)).toArray();
+            alpha = Arrays.copyOf(newAlphaInt, K);
         }
         return alpha;
     }
