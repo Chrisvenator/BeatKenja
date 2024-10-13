@@ -62,10 +62,10 @@ def main(audio_path, output_path, certainty, proximity):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Audio Analysis Script')
-    parser.add_argument('audio_path', type=str, help='Path to the audio file')
-    parser.add_argument('-o', '--output', type=str, help='Output file path')
-    parser.add_argument('-p', '--madmom_proximity', type=float, help='How close to each other the notes may spawn (in seconds)')
-    parser.add_argument('-c', '--madmom_certainty', type=float, help='How certain the note placements should be')
+    parser.add_argument('audio_path', type=str, help='Path to the audio file', required=True)
+    parser.add_argument('-o', '--output', type=str, help='Output file path', required=True)
+    parser.add_argument('-p', '--madmom_proximity', type=float, help='How close to each other the notes may spawn (in seconds)', required=True)
+    parser.add_argument('-c', '--madmom_certainty', type=float, help='How certain the note placements should be', required=True)
     args = parser.parse_args()
 
     main(args.audio_path, args.output, args.madmom_certainty, args.madmom_proximity)

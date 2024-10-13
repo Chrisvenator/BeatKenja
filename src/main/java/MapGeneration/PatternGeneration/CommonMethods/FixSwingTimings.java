@@ -48,8 +48,8 @@ public class FixSwingTimings extends MapGeneratorCommons {
     public static List<Note> fixFastMapTimings(List<Note> notesImmutable){
         List<Note> notes = new ArrayList<>(notesImmutable);
 
-        List<Note> distanceFixed = fixDistanceBetweenNotes(notes);
-        List<Note> swingsFixed = fixSwingAlternating(distanceFixed);
+//        List<Note> distanceFixed = fixDistanceBetweenNotes(notes);
+        List<Note> swingsFixed = fixSwingAlternating(notes);
 
         BeatSaberMap b = new BeatSaberMap(swingsFixed);
         b.fixPlacements(Parameters.PLACEMENT_PRECISION);

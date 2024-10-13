@@ -72,6 +72,7 @@ public class GlobalOpenMapButton extends GlobalButton {
      */
     @Override
     public void onClick() {
+        FILE_CHOOSER.setCurrentDirectory(new File(filePath));
         int option = FILE_CHOOSER.showOpenDialog(this);
         logger.debug("File chooser opened with option: {}", option);
 

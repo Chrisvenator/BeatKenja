@@ -604,6 +604,7 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
         computeProbabilities();
     }
 
+    //ExportAsPat
     /**
      * Exports the pattern analysis results in a .pat file format.
      * A line always represents the probabilities that a certain note will follow a given note.
@@ -634,7 +635,9 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
             // Iterate over the remaining notes in the pattern
             // Append the string representation of the note and its count
             for (int i = 1; i < notes.length; i++)
-                if (notes[i] != null) s.append(notes[i].exportInPatFormat()).append(this.count[counter][i]).append(";");
+                if (notes[i] != null) s
+                        .append(notes[i].exportInPatFormat())
+                        .append(this.count[counter][i]).append(";");
 
 
             // Append the closing bracket for the pattern
@@ -1163,6 +1166,9 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
         System.out.println("Applied Dirichlet Multinomial Distribution");
 
         p.computeProbabilities();
+        System.out.println(pattern.exportInPatFormat());
+        System.out.println(p.exportInPatFormat());
+//        throw new RuntimeException("noob");
         return p;
     }
 
@@ -1172,7 +1178,7 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
             if (patterns[i][0] == null) break; // Beende die Schleife, wenn keine weiteren Muster vorhanden sind
             double[] dirichletSample = sampleDirichlet(this.count[i]);
             int[] multinomialSample = sampleMultinomial(N, dirichletSample);
-            int[] mle = estimateAlphaMLE(multinomialSample, count[i], N);
+//            int[] mle = estimateAlphaMLE(multinomialSample, count[i], N);
 //            System.arraycopy(mle, 0, this.count[i], 0, mle.length);
             System.arraycopy(multinomialSample, 0, this.count[i], 0, multinomialSample.length);
         }

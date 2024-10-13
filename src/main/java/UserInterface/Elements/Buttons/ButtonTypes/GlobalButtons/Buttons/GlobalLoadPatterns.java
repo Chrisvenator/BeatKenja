@@ -12,14 +12,7 @@ import UserInterface.UserInterface;
 import java.awt.*;
 import java.io.File;
 
-import static DataManager.Parameters.DEFAULT_EASY_PATTERN_PATH;
-import static DataManager.Parameters.DEFAULT_PATH;
-import static DataManager.Parameters.DEFAULT_PATTERN_METADATA;
-import static DataManager.Parameters.DEFAULT_PATTERN_PATH;
-import static DataManager.Parameters.FILE_CHOOSER;
-import static DataManager.Parameters.logger;
-import static DataManager.Parameters.useDatabase;
-import static DataManager.Parameters.verbose;
+import static DataManager.Parameters.*;
 
 public class GlobalLoadPatterns extends GlobalButton {
     public GlobalLoadPatterns(UserInterface ui) {
@@ -27,6 +20,7 @@ public class GlobalLoadPatterns extends GlobalButton {
         if (Parameters.AUTOLOAD_DEFAULT_PATTERNS) {
             try {
                 ui.pattern = new Pattern(String.valueOf(useDatabase ? DEFAULT_PATTERN_METADATA : DEFAULT_PATTERN_PATH));
+                setBackground(Color.GREEN);
             } catch (NoteNotValidException e) {
                 setBackground(Color.RED);
                 logger.error("Could not load default pattern. Please do it manually!");
@@ -51,7 +45,6 @@ public class GlobalLoadPatterns extends GlobalButton {
     public void onClick() {
         FILE_CHOOSER.setCurrentDirectory(new File(Parameters.DEFAULT_PATTERN_FOLDER_PATH));
         int option = FILE_CHOOSER.showOpenDialog(this);
-        FILE_CHOOSER.setCurrentDirectory(new File(DEFAULT_PATH));
         logger.debug("File chooser opened with option: {}", option);
 
         if (!approveFileLoading(option)) {

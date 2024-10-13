@@ -29,8 +29,8 @@ def main(audio_path, output_path):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Audio Analysis Script')
-    parser.add_argument('audio_path', type=str, help='Path to the audio file')
-    parser.add_argument('-o', '--output', type=str, help='Output file path')
+    parser.add_argument('audio_path', type=str, help='Path to the audio file', required=True)
+    parser.add_argument('-o', '--output', type=str, help='Output file path', required=True)
     args = parser.parse_args()
 
     main(args.audio_path, args.output)

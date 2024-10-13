@@ -12,10 +12,10 @@
     "autoload-default-pattern" : true
   },
   "default-paths" : {
-    "wip-folder" : "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\_SongsToTimings\\src\\main\\resources\\Beat Saber_Data\\CustomWIPLevels\\3df62",
+    "wip-folder" : "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\Beat Saber_Data\\CustomWIPLevels",
     "config" : "./config.json",
     "readme" : "./README.md",
-    "pattern-folder" : "src/main/resources/MapTemplates/",
+    "pattern-folder" : "src/main/resources/Patterns/",
     "default-pattern" : "src/main/resources/Patterns/Normal_Pattern_ISeeFire.txt",
     "easy-default-pattern" : "src/main/resources/Patterns/Easy_Pattern_AllGroupedV1.pat"
   },
@@ -69,7 +69,7 @@
   },
   "development" : {
     "export-database" : false,
-    "autoload-default-map-for-testing" : true,
+    "autoload-default-map-for-testing" : false,
     "default-path-for-autoload-map" : "src/main/resources/Beat Saber_Data/CustomWIPLevels/3df62/ExpertPlusStandard.dat"
   }
 }

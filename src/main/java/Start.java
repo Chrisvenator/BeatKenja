@@ -32,6 +32,7 @@ public class Start {
      *********** Planned Features ***********
      * bei schnellen Sektionen gleiche Abstände <-- Parity Breaks & Note inside Note Ursachen finden
      * bei ganz schnellen sektionen dann predictable patterns <-- Testen
+     * bei > 10 nps keine inlines mehr
      * lehnen
      * alle List<Note> zu custom NoteList<Note> Konvertieren?
      * Schreiben eines Tutorials
