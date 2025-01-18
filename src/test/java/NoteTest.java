@@ -1297,35 +1297,35 @@ class NoteTest {
     }
 
     @Test
-    void createStackedNote() {
+    void createStacks() {
         Note note00 = new Note(0, 0, 0, 0, 0);
         Note note01 = new Note(0, 0, 0, 0, 1);
         note00.amountOfStackedNotes = 3;
         note01.amountOfStackedNotes = 3;
-        Assertions.assertArrayEquals(new Note[]{note00}, note00.createStackedNote());
-        Assertions.assertArrayEquals(new Note[]{note01}, note01.createStackedNote());
+        Assertions.assertArrayEquals(new Note[]{note00}, note00.createStacks());
+        Assertions.assertArrayEquals(new Note[]{note01}, note01.createStacks());
 
         note00 = new Note(0, 2, 0, 0, 0);
         note01 = new Note(0, 2, 0, 0, 1);
         note00.amountOfStackedNotes = 3;
         note01.amountOfStackedNotes = 3;
-        Assertions.assertEquals(2, note00.createStackedNote().length);
-        Assertions.assertEquals(2, note01.createStackedNote().length);
+        Assertions.assertEquals(2, note00.createStacks().length);
+        Assertions.assertEquals(2, note01.createStacks().length);
 
         note00 = new Note(0, 3, 0, 0, 0);
         note01 = new Note(0, 3, 0, 0, 1);
         note00.amountOfStackedNotes = 3;
         note01.amountOfStackedNotes = 3;
-        Assertions.assertEquals(3, note00.createStackedNote().length);
-        Assertions.assertEquals(3, note01.createStackedNote().length);
+        Assertions.assertEquals(3, note00.createStacks().length);
+        Assertions.assertEquals(3, note01.createStacks().length);
 
 
         note00 = new Note(0, 0, 0, 0, 5);
         note01 = new Note(0, 0, 0, 0, 6);
         note00.amountOfStackedNotes = 3;
         note01.amountOfStackedNotes = 3;
-        Assertions.assertEquals(2, note00.createStackedNote().length);
-        Assertions.assertEquals(2, note01.createStackedNote().length);
+        Assertions.assertEquals(2, note00.createStacks().length);
+        Assertions.assertEquals(2, note01.createStacks().length);
 
         Note note02 = new Note(0, 0, 0, 0, 2);
         Note note03 = new Note(0, 0, 0, 0, 3);
@@ -1337,11 +1337,11 @@ class NoteTest {
         note04.amountOfStackedNotes = 3;
         note07.amountOfStackedNotes = 3;
         note08.amountOfStackedNotes = 3;
-        Assertions.assertEquals(1, note02.createStackedNote().length);
-        Assertions.assertEquals(1, note03.createStackedNote().length);
-        Assertions.assertEquals(1, note04.createStackedNote().length);
-        Assertions.assertEquals(1, note07.createStackedNote().length);
-        Assertions.assertEquals(1, note08.createStackedNote().length);
+        Assertions.assertEquals(1, note02.createStacks().length);
+        Assertions.assertEquals(1, note03.createStacks().length);
+        Assertions.assertEquals(1, note04.createStacks().length);
+        Assertions.assertEquals(1, note07.createStacks().length);
+        Assertions.assertEquals(1, note08.createStacks().length);
     }
 
     @Test

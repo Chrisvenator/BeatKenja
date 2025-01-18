@@ -88,6 +88,14 @@ public class Note extends BeatsaberObject implements Comparable<Note>, Serializa
         return cutDirectionSmallerThanOrEquals90Degrees.get(previous._cutDirection).contains(_cutDirection);
     }
     
+    /**
+     * Checks if the placement and direction of the note is equal to the placement and direction of another note
+     * <br>
+     * This is the same as the .equals method, but it ignores the time
+     *
+     * @param o the other note
+     * @return if the placement is equal
+     */
     public boolean equalPlacement(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -96,37 +104,136 @@ public class Note extends BeatsaberObject implements Comparable<Note>, Serializa
         return _lineIndex == note._lineIndex && _lineLayer == note._lineLayer && _type == note._type && _cutDirection == note._cutDirection;
     }
     
-    public boolean equalNotePlacement(Note note) {
+    /**
+     * Checks if only the placement of the note is equal to the placement of another note
+     * <br>
+     * This is the same as the .equals method, but it ignores the time and direction
+     *
+     * @param o the other note
+     * @return if the placement is equal
+     */
+    public boolean equalNotePlacement(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Note note = (Note) o;
+        
         return _lineIndex == note._lineIndex && _lineLayer == note._lineLayer;
     }
     
-    public Note[] createStackedNote() {
-        if (amountOfStackedNotes == 0) return new Note[]{this};
+    public boolean isOutsideGrid() {
+        return _lineIndex < 0 || _lineIndex > 3 || _lineLayer < 0 || _lineLayer > 2;
+    }
+    
+    /**
+     * creates a stacked note. If the amount of stacked notes is 0, it will return the note itself
+     * <br>
+     * The stacked notes will be created based on the cut direction and the line index of the note.
+     * The postition of the stacked notes will be calculated based on the line index of the note.
+     * Because of vision blocks, gird 1-2 and 2-2 will never contain a note.
+     *
+     * @return the note at [0] and the stacked notes (if they exist) at [1] and [2]
+     */
+    public Note[] createStacks() {
+        if (amountOfStackedNotes <= 0) return new Note[]{this};
+        if (amountOfStackedNotes > 2) amountOfStackedNotes = 2;
+        boolean couldNotComputeStack = false;
         
         List<Note> notes = new ArrayList<>();
-        switch (_cutDirection) {
-            case 0, 1 -> {
-                if (_lineIndex == 2) {
-                    notes.add(new Note(_time, _lineIndex, 0, _type, _cutDirection));
-                    notes.add(new Note(_time, _lineIndex, 2, _type, _cutDirection));
-                } else if (_lineIndex == 3) {
-                    if (amountOfStackedNotes >= 3) notes.add(new Note(_time, _lineIndex, 0, _type, _cutDirection));
-                    notes.add(new Note(_time, _lineIndex, 1, _type, _cutDirection));
-                    notes.add(new Note(_time, _lineIndex, 2, _type, _cutDirection));
-                } else notes.add(new Note(this._time, this._lineIndex, this._lineLayer, this._type, this._cutDirection));
-            }
-            case 5, 6 -> {
-                notes.add(new Note(_time, 2, 0, _type, _cutDirection));
-                notes.add(new Note(_time, 3, 1, _type, _cutDirection));
-            }
-            case 2, 3, 4, 7, 8 -> {
-                notes.add(new Note(this._time, this._lineIndex, this._lineLayer, this._type, this._cutDirection));
-                if (SAVE_DID_NOT_PLACE_STACK_AS_BOOKMARK)
-                    Parameters.PARITY_ERRORS_LIST.get(UserInterface.currentDiff).add(new Pair<>(this._time, ParityErrorEnum.DID_NOT_PLACE_STACK));
-            }
+        notes.add(this);
+        
+        List<Note> stack = tryCreatingStackedNote();
+        
+        if (SAVE_DID_NOT_PLACE_STACK_AS_BOOKMARK && (stack == null || stack.isEmpty())
+                && Parameters.PARITY_ERRORS_LIST.get(UserInterface.currentDiff) != null //For Unit tests
+        ) {
+            Parameters.PARITY_ERRORS_LIST.get(UserInterface.currentDiff).add(new Pair<>(this._time, ParityErrorEnum.DID_NOT_PLACE_STACK));
         }
         
+        if (stack == null || stack.isEmpty()) return notes.toArray(new Note[0]);
+        
+        
+        for (int i = 0; i < amountOfStackedNotes && i < stack.size(); i++) {
+            if (stack.get(i) != null && !stack.get(i).isVisionBlock() && !stack.get(i).isOutsideGrid()) {
+                notes.add(stack.get(i));
+            }
+        }
+
         return notes.toArray(new Note[0]);
+    }
+    
+    //@Question: What is happening with cutDirection 8?
+    public List<Note> tryCreatingStackedNote() {
+        if (isOutsideGrid()) return new ArrayList<>();
+        if (isVisionBlock()) return new ArrayList<>();
+        
+        List<Note> toReturn = new ArrayList<>();
+        
+        Note below = new Note(_time, whichLineIndexWillNoteCutInto(), whichLineLayerWillNoteCutInto(), _type, _cutDirection);
+        Note above = new Note(_time, whichLineIndexWillNoteCutFrom(), whichLineLayerWillNoteCutFrom(), _type, _cutDirection);
+        
+        if (!below.isOutsideGrid() && !below.isVisionBlock()) toReturn.add(below);
+        if (!above.isOutsideGrid() && !above.isVisionBlock()) toReturn.add(above);
+        
+        Note below2 = new Note(_time, below.whichLineIndexWillNoteCutInto(), below.whichLineLayerWillNoteCutInto(), _type, _cutDirection);
+        Note above2 = new Note(_time, above.whichLineIndexWillNoteCutFrom(), above.whichLineLayerWillNoteCutFrom(), _type, _cutDirection);
+        
+        if (!below2.isOutsideGrid() && !below2.isVisionBlock()) toReturn.add(below2);
+        if (!above2.isOutsideGrid() && !above2.isVisionBlock()) toReturn.add(above2);
+        
+        return toReturn;
+    }
+    
+    
+    public boolean isVisionBlock() {
+        return (_lineIndex == 2 || _lineIndex == 1) && _lineLayer == 1;
+    }
+    
+    public double whichLineLayerWillNoteCutInto() {
+        double lineLayer;
+        
+        switch (_cutDirection) {
+            case 6, 1, 7 -> lineLayer = _lineLayer - 1;
+            case 4, 0, 5 -> lineLayer = _lineLayer + 1;
+            default -> lineLayer = _lineLayer;
+        }
+        
+        return lineLayer;
+    }
+    
+    public double whichLineIndexWillNoteCutInto() {
+        double lineIndex;
+        
+        switch (_cutDirection) {
+            case 4, 2, 6 -> lineIndex = _lineIndex - 1;
+            case 5, 3, 7 -> lineIndex = _lineIndex + 1;
+            default -> lineIndex = _lineIndex;
+        }
+        
+        return lineIndex;
+    }
+    
+    public double whichLineLayerWillNoteCutFrom() {
+        double lineLayer;
+        
+        switch (_cutDirection) {
+            case 6, 1, 7 -> lineLayer = _lineLayer + 1;
+            case 4, 0, 5 -> lineLayer = _lineLayer - 1;
+            default -> lineLayer = _lineLayer;
+        }
+        
+        return lineLayer;
+    }
+    
+    public double whichLineIndexWillNoteCutFrom() {
+        double lineIndex;
+        
+        switch (_cutDirection) {
+            case 4, 2, 6 -> lineIndex = _lineIndex + 1;
+            case 5, 3, 7 -> lineIndex = _lineIndex - 1;
+            default -> lineIndex = _lineIndex;
+        }
+        
+        return lineIndex;
     }
 
 

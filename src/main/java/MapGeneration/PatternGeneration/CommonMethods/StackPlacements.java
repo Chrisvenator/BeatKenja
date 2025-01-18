@@ -18,7 +18,7 @@ public class StackPlacements extends MapGeneratorCommons {
     public static List<Note> createStacks(List<Note> notes) {
         List<Note> toReturn = new ArrayList<>();
         for (Note n : notes) {
-            toReturn.addAll(List.of(n.createStackedNote()));
+            toReturn.addAll(List.of(n.createStacks()));
         }
 
         //Check if there is a note inside another note
