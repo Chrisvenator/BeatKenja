@@ -1161,8 +1161,8 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
             Pattern.inverseNormalizeCountArray(p.count, true, (UserInterface.patternVariance * -1));
             Pattern.normalizeCountArray(p.count, true);
         } else {
-//            p.applyDirichletMultinomial(UserInterface.patternVariance);
-            p.normalizeAsContinuousCategoricalDistribution();
+            p.applyDirichletMultinomial(UserInterface.patternVariance);
+//            p.normalizeAsContinuousCategoricalDistribution();
             Pattern.normalizeCountArray(p.count, true);
         }
         logger.info("Applied Dirichlet Multinomial Distribution");
