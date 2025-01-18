@@ -84,6 +84,7 @@ public class Note extends BeatsaberObject implements Comparable<Note>, Serializa
     public boolean isDD(Note previous) {
         if (ignoreDDs) return false;
         if (previous == null) return false;
+        if (previous._cutDirection < 0 || previous._cutDirection > 8) return false;
         return cutDirectionSmallerThanOrEquals90Degrees.get(previous._cutDirection).contains(_cutDirection);
     }
     
