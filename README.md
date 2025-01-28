@@ -191,6 +191,8 @@ Example of very high variance:
 + **The map didn't change after generating a new one:** There may be 2 possibilities:
   1. The Program didn't feel like generating something
   2. Chromapper caches difficulties. If this is the case, exit and then reopen the difficulty. That should fix it.
++ **mp3 to wav conversion is broken:**
++ **mp3 to wav overrides the wav file:**
 
 ----
 
