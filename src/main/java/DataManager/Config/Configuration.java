@@ -29,7 +29,7 @@ public class Configuration
     public MapGenerator mapGenerator = new MapGenerator();
     @JsonProperty("development")
     public Development development = new Development();
-
+    
     @lombok.Getter @lombok.Setter @lombok.ToString
     public static class Global
     {
@@ -183,6 +183,8 @@ public class Configuration
         public double fixInconsistentTimingsNoteAmountThreshold = 4;
         @JsonProperty("plot-nps-distribution")
         public boolean plotNpsDistribution = true;
+        @JsonProperty("delete-wav-after-conversion")
+        public boolean deleteWavAfterConversion = true;
     }
 
     @lombok.Getter @lombok.Setter @lombok.ToString
