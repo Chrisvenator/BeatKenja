@@ -91,6 +91,7 @@ public class Parameters {
     public static final double FIX_INCONSISTENT_TIMINGS_FASTER_THAN_NPS_THRESHOLD = MAP_GENERATOR.fixInconsistentTimingsFasterThan;
     public static final double FIX_INCONSISTENT_TIMINGS_FASTER_THAN_NPS_AMOUNT_OF_NOTES_THRESHOLD = MAP_GENERATOR.fixInconsistentTimingsNoteAmountThreshold;
     public static final boolean PLOT_NPS_DISTRIBUTION = MAP_GENERATOR.plotNpsDistribution;
+    public static final boolean DELETE_WAV_AFTER_CONVERSION = MAP_GENERATOR.deleteWavAfterConversion;
 
     // Database
     public static final PatMetadata DEFAULT_PATTERN_METADATA = new PatMetadata(DATABASE.defaultPatMetadata.name, DATABASE.defaultPatMetadata.bpm, DATABASE.defaultPatMetadata.nps, DATABASE.defaultPatMetadata.difficulties, DATABASE.defaultPatMetadata.tags, DATABASE.defaultPatMetadata.genres);

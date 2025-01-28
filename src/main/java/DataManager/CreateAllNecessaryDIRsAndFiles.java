@@ -37,6 +37,16 @@ public class CreateAllNecessaryDIRsAndFiles {
 
         try {
             extractSpecificFolders("./", foldersToCopyOutOfJar);
+            if (!new File(ONSET_GENERATION_FOLDER_PATH_INPUT).exists()) {
+                if (!new File(ONSET_GENERATION_FOLDER_PATH_INPUT).mkdirs()){
+                    System.err.println("Error while creating the folder: " + ONSET_GENERATION_FOLDER_PATH_INPUT);
+                    logger.error("Error while creating the folder: {}", ONSET_GENERATION_FOLDER_PATH_INPUT);
+                }
+                if (!new File(ONSET_GENERATION_FOLDER_PATH_OUTPUT).mkdirs()){
+                    System.err.println("Error while creating the folder: " + ONSET_GENERATION_FOLDER_PATH_OUTPUT);
+                    logger.error("Error while creating the folder: {}", ONSET_GENERATION_FOLDER_PATH_OUTPUT);
+                }
+            }
         }
         catch (IOException e) {
             throw new RuntimeException(e);

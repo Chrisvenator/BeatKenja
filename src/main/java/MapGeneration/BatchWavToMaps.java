@@ -1,15 +1,17 @@
 package MapGeneration;
 
+import AudioAnalysis.AudioAnalysis;
+import AudioAnalysis.SpectrogramCalculator;
+import AudioAnalysis.SpectrogramDisplay;
 import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Note;
 import DataManager.FileManager;
-import AudioAnalysis.AudioAnalysis;
+import DataManager.Parameters;
+import MapGeneration.PatternGeneration.CommonMethods.NpsBpmConverter;
+import lombok.Cleanup;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
-
-import static DataManager.Parameters.*;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,16 +20,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import AudioAnalysis.SpectrogramCalculator;
-import AudioAnalysis.SpectrogramDisplay;
-import MapGeneration.PatternGeneration.CommonMethods.NpsBpmConverter;
-import lombok.Cleanup;
+import static DataManager.Parameters.*;
 
 /**
  * This class is used to generate Beat Saber maps from .wav files. It is used to generate maps in bulk.
  */
 public class BatchWavToMaps {
-
+    
     /**
      * Generates Beat Saber maps based on .wav files located in the specified input path. The generated maps will be located in the specified output path.
      *
@@ -38,19 +37,20 @@ public class BatchWavToMaps {
         if (pythonScript == null) pythonScript = "SongToOnsets.py";
         logger.info("Checking if there are some illegal file names...");
         System.out.println("Checking if there are some illegal file names...");
-
+        
         renameAllIllegalFileNames(inputPath, verbose);
-
+        
         File folder = new File(inputPath);
         File[] files = folder.listFiles();
         logger.info("Creating maps...");
         System.out.println();
         System.out.println("Creating maps...");
-
-
+        
+        
         if (files != null) {
             for (File file : files) {
-                if (file.isFile() && file.getName().contains(".mp3")) {
+                if (file.isFile() && file.getName().contains(".mp3") &&
+                        !new File(file.getName().replace("mp3", "wav")).exists()) { //Check if the song has already been converted
                     //If there is an error generating the map, then dependencies are probably missing
                     if (!executeConvertSongsPY(file, verbose)) return false;
                 }
@@ -62,24 +62,24 @@ public class BatchWavToMaps {
                 if (file.isFile() && (file.getName().contains(".wav"))) {
                     String filename = file.getName().replaceAll(".wav", "");
                     String destinationFolderPath = out + "/[BeatKenja]_" + filename;
-
+                    
                     // Disable prints while generating the map to avoid console spam
                     try {
                         createFolderAndMoveItems(filename, file, destinationFolderPath, verbose);
-
+                        
                         //Try to execute the python script. If unsuccessful, try installing all dependencies
 //                        if (!executePythonScript(filename, file, inputPath, destinationFolderPath, pythonScript)) return false;
 //                        List<String> peaks = FileManager.readFile(destinationFolderPath + "/" + filename + ".txt");
-
+                        
                         ArrayList<ArrayList<Double>> peaks = AudioAnalysis.getPeaksFromAudio(file.getAbsolutePath());
                         String[] difficulties = {"EasyNoArrows", "NormalNoArrows", "HardNoArrows", "ExpertNoArrows", "ExpertPlusNoArrows"};
-
+                        
                         int i = 0;
                         for (ArrayList<Double> timingsDiff : peaks) {
                             if (i == 5) throw new IllegalArgumentException("Too many difficulties. Please adjust the difficulties array in the code.");
                             createDiffFromTimings(destinationFolderPath, difficulties[i], timingsDiff);
-
-
+                            
+                            
                             if (peaks.get(i).isEmpty()) {
                                 logger.error("No peaks found for difficulty {} in the audio file. Please adjust the thresholds in the code.", i);
                                 System.err.println("No peaks found for difficulty " + i + " in the audio file. Please adjust the thresholds in the code.");
@@ -88,7 +88,7 @@ public class BatchWavToMaps {
                             }
                             double duration = peaks.get(i).get(peaks.get(i).size() - 1); // Assuming the last peak time gives approximate duration
                             double[][] spectrogram = SpectrogramCalculator.calculateSpectrogram(file.getAbsolutePath(), 1024, 512);
-
+                            
                             if (SHOW_SPECTOGRAM_WHEN_GENERATING_ONSETS) {
                                 final int finalI = i;
                                 SwingUtilities.invokeLater(() -> {
@@ -106,7 +106,7 @@ public class BatchWavToMaps {
                         logger.error("Error while generating the map: {}\n{}", file.getName(), e.getMessage());
                         System.err.println("Error while generating the map: " + file.getName() + "\n" + e.getMessage());
                     }
-
+                    
                     // Enable prints after the generation
                     logger.info("Created Beat Saber Map: {}", file.getName());
                     System.out.println("Created Beat Saber Map: " + file.getName());
@@ -115,12 +115,12 @@ public class BatchWavToMaps {
         }
         return true;
     }
-
+    
     private static void convertWavToOgg(String inputFilePath, String outputFilePath) throws IOException {// Path to the input .wav file
         ProcessBuilder processBuilder = new ProcessBuilder(
                 "ffmpeg", "-i", inputFilePath, outputFilePath
         );
-
+        
         logger.info("Converting {} to {}", new File(inputFilePath).getName(), outputFilePath.substring(outputFilePath.lastIndexOf("/")));
         System.out.println("Converting " + new File(inputFilePath).getName() + " to " + outputFilePath.substring(outputFilePath.lastIndexOf("/"), outputFilePath.length()));
         processBuilder.redirectErrorStream(true);
@@ -133,22 +133,26 @@ public class BatchWavToMaps {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-
+        
         if (exitCode != 0) {
             throw new RuntimeException("FFmpeg conversion failed with exit code: " + exitCode);
         }
-
+        
         // Delete the original .wav file
         File inputFile = new File(inputFilePath);
-        if (inputFile.delete()) {
-            logger.info("Deleted the original .wav file: {}", inputFilePath);
-            System.out.println("Deleted the original .wav file: " + inputFilePath);
-        } else {
-            logger.info("Failed to delete the original .wav file: {}", inputFilePath);
-            System.out.println("Failed to delete the original .wav file: " + inputFilePath);
+        if (Parameters.DELETE_WAV_AFTER_CONVERSION) {
+            logger.info("Attempting to delete the original .wav file: {}", inputFilePath);
+            System.out.println("Attempting to delete the original .wav file: " + inputFilePath);
+            if (inputFile.delete()) {
+                logger.info("Deleted the original .wav file: {}", inputFilePath);
+                System.out.println("Deleted the original .wav file: " + inputFilePath);
+            } else {
+                logger.info("Failed to delete the original .wav file: {}", inputFilePath);
+                System.out.println("Failed to delete the original .wav file: " + inputFilePath);
+            }
         }
     }
-
+    
     /**
      * Renames all files in the specified input path, removing illegal characters and Japanese Kanji, ensuring file names comply with the naming rules.
      * If this step isn't done, then the python script will throw an error
@@ -159,22 +163,22 @@ public class BatchWavToMaps {
         File folder = new File(inputPath);
         // Get the list of files in the folder
         File[] files = folder.listFiles();
-
+        
         if (files != null) {
             for (File file : files) {
                 if (file.isFile()) {
                     String fileName = file.getName();
-
+                    
                     //Converting the filename to CamelCase:
                     for (int i = 0; i < fileName.length() - 2; i++)
                         if (fileName.charAt(i) == ' ') fileName = fileName.substring(0, i) + (String.valueOf(fileName.charAt(i + 1))).toUpperCase() + fileName.substring(i + 2);
-
+                    
                     String sanitizedFileName = sanitizeFilename(file, fileName);
-
+                    
                     if (!fileName.isEmpty() && !fileName.equals(sanitizedFileName)) {
                         String newFilePath = file.getParent() + File.separator + sanitizedFileName;
                         File newFile = new File(newFilePath);
-
+                        
                         if (file.renameTo(newFile)) {
                             if (verbose)
                                 logger.info("File renamed successfully: {} -> {}", fileName, sanitizedFileName);
@@ -187,7 +191,7 @@ public class BatchWavToMaps {
             }
         }
     }
-
+    
     /**
      * Renames the file to remove illegal characters and add the correct file extension.<br>
      * Helper Method for renameAllIllegalFileNames
@@ -212,7 +216,7 @@ public class BatchWavToMaps {
         if (sanitizedFileName.isEmpty()) sanitizedFileName = "UNDEFINED";
         return sanitizedFileName;
     }
-
+    
     /**
      * Creates the output folder and moves all renamed .wav files there. The files must have been renamed before calling this function.
      *
@@ -223,25 +227,25 @@ public class BatchWavToMaps {
      */
     private static void createFolderAndMoveItems(String filename, File file, String destinationFolderPath, boolean verbose) throws IOException {
         File outFolder = new File(destinationFolderPath);
-
+        
         if (!outFolder.exists()) {
             if (!outFolder.mkdir()) {
                 if (verbose)
                     logger.info("Failed to create parent folder: {}", outFolder.getAbsolutePath());
             }
         }
-
+        
         FileWriter writer = new FileWriter(destinationFolderPath + "/info.dat");
         writer.write(createDatFile(filename));
         writer.close();
-
+        
         Path sourceFile = Path.of(file.getAbsolutePath());
         Path destinationFolder = Path.of(destinationFolderPath);
         Path destinationFile = destinationFolder.resolve(sourceFile.getFileName());
-
+        
         Files.copy(sourceFile, destinationFile, StandardCopyOption.REPLACE_EXISTING);
     }
-
+    
     /**
      * This function executes the python script ConvertSong.
      * It converts mp3 to wav
@@ -249,10 +253,11 @@ public class BatchWavToMaps {
      *
      * @param file File that should be converted
      */
-    @SuppressWarnings("GrazieInspection") private static boolean executeConvertSongsPY(File file, boolean verbose) {
+    @SuppressWarnings("GrazieInspection")
+    private static boolean executeConvertSongsPY(File file, boolean verbose) {
         //Command to do it manually:
         //python ConvertSong.py mp3Files/input.mp3 output.wav wav
-
+        
         try {
             ProcessBuilder processBuilder = new ProcessBuilder(
                     "python",
@@ -261,7 +266,7 @@ public class BatchWavToMaps {
                     ONSET_GENERATION_FOLDER_PATH_INPUT + file.getName().replace(".mp3", "." + "wav"),
                     "wav");
             Process process = processBuilder.start();
-
+            
             int exitCode = process.waitFor();
             if (exitCode == 0) {
                 if (verbose)
@@ -269,7 +274,7 @@ public class BatchWavToMaps {
             } else {
                 logger.info("Python script execution failed with exit code: {}", exitCode);
                 System.out.println("Python script execution failed with exit code: " + exitCode);
-
+                
                 // Capture and print the error output of the script
                 @Cleanup InputStream errorStream = process.getErrorStream();
                 @Cleanup BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream));
@@ -283,10 +288,10 @@ public class BatchWavToMaps {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-
+        
         return true;
     }
-
+    
     /**
      * This function executes a Python script to create timings from a .wav file. <br>
      * If the option madmom is being used, then the madmom_certainty and madmom_proximity flags can be set in the Parameters class.
@@ -309,13 +314,13 @@ public class BatchWavToMaps {
                 "--madmom_certainty", MADMOM_ONSET_GENERATION_ONSET_CERTAINTY + "",
                 "--madmom_proximity", MADMOM_ONSET_GENERATION_MINIMUM_PROXIMITY + "");
         Process process = processBuilder.start();
-
+        
         int exitCode = process.waitFor();
-
+        
         if (exitCode != 0) {
             logger.info("Error while Executing the script. Exit-Code: {}", exitCode);
             System.out.println("Error while Executing the script. Exit-Code: " + exitCode);
-
+            
             @Cleanup InputStream errorStream = process.getErrorStream();
             @Cleanup BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream));
             String line;
@@ -328,7 +333,7 @@ public class BatchWavToMaps {
         }
         return exitCode != -4;
     }
-
+    
     /**
      * This function creates the timings for a song.
      *
@@ -337,16 +342,16 @@ public class BatchWavToMaps {
      */
     private static void createDiffFromTimings(String destinationFolderPath, String difficultyName, ArrayList<Double> timings) {
         List<Note> notes = timings.stream().map(t -> new Note(t.floatValue())).collect(Collectors.toList());
-
+        
         NpsBpmConverter.convertSecondsToBeats(notes);
-
+        
         BeatSaberMap map = new BeatSaberMap(notes);
         if (FIX_PLACEMENTS) map.fixPlacements(PLACEMENT_PRECISION);
-
+        
         FileManager.overwriteFile(destinationFolderPath + "/" + difficultyName + ".dat", map.exportAsMap());
     }
-
-
+    
+    
     /**
      * Outsources the info.dat file generation so that the code isn't cluttered
      *

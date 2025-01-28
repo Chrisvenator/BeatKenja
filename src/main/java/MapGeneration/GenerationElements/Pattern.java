@@ -8,6 +8,7 @@ import DataManager.Database.DatabaseOperations.*;
 import DataManager.FileManager;
 import DataManager.Parameters;
 import DataManager.Records.PatMetadata;
+import MapAnalysation.Distributions.ContinuousCategoricalDistribution.CompoundCountModel;
 import MapAnalysation.PatternVisualisation.DirichletMultinomialDistributionVisualizer;
 import MapAnalysation.PatternVisualisation.PatternVisualisationHeatMap;
 import MapGeneration.GenerationElements.Exceptions.MalformedFileException;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 
 
 import static DataManager.Parameters.*;
+import static MapAnalysation.Distributions.ContinuousCategoricalDistribution.CompoundCountModel.generateRandomLambda;
 import static MapAnalysation.Distributions.DirichletMultinomialDistribution.*;
 
 public class Pattern extends BeatsaberObject implements Iterable<PatternProbability>, Serializable {
@@ -1160,6 +1162,7 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
             Pattern.normalizeCountArray(p.count, true);
         } else {
             p.applyDirichletMultinomial(UserInterface.patternVariance);
+//            p.normalizeAsContinuousCategoricalDistribution();
             Pattern.normalizeCountArray(p.count, true);
         }
         logger.info("Applied Dirichlet Multinomial Distribution");
@@ -1184,6 +1187,22 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
         }
         computeProbabilities();
     }
+    
+    public void normalizeAsContinuousCategoricalDistribution(){
+        int size = patterns.length;  // Example size of the lambda array
+        double min = 0.1;  // Minimum value for lambda
+        double max = 2.0;  // Maximum value for lambda
+        
+        double[] lambda = generateRandomLambda(size, min, max);
+        
+        double[] eta = {0.3, 0.7, 1.2};  // Example eta values
+        double s = 2.0;  // Example constant s
+        
+        double[][] normalized = CompoundCountModel.normalizeAsContinuousCategoricalDistribution(count, lambda, eta, s, 100);
+        count = Arrays.stream(normalized).map(row -> Arrays.stream(row).mapToInt(x -> (int) x).toArray()).toArray(int[][]::new);
+//        visualizeAsHeatmap();
+    }
+    
 
 
     /**
