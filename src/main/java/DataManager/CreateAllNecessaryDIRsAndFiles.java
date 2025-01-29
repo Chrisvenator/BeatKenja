@@ -33,7 +33,6 @@ public class CreateAllNecessaryDIRsAndFiles {
         System.out.println("Creating all necessary directories and files.");
 
         createConfig();
-//        if (DEFAULT_PATH.contains("Steam")) throw new RuntimeException("Hier ist der Fehler: " + DEFAULT_PATH);
 
         try {
             extractSpecificFolders("./", foldersToCopyOutOfJar);

@@ -6,7 +6,7 @@
 
     <groupId>BeatKenja</groupId>
     <artifactId>BeatKenja</artifactId>
-    <version>3.3.0</version>
+    <version>3.3.1</version>
     <name>BeatKenja</name>
 
     <properties>
@@ -242,7 +242,30 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>${project.basedir}</directory>
+                <includes>
+                    <include>README.md</include>
+<!--                    <include>LICENSE</include>-->
+                </includes>
+                <targetPath>${project.build.directory}/classes</targetPath>
+            </resource>
+        </resources>
+
+
         <plugins>
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-jar-plugin</artifactId>-->
+<!--                <version>3.3.0</version>-->
+<!--                <configuration>-->
+<!--                    <includes>-->
+<!--                        <include>README.md</include>-->
+<!--                    </includes>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
+
             <!-- Maven Compiler Plugin für Java 21 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
