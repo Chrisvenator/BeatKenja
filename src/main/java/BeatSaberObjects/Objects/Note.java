@@ -19,7 +19,8 @@ import static DataManager.Parameters.ignoreDDs;
 Red: 0
 Blue: 1
 
-Index - Layer:          Cut direction:|---|---|---|---|       |---|---|---|
+Index - Layer:          Cut direction:
+|---|---|---|---|       |---|---|---|
 |   |   |   |3-2|       | 4 | 0 | 5 |
 |---|---|---|---|       |---|---|---|
 |   |   |   |3-1|       | 2 | 8 | 3 |
