@@ -265,39 +265,62 @@ public class Note extends BeatsaberObject implements Comparable<Note>, Serializa
         return this;
     }
     
-    public Note getInvertedNote() {
-        Note n = new Note(_time, _lineIndex, _lineLayer, _type, _cutDirection);
-        n.invertNote();
-        return n;
-    }
-    
     public void invertColor() {
         if (_type == 0) _type = 1;
         else if (_type == 1) _type = 0;
     }
     
     public void invertLineIndex() {
-        if (_lineIndex == 0) _lineIndex = 3;
-        else if (_lineIndex == 1) _lineIndex = 2;
-        else if (_lineIndex == 2) _lineIndex = 1;
-        else if (_lineIndex == 3) _lineIndex = 0;
+        _lineIndex = 3 - _lineIndex;
     }
-    
+    /*
+    |---|---|---|---|      |---|---|---|---|
+    |   |   |   |   |      |   |   |   |   |
+    |---|---|---|---|      |---|---|---|---|
+    |   |   |   |   |  ->  |   |   |   |   |
+    |---|---|---|---|      |---|---|---|---|
+    | 6 |   |   |   |      |   |   |   | 7 | 
+    |---|---|---|---|      |---|---|---|---|
+     */
     public void invertNoteRotation() {
-        if (_cutDirection == 2) _cutDirection = 3;
-        else if (_cutDirection == 3) _cutDirection = 2;
-        else if (_cutDirection == 4) _cutDirection = 5;
-        else if (_cutDirection == 5) _cutDirection = 4;
-        else if (_cutDirection == 6) _cutDirection = 7;
-        else if (_cutDirection == 7) _cutDirection = 6;
+        switch (_cutDirection) {
+            case 0: _cutDirection = 0; break;
+            case 1: _cutDirection = 1; break;
+            case 2: _cutDirection = 3; break;
+            case 3: _cutDirection = 2; break;
+            case 4: _cutDirection = 5; break;
+            case 5: _cutDirection = 4; break;
+            case 6: _cutDirection = 7; break;
+            case 7: _cutDirection = 6; break;
+            case 8: _cutDirection = 8; break;
+            // All other cut directions remain unchanged
+            default: break;
+        }
     }
     
+    /*
+    |---|---|---|
+    | 4 | 0 | 5 |
+    |---|---|---|
+    | 2 | 8 | 3 |
+    |---|---|---|
+    | 6 | 1 | 7 |
+    |---|---|---|
+     */
     public void invertCutDirection() {
-        invertNoteRotation();
-        if (_cutDirection == 0) _cutDirection = 1;
-        else if (_cutDirection == 1) _cutDirection = 0;
-        else if (_cutDirection == 2) _cutDirection = 3;
-        else if (_cutDirection == 3) _cutDirection = 2;
+        switch (_cutDirection) {
+            case 0: _cutDirection = 1; break;
+            case 1: _cutDirection = 0; break;
+            case 2: _cutDirection = 3; break;
+            case 3: _cutDirection = 2; break;
+            case 4: _cutDirection = 7; break;
+            case 5: _cutDirection = 6; break;
+            case 6: _cutDirection = 5; break;
+            case 7: _cutDirection = 4; break;
+            case 8: _cutDirection = 8; break;
+            // All other cut directions remain unchanged
+            default: break;
+        }
     }
     
     //   _time,_lineIndex,_lineLayer,_type,_cutDirection ; _time,_lineIndex,_lineLayer,_type,_cutDirection,count ; ... (If there are more than one notes in the pattern) <br>
