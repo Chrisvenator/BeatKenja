@@ -7,7 +7,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class NoteTest_NoteOutsideGrid {
+@DisplayName("Note Test: Outside Grid method")
+class NoteOutsideGridTest {
     
     @ParameterizedTest(name = "lineIndex: {0}, lineLayer: {1} -> expected isOutsideGrid: {2}")
     @CsvSource({

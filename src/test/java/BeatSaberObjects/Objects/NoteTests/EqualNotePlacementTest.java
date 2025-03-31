@@ -1,6 +1,7 @@
 package BeatSaberObjects.Objects.NoteTests;
 
 import BeatSaberObjects.Objects.Note;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -20,8 +21,8 @@ Index - Layer:          Cut direction:
 |---|---|---|---|       |---|---|---|
  */
 
-
-class NoteTest_equalNotePlacement {
+@DisplayName("Note Test: Equal Note Placement")
+class EqualNotePlacementTest {
     @Test
     void testEqualNotePlacementWithSameObject() {
         Note note = new Note(10.5f, 2, 1, 0, 4);

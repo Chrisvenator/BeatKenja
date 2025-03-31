@@ -25,7 +25,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * |---|---|---|---|       |---|---|---|
  */
 
-class NoteTest_invertNote {
+@DisplayName("Note Test: Invert Note")
+class InvertNoteTest {
     
     private static final float DEFAULT_TIME = 10.5f;
     private Note note;

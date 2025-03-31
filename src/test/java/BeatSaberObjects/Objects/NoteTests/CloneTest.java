@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DisplayName("Tests for Note clone() method")
-class NoteTest_Clone {
+@DisplayName("Note Test: clone() method")
+class CloneTest {
     
     @Test
     @DisplayName("Clone should produce an equal but distinct object")

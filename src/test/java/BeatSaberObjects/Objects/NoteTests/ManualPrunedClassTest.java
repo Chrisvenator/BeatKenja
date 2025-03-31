@@ -6,8 +6,8 @@ import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DisplayName("Note Test Suite")
-class Note_test_ManualBigClassTestPruned {
+@DisplayName("Note Test: Manual Note tests pruned ")
+class ManualPrunedClassTest {
     
     // Test fixture variables for Note objects used across many tests
     private Note note01, note02;

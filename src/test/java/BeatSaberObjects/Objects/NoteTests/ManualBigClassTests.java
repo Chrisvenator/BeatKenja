@@ -3,9 +3,11 @@ package BeatSaberObjects.Objects.NoteTests;
 import BeatSaberObjects.Objects.Note;
 import BeatSaberObjects.Objects.TimingNote;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-class NoteTest_ManualBigClassTests {
+@DisplayName("Note Test: Manual Note tests")
+class ManualBigClassTests {
     private final Note note01 = new Note(255.5f, 1, 1, 0, 1);
     private final Note note02 = new Note(256.5f, 2, 1, 0, 2);
     private final Note note03 = new Note(257.5f, 3, 2, 0, 3);

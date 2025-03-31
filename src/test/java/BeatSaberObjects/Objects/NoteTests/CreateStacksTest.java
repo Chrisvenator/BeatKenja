@@ -2,6 +2,7 @@ package BeatSaberObjects.Objects.NoteTests;
 
 import BeatSaberObjects.Objects.Note;
 import UserInterface.UserInterface;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -25,8 +26,8 @@ Index - Layer:          Cut direction:
 |---|---|---|---|       |---|---|---|
  */
 
-
-class NoteTest_createStacks {
+@DisplayName("Note Test: Create Stacks")
+class CreateStacksTest {
     @Test
     void testCreateStackedNoteWithZeroStackedNotes() {
         Note note = new Note(10.5f, 2, 1, 0, 4); // Valid note

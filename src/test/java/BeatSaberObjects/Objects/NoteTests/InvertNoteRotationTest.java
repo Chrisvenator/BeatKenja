@@ -1,6 +1,7 @@
 package BeatSaberObjects.Objects.NoteTests;
 
 import BeatSaberObjects.Objects.Note;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -21,7 +22,8 @@ Index - Layer:          Cut direction:
 |---|---|---|---|       |---|---|---|
  */
 
-class NoteTest_invertNoteRotation {
+@DisplayName("Note Test: Invert Note Rotation")
+class InvertNoteRotationTest {
     
     @Test
     void testInvertNoteRotation_BasicCase() {

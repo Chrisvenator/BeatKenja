@@ -2,14 +2,11 @@ package BeatSaberObjects.Objects.NoteTests;
 
 import BeatSaberObjects.Objects.Note;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,7 +24,8 @@ Index - Layer:          Cut direction:
 |---|---|---|---|       |---|---|---|
  */
 
-class NoteTest_invertLineIndex {
+@DisplayName("Note Test: Invert Color")
+class InvertColorTest {
     
     private Note note;
     
@@ -38,48 +36,52 @@ class NoteTest_invertLineIndex {
     
     @ParameterizedTest
     @CsvSource({
-            "0, 3", // Left edge to right edge
-            "1, 2", // Middle-left to middle-right
-            "2, 1", // Middle-right to middle-left
-            "3, 0", // Right edge to left edge
-            "-1, 4", // One step left of left edge
-            "-2, 5", // Two steps left of left edge
-            "4, -1", // One step right of right edge
-            "5, -2",  // Two steps right of right edge
-            "-100, 103"  // Two steps right of right edge
+            "0, 1", // Red to Blue
+            "1, 0"  // Blue to Red
     })
-    void testInvertLineIndex(int initialLineIndex, int expectedLineIndex) {
+    void testInvertColor(int initialType, int expectedType) {
         // Set up
-        note._lineIndex = initialLineIndex;
+        note._type = initialType;
         
         // Execute
-        note.invertLineIndex();
+        note.invertColor();
         
         // Verify
-        assertEquals(expectedLineIndex, note._lineIndex,
-                "Line index should be inverted correctly");
+        assertEquals(expectedType, note._type, "Color should be inverted correctly");
     }
     
     @ParameterizedTest
-    @MethodSource("lineIndexRange")
-    void testDoubleInversion(int initialLineIndex) {
+    @ValueSource(ints = {-1, 2, 3, 8, 100})
+    void testInvertColorWithNonStandardTypes(int nonStandardType) {
         // Set up
-        note._lineIndex = initialLineIndex;
+        note._type = nonStandardType;
         
-        // Execute double inversion
-        note.invertLineIndex();
-        note.invertLineIndex();
+        // Execute
+        note.invertColor();
         
         // Verify
-        assertEquals(initialLineIndex, note._lineIndex, "Double inversion should return to the original line index");
-    }
-    
-    private static Stream<Integer> lineIndexRange() {
-        return IntStream.rangeClosed(-100, 100).boxed();
+        assertEquals(nonStandardType, note._type,
+                "Non-standard types should remain unchanged after inversion");
     }
     
     @Test
-    void testInvertLineIndexDoesNotAffectOtherProperties() {
+    void testMultipleInversions() {
+        // Set up
+        note._type = 0;
+        
+        // Execute and verify
+        note.invertColor();
+        assertEquals(1, note._type, "First inversion should change Red (0) to Blue (1)");
+        
+        note.invertColor();
+        assertEquals(0, note._type, "Second inversion should change Blue (1) back to Red (0)");
+        
+        note.invertColor();
+        assertEquals(1, note._type, "Third inversion should change Red (0) to Blue (1) again");
+    }
+    
+    @Test
+    void testInvertColorDoesNotAffectOtherProperties() {
         // Set up
         float time = 10.5f;
         int lineIndex = 2;
@@ -90,13 +92,13 @@ class NoteTest_invertLineIndex {
         Note fullNote = new Note(time, lineIndex, lineLayer, type, cutDirection);
         
         // Execute
-        fullNote.invertLineIndex();
+        fullNote.invertColor();
         
         // Verify
-        assertEquals(1, fullNote._lineIndex, "Line index should be inverted");
+        assertEquals(1, fullNote._type, "Type should be inverted");
         assertEquals(time, fullNote._time, "Time should not change");
+        assertEquals(lineIndex, fullNote._lineIndex, "Line index should not change");
         assertEquals(lineLayer, fullNote._lineLayer, "Line layer should not change");
-        assertEquals(type, fullNote._type, "Type should not change");
         assertEquals(cutDirection, fullNote._cutDirection, "Cut direction should not change");
     }
 }

@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DisplayName("Tests for Note Constructors")
-public class NoteTest_Constructors {
+@DisplayName("Note Test: Constructors")
+public class ConstructorsTest {
     
     @Test
     @DisplayName("Default constructor sets expected default values")
