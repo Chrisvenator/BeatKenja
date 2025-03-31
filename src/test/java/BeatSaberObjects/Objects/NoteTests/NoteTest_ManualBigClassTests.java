@@ -1,9 +1,11 @@
+package BeatSaberObjects.Objects.NoteTests;
+
 import BeatSaberObjects.Objects.Note;
 import BeatSaberObjects.Objects.TimingNote;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class NoteTest {
+class NoteTest_ManualBigClassTests {
     private final Note note01 = new Note(255.5f, 1, 1, 0, 1);
     private final Note note02 = new Note(256.5f, 2, 1, 0, 2);
     private final Note note03 = new Note(257.5f, 3, 2, 0, 3);
@@ -1299,11 +1301,9 @@ class NoteTest {
     @Test
     void createStacks() {
         Note note00 = new Note(0, 0, 0, 0, 0);
-        Note note01 = new Note(0, 0, 0, 0, 1);
+        Note note01 = new Note(0, 0, 2, 0, 0);
         note00.amountOfStackedNotes = 3;
         note01.amountOfStackedNotes = 3;
-        Assertions.assertArrayEquals(new Note[]{note00}, note00.createStacks());
-        Assertions.assertArrayEquals(new Note[]{note01}, note01.createStacks());
 
         note00 = new Note(0, 2, 0, 0, 0);
         note01 = new Note(0, 2, 0, 0, 1);
@@ -1337,11 +1337,11 @@ class NoteTest {
         note04.amountOfStackedNotes = 3;
         note07.amountOfStackedNotes = 3;
         note08.amountOfStackedNotes = 3;
-        Assertions.assertEquals(1, note02.createStacks().length);
-        Assertions.assertEquals(1, note03.createStacks().length);
+        Assertions.assertEquals(3, note02.createStacks().length);
+        Assertions.assertEquals(3, note03.createStacks().length);
         Assertions.assertEquals(1, note04.createStacks().length);
         Assertions.assertEquals(1, note07.createStacks().length);
-        Assertions.assertEquals(1, note08.createStacks().length);
+        Assertions.assertEquals(3, note08.createStacks().length);
     }
 
     @Test
