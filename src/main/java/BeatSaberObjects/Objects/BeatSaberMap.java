@@ -3,6 +3,7 @@ package BeatSaberObjects.Objects;
 import BeatSaberObjects.BeatsaberObject;
 import DataManager.FileManager;
 import com.google.gson.Gson;
+import lombok.Getter;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -108,7 +109,7 @@ public class BeatSaberMap extends BeatsaberObject {
     //Make the note timing divisible by 64, so ScoreSaber is not flagging that as "unsure".
     public void fixPlacements(double precision) {
         for (Note n : _notes) {
-            n._time = (float) Math.round(n._time / precision) * (float) precision;
+            n._time = Math.round(n._time / precision) * (float) precision;
         }
     }
 
@@ -233,7 +234,6 @@ public class BeatSaberMap extends BeatsaberObject {
         }
         return new BeatSaberMap(new ArrayList<>());
     }
-
 
     public BeatSaberMap setOriginalJson(String originalJSON) {
         this.originalJSON = originalJSON;
@@ -628,6 +628,14 @@ public class BeatSaberMap extends BeatsaberObject {
     }
 // </editor-fold desc="override methods">
 
+    // <editor-fold desc="Getter & Setter">
+    
+    public Note [] getNotes() {
+        return _notes;
+    }
+    
+    // </editor-fold desc="Getter & Setter">
+    
 }
 
     /*

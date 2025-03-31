@@ -54,6 +54,14 @@ public class Note extends BeatsaberObject implements Comparable<Note>, Serializa
         this._cutDirection = 8;
     }
     
+    public Note(double time) {
+        this._time = (float) time;
+        this._lineIndex = 0;
+        this._lineLayer = 0;
+        this._type = 1;
+        this._cutDirection = 8;
+    }
+    
     public Note(float time, int lineIndex, int lineLayer, int type, int cutDirection) {
         this._time = time;
         this._lineIndex = lineIndex;
