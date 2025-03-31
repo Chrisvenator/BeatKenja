@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
 */
 
 @DisplayName("Tests for Note cut mapping functions")
-class NoteCutMappingTest {
+class NoteTest_NoteCutFromInto {
     
     // Parameterized test for various cut directions with double positions.
     @ParameterizedTest(name = "Note(%.2f-%.2f) with cutDirection {3} -> cut-from: (%.2f-%.2f), cut-into: (%.2f-%.2f)")

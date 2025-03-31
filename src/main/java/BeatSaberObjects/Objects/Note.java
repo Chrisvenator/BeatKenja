@@ -352,7 +352,9 @@ public class Note extends BeatsaberObject implements Comparable<Note>, Serializa
     
     @Override
     public Note clone() {
-        return new Note(this._time, this._lineIndex, this._lineLayer, this._type, this._cutDirection);
+        Note n = new Note(this._time, this._lineIndex, this._lineLayer, this._type, this._cutDirection);
+        n.amountOfStackedNotes = this.amountOfStackedNotes;
+        return n;
     }
     
     public String toV3String() {
