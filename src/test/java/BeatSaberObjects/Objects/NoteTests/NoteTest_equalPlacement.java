@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 Red: 0
 Blue: 1
 
-Layer - Index:          Cut direction:
+Index - Layer:          Cut direction:
 |---|---|---|---|       |---|---|---|
 |   |   |   |3-2|       | 4 | 0 | 5 |
 |---|---|---|---|       |---|---|---|
