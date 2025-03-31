@@ -39,6 +39,8 @@ public class BeatSaberMap extends BeatsaberObject {
 
     // <editor-fold desc="constructor methods">
 
+    public BeatSaberMap() {}
+    
     public BeatSaberMap(Note[] notes) {
         this._notes = notes;
     }
@@ -234,7 +236,17 @@ public class BeatSaberMap extends BeatsaberObject {
         }
         return new BeatSaberMap(new ArrayList<>());
     }
-
+    
+    
+    /**
+     * Sets the original JSON content for the Beat Saber map and triggers post-processing.
+     * <p>
+     * This method stores the raw JSON string representing the Beat Saber map and
+     * immediately invokes {@code calculateBookmarks()} to extract or update bookmarks based on the new data.
+     *
+     * @param originalJSON the raw JSON string of the Beat Saber map
+     * @return the current {@code BeatSaberMap} instance for method chaining
+     */
     public BeatSaberMap setOriginalJson(String originalJSON) {
         this.originalJSON = originalJSON;
         calculateBookmarks();
