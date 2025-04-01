@@ -41,6 +41,6 @@ public class Events extends BeatsaberObject {
     // </editor-fold desc="default methods">
 
     public void convertFlashLightsToOnLights() {
-        if (_value == 6) _value = 1;
+        if (_value == 6) _value = 1; //Value = 6 is a "Flash (Primary)"
     }
 }
