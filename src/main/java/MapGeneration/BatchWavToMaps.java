@@ -229,7 +229,7 @@ public class BatchWavToMaps {
         File outFolder = new File(destinationFolderPath);
         
         if (!outFolder.exists()) {
-            if (!outFolder.mkdir()) {
+            if (!outFolder.mkdirs()) {
                 if (verbose)
                     logger.info("Failed to create parent folder: {}", outFolder.getAbsolutePath());
             }
