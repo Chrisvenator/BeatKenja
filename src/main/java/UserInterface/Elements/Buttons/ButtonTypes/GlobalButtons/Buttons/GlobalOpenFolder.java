@@ -15,11 +15,13 @@ public class GlobalOpenFolder extends GlobalButton {
         super(ElementTypes.GLOBAL_OPEN_FOLDER, ui);
         setBackground(DARK_MODE ? new Color(175, 140, 59) : new Color(255, 212, 123));
     }
-
+    
     @Override
     public void onClick() {
         try {
-            Desktop.getDesktop().open(new File(ONSET_GENERATION_FOLDER_PATH_INPUT));
+            File mp3Dir = new File(ONSET_GENERATION_FOLDER_PATH_INPUT);
+            if (!mp3Dir.exists()) mp3Dir.mkdir();
+            Desktop.getDesktop().open(mp3Dir);
         } catch (IOException ex) {
             printException(new IOException("\n[ERROR]: Couldn't open the folder: " + ONSET_GENERATION_FOLDER_PATH_INPUT + "!", ex));
             logger.error("Couldn't open the folder: {}!", ONSET_GENERATION_FOLDER_PATH_INPUT);
