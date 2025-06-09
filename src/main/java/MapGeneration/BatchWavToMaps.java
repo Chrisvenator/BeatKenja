@@ -80,10 +80,9 @@ public class BatchWavToMaps {
                             bpm = BPMDetector.detectBPM(file.getAbsolutePath());
                         } else {
                             bpm = extractBpm(filename);
-                            if (bpm == -1) bpm = BPM;
                         }
                         
-                        double offset = TimingOffsetDetector.detectTimingOffset(file.getAbsolutePath(), bpm);
+                        Double offset = TimingOffsetDetector.detectTimingOffset(file.getAbsolutePath(), bpm);
                         
                         logger.info("Detected BPM: {}", bpm);
                         logger.info("Detected offset: {}", offset);

@@ -58,9 +58,9 @@ public class TimingOffsetDetector {
      * @throws UnsupportedAudioFileException if the audio file format is not supported
      * @throws IOException if an I/O error occurs while reading the audio file
      */
-    public static double detectTimingOffset(String filePath, double bpm) throws UnsupportedAudioFileException, IOException {
+    public static Double detectTimingOffset(String filePath, double bpm) throws UnsupportedAudioFileException, IOException {
         if (bpm <= 0) {
-            throw new IllegalArgumentException("BPM must be positive");
+            return null;
         }
         
         // Calculate spectrogram
@@ -87,7 +87,7 @@ public class TimingOffsetDetector {
         
         finalOffset = finalOffset % bpm; //Return the remainder. Like offset : 110.0000001, bpm 100 -> return 10
         
-        return Math.round(finalOffset); // Round to nearest millisecond
+        return Math.round(finalOffset*0.001) + 0.0; // Round to nearest millisecond
     }
     
     /**
@@ -404,20 +404,6 @@ public class TimingOffsetDetector {
         }
         
         return smoothed;
-    }
-    
-    /**
-     * Convenience method that detects timing offset and returns result with confidence measure.
-     */
-    public static OffsetResult detectTimingOffsetWithConfidence(String filePath, double bpm)
-            throws UnsupportedAudioFileException, IOException {
-        
-        double offset = detectTimingOffset(filePath, bpm);
-        
-        // Simple confidence calculation based on offset magnitude
-        double confidence = Math.max(0.0, 1.0 - Math.abs(offset) / MAX_OFFSET_MS);
-        
-        return new OffsetResult(offset, confidence);
     }
     
     /**

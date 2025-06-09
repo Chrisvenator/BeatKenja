@@ -154,7 +154,7 @@ public class SpectrogramDisplay extends JFrame {
         int FFT_SIZE = 1024;
         int OVERLAP = 512;
 
-        ArrayList<ArrayList<Double>> peaks = AudioAnalysis.getPeaksFromAudio(filePath, Parameters.BPM, 0);
+        ArrayList<ArrayList<Double>> peaks = AudioAnalysis.getPeaksFromAudio(filePath, Parameters.BPM, 0.0);
         double duration = peaks.get(0).get(peaks.get(0).size() - 1); // Assuming the last peak time gives approximate duration
         double[][] spectrogram = SpectrogramCalculator.calculateSpectrogram(filePath, FFT_SIZE, OVERLAP);
         SwingUtilities.invokeLater(() -> {

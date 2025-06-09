@@ -45,7 +45,7 @@ public class AudioAnalysis {
      * @throws UnsupportedAudioFileException if the audio file format is not supported.
      * @throws IOException                   if an I/O error occurs while reading the audio file.
      */
-    public static ArrayList<ArrayList<Double>> getPeaksFromAudio(String filePath, double bpm, double offset) throws UnsupportedAudioFileException, IOException {
+    public static ArrayList<ArrayList<Double>> getPeaksFromAudio(String filePath, double bpm, Double offset) throws UnsupportedAudioFileException, IOException {
         double[][] spec = SpectrogramCalculator.calculateSpectrogram(filePath, FFT_SIZE, OVERLAP);
         int len = spec.length;
         double frameAdvance = (FFT_SIZE - OVERLAP) / (double) SAMPLE_RATE;
@@ -55,7 +55,14 @@ public class AudioAnalysis {
         double[] flux = computeSpectralFlux(spec);
         
         // Estimate BPM for tempo-aware processing
-        double estimatedBPM = estimateBPM(flux, frameAdvance);
+        double estimatedBPM = bpm;
+        if (bpm < 0.0) estimatedBPM = estimateBPM(flux, frameAdvance);
+        
+        if (offset == null) offset = TimingOffsetDetector.detectTimingOffset(filePath, estimatedBPM);
+        if (offset == null) offset = 0.0;
+        
+        System.out.println("Estimated BPM - BPMDetector:  " + bpm);
+        System.out.println("Estimated BPM - FrameAdvance: " + estimateBPM(flux, frameAdvance));
         
         // Calculate onset detection function using spectral flux difference
         ArrayList<Double> onsetStrength = computeOnsetDetectionFunction(flux);
@@ -65,6 +72,12 @@ public class AudioAnalysis {
         
         // Detect peaks for different difficulties with tempo compensation
         ArrayList<ArrayList<Double>> peaks = detectPeaksForDifficulties(thresholdedOnsets, times, frameAdvance, estimatedBPM);
+        
+        for (ArrayList<Double> diff : peaks) {
+            for (int i = 0; i < diff.size(); i++) {
+                diff.set(i, diff.get(i) + offset);
+            }
+        }
         
         return peaks;
     }
@@ -106,8 +119,8 @@ public class AudioAnalysis {
         double maxBPM = 200.0;
         double defaultBPM = 120.0; // fallback
         
-        int minLag = (int)(60.0 / (maxBPM * frameAdvance));
-        int maxLag = (int)(60.0 / (minBPM * frameAdvance));
+        int minLag = (int) (60.0 / (maxBPM * frameAdvance));
+        int maxLag = (int) (60.0 / (minBPM * frameAdvance));
         
         if (minLag >= flux.length || maxLag >= flux.length) {
             return defaultBPM;
@@ -145,7 +158,7 @@ public class AudioAnalysis {
                 onsetStrength.add(0.0);
             } else {
                 // Positive difference only (half-wave rectification)
-                double diff = flux[i] - flux[i-1];
+                double diff = flux[i] - flux[i - 1];
                 onsetStrength.add(Math.max(0, diff));
             }
         }
