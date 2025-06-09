@@ -1,6 +1,8 @@
 package MapGeneration;
 
 import AudioAnalysis.AudioAnalysis;
+import AudioAnalysis.BPMDetector;
+import AudioAnalysis.TimingOffsetDetector;
 import AudioAnalysis.SpectrogramCalculator;
 import AudioAnalysis.SpectrogramDisplay;
 import BeatSaberObjects.Objects.BeatSaberMap;
@@ -18,6 +20,8 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static DataManager.Parameters.*;
@@ -71,7 +75,22 @@ public class BatchWavToMaps {
 //                        if (!executePythonScript(filename, file, inputPath, destinationFolderPath, pythonScript)) return false;
 //                        List<String> peaks = FileManager.readFile(destinationFolderPath + "/" + filename + ".txt");
                         
-                        ArrayList<ArrayList<Double>> peaks = AudioAnalysis.getPeaksFromAudio(file.getAbsolutePath());
+                        double bpm;
+                        if (extractBpm(filename) == null) {
+                            bpm = BPMDetector.detectBPM(file.getAbsolutePath());
+                        } else {
+                            bpm = extractBpm(filename);
+                            if (bpm == -1) bpm = BPM;
+                        }
+                        
+                        double offset = TimingOffsetDetector.detectTimingOffset(file.getAbsolutePath(), bpm);
+                        
+                        logger.info("Detected BPM: {}", bpm);
+                        logger.info("Detected offset: {}", offset);
+                        System.out.println("Detected BPM: " + bpm);
+                        System.out.println("Detected offset: " + offset);
+                        
+                        ArrayList<ArrayList<Double>> peaks = AudioAnalysis.getPeaksFromAudio(file.getAbsolutePath(), bpm, offset);
                         String[] difficulties = {"EasyNoArrows", "NormalNoArrows", "HardNoArrows", "ExpertNoArrows", "ExpertPlusNoArrows"};
                         
                         int i = 0;
@@ -433,5 +452,15 @@ public class BatchWavToMaps {
                 "    }\n" +
                 "  ]  " +
                 "}";
+    }
+    
+    public static Integer extractBpm(String input) {
+        Pattern pattern = Pattern.compile("(\\d{2,4})bpm", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(input);
+        
+        if (matcher.find()) {
+            return Integer.parseInt(matcher.group(1));
+        }
+        return -1; // no BPM found
     }
 }

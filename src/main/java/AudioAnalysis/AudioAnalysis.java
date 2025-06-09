@@ -45,8 +45,7 @@ public class AudioAnalysis {
      * @throws UnsupportedAudioFileException if the audio file format is not supported.
      * @throws IOException                   if an I/O error occurs while reading the audio file.
      */
-    public static ArrayList<ArrayList<Double>> getPeaksFromAudio(String filePath, double bpm) throws UnsupportedAudioFileException, IOException {
-        if (bpm < 0) bpm = Parameters.BPM;
+    public static ArrayList<ArrayList<Double>> getPeaksFromAudio(String filePath, double bpm, double offset) throws UnsupportedAudioFileException, IOException {
         double[][] spec = SpectrogramCalculator.calculateSpectrogram(filePath, FFT_SIZE, OVERLAP);
         int len = spec.length;
         double frameAdvance = (FFT_SIZE - OVERLAP) / (double) SAMPLE_RATE;
