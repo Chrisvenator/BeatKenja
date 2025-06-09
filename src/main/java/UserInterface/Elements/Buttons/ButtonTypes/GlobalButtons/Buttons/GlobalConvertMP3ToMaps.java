@@ -19,6 +19,7 @@ import java.util.Objects;
 import static DataManager.Parameters.*;
 
 public class GlobalConvertMP3ToMaps extends GlobalButton {
+    public static String pythonScrip = null;
     public GlobalConvertMP3ToMaps(UserInterface ui) {
         super(ElementTypes.GLOBAL_CONVERT_MP3s, ui);
         setBackground(Color.orange);
@@ -32,7 +33,7 @@ public class GlobalConvertMP3ToMaps extends GlobalButton {
             return;
         }
         
-        if (!CreateAllNecessaryDIRsAndFiles.isPythonInstalled()) {
+        if (pythonScrip != null && !CreateAllNecessaryDIRsAndFiles.isPythonInstalled()) {
             logger.error("Python could not be found. Please ensure that it is installed and added to the PATH-System-Variable!");
             return;
         }
@@ -79,7 +80,7 @@ public class GlobalConvertMP3ToMaps extends GlobalButton {
             
             // Generate Onsets
             Thread.sleep(1000);
-            if (BatchWavToMaps.generateOnsets(ONSET_GENERATION_FOLDER_PATH_INPUT, ONSET_GENERATION_FOLDER_PATH_OUTPUT, true, null)) {
+            if (BatchWavToMaps.generateOnsets(ONSET_GENERATION_FOLDER_PATH_INPUT, ONSET_GENERATION_FOLDER_PATH_OUTPUT, true, pythonScrip)) {
                 logger.info("Successfully created Map. You can find your map in \"{}/\"", ONSET_GENERATION_FOLDER_PATH_OUTPUT);
             } else { // Install dependencies if not already installed
                 logger.error("There was an error while creating the onsets. It is possible that a dependency is not installed. Please ensure that they are all installed and then try again!");
