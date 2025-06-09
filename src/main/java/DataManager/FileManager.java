@@ -222,6 +222,66 @@ public class FileManager {
         });
 
     }
-
+    
+    /**
+     * Creates a ZIP file containing all generated Beat Saber map files (excluding .wav files)
+     * and places it in the same destination folder.
+     *
+     * @param destinationFolderPath The path to the folder containing the generated map files
+     * @param filename The base filename (without extension) for the ZIP file
+     * @param verbose Whether to print verbose logging information
+     * @throws IOException If there's an error during ZIP creation
+     */
+    public static void createZipPackage(String destinationFolderPath, String filename, boolean verbose) throws IOException {
+        String zipFilePath = destinationFolderPath + "/" + filename + ".zip";
+        File sourceFolder = new File(destinationFolderPath);
+        
+        try (FileOutputStream fos = new FileOutputStream(zipFilePath);
+             ZipOutputStream zos = new ZipOutputStream(fos)) {
+            
+            File[] files = sourceFolder.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isFile() && !file.getName().endsWith(".wav") && !file.getName().endsWith(".zip")) {
+                        addFileToZip(zos, file, file.getName(), verbose);
+                    }
+                }
+            }
+            
+            if (verbose) {
+                logger.info("Created ZIP package: {}", zipFilePath);
+                System.out.println("Created ZIP package: " + zipFilePath);
+            }
+        }
+    }
+    
+    /**
+     * Helper method to add a single file to the ZIP archive
+     *
+     * @param zos The ZipOutputStream to write to
+     * @param file The file to add to the ZIP
+     * @param entryName The name for the entry in the ZIP file
+     * @param verbose Whether to print verbose logging information
+     * @throws IOException If there's an error reading the file or writing to the ZIP
+     */
+    private static void addFileToZip(ZipOutputStream zos, File file, String entryName, boolean verbose) throws IOException {
+        try (FileInputStream fis = new FileInputStream(file)) {
+            ZipEntry zipEntry = new ZipEntry(entryName);
+            zos.putNextEntry(zipEntry);
+            
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = fis.read(buffer)) > 0) {
+                zos.write(buffer, 0, length);
+            }
+            
+            zos.closeEntry();
+            
+            if (verbose) {
+                logger.info("Added to ZIP: {}", entryName);
+                System.out.println("Added to ZIP: " + entryName);
+            }
+        }
+    }
 
 }

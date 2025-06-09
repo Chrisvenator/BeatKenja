@@ -24,6 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static DataManager.FileManager.createZipPackage;
 import static DataManager.Parameters.*;
 
 /**
@@ -117,6 +118,7 @@ public class BatchWavToMaps {
                             i++;
                         }
                         convertWavToOgg(file.getAbsolutePath(), destinationFolderPath + "/" + filename + ".ogg");
+                        createZipPackage(destinationFolderPath, filename, verbose);
                     } catch (IOException e) {
                         logger.error("IO Exception: {}", e.getMessage());
                         e.printStackTrace();
