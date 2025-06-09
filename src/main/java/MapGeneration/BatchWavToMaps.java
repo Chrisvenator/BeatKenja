@@ -104,7 +104,7 @@ public class BatchWavToMaps {
                                 i++;
                                 continue;
                             }
-                            double duration = peaks.get(i).get(peaks.get(i).size() - 1); // Assuming the last peak time gives approximate duration
+                            double duration = peaks.get(i).getLast(); // Assuming the last peak time gives approximate duration
                             double[][] spectrogram = SpectrogramCalculator.calculateSpectrogram(file.getAbsolutePath(), 1024, 512);
                             
                             if (SHOW_SPECTOGRAM_WHEN_GENERATING_ONSETS) {
@@ -140,7 +140,7 @@ public class BatchWavToMaps {
         );
         
         logger.info("Converting {} to {}", new File(inputFilePath).getName(), outputFilePath.substring(outputFilePath.lastIndexOf("/")));
-        System.out.println("Converting " + new File(inputFilePath).getName() + " to " + outputFilePath.substring(outputFilePath.lastIndexOf("/"), outputFilePath.length()));
+        System.out.println("Converting " + new File(inputFilePath).getName() + " to " + outputFilePath.substring(outputFilePath.lastIndexOf("/")));
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();
         int exitCode;

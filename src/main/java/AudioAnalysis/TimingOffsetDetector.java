@@ -33,21 +33,6 @@ public class TimingOffsetDetector {
     private static final double MAX_OFFSET_MS = 500.0;
     /** Resolution for offset detection in milliseconds */
     private static final double OFFSET_RESOLUTION_MS = 1.0;
-    /** Minimum analysis duration in seconds to get reliable results */
-    private static final double MIN_ANALYSIS_DURATION = 10.0;
-    
-    /**
-     * Detects the timing offset of an audio file using auto-detected BPM.
-     *
-     * @param filePath The path to the audio file to analyze
-     * @return The timing offset in milliseconds (positive = song is ahead, negative = song is behind)
-     * @throws UnsupportedAudioFileException if the audio file format is not supported
-     * @throws IOException if an I/O error occurs while reading the audio file
-     */
-    public static double detectTimingOffset(String filePath) throws UnsupportedAudioFileException, IOException {
-        double detectedBPM = BPMDetector.detectBPM(filePath);
-        return detectTimingOffset(filePath, detectedBPM);
-    }
     
     /**
      * Detects the timing offset of an audio file using a provided BPM.
@@ -188,6 +173,12 @@ public class TimingOffsetDetector {
         }
         
         // Test different offsets
+        double bestOffset = getBestOffset(beatInterval, analysisLength, onsetTrain);
+        
+        return bestOffset * 1000.0; // Convert to milliseconds
+    }
+    
+    private static double getBestOffset(double beatInterval, double analysisLength, double[] onsetTrain) {
         int maxOffsetSamples = (int) (MAX_OFFSET_MS);
         double bestOffset = 0.0;
         double maxCorrelation = -1.0;
@@ -201,8 +192,7 @@ public class TimingOffsetDetector {
                 bestOffset = offset;
             }
         }
-        
-        return bestOffset * 1000.0; // Convert to milliseconds
+        return bestOffset;
     }
     
     /**
@@ -374,22 +364,7 @@ public class TimingOffsetDetector {
         
         for (int i = 0; i < signal.length; i++) {
             // Determine smoothing window based on local variation
-            int windowSize = 3; // Base window size
-            
-            // Calculate local variance to adapt smoothing
-            if (i > 2 && i < signal.length - 2) {
-                double localVar = 0.0;
-                for (int j = i - 2; j <= i + 2; j++) {
-                    localVar += Math.pow(signal[j] - signal[i], 2);
-                }
-                localVar /= 5;
-                
-                // Reduce smoothing for high-variance regions (sharp onsets)
-                if (localVar > 0.1) windowSize = 1;
-            }
-            
-            // Apply smoothing
-            int halfWindow = windowSize / 2;
+            int halfWindow = getHalfWindow(signal, i);
             int start = Math.max(0, i - halfWindow);
             int end = Math.min(signal.length - 1, i + halfWindow);
             
@@ -406,21 +381,22 @@ public class TimingOffsetDetector {
         return smoothed;
     }
     
-    /**
-     * Result class containing offset and confidence information.
-     */
-    public static class OffsetResult {
-        public final double offsetMs;
-        public final double confidence;
+    private static int getHalfWindow(double[] signal, int i) {
+        int windowSize = 3; // Base window size
         
-        public OffsetResult(double offsetMs, double confidence) {
-            this.offsetMs = offsetMs;
-            this.confidence = confidence;
+        // Calculate local variance to adapt smoothing
+        if (i > 2 && i < signal.length - 2) {
+            double localVar = 0.0;
+            for (int j = i - 2; j <= i + 2; j++) {
+                localVar += Math.pow(signal[j] - signal[i], 2);
+            }
+            localVar /= 5;
+            
+            // Reduce smoothing for high-variance regions (sharp onsets)
+            if (localVar > 0.1) windowSize = 1;
         }
         
-        @Override
-        public String toString() {
-            return String.format("Offset: %.1fms (confidence: %.2f)", offsetMs, confidence);
-        }
+        // Apply smoothing
+        return windowSize / 2;
     }
 }

@@ -1,11 +1,9 @@
 package AudioAnalysis;
 
-import DataManager.Parameters;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 
 /**
@@ -179,28 +177,32 @@ public class AudioAnalysis {
             int end = Math.min(len - 1, i + windowSize);
             
             // Calculate local mean and standard deviation
-            double sum = 0;
-            double sumSquares = 0;
-            int count = end - start + 1;
-            
-            for (int j = start; j <= end; j++) {
-                double val = onsetStrength.get(j);
-                sum += val;
-                sumSquares += val * val;
-            }
-            
-            double mean = sum / count;
-            double variance = (sumSquares / count) - (mean * mean);
-            double stdDev = Math.sqrt(Math.max(0, variance));
-            
-            // Adaptive threshold: mean + 1.5 * standard deviation
-            double threshold = mean + 1.5 * stdDev;
+            double threshold = getThreshold(onsetStrength, end, start);
             double currentValue = onsetStrength.get(i);
             
             thresholded.add(currentValue > threshold ? currentValue : 0.0);
         }
         
         return thresholded;
+    }
+    
+    private static double getThreshold(ArrayList<Double> onsetStrength, int end, int start) {
+        double sum = 0;
+        double sumSquares = 0;
+        int count = end - start + 1;
+        
+        for (int j = start; j <= end; j++) {
+            double val = onsetStrength.get(j);
+            sum += val;
+            sumSquares += val * val;
+        }
+        
+        double mean = sum / count;
+        double variance = (sumSquares / count) - (mean * mean);
+        double stdDev = Math.sqrt(Math.max(0, variance));
+        
+        // Adaptive threshold: mean + 1.5 * standard deviation
+        return mean + 1.5 * stdDev;
     }
     
     /**
