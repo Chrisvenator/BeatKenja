@@ -46,21 +46,12 @@ public class BatchWavToMaps {
         renameAllIllegalFileNames(inputPath, verbose);
         
         File folder = new File(inputPath);
-        File[] files = folder.listFiles();
+        File[] files;
         logger.info("Creating maps...");
         System.out.println();
         System.out.println("Creating maps...");
         
         
-        if (files != null) {
-            for (File file : files) {
-                if (file.isFile() && file.getName().contains(".mp3") &&
-                        !new File(file.getName().replace("mp3", "wav")).exists()) { //Check if the song has already been converted
-                    //If there is an error generating the map, then dependencies are probably missing
-                    if (!executeConvertSongsPY(file, verbose)) return false;
-                }
-            }
-        }
         files = folder.listFiles();
         if (files != null) {
             for (File file : files) {
@@ -264,52 +255,6 @@ public class BatchWavToMaps {
         Path destinationFile = destinationFolder.resolve(sourceFile.getFileName());
         
         Files.copy(sourceFile, destinationFile, StandardCopyOption.REPLACE_EXISTING);
-    }
-    
-    /**
-     * This function executes the python script ConvertSong.
-     * It converts mp3 to wav
-     * !! OGG IS BROKEN !!
-     *
-     * @param file File that should be converted
-     */
-    @SuppressWarnings("GrazieInspection")
-    private static boolean executeConvertSongsPY(File file, boolean verbose) {
-        //Command to do it manually:
-        //python ConvertSong.py mp3Files/input.mp3 output.wav wav
-        
-        try {
-            ProcessBuilder processBuilder = new ProcessBuilder(
-                    "python",
-                    DEFAULT_ONSET_GENERATION_FOLDER + "ConvertSong.py",
-                    ONSET_GENERATION_FOLDER_PATH_INPUT + file.getName(),
-                    ONSET_GENERATION_FOLDER_PATH_INPUT + file.getName().replace(".mp3", "." + "wav"),
-                    "wav");
-            Process process = processBuilder.start();
-            
-            int exitCode = process.waitFor();
-            if (exitCode == 0) {
-                if (verbose)
-                    logger.info("Converted {} to wav format", file.getName());
-            } else {
-                logger.info("Python script execution failed with exit code: {}", exitCode);
-                System.out.println("Python script execution failed with exit code: " + exitCode);
-                
-                // Capture and print the error output of the script
-                @Cleanup InputStream errorStream = process.getErrorStream();
-                @Cleanup BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream));
-                String line;
-                while ((line = errorReader.readLine()) != null) {
-                    logger.info(line);
-                    System.out.println(line);
-                }
-                return exitCode != -4;
-            }
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-        
-        return true;
     }
     
     /**
