@@ -96,3 +96,4 @@ config.json
 /src/main/resources/UserData/SongCore/SongDurationCache.dat
 /src/main/resources/UserData/
 /File_for_formatting
+/OnsetGeneration/WIPs/

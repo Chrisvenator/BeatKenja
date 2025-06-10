@@ -6,7 +6,7 @@
 
     <groupId>BeatKenja</groupId>
     <artifactId>BeatKenja</artifactId>
-    <version>3.3.1</version>
+    <version>3.4.0</version>
     <name>BeatKenja</name>
 
     <properties>
