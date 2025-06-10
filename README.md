@@ -36,7 +36,8 @@ This tool is still in its early stages and will be improved.
     pip install ffmpeg # if this fails, install it from: https://ffmpeg.org/download.html (and add it to PATH)
     pip install pydub
     ```
-   Note that you may need to install ffmpeg manually and add it to PATH. Here is a tutorial for Windows [tutorial](https://phoenixnap.com/kb/ffmpeg-windows)
+   Note that you may need to install ffmpeg manually and add it to PATH. Here is a tutorial for
+   Windows [tutorial](https://phoenixnap.com/kb/ffmpeg-windows)
 
 ### Installation
 
@@ -53,11 +54,92 @@ This tool is still in its early stages and will be improved.
 
 ## How to use
 
+BeatKenja can be used in two ways: **GUI Mode** (graphical interface) or **CLI Mode** (command-line interface).
+
+### GUI Mode (Default)
+
+Simply run the jar file without any arguments to start the graphical interface. (Sometimes it's even possible to
+double-click the jar)
+
+```bash
+java -jar BeatKenja.jar
+```
+
+### CLI Mode
+
+For automation, scripting, or headless processing, you can use BeatKenja from the command line:
+
+```bash
+java -jar BeatKenja.jar --input <input_file> --output <output_file> --mode <mode> [--pattern <pattern_file>]
+```
+
+#### CLI Arguments
+
+| Argument    | Short | Description                               | Required |
+|-------------|-------|-------------------------------------------|----------|
+| `--input`   | `-i`  | Input .dat file path                      | Yes      |
+| `--output`  | `-o`  | Output .dat file path                     | Yes      |
+| `--mode`    | `-m`  | Processing mode (`linear`, `complex`)     | Yes      |
+| `--pattern` | `-p`  | Optional pattern file (.pat or .dat file) | No       |
+| `--help`    | `-h`  | Show help information                     | No       |
+
+#### CLI Examples
+
+```bash
+# Process a map with complex mode
+java -jar BeatKenja.jar --input normal_a.dat --output normal_b.dat --mode complex
+
+# Process with custom pattern file
+java -jar BeatKenja.jar --input timings.dat --output expert.dat --mode complex --pattern custom.pat
+
+# Process using another difficulty as a pattern file
+java -jar BeatKenja.jar -i input.dat -o output.dat -m normal -p ExpertStandard.dat
+
+# Process with short arguments
+java -jar BeatKenja.jar -i input.dat -o output.dat -m simple
+
+# Show help
+java -jar BeatKenja.jar --help
+```
+
+#### Processing Modes
+
+For full description see [Generation section below](#generation). But for now, the only supported modes are these:
+
+- **`linear`**: Creates basic linear patterns with minimal complexity
+- **`complex`**: Creates intricate patterns with higher complexity (may include DDs/resets)
+
+#### CLI Features
+
+- **Validation**: Automatically checks if input files exist and modes are valid
+- **Pattern Support**: Load custom patterns from .pat files or existing .dat difficulties
+- **Error Handling**: Provides clear error messages for invalid arguments
+- **Logging**: All processing is logged for debugging purposes
+- **Exit Codes**: Returns appropriate exit codes for scripting integration
+
+#### Pattern Files
+
+The `--pattern` option allows you to customize the generated patterns:
+
+- **`.pat` files**: Custom pattern files created through the GUI's "load patterns" feature
+- **`.dat` files**: Use patterns from existing Beat Saber difficulty files
+- **Optional**: If no pattern file is specified, default patterns for the selected mode are used
+
+#### CLI Limitations
+
+- Currently supports only single difficulty processing
+- Bookmark-based section processing is not available in CLI mode
+- Pattern customization requires GUI mode
+- Onset generation still requires GUI mode
+
+---
+
+### Onset Creation
+
 <pre>Note that a map is the whole of a map. It contains a song, info.dat and at least one difficulty.
 A diff (short for difficulty) is only a single difficulty file (For example: "ExpertPlusStandard.dat").
 We will only work with difficulties from this point on. </pre>
 
-### Onset Creation
 
 **You need to have all prerequisites installed!**
 
@@ -121,7 +203,7 @@ When you click on Map creator you will then have a few options:<br>
   meantime.
 
   | **bookmark name & description**                                                                                                                                                                                                                                                                                | **GIF**                                        |
-  |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------|
+          |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------|
   | **`linear`**<br>Linear quite boring pattern                                                                                                                                                                                                                                                                    | ![linear gif](./assets/linear.gif)             |
   | **`complex`**<br>A little bit more complex patterns. But nothing too complex.<br>**THERE MAY BE RESETS AND DDs**. So always check the map!                                                                                                                                                                     | ![complex gif](./assets/complex.gif)           |
   | **`1-2`**<br>Twice as many blue notes as red notes.<br>The red note will always spawn at the same beat as the blue one.<br>In between red notes there will always be a blue note.<br><br>Red notes generate like "linear" and blue notes generate like "complex".                                              | ![1 2 gif](./assets/1-2.gif)                   |
@@ -148,11 +230,15 @@ Additionally, you can also load a difficulty file from a map.
 TODO: Explain what load patterns does<br>
 
 ----
+
 ### Variance Slider & Visualizing Pattern Distribution
 
 It is possible to change the variance of the pattern.
-- When the variance is low, the program will always generate a similar pattern and often repeat certain notes. There is a low chance of parity breaks.
-- When the variance is high, the program will generate a variety of different notes and patterns. There is a high chance of mapping errors and parity breaks!
+
+- When the variance is low, the program will always generate a similar pattern and often repeat certain notes. There is
+  a low chance of parity breaks.
+- When the variance is high, the program will generate a variety of different notes and patterns. There is a high chance
+  of mapping errors and parity breaks!
 
 You can always display the Pattern under "Visualize Pattern" and then "Normalized Heatmap".
 The more intense the color blue is, the higher the chance that it will get picked.
@@ -189,14 +275,15 @@ Example of very high variance:
   choice and open and save every difficulty. That should fix it.
 + **The map I generated doesn't show up in the editor:** TBD
 + **The map didn't change after generating a new one:** There may be 2 possibilities:
-  1. The Program didn't feel like generating something
-  2. Chromapper caches difficulties. If this is the case, exit and then reopen the difficulty. That should fix it.
+    1. The Program didn't feel like generating something
+    2. Chromapper caches difficulties. If this is the case, exit and then reopen the difficulty. That should fix it.
 + **mp3 to wav conversion is broken:**
 + **mp3 to wav overrides the wav file:**
 
 ----
 
 ## Currently under construction:
+
 - [ ] Advanced Complex Map generation (wip)
 - [ ] Change to another Pattern when the map gets faster (wip)
 - [ ] Fix timings & swing patterns when the map gets faster (wip)
@@ -204,13 +291,15 @@ Example of very high variance:
 ## TODOs:
 
 - [ ] creating new pattern types:
-  - [x] doubles
-  - [x] (small, normal, big) jumps
-  - [ ] more variation
-  - [x] stacks
+    - [x] doubles
+    - [x] (small, normal, big) jumps
+    - [ ] more variation
+    - [x] stacks
 - [x] Variation Slider
 - [x] Audio Analysis via Spectograms
+- [x] Slightly better music onsets
 - [ ] Better music onsets
+- [ ] Good music onsets
 - [x] Database Support
 - [x] Parity checking
 - [x] Ignore DDs
@@ -226,14 +315,27 @@ Example of very high variance:
 - [x] Aim of the tool?
 - [x] Error message: "No audio files found in '/OnsetGeneration/wavFiles'"
 - [ ] Max length Path for Windows users
+- [x] CLI Support
 
 ## Future Ideas:
-Features that may or may not be implemented in the future
-- [ ] **Deep Learning Models:** Train a model on a large dataset of Beat Saber maps and their corresponding audio files. The model could learn to predict sequences of moves that not only follow the beat but also the mood and style of different parts of a song.
-- [ ] **Dynamic Probability Adjustments:** Instead of static probabilities, adjust them dynamically based on certain triggers or sections in the music. For example, increase the complexity during a chorus or a bridge.
-- [ ] **Pattern Variation:** Instead of focusing solely on the next note's probability, consider sequences of moves or introducing special patterns that can occur under certain conditions, like rapid sequences or alternating patterns that match the music's intensity.
-- [ ] **Difficulty Scaling:** Scale the map's difficulty based on the song's progression or introduce difficulty spikes that correspond to climactic moments in the music.
-- [ ] **Customizable Parameters:** Allow users to adjust the probabilities and patterns used by the algorithm to create maps that match their preferences or the style of a particular song.
-- [ ] **Real-Time Feedback:** Provide real-time feedback on the generated map, such as visualizations of the note placements and patterns, to help users understand how the algorithm is interpreting the music and make adjustments as needed.
-- [ ] **Customization Options:** Let users set preferences for map characteristics, like favoring certain patterns, complexity levels, or even specific movements, and use these preferences to tailor the map generation.
 
+Features that may or may not be implemented in the future
+
+- [ ] **Deep Learning Models:** Train a model on a large dataset of Beat Saber maps and their corresponding audio files.
+  The model could learn to predict sequences of moves that not only follow the beat but also the mood and style of
+  different parts of a song.
+- [ ] **Dynamic Probability Adjustments:** Instead of static probabilities, adjust them dynamically based on certain
+  triggers or sections in the music. For example, increase the complexity during a chorus or a bridge.
+- [ ] **Pattern Variation:** Instead of focusing solely on the next note's probability, consider sequences of moves or
+  introducing special patterns that can occur under certain conditions, like rapid sequences or alternating patterns
+  that match the music's intensity.
+- [ ] **Difficulty Scaling:** Scale the map's difficulty based on the song's progression or introduce difficulty spikes
+  that correspond to climactic moments in the music.
+- [ ] **Customizable Parameters:** Allow users to adjust the probabilities and patterns used by the algorithm to create
+  maps that match their preferences or the style of a particular song.
+- [ ] **Real-Time Feedback:** Provide real-time feedback on the generated map, such as visualizations of the note
+  placements and patterns, to help users understand how the algorithm is interpreting the music and make adjustments as
+  needed.
+- [ ] **Customization Options:** Let users set preferences for map characteristics, like favoring certain patterns,
+  complexity levels, or even specific movements, and use these preferences to tailor the map generation.
+- [ ] **Advanced CLI Features:** Batch processing, configuration files, and more CLI-specific features.

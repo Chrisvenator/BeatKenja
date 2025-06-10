@@ -193,7 +193,7 @@ public class Configuration
         @JsonProperty("export-database")
         public boolean exportDatabase = false;
         @JsonProperty("autoload-default-map-for-testing")
-        public boolean autoloadDefaultMapForTesting = true;
+        public boolean autoloadDefaultMapForTesting = false;
         @JsonProperty("default-path-for-autoload-map")
         public String defaultPathForAutoloadMap = (Parameters.executedByJar ? "src/main/resources/" : "") + "Beat Saber_Data/CustomWIPLevels/3df62/ExpertPlusStandard.dat";
     }

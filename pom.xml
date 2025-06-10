@@ -265,7 +265,6 @@
         </dependency>
 
 
-
     </dependencies>
 
     <build>
@@ -274,24 +273,49 @@
                 <directory>${project.basedir}</directory>
                 <includes>
                     <include>README.md</include>
-<!--                    <include>LICENSE</include>-->
+                    <include>LICENSE</include>
                 </includes>
                 <targetPath>${project.build.directory}/classes</targetPath>
             </resource>
+
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+
+            <!-- Externer Ordner "assets" – bleibt als Unterordner erhalten -->
+            <resource>
+                <directory>assets</directory>
+                <!-- so heißt der Ordner im JAR -->
+                <targetPath>assets</targetPath>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+
+            <!-- Falls "Patterns" NICHT schon unter src/main/resources liegt: -->
+            <resource>
+                <directory>src/main/resources/Patterns</directory>
+                <!-- im JAR direkt unter /Patterns -->
+                <targetPath>Patterns</targetPath>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+
         </resources>
 
 
         <plugins>
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-jar-plugin</artifactId>-->
-<!--                <version>3.3.0</version>-->
-<!--                <configuration>-->
-<!--                    <includes>-->
-<!--                        <include>README.md</include>-->
-<!--                    </includes>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
+            <!--            <plugin>-->
+            <!--                <groupId>org.apache.maven.plugins</groupId>-->
+            <!--                <artifactId>maven-jar-plugin</artifactId>-->
+            <!--                <version>3.3.0</version>-->
+            <!--                <configuration>-->
+            <!--                    <includes>-->
+            <!--                        <include>README.md</include>-->
+            <!--                    </includes>-->
+            <!--                </configuration>-->
+            <!--            </plugin>-->
 
             <!-- Maven Compiler Plugin für Java 21 -->
             <plugin>
@@ -318,7 +342,8 @@
                         <configuration>
                             <transformers>
                                 <!-- Setzt die Main-Class -->
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>Start</mainClass>
                                 </transformer>
                             </transformers>
