@@ -290,6 +290,7 @@ Example of very high variance:
 
 ## TODOs:
 
+- [ ] new improved UI with Spring
 - [ ] creating new pattern types:
     - [x] doubles
     - [x] (small, normal, big) jumps
