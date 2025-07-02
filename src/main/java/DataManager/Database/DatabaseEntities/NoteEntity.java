@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-
+@Deprecated
 @Setter @Getter @Entity
 @NamedQuery(name = "NoteEntity.findAllNotes", query = "SELECT d FROM NoteEntity d")
 @NamedQuery(name = "NoteEntity.findById", query = "SELECT d FROM NoteEntity d WHERE d.id = :id")

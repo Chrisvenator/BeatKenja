@@ -3,6 +3,7 @@ package DataManager.Database;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class DatabaseCommonMethods{
     public static <T> ArrayList<T> checkCastFromQuery(List<?> result, Class<T> type) {
         ArrayList<T> checkedList = new ArrayList<>();

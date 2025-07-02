@@ -10,7 +10,7 @@ import java.util.List;
 
 import static DataManager.Parameters.entityManager;
 import static DataManager.Parameters.logger;
-
+@Deprecated
 public class GenreEntityOperations extends GenreEntity {
     public static GenreEntity getGenre(String GenreName) {
         return (GenreEntity) entityManager.createNamedQuery("GenreEntity.findGenre").setParameter("GenreName", GenreName).getSingleResult();

@@ -15,7 +15,7 @@ import static DataManager.Parameters.verbose;
 
 /**
  * This class provides operations to handle Pattern entities in the database.
- */
+ */@Deprecated
 public class PatternEntityOperations extends PatternEntity {
     public static void main(String[] args) {
         java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);

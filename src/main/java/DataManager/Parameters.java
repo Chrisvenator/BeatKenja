@@ -33,6 +33,7 @@ public class Parameters {
     private static final Configuration config = configLoader.getConfig();
     private static final Configuration.Colors COLORS = config.colors;
     private static final Configuration.DefaultPaths DEFAULT_PATHS = config.defaultPath;
+    @Deprecated
     private static final Configuration.Database DATABASE = config.database;
     private static final Configuration.GeneratedDefaultPaths GENERATED_DEFAULT_PATHS = config.generatedDefaultPaths;
     private static final Configuration.Development DEVELOPMENT = config.development;
@@ -70,8 +71,10 @@ public class Parameters {
     public static final String DEFAULT_EXPORT_PATH = GENERATED_DEFAULT_PATHS.extractFromJarPath;
 
     // Dev
+    @Deprecated
     public static final boolean EXPORT_DATABASE = DEVELOPMENT.exportDatabase;
     public static final boolean AUTOLOAD_DEFAULT_MAP_for_testing = DEVELOPMENT.autoloadDefaultMapForTesting;
+    @Deprecated
     public static final boolean useDatabase = DEVELOPMENT.exportDatabase;
     public static final String DEFAULT_PATH_FOR_AUTOLOAD_MAP = DEVELOPMENT.defaultPathForAutoloadMap;
 
@@ -94,6 +97,7 @@ public class Parameters {
     public static final boolean DELETE_WAV_AFTER_CONVERSION = MAP_GENERATOR.deleteWavAfterConversion;
 
     // Database
+    @Deprecated
     public static final PatMetadata DEFAULT_PATTERN_METADATA = new PatMetadata(DATABASE.defaultPatMetadata.name, DATABASE.defaultPatMetadata.bpm, DATABASE.defaultPatMetadata.nps, DATABASE.defaultPatMetadata.difficulties, DATABASE.defaultPatMetadata.tags, DATABASE.defaultPatMetadata.genres);
     public static final Map<String, String> DATABASE_SETTINGS = Map.of(
             "connection.driver_class",       DATABASE.settings.connection.driverClass,
@@ -113,6 +117,7 @@ public class Parameters {
     public static boolean executedByJar = false;
 
     // Common
+    @Deprecated
     public static final EntityManager entityManager = useDatabase ? Persistence.createEntityManagerFactory("default").createEntityManager() : null;
     public static final JFileChooser FILE_CHOOSER = new JFileChooser(new File(DEFAULT_PATH.trim()));
     public static final List<String> MAP_TAGS = TagEntityOperations.getAllTags();

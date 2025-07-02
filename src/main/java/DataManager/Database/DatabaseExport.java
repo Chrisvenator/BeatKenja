@@ -23,6 +23,7 @@ import static DataManager.Parameters.logger;
  * @warning If the database schema is updated, the schema export method should be updated to reflect the changes!!
  */
 @SuppressWarnings("unchecked")
+@Deprecated
 public class DatabaseExport {
     /**
      * Initiates the export process for both the schema and data of the database.

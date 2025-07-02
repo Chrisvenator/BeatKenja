@@ -425,6 +425,7 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
      *
      * @return true if the operation was successful, false otherwise
      */
+    @Deprecated
     public boolean saveOrUpdateInDatabase() {
         return databaseOperation("save");
     }
@@ -434,6 +435,7 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
      *
      * @return true if the operation was successful, false otherwise
      */
+    @Deprecated
     public boolean deleteFromDatabase() {
         if (databaseOperation("delete")) {
             if (verbose)
@@ -452,6 +454,7 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
      * @param operation the operation to perform ("save" or "delete")
      * @return true if the operation was successful, false otherwise
      */
+    @Deprecated
     private boolean databaseOperation(String operation) {
         if (operation == null || operation.isEmpty() || Objects.equals(operation, "update") || Objects.equals(operation, "save")) {
             operation = "save";
@@ -973,7 +976,7 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
         return null;
     }
 
-
+    @Deprecated
     public Pattern clonePattern() {
         Pattern p = new Pattern();
         System.arraycopy(p.patterns, 0, patterns, 0, p.patterns.length);
@@ -1149,6 +1152,7 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
         return -1;
     }
 
+    // AKA Dirichlet Multinomial Distribution application
     public static Pattern adjustVariance(Pattern pattern) {
         if (UserInterface.patternVariance == 0) {
             return pattern;
@@ -1171,7 +1175,6 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
         p.computeProbabilities();
         System.out.println(pattern.exportInPatFormat());
         System.out.println(p.exportInPatFormat());
-//        throw new RuntimeException("noob");
         return p;
     }
 
@@ -1187,7 +1190,8 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
         }
         computeProbabilities();
     }
-    
+
+    @Deprecated
     public void normalizeAsContinuousCategoricalDistribution(){
         int size = patterns.length;  // Example size of the lambda array
         double min = 0.1;  // Minimum value for lambda

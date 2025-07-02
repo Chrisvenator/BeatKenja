@@ -13,7 +13,7 @@ import java.util.List;
 
 import static DataManager.Parameters.entityManager;
 import static DataManager.Parameters.logger;
-
+@Deprecated
 public class TagAssignmentEntityOperations extends TagAssignmentEntity {
     public static ArrayList<TagAssignmentEntity> getAssignmentEntity(int fkTagId, int fkPatternDescriptionId) {
         try {

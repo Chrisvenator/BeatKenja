@@ -18,6 +18,7 @@ import java.util.stream.IntStream;
 
 import static DataManager.Parameters.logger;
 
+@Deprecated
 public class ImportDownloadedMapsIntoDatabase {
     public static void importAllMaps(String MAPS_DIRECTORY, String patternName) {
         if (!MAPS_DIRECTORY.endsWith("/")) MAPS_DIRECTORY += "/";
@@ -98,6 +99,7 @@ public class ImportDownloadedMapsIntoDatabase {
     }
 
 
+    @Deprecated
     private static boolean savePatternsIntoDatabase(Pattern pattern) {
         Pattern databasePattern = new Pattern(pattern.metadata);
         databasePattern.merge(pattern);

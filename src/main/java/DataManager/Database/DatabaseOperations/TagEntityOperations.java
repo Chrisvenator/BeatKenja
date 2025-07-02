@@ -11,6 +11,7 @@ import java.util.List;
 import static DataManager.Parameters.entityManager;
 import static DataManager.Parameters.logger;
 
+@Deprecated
 public class TagEntityOperations extends TagEntity {
     public static TagEntity getTag(String TagName) {
         return (TagEntity) entityManager.createNamedQuery("TagEntity.findTag").setParameter("TagName", TagName).getSingleResult();

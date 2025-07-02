@@ -10,7 +10,7 @@ import java.util.List;
 
 import static DataManager.Parameters.entityManager;
 import static DataManager.Parameters.logger;
-
+@Deprecated
 public class NoteEntityOperations extends NoteEntity {
     private static List<NoteEntity> notes = getAllNotes();
 

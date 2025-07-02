@@ -14,7 +14,7 @@ import static DataManager.Database.DatabaseCommonMethods.checkCastFromQuery;
 import static DataManager.Parameters.entityManager;
 import static DataManager.Parameters.logger;
 import static DataManager.Parameters.verbose;
-
+@Deprecated
 public class DifficultyAssignmentEntityOperations extends DifficultyAssignmentEntity {
     public static ArrayList<DifficultyAssignmentEntity> getAssignmentEntity(int fkDifficultyId, int fkPatternDescriptionId) {
         try {

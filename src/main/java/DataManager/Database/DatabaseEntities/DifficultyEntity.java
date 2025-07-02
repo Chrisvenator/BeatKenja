@@ -5,7 +5,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Objects;
-
+@Deprecated
 @Setter @Getter @Entity
 @NamedQuery(name = "DifficultyEntity.findAllDifficulties", query = "SELECT d FROM DifficultyEntity d")
 @NamedQuery(name = "DifficultyEntity.findDifficulty", query = "SELECT d FROM DifficultyEntity d where d.name = :difficultyName")

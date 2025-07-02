@@ -5,7 +5,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Objects;
-
+@Deprecated
 @Setter @Getter @Entity
 @NamedQuery(name = "GenreAssignment.findGenreAssignment", query = "SELECT ga FROM GenreAssignmentEntity ga WHERE fkGenreId = :fkGenreId AND fkPatternDescriptionId = :fkPatternDescriptionId")
 @NamedQuery(name = "GenreAssignment.findGenreAssignmentByFkPatternDescriptionId", query = "SELECT ga FROM GenreAssignmentEntity ga WHERE fkPatternDescriptionId = :fkPatternDescriptionId")

@@ -23,6 +23,7 @@ public class Configuration
     public Colors colors = new Colors();
     @JsonProperty("generated-default-paths")
     public GeneratedDefaultPaths generatedDefaultPaths = new GeneratedDefaultPaths();
+    @Deprecated
     @JsonProperty("database")
     public Database database = new Database();
     @JsonProperty("map-generator")
@@ -113,6 +114,7 @@ public class Configuration
         public String extractFromJarPath = "./";
     }
 
+    @Deprecated
     @lombok.Getter @lombok.Setter @lombok.ToString
     public static class Database
     {
@@ -190,6 +192,7 @@ public class Configuration
     @lombok.Getter @lombok.Setter @lombok.ToString
     public static class Development
     {
+        @Deprecated
         @JsonProperty("export-database")
         public boolean exportDatabase = false;
         @JsonProperty("autoload-default-map-for-testing")

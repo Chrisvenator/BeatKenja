@@ -11,7 +11,7 @@ import java.util.List;
 import static DataManager.Parameters.entityManager;
 import static DataManager.Parameters.logger;
 import static DataManager.Parameters.useDatabase;
-
+@Deprecated
 public class DifficultyEntityOperations extends DifficultyEntity {
     public static DifficultyEntity getDifficulty(String difficultyName) {
         return (DifficultyEntity) entityManager.createNamedQuery("DifficultyEntity.findDifficulty").setParameter("difficultyName", difficultyName).getSingleResult();

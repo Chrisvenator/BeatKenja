@@ -13,7 +13,7 @@ import java.util.List;
 
 import static DataManager.Parameters.entityManager;
 import static DataManager.Parameters.logger;
-
+@Deprecated
 public class GenreAssignmentEntityOperations extends GenreEntityOperations {
     public static ArrayList<GenreAssignmentEntity> getAssignmentEntity(int fkGenreId, int fkPatternDescriptionId) {
         try {

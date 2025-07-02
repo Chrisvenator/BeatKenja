@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-
+@Deprecated
 @Setter @Getter @Entity
 @NamedQuery(name = "DifficultyAssignment.findDifficultyAssignmentByFkPatternDescriptionId", query = "SELECT da FROM DifficultyAssignmentEntity da WHERE fkPatternDescriptionId = :fkPatternDescriptionId")
 @NamedQuery(name = "DifficultyAssignment.findDifficultyAssignment", query = "SELECT da FROM DifficultyAssignmentEntity da WHERE fkPatternDescriptionId = :fkPatternDescriptionId AND fkDifficultyId = :fkDifficultyId")

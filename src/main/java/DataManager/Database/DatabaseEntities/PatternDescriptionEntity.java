@@ -5,7 +5,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Objects;
-
+@Deprecated
 @Setter @Getter @Entity
 @NamedQuery(name = "DifficultyEntity.findPatternDescriptionById", query = "SELECT p FROM PatternDescriptionEntity p  WHERE p.id = :id")
 @NamedQuery(name = "DifficultyEntity.findPatternDescriptionByNameAndNps", query = "SELECT p FROM PatternDescriptionEntity p  WHERE p.name = :name  AND p.nps = :nps ")
