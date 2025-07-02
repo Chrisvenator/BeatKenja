@@ -19,7 +19,7 @@ public class GlobalLoadPatterns extends GlobalButton {
         super(ElementTypes.GLOBAL_LOAD_PATTERNS_BUTTON, ui);
         if (Parameters.AUTOLOAD_DEFAULT_PATTERNS) {
             try {
-                ui.pattern = new Pattern(String.valueOf(useDatabase ? DEFAULT_PATTERN_METADATA : DEFAULT_PATTERN_PATH));
+                ui.pattern = new Pattern(DEFAULT_PATTERN_PATH);
                 setBackground(Color.GREEN);
             } catch (NoteNotValidException e) {
                 setBackground(Color.RED);
@@ -34,9 +34,9 @@ public class GlobalLoadPatterns extends GlobalButton {
 
         }
 
-        if (ui.pattern == null || (!new File(Parameters.DEFAULT_PATTERN_PATH).exists() && !Parameters.useDatabase)) {
+        if (ui.pattern == null || (!new File(Parameters.DEFAULT_PATTERN_PATH).exists())) {
             setBackground(Color.RED);
-            logger.warn("Pattern is null or the default pattern path does not exist, and the database is not in use. Pattern has to be loaded manually: " + new File(Parameters.DEFAULT_PATTERN_PATH).getAbsolutePath());
+            logger.warn("Pattern is null or the default pattern path does not exist, and the database is not in use. Pattern has to be loaded manually: {}", new File(Parameters.DEFAULT_PATTERN_PATH).getAbsolutePath());
         }
         logger.debug("GlobalLoadPatterns button initialized.");
     }

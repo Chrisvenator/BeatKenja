@@ -103,7 +103,8 @@ public class ImportDownloadedMapsIntoDatabase {
     private static boolean savePatternsIntoDatabase(Pattern pattern) {
         Pattern databasePattern = new Pattern(pattern.metadata);
         databasePattern.merge(pattern);
-        return databasePattern.saveOrUpdateInDatabase();
+//        return databasePattern.saveOrUpdateInDatabase();
+        return false;
     }
 
     public static void main(String[] args) {

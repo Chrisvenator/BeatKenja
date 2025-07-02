@@ -1,9 +1,6 @@
 package DataManager;
 
 import BeatSaberObjects.Objects.Enums.ParityErrorEnum;
-import DataManager.Database.DatabaseOperations.DifficultyEntityOperations;
-import DataManager.Database.DatabaseOperations.GenreEntityOperations;
-import DataManager.Database.DatabaseOperations.TagEntityOperations;
 import DataManager.Config.Configuration;
 import DataManager.Records.PatMetadata;
 import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons.Common.DifficultyFileNameExtensionFilter;
@@ -11,8 +8,6 @@ import javafx.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Persistence;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
@@ -33,8 +28,7 @@ public class Parameters {
     private static final Configuration config = configLoader.getConfig();
     private static final Configuration.Colors COLORS = config.colors;
     private static final Configuration.DefaultPaths DEFAULT_PATHS = config.defaultPath;
-    @Deprecated
-    private static final Configuration.Database DATABASE = config.database;
+    private static final Configuration.DefaultPatMetadata DEFAULT_PAT_METADATA = config.defaultPatMetadata;
     private static final Configuration.GeneratedDefaultPaths GENERATED_DEFAULT_PATHS = config.generatedDefaultPaths;
     private static final Configuration.Development DEVELOPMENT = config.development;
     private static final Configuration.Global GLOBAL = config.global;
@@ -71,11 +65,7 @@ public class Parameters {
     public static final String DEFAULT_EXPORT_PATH = GENERATED_DEFAULT_PATHS.extractFromJarPath;
 
     // Dev
-    @Deprecated
-    public static final boolean EXPORT_DATABASE = DEVELOPMENT.exportDatabase;
     public static final boolean AUTOLOAD_DEFAULT_MAP_for_testing = DEVELOPMENT.autoloadDefaultMapForTesting;
-    @Deprecated
-    public static final boolean useDatabase = DEVELOPMENT.exportDatabase;
     public static final String DEFAULT_PATH_FOR_AUTOLOAD_MAP = DEVELOPMENT.defaultPathForAutoloadMap;
 
     // Colors
@@ -85,7 +75,6 @@ public class Parameters {
     public static final Color darkModeForegroundColor =  COLORS.darkModeForegroundColor;
 
     //Note Generator settings:
-//    public static double BPM = AUTOLOAD_DEFAULT_MAP_for_testing ? 1 : MAP_GENERATOR.defaultBpm;
     public static double BPM = MAP_GENERATOR.defaultBpm;
     public static final double PLACEMENT_PRECISION = MAP_GENERATOR.defaultPlacementPrecision; //Placement Precision
     public static final boolean FIX_PLACEMENTS = MAP_GENERATOR.fixPlacements; //should the timings be fixed so that BeatSaver doesn't flag it as AI made?
@@ -96,18 +85,6 @@ public class Parameters {
     public static final boolean PLOT_NPS_DISTRIBUTION = MAP_GENERATOR.plotNpsDistribution;
     public static final boolean DELETE_WAV_AFTER_CONVERSION = MAP_GENERATOR.deleteWavAfterConversion;
 
-    // Database
-    @Deprecated
-    public static final PatMetadata DEFAULT_PATTERN_METADATA = new PatMetadata(DATABASE.defaultPatMetadata.name, DATABASE.defaultPatMetadata.bpm, DATABASE.defaultPatMetadata.nps, DATABASE.defaultPatMetadata.difficulties, DATABASE.defaultPatMetadata.tags, DATABASE.defaultPatMetadata.genres);
-    public static final Map<String, String> DATABASE_SETTINGS = Map.of(
-            "connection.driver_class",       DATABASE.settings.connection.driverClass,
-            "dialect",                       DATABASE.settings.dialect,
-            "hibernate.connection.url",      config.database.settings.hibernate.connection.url,
-            "hibernate.connection.username", config.database.settings.hibernate.connection.username,
-            "hibernate.connection.password", config.database.settings.hibernate.connection.password
-    );
-
-
     //------------------------------------------ Config end --------------------------------------------------------------
 
     //Variables:
@@ -115,14 +92,13 @@ public class Parameters {
     public static Random RANDOM = new Random(SEED);
     public static String filePath = DEFAULT_PATHS.getWipFolder();
     public static boolean executedByJar = false;
+    public static final PatMetadata DEFAULT_PATTERN_METADATA = new PatMetadata(DEFAULT_PAT_METADATA.name, DEFAULT_PAT_METADATA.bpm, DEFAULT_PAT_METADATA.nps, DEFAULT_PAT_METADATA.difficulties, DEFAULT_PAT_METADATA.tags, DEFAULT_PAT_METADATA.genres);
 
     // Common
-    @Deprecated
-    public static final EntityManager entityManager = useDatabase ? Persistence.createEntityManagerFactory("default").createEntityManager() : null;
     public static final JFileChooser FILE_CHOOSER = new JFileChooser(new File(DEFAULT_PATH.trim()));
-    public static final List<String> MAP_TAGS = TagEntityOperations.getAllTags();
-    public static final List<String> MUSIC_GENRES = GenreEntityOperations.getAllGenres();
-    public static final List<String> DIFFICULTIES = DifficultyEntityOperations.getAllDifficulties();
+    public static final List<String> MAP_TAGS = List.of("NULL", "Accuracy","Balanced","Challenge","Dance","Fitness","Speed","Tech");
+    public static final List<String> MUSIC_GENRES = List.of("NULL", "Alternative", "Ambient", "Anime", "Classical & Orchestral", "Comedy & Meme", "Dance", "Drum and Bass", "Dubstep", "Electronic", "Folk & Acoustic", "Funk & Disco", "Hardcore", "Hip Hop & Rap", "Holiday", "House", "Indie", "Instrumental", "J-Pop", "J-Rock", "Jazz", "K-Pop", "Kids & Family", "Metal", "Nightcore", "Pop", "Punk", "R&B", "Rock", "Soul", "Speedcore", "Swing", "TV & Film", "Techno", "Trance", "Video Game", "Vocaloid");
+    public static final List<String> DIFFICULTIES = List.of("NULL", "Easy", "Normal", "Hard", "Expert", "ExpertPlus", "EasyStandard", "NormalStandard", "HardStandard", "ExpertStandard", "ExpertPlusStandard", "EasyOneSaber", "NormalOneSaber", "HardOneSaber", "ExpertOneSaber", "ExpertPlusOneSaber", "EasyNoArrows", "NormalNoArrows", "HardNoArrows", "ExpertNoArrows", "ExpertPlusNoArrows");
     public static final DifficultyFileNameExtensionFilter MAP_FILE_FORMAT = new DifficultyFileNameExtensionFilter("BeatSaber Maps (*.dat) or Pattern files (*.pat)", new String[]{"dat", "pat"}, new String[]{"info.dat", "BPMInfo.dat"});
     public static final Map<String, List<Pair<Float, ParityErrorEnum>>> PARITY_ERRORS_LIST = new HashMap<>();
 

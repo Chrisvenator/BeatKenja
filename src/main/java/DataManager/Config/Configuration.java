@@ -1,8 +1,5 @@
 package DataManager.Config;
 
-import DataManager.Database.DatabaseOperations.DifficultyEntityOperations;
-import DataManager.Database.DatabaseOperations.GenreEntityOperations;
-import DataManager.Database.DatabaseOperations.TagEntityOperations;
 import DataManager.Parameters;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -10,6 +7,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.awt.*;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @lombok.Getter @lombok.Setter @lombok.ToString
@@ -23,14 +22,13 @@ public class Configuration
     public Colors colors = new Colors();
     @JsonProperty("generated-default-paths")
     public GeneratedDefaultPaths generatedDefaultPaths = new GeneratedDefaultPaths();
-    @Deprecated
-    @JsonProperty("database")
-    public Database database = new Database();
     @JsonProperty("map-generator")
     public MapGenerator mapGenerator = new MapGenerator();
     @JsonProperty("development")
     public Development development = new Development();
-    
+    @JsonProperty("default-pat-metadata")
+    public DefaultPatMetadata defaultPatMetadata = new DefaultPatMetadata();
+
     @lombok.Getter @lombok.Setter @lombok.ToString
     public static class Global
     {
@@ -114,57 +112,17 @@ public class Configuration
         public String extractFromJarPath = "./";
     }
 
-    @Deprecated
     @lombok.Getter @lombok.Setter @lombok.ToString
-    public static class Database
+    public static class DefaultPatMetadata
     {
-        public Settings settings = new Settings();
-        @JsonProperty("use-database")
-        public boolean useDatabase = false;
-        @JsonProperty("default-pat-metadata")
-        public DefaultPatMetadata defaultPatMetadata = new DefaultPatMetadata();
-
-        @lombok.Getter @lombok.Setter @lombok.ToString
-        public static class Settings
-        {
-            public Connection connection = new Connection();
-            public String dialect = "org.hibernate.dialect.MySQLDialect";
-            public Hibernate hibernate = new Hibernate();
-
-            @lombok.Getter @lombok.Setter @lombok.ToString
-            public static class Connection
-            {
-                @JsonProperty("driver_class")
-                public String driverClass = "com.mysql.cj.jdbc.Driver";
-            }
-
-            @lombok.Getter @lombok.Setter @lombok.ToString
-            public static class Hibernate
-            {
-                @JsonProperty("db-connection")
-                public DBConnection connection = new DBConnection();
-
-                @lombok.Getter @lombok.Setter @lombok.ToString
-                public static class DBConnection
-                {
-                    public String url = "jdbc:mysql://localhost:3306/beatKenja";
-                    public String username = "root";
-                    public String password = "root";
-                }
-            }
-        }
-
-        @lombok.Getter @lombok.Setter @lombok.ToString
-        public static class DefaultPatMetadata
-        {
-            public String name = "ISeeFire";
-            public int bpm = 170;
-            public double nps = 5.91;
-            public List<String> difficulties = DifficultyEntityOperations.getAllDifficulties();
-            public List<String> tags = TagEntityOperations.getAllTags();
-            public List<String> genres = GenreEntityOperations.getAllGenres();
-        }
+        public String name = "ISeeFire";
+        public int bpm = 170;
+        public double nps = 5.91;
+        public List<String> difficulties = Collections.singletonList("NULL");
+        public List<String> tags = new ArrayList<>();
+        public List<String> genres = new ArrayList<>();
     }
+
 
     @lombok.Getter @lombok.Setter @lombok.ToString
     public static class MapGenerator
