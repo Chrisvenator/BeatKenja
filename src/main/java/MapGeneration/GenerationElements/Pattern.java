@@ -15,13 +15,11 @@ import UserInterface.UserInterface;
 import com.google.gson.Gson;
 import lombok.Cleanup;
 
-import javax.persistence.*;
 import java.awt.*;
 import java.io.*;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 
 import static DataManager.Parameters.*;
