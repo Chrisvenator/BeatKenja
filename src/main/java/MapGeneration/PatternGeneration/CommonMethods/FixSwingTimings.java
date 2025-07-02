@@ -18,7 +18,6 @@ import MapAnalysation.PatternVisualisation.NpsPlotters.AverageNpsPlotter;
 import MapAnalysation.PatternVisualisation.NpsPlotters.DynamicNpsPlotter;
 import MapAnalysation.PatternVisualisation.NpsPlotters.NpsCutOffPlotter;
 import MapAnalysation.PatternVisualisation.NpsPlotters.NpsInfo;
-import com.mysql.cj.exceptions.WrongArgumentException;
 import javafx.util.Pair;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;

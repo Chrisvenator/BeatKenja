@@ -2,8 +2,6 @@ package MapGeneration.PatternGeneration;
 
 import BeatSaberObjects.Objects.Note;
 import BeatSaberObjects.Objects.TimingNote;
-import MapGeneration.MapGenerator;
-import org.hibernate.mapping.Map;
 
 import java.util.ArrayList;
 import java.util.List;

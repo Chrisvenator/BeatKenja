@@ -16,7 +16,7 @@ import static DataManager.Parameters.logger;
 public class GlobalShowPatterns extends GlobalButton {
     public GlobalShowPatterns(UserInterface ui) {
         super(ElementTypes.GLOBAL_SHOW_PATTERNS_BUTTON, ui);
-        if (ui.pattern == null || (!new File(Parameters.DEFAULT_PATTERN_PATH).exists() && !Parameters.useDatabase)) {
+        if (ui.pattern == null || (!new File(Parameters.DEFAULT_PATTERN_PATH).exists())) {
             setBackground(Color.RED);
             logger.warn("Pattern is null or the default pattern path does not exist, and the database is not in use: " + DEFAULT_PATTERN_PATH);
         }

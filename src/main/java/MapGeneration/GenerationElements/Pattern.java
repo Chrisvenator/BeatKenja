@@ -3,8 +3,6 @@ package MapGeneration.GenerationElements;
 import BeatSaberObjects.BeatsaberObject;
 import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Note;
-import DataManager.Database.DatabaseEntities.*;
-import DataManager.Database.DatabaseOperations.*;
 import DataManager.FileManager;
 import DataManager.Parameters;
 import DataManager.Records.PatMetadata;
@@ -17,13 +15,11 @@ import UserInterface.UserInterface;
 import com.google.gson.Gson;
 import lombok.Cleanup;
 
-import javax.persistence.*;
 import java.awt.*;
 import java.io.*;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 
 import static DataManager.Parameters.*;
@@ -325,213 +321,15 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
      */
     @lombok.SneakyThrows
     public Pattern(PatMetadata metadata) {
-        if (!useDatabase && metadata.equals(Parameters.DEFAULT_PATTERN_METADATA)) {
-            logger.info("[INFO]: Database has been disabled but the default metadata was still used. Using default Pattern instead...");
-            System.out.println("[INFO]: Database has been disabled but the default metadata was still used. Using default Pattern instead...");
-            Pattern p = new Pattern(DEFAULT_PATTERN_PATH);
+        logger.info("[INFO]: Database has been disabled but the default metadata was still used. Using default Pattern instead...");
+        System.out.println("[INFO]: Database has been disabled but the default metadata was still used. Using default Pattern instead...");
+        Pattern p = new Pattern(DEFAULT_PATTERN_PATH);
 
-            this.count = p.count;
-            this.patterns = p.patterns;
-            this.probabilities = p.probabilities;
-            this.metadata = p.metadata;
-
-            return;
-        }
-        if (!useDatabase){
-            logger.fatal("Database has not been turned on! Shutting down...");
-            throw new RuntimeException("[ERROR]: Database has not been turned on! Shutting down...");
-        }
-
-        this.metadata = metadata;
-
-        // Convert predefined parameters to lowercase sets for case-insensitive comparison
-        Set<String> lowerCaseMapTags = Parameters.MAP_TAGS.stream().map(String::toLowerCase).collect(Collectors.toSet());
-        Set<String> lowerCaseMusicGenres = Parameters.MUSIC_GENRES.stream().map(String::toLowerCase).collect(Collectors.toSet());
-        Set<String> lowerCaseDifficulties = Parameters.DIFFICULTIES.stream().map(String::toLowerCase).collect(Collectors.toSet());
-
-        // Validate tags, genres, and difficulties against the predefined parameters
-        if (!lowerCaseMapTags.containsAll(metadata.tags().stream().map(String::toLowerCase).toList()) && !lowerCaseMapTags.containsAll(metadata.tags())) throw new IllegalArgumentException("Tag(s) not found in database: " + metadata.tags());
-        if (!lowerCaseMusicGenres.containsAll(metadata.genre().stream().map(String::toLowerCase).toList()) && !lowerCaseMusicGenres.containsAll(metadata.genre())) throw new IllegalArgumentException("Genre(s) not found in database: " + metadata.genre());
-        if (!lowerCaseDifficulties.containsAll(metadata.difficulty().stream().map(String::toLowerCase).toList()) && !lowerCaseDifficulties.containsAll(metadata.difficulty())) throw new IllegalArgumentException("Difficulty not found in database: " + metadata.difficulty());
-
-
-        PatternDescriptionEntity desc;
-        try {
-            // Attempt to retrieve the pattern description from the database
-            desc = PatternDescriptionEntityOperations.getPatternDescription(metadata);
-            if (desc == null) throw new NoResultException("Pattern not found in the database");
-        } catch (NoResultException e) {
-            // If the pattern is not found, throw an exception (could alternatively create a new pattern)
-            //The Pattern has not been found in the database, so we create a new one:
-            throw new IllegalArgumentException("Pattern not found in the database: " + metadata);
-        }
-
-        // Retrieve pattern entities based on the pattern description
-        List<PatternEntity> databasePatterns = PatternEntityOperations.getPatternByDescription(desc);
-        for (PatternEntity p : databasePatterns) {
-            // Convert database entities to notes and initialize the pattern
-            Note base = Objects.requireNonNull(NoteEntityOperations.getNoteById(p.getNoteId())).toNote();
-            Note follower = Objects.requireNonNull(NoteEntityOperations.getNoteById(p.getFollowedByNoteId())).toNote();
-            int count = p.getCount();
-
-            // Create and merge the pattern
-            Pattern pattern = new Pattern();
-            pattern.patterns[0][0] = base;
-            pattern.patterns[0][1] = follower;
-            pattern.count[0][1] = count;
-
-            this.merge(pattern);
-        }
-    }
-
-    /**
-     * Constructs a Pattern object based on the pattern description ID. Retrieves the pattern description
-     * from the database, initializes metadata, and creates the pattern using the retrieved metadata.
-     *
-     * @param patternDescriptionId the ID of the pattern description
-     * @throws IllegalArgumentException if the pattern description is not found in the database
-     */
-    public Pattern(int patternDescriptionId) {
-        // Retrieve the pattern description from the database
-        PatternDescriptionEntity description = PatternDescriptionEntityOperations.getPatternDescription(patternDescriptionId);
-        if (description == null) {
-            logger.error("[WARN]: Pattern not found in database: {}", patternDescriptionId);
-            System.err.println("[WARN]: Pattern not found in database: " + patternDescriptionId);
-            throw new IllegalArgumentException("Pattern not found in database: " + patternDescriptionId);
-        }
-
-        // Initialize metadata from the pattern description entity
-        this.metadata = new PatMetadata(
-                description.getName(),
-                description.getBpm(),
-                description.getNps(),
-                DifficultyAssignmentEntityOperations.getDifficultiesForPatternID(description.getId()),
-                TagAssignmentEntityOperations.getTagsForPattern(description.getId()),
-                GenreAssignmentEntityOperations.getGenresForPatternID(description.getId())
-        );
-
-        // Create a new pattern using the retrieved metadata
-        Pattern p = new Pattern(metadata);
-
-        // Initialize the pattern properties with the newly created pattern
-        this.patterns = p.patterns;
         this.count = p.count;
+        this.patterns = p.patterns;
         this.probabilities = p.probabilities;
+        this.metadata = p.metadata;
     }
-
-
-    /**
-     * Saves or updates the pattern in the database.
-     *
-     * @return true if the operation was successful, false otherwise
-     */
-    public boolean saveOrUpdateInDatabase() {
-        return databaseOperation("save");
-    }
-
-    /**
-     * Deletes the pattern from the database.
-     *
-     * @return true if the operation was successful, false otherwise
-     */
-    public boolean deleteFromDatabase() {
-        if (databaseOperation("delete")) {
-            if (verbose)
-                logger.info("[INFO]: Successfully deleted pattern from database: {}", metadata);
-            return true;
-        } else {
-            logger.error("[WARN]: Failed to delete pattern: {}", metadata);
-            System.err.println("[WARN]: Failed to delete pattern: " + metadata);
-            return false;
-        }
-    }
-
-    /**
-     * Performs the specified database operation (save or delete) on the pattern.
-     *
-     * @param operation the operation to perform ("save" or "delete")
-     * @return true if the operation was successful, false otherwise
-     */
-    private boolean databaseOperation(String operation) {
-        if (operation == null || operation.isEmpty() || Objects.equals(operation, "update") || Objects.equals(operation, "save")) {
-            operation = "save";
-        } else if (Objects.equals(operation, "delete") || Objects.equals(operation, "remove")) {
-            operation = "delete";
-        }
-
-        PatternDescriptionEntity description;
-        if (operation.equals("save")) {
-            description = PatternDescriptionEntityOperations.savePatternDescription(metadata);
-        } else if (operation.equals("delete")) {
-            description = PatternDescriptionEntityOperations.getPatternDescription(metadata);
-        } else {
-            return true;
-        }
-
-        logger.info("Pattern to be {}d: {}", operation, description);
-        System.out.println("Pattern to be " + operation + "d: " + description);
-
-        for (int i = 0; i < patterns.length; i++) {
-            Note base = patterns[i][0];
-            if (base == null) break;
-            for (int j = 1; j < patterns[i].length; j++) {
-                Note follower = patterns[i][j];
-                if (follower == null) break;
-                int count = this.count[i][j];
-
-                NoteEntity baseEntity;
-                NoteEntity followerEntity;
-                try {
-                    baseEntity = NoteEntityOperations.getNote(base);
-                    followerEntity = NoteEntityOperations.getNote(follower);
-                    if (baseEntity == null || followerEntity == null) throw new NoResultException("Note not found in database: " + base + " or " + follower);
-                } catch (NoResultException e) {
-                    System.err.println("Note not found in database: " + base + " or " + follower);
-                    logger.error("Note not found in database: {} or {}", base, follower);
-                    continue;
-                }
-
-                PatternEntity pattern = new PatternEntity();
-                pattern.setPatternDescriptionId(description.getId());
-                pattern.setNoteId(baseEntity.getId());
-                pattern.setFollowedByNoteId(followerEntity.getId());
-                pattern.setCount(count);
-
-                boolean success = false;
-                if (Objects.equals(operation, "save")) success = PatternEntityOperations.saveOrUpdatePattern(pattern, entityManager);
-                if (Objects.equals(operation, "delete")) {
-                    pattern = PatternEntityOperations.getPattern(description.getId(), baseEntity.getId(), followerEntity.getId());
-                    success = PatternEntityOperations.deletePattern(pattern, entityManager);
-                }
-
-                if (success && Parameters.verbose)
-                    logger.info("Successfully {}d pattern: {}", operation, pattern);
-                if (!success && Parameters.verbose)
-                    logger.error("Failed to {} pattern: {}", operation, pattern);
-            }
-        }
-
-        if (operation.equals("delete")) {
-            // Perform additional delete operations for related entities
-            boolean success = true;
-            success &= DifficultyAssignmentEntityOperations.deleteAssignmentEntity(metadata, description, entityManager);
-            success &= TagAssignmentEntityOperations.deleteTagAssignmentEntity(metadata, description, entityManager);
-            success &= GenreAssignmentEntityOperations.deleteGenreAssignmentEntity(metadata, description, entityManager);
-            success &= PatternDescriptionEntityOperations.deletePatternDescriptionEntity(metadata, description, entityManager);
-
-            if (success) {
-                logger.info("[INFO]: Successfully deleted PatternDescription: {}", description);
-                System.out.println("[INFO]: Successfully deleted PatternDescription: " + description);
-            } else {
-                logger.error("[WARN]: Failed to delete PatternDescription: {}", description);
-                System.err.println("[WARN]: Failed to delete PatternDescription: " + description);
-            }
-            return success;
-        }
-
-        return true;
-    }
-
 
     /**
      * Create a new pattern object based on a pattern file.
@@ -973,7 +771,7 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
         return null;
     }
 
-
+    @Deprecated
     public Pattern clonePattern() {
         Pattern p = new Pattern();
         System.arraycopy(p.patterns, 0, patterns, 0, p.patterns.length);
@@ -1149,6 +947,7 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
         return -1;
     }
 
+    // AKA Dirichlet Multinomial Distribution application
     public static Pattern adjustVariance(Pattern pattern) {
         if (UserInterface.patternVariance == 0) {
             return pattern;
@@ -1171,10 +970,8 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
         p.computeProbabilities();
         System.out.println(pattern.exportInPatFormat());
         System.out.println(p.exportInPatFormat());
-//        throw new RuntimeException("noob");
         return p;
     }
-
 
     public void applyDirichletMultinomial(int N) {
         for (int i = 0; i < patterns.length; i++) {
@@ -1187,23 +984,6 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
         }
         computeProbabilities();
     }
-    
-    public void normalizeAsContinuousCategoricalDistribution(){
-        int size = patterns.length;  // Example size of the lambda array
-        double min = 0.1;  // Minimum value for lambda
-        double max = 2.0;  // Maximum value for lambda
-        
-        double[] lambda = generateRandomLambda(size, min, max);
-        
-        double[] eta = {0.3, 0.7, 1.2};  // Example eta values
-        double s = 2.0;  // Example constant s
-        
-        double[][] normalized = CompoundCountModel.normalizeAsContinuousCategoricalDistribution(count, lambda, eta, s, 100);
-        count = Arrays.stream(normalized).map(row -> Arrays.stream(row).mapToInt(x -> (int) x).toArray()).toArray(int[][]::new);
-//        visualizeAsHeatmap();
-    }
-    
-
 
     /**
      * Visualizes the original and Dirichlet-Multinomial-Distributed pattern[][]
