@@ -54,6 +54,8 @@ This tool is still in its early stages and will be improved.
 
 ## How to use
 
+See explainations with screenshots in the [wiki](_wiki/JarUiTutorial.md)
+
 BeatKenja can be used in two ways: **GUI Mode** (graphical interface) or **CLI Mode** (command-line interface).
 
 ### GUI Mode (Default)
@@ -160,6 +162,8 @@ If you now want to make a "real" map out of these timings, then have a look at t
 
 ## Map Generation
 
+For an explanation of the user interface, see the [UI Tutorial](./_wiki/JarUiTutorial.md).
+
 ### Prerequisites
 
 Prepare a timings and a target difficulty. A timings difficulty [(Example)](./assets/timings.gif) is a diff where every
@@ -243,7 +247,7 @@ It is possible to change the variance of the pattern.
 You can always display the Pattern under "Visualize Pattern" and then "Normalized Heatmap".
 The more intense the color blue is, the higher the chance that it will get picked.
 
-_Note that if the Slider only works as intended, if it has seen all notes it is supposed to generate._
+_Note that the slider can only affect the notes of a patttern if notes are present. It only works for every entry for a note following another note. It does not take in account notes that it has not seen before!_
 
 Example of low variance:
 ![Low Variance Example](assets/variance_low_variance.png)
@@ -269,7 +273,6 @@ Example of very high variance:
 
 ## Known Issues:
 
-+ **V3 Maps are finally supported** YAY
 + **There are holes in the map:** No Algorithm is perfect. But I will fix that sometime in the future
 + **Map won't load in Beat Saber:** There may be something wrong with a difficulty file. Just go into the editor of your
   choice and open and save every difficulty. That should fix it.
@@ -277,8 +280,6 @@ Example of very high variance:
 + **The map didn't change after generating a new one:** There may be 2 possibilities:
     1. The Program didn't feel like generating something
     2. Chromapper caches difficulties. If this is the case, exit and then reopen the difficulty. That should fix it.
-+ **mp3 to wav conversion is broken:**
-+ **mp3 to wav overrides the wav file:**
 
 ----
 
@@ -286,7 +287,6 @@ Example of very high variance:
 
 - [ ] Advanced Complex Map generation (wip)
 - [ ] Change to another Pattern when the map gets faster (wip)
-- [ ] Fix timings & swing patterns when the map gets faster (wip)
 
 ## TODOs:
 
@@ -299,7 +299,8 @@ Example of very high variance:
 - [x] Variation Slider
 - [x] Audio Analysis via Spectograms
 - [x] Slightly better music onsets
-- [ ] Better music onsets
+- [x] Better music onsets
+- [ ] Way better music onsets
 - [ ] Good music onsets
 - [x] Database Support
 - [x] Parity checking
@@ -317,6 +318,8 @@ Example of very high variance:
 - [x] Error message: "No audio files found in '/OnsetGeneration/wavFiles'"
 - [ ] Max length Path for Windows users
 - [x] CLI Support
+- [x] Fix timings & swing patterns when the map gets faster (wip)
+- [x] v3 Map support
 
 ## Future Ideas:
 
