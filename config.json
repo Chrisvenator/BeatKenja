@@ -12,7 +12,7 @@
     "autoload-default-pattern" : true
   },
   "default-paths" : {
-    "wip-folder" : "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\Beat Saber_Data\\CustomWIPLevels",
+    "wip-folder" : "src/main/resources/Beat Saber_Data/CustomWIPLevels/3df62",
     "config" : "./config.json",
     "readme" : "./README.md",
     "pattern-folder" : "src/main/resources/Patterns/",
@@ -33,14 +33,6 @@
     "beatsaver-maps-path" : "./BeatSaberMaps/Maps/",
     "extract-from-jar-path" : "./"
   },
-  "default-pat-metadata" : {
-    "name" : "ISeeFire",
-    "bpm" : 170,
-    "nps" : 5.91,
-    "difficulties" : [ "NULL", "Easy", "Normal", "Hard", "Expert", "ExpertPlus", "EasyStandard", "StandardEasy", "NormalStandard", "StandardNormal", "HardStandard", "StandardHard", "ExpertStandard", "StandardExpert", "ExpertPlusStandard", "StandardExpertPlus" ],
-    "tags" : [ "Accuracy", "Balanced", "Challenge", "Dance", "Fitness", "Speed", "Tech", "NULL" ],
-    "genres" : [ "Alternative", "Ambient", "Anime", "Classical & Orchestral", "Comedy & Meme", "Dance", "Drum and Bass", "Dubstep", "Electronic", "Folk & Acoustic", "Funk & Disco", "Hardcore", "Hip Hop & Rap", "Holiday", "House", "Indie", "Instrumental", "J-Pop", "J-Rock", "Jazz", "K-Pop", "Kids & Family", "Metal", "Nightcore", "Pop", "Punk", "R&B", "Rock", "Soul", "Speedcore", "Swing", "TV & Film", "Techno", "Trance", "Video Game", "Vocaloid", "NULL" ]
-  },
   "map-generator" : {
     "default-bpm" : 120,
     "fix-placements" : true,
@@ -50,10 +42,19 @@
     "fix-inconsistent-timings-when-map-gets-faster-than-nps" : 8.0,
     "fix-inconsistent-timings-when-more-than-X-notes-are-in-the-section" : 4.0,
     "plot-nps-distribution" : true,
-    "delete-wav-after-conversion": false
+    "delete-wav-after-conversion" : false
   },
   "development" : {
+    "export-database" : false,
     "autoload-default-map-for-testing" : false,
     "default-path-for-autoload-map" : "src/main/resources/Beat Saber_Data/CustomWIPLevels/3df62/ExpertPlusStandard.dat"
+  },
+  "default-pat-metadata" : {
+    "name" : "ISeeFire",
+    "bpm" : 170,
+    "nps" : 5.91,
+    "difficulties" : [ "Easy", "Normal", "Hard", "Expert", "ExpertPlus", "EasyStandard", "StandardEasy", "NormalStandard", "StandardNormal", "HardStandard", "StandardHard", "ExpertStandard", "StandardExpert", "ExpertPlusStandard", "StandardExpertPlus" ],
+    "tags" : [ "Accuracy", "Balanced", "Challenge", "Dance", "Fitness", "Speed", "Tech", "NULL" ],
+    "genres" : [ "Alternative", "Ambient", "Anime", "Classical & Orchestral", "Comedy & Meme", "Dance", "Drum and Bass", "Dubstep", "Electronic", "Folk & Acoustic", "Funk & Disco", "Hardcore", "Hip Hop & Rap", "Holiday", "House", "Indie", "Instrumental", "J-Pop", "J-Rock", "Jazz", "K-Pop", "Kids & Family", "Metal", "Nightcore", "Pop", "Punk", "R&B", "Rock", "Soul", "Speedcore", "Swing", "TV & Film", "Techno", "Trance", "Video Game", "Vocaloid", "NULL" ]
   }
 }
