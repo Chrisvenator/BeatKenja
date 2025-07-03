@@ -18,7 +18,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static DataManager.Parameters.*;
+import static DataManager.Parameters.AUTOLOAD_DEFAULT_MAP_for_testing;
+import static DataManager.Parameters.BPM;
+import static DataManager.Parameters.DEFAULT_PATH_FOR_AUTOLOAD_MAP;
+import static DataManager.Parameters.FILE_CHOOSER;
+import static DataManager.Parameters.MAP_FILE_FORMAT;
+import static DataManager.Parameters.filePath;
+import static DataManager.Parameters.logger;
 
 /**
  * A button in the user interface responsible for opening and loading Beat Saber map files.
@@ -149,7 +155,7 @@ public class GlobalOpenMapButton extends GlobalButton {
             if (line.contains(searchString)) {
                 Parameters.BPM = Parser.parseValue(
                         line.substring(line.indexOf(searchString) + searchString.length(), line.lastIndexOf(",")),
-                        "bpm according to info.at",
+                        "bpm according to info.dat",
                         Double::parseDouble,
                         BPM
                 );

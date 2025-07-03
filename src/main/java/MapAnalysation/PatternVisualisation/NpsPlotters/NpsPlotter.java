@@ -7,7 +7,6 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
 
 import javax.swing.*;
@@ -22,7 +21,7 @@ import java.util.Arrays;
  * The chart is shown in a window with a default size of 800x600 pixels.
  */
 @Getter
-public abstract class NpsPlotter extends ApplicationFrame {
+public class NpsPlotter extends JFrame {
     protected final XYSeries series;
     protected final String freeChartTitle;
 
@@ -36,7 +35,7 @@ public abstract class NpsPlotter extends ApplicationFrame {
         super(title);
         this.series = new XYSeries(super.getTitle());
         this.freeChartTitle = freeChartTitle;
-        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
     }
 
     /**
