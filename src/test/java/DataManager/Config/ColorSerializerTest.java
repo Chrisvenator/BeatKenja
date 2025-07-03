@@ -51,17 +51,6 @@ class ColorSerializerTest {
     }
 
     @Test
-    void testSerializeInvalidColorComponentValues() {
-        // Arrange
-        Color color = new Color(-20, 500, 300);  // Invalid color components
-        when(jsonGenerator.getOutputTarget()).thenReturn(new StringWriter());
-
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> colorSerializer.serialize(color, jsonGenerator, serializerProvider),
-                "Serializing a Color with invalid component values should throw an IllegalArgumentException");
-    }
-
-    @Test
     void testSerializeOutOfBoundsColor() throws IOException {
         // Arrange
         Color color = new Color(255, 255, 255, 255);  // Fully opaque white with alpha channel

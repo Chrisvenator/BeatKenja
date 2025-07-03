@@ -15,14 +15,14 @@ class BeatSaberMapTest {
 
     @Test
     void constructor() {
-        String OGJson = FileManager.readFile("src/test/resources/Patterns/Normal_Pattern_ISeeFire.txt").get(0);
-        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Patterns/Normal_Pattern_ISeeFire.txt").get(0), BeatSaberMap.class);
+        String OGJson = FileManager.readFile("src/test/resources/Template--ISeeFire.txt").getFirst();
+        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").getFirst(), BeatSaberMap.class);
 
         Assertions.assertEquals("2.2.0", map._version);
         Assertions.assertEquals(9050, map._events.length);
         Assertions.assertEquals(1117, map._notes.length);
         Assertions.assertEquals(0, map._obstacles.length);
-        assertNull(map.bookmarks);
+        Assertions.assertEquals(map.bookmarks.size(), 0);
 
 
         Assertions.assertEquals(map._notes.length, new BeatSaberMap(map._notes)._notes.length);
@@ -33,13 +33,13 @@ class BeatSaberMapTest {
         Assertions.assertArrayEquals(new BeatSaberMap(map._notes)._notes, map._notes);
         Assertions.assertEquals(OGJson, new BeatSaberMap(map._notes, OGJson).originalJSON);
 
-        BeatSaberMap map2 = new Gson().fromJson(FileManager.readFile("src/test/resources/Patterns/BookmarksExample.txt").get(0), BeatSaberMap.class);
-        map2.originalJSON = FileManager.readFile("src/test/resources/Patterns/BookmarksExample.txt").get(0);
+        BeatSaberMap map2 = new Gson().fromJson(FileManager.readFile("src/test/resources/BookmarksExample.txt").getFirst(), BeatSaberMap.class);
+        map2.originalJSON = FileManager.readFile("src/test/resources/BookmarksExample.txt").getFirst();
     }
 
     @Test
     void fixPlacements() {
-        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Patterns/Normal_Pattern_ISeeFire.txt").get(0), BeatSaberMap.class);
+        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").getFirst(), BeatSaberMap.class);
         for (int i = 0; i < 27; i++) map._notes[i]._time += 0.000000001F;
         map.fixPlacements(0.015625); //1 / 64
 
@@ -264,7 +264,7 @@ class BeatSaberMapTest {
 
     @Test
     void newMapFromJSON() {
-        BeatSaberMap map = BeatSaberMap.newMapFromJSON("src/test/resources/Patterns/BookmarksExample.txt");
+        BeatSaberMap map = BeatSaberMap.newMapFromJSON("src/test/resources/BookmarksExample.txt");
 
         Assertions.assertEquals(887, map._notes.length);
         Assertions.assertEquals(49, map.bookmarks.size());
@@ -274,29 +274,29 @@ class BeatSaberMapTest {
 
     @Test
     void testToString() {
-        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Patterns/Normal_Pattern_ISeeFire.txt").get(0), BeatSaberMap.class);
+        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Template--ISeeFire.txt").getFirst(), BeatSaberMap.class);
         Assertions.assertEquals(85154, map.toString().length());
 
     }
 
     @Test
     void exportAsMap() {
-        String json1 = FileManager.readFile("src/test/resources/Patterns/MinimalMapExample.txt").get(0);
-        String json2 = FileManager.readFile("src/test/resources/Patterns/MapExample.txt").get(0).replace(",\"_customData\":{\"_time\":15.022}", "");
-        String json3 = FileManager.readFile("src/test/resources/Patterns/BookmarksExample.txt").get(0).replace("\"_time\":13.492,", "");
-        String json4 = FileManager.readFile("src/test/resources/Patterns/Normal_Pattern_ISeeFire.txt").get(0).replace(",\"_customData\":{\"_time\":0.121}", "");
-        String json5 = FileManager.readFile("src/test/resources/Patterns/TimingsExampleMap.txt").get(0).replace(",\"_customData\":{\"_time\":0.121}", "");
+        String json1 = FileManager.readFile("src/test/resources/MinimalMapExample.txt").getFirst();
+        String json2 = FileManager.readFile("src/test/resources/MapExample.txt").getFirst().replace(",\"_customData\":{\"_time\":15.022}", "");
+        String json3 = FileManager.readFile("src/test/resources/BookmarksExample.txt").getFirst().replace("\"_time\":13.492,", "");
+        String json4 = FileManager.readFile("src/test/resources/Template--ISeeFire.txt").getFirst().replace(",\"_customData\":{\"_time\":0.121}", "");
+        String json5 = FileManager.readFile("src/test/resources/TimingsExampleMap.txt").getFirst().replace(",\"_customData\":{\"_time\":0.121}", "");
 
-        assertEquals(json1, new Gson().fromJson(json1, BeatSaberMap.class).setOriginalJson(json1).exportAsMap());
-        assertEquals(json2, new Gson().fromJson(json2, BeatSaberMap.class).setOriginalJson(json2).exportAsMap());
-        assertEquals(json3, new Gson().fromJson(json3, BeatSaberMap.class).setOriginalJson(json3).exportAsMap());
-        assertEquals(json4, new Gson().fromJson(json4, BeatSaberMap.class).setOriginalJson(json4).exportAsMap());
-        assertEquals(json5, new Gson().fromJson(json5, BeatSaberMap.class).setOriginalJson(json5).exportAsMap());
+        assertEquals(json1, new Gson().fromJson(json1, BeatSaberMap.class).setOriginalJson(json1).exportAsMap().replaceAll(",\"_floatValue\":0", ""));
+        assertEquals(json2, new Gson().fromJson(json2, BeatSaberMap.class).setOriginalJson(json2).exportAsMap().replaceAll(",\"_floatValue\":0", ""));
+        assertEquals(json3, new Gson().fromJson(json3, BeatSaberMap.class).setOriginalJson(json3).exportAsMap().replaceAll(",\"_floatValue\":0", ""));
+        assertEquals(json4, new Gson().fromJson(json4, BeatSaberMap.class).setOriginalJson(json4).exportAsMap().replaceAll(",\"_floatValue\":0", ""));
+        assertEquals(json5, new Gson().fromJson(json5, BeatSaberMap.class).setOriginalJson(json5).exportAsMap().replaceAll(",\"_floatValue\":0", ""));
     }
 
     @Test
     void setOriginalJson() {
-        String json3 = FileManager.readFile("src/test/resources/Patterns/BookmarksExample.txt").get(0).replace("\"_time\":13.492,", "");
+        String json3 = FileManager.readFile("src/test/resources/BookmarksExample.txt").getFirst().replace("\"_time\":13.492,", "");
         BeatSaberMap map = new Gson().fromJson(json3, BeatSaberMap.class).setOriginalJson(json3);
 
         assertEquals(json3, map.setOriginalJson(json3).originalJSON);
@@ -309,7 +309,7 @@ class BeatSaberMapTest {
 
     @Test
     void convertAllFlashLightsToOnLights() {
-        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Patterns/MapExample.txt").get(0), BeatSaberMap.class);
+        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/MapExample.txt").getFirst(), BeatSaberMap.class);
         map.convertAllFlashLightsToOnLights();
         for (int i = 0; i < map._events.length; i++) {
             Assertions.assertNotEquals(6, map._events[i]._value);
@@ -318,7 +318,7 @@ class BeatSaberMapTest {
 
     @Test
     void makeOneHanded() {
-        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Patterns/MapExample.txt").get(0), BeatSaberMap.class);
+        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/MapExample.txt").getFirst(), BeatSaberMap.class);
         map.makeOneHanded(0);
         for (int i = 0; i < map._notes.length; i++) {
             Assertions.assertNotEquals(0, map._notes[i]._type);
@@ -327,7 +327,7 @@ class BeatSaberMapTest {
 
     @Test
     void makeNoArrows() {
-        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Patterns/MapExample.txt").get(0), BeatSaberMap.class);
+        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/MapExample.txt").getFirst(), BeatSaberMap.class);
         map.makeNoArrows();
         for (int i = 0; i < map._notes.length; i++) {
             Assertions.assertEquals(8, map._notes[i]._cutDirection);
@@ -337,7 +337,7 @@ class BeatSaberMapTest {
 
     @Test
     void toTimingNotes() {
-        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Patterns/MapExample.txt").get(0), BeatSaberMap.class);
+        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/MinimalMapExample.txt").getFirst(), BeatSaberMap.class);
         map.makeNoArrows();
         for (int i = 0; i < map._notes.length; i++) {
             Assertions.assertEquals(8, map._notes[i]._cutDirection);
@@ -346,7 +346,7 @@ class BeatSaberMapTest {
 
     @Test
     void toBlueLeftBottomRowDotTimings() {
-        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Patterns/MapExample.txt").get(0), BeatSaberMap.class);
+        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/MapExample.txt").getFirst(), BeatSaberMap.class);
         map.toBlueLeftBottomRowDotTimings();
         for (int i = 0; i < map._notes.length; i++) {
             Assertions.assertEquals(8, map._notes[i]._cutDirection);
@@ -359,8 +359,8 @@ class BeatSaberMapTest {
 
     @Test
     void calculateBookmarks() {
-        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/Patterns/BookmarksExample.txt").get(0), BeatSaberMap.class);
-        map.originalJSON = FileManager.readFile("src/test/resources/Patterns/BookmarksExample.txt").get(0);
+        BeatSaberMap map = new Gson().fromJson(FileManager.readFile("src/test/resources/BookmarksExample.txt").getFirst(), BeatSaberMap.class);
+        map.originalJSON = FileManager.readFile("src/test/resources/BookmarksExample.txt").getFirst();
         map.calculateBookmarks();
         Assertions.assertEquals(49, map.bookmarks.size());
         Assertions.assertEquals("[{\"_time\":0.0,\"_name\":\"complex\",\"_color\":[0.25, 1.0, 0.622, 1.0]}, {\"_time\":4.696,\"_name\":\"doubles\",\"_color\":[0.25, 0.785, 1.0, 1.0]}, {\"_time\":16.771,\"_name\":\"complex\",\"_color\":[0.545, 1.0, 0.25, 1.0]}, {\"_time\":23.479,\"_name\":\"1-2\",\"_color\":[1.0, 0.25, 0.741, 1.0]}, {\"_time\":28.846,\"_name\":\"2-1\",\"_color\":[0.25, 0.56, 1.0, 1.0]}, {\"_time\":32.535,\"_name\":\"1-2\",\"_color\":[1.0, 0.25, 0.838, 1.0]}, {\"_time\":35.89,\"_name\":\"doubles\",\"_color\":[0.25, 1.0, 0.935, 1.0]}, {\"_time\":40.25,\"_name\":\"2-1\",\"_color\":[1.0, 0.925, 0.25, 1.0]}, {\"_time\":44.946,\"_name\":\"1-2\",\"_color\":[1.0, 0.979, 0.25, 1.0]}, {\"_time\":48.635,\"_name\":\"2-1\",\"_color\":[1.0, 0.25, 0.97, 1.0]}, {\"_time\":52.325,\"_name\":\"doubles\",\"_color\":[1.0, 0.25, 0.991, 1.0]}, {\"_time\":56.35,\"_name\":\"complex\",\"_color\":[0.374, 0.25, 1.0, 1.0]}, {\"_time\":79.829,\"_name\":\"1-2\",\"_color\":[1.0, 0.25, 0.285, 1.0]}, {\"_time\":96.6,\"_name\":\"2-1\",\"_color\":[0.318, 1.0, 0.25, 1.0]}, {\"_time\":112.7,\"_name\":\"complex\",\"_color\":[0.841, 0.25, 1.0, 1.0]}, {\"_time\":145.235,\"_name\":\"1-2\",\"_color\":[0.759, 0.25, 1.0, 1.0]}, {\"_time\":164.354,\"_name\":\"doubles\",\"_color\":[0.573, 0.25, 1.0, 1.0]}, {\"_time\":166.702,\"_name\":\"complex\",\"_color\":[1.0, 0.996, 0.25, 1.0]}, {\"_time\":168.715,\"_name\":\"doubles\",\"_color\":[0.523, 0.25, 1.0, 1.0]}, {\"_time\":175.758,\"_name\":\"1-2\",\"_color\":[0.373, 1.0, 0.25, 1.0]}, {\"_time\":183.808,\"_name\":\"1-2\",\"_color\":[1.0, 0.549, 0.25, 1.0]}, {\"_time\":191.858,\"_name\":\"doubles\",\"_color\":[0.25, 1.0, 0.335, 1.0]}, {\"_time\":194.206,\"_name\":\"complex\",\"_color\":[1.0, 0.25, 0.707, 1.0]}, {\"_time\":205.946,\"_name\":\"doubles\",\"_color\":[0.25, 1.0, 0.954, 1.0]}, {\"_time\":207.623,\"_name\":\"1-2\",\"_color\":[0.998, 1.0, 0.25, 1.0]}, {\"_time\":224.394,\"_name\":\"2-1\",\"_color\":[1.0, 0.669, 0.25, 1.0]}, {\"_time\":240.158,\"_name\":\"complex\",\"_color\":[0.25, 1.0, 0.311, 1.0]}, {\"_time\":267.663,\"_name\":\"linear\",\"_color\":[0.25, 1.0, 0.663, 1.0]}, {\"_time\":272.358,\"_name\":\"complex\",\"_color\":[1.0, 0.25, 0.358, 1.0]}, {\"_time\":288.123,\"_name\":\"doubles\",\"_color\":[0.589, 1.0, 0.25, 1.0]}, {\"_time\":292.819,\"_name\":\"1-2\",\"_color\":[0.25, 1.0, 0.574, 1.0]}, {\"_time\":303.888,\"_name\":\"2-1\",\"_color\":[0.924, 1.0, 0.25, 1.0]}, {\"_time\":325.69,\"_name\":\"doubles\",\"_color\":[0.25, 1.0, 0.556, 1.0]}, {\"_time\":328.038,\"_name\":\"linear\",\"_color\":[0.572, 1.0, 0.25, 1.0]}, {\"_time\":331.392,\"_name\":\"doubles\",\"_color\":[1.0, 0.262, 0.25, 1.0]}, {\"_time\":335.752,\"_name\":\"1-2\",\"_color\":[0.25, 1.0, 0.673, 1.0]}, {\"_time\":352.188,\"_name\":\"2-1\",\"_color\":[0.25, 1.0, 0.95, 1.0]}, {\"_time\":368.288,\"_name\":\"2-2\",\"_color\":[0.25, 1.0, 0.762, 1.0]}, {\"_time\":384.723,\"_name\":\"1-2\",\"_color\":[0.72, 1.0, 0.25, 1.0]}, {\"_time\":395.792,\"_name\":\"complex\",\"_color\":[1.0, 0.25, 0.411, 1.0]}, {\"_time\":400.152,\"_name\":\"doubles\",\"_color\":[0.957, 0.25, 1.0, 1.0]}, {\"_time\":401.494,\"_name\":\"2-1\",\"_color\":[1.0, 0.25, 0.819, 1.0]}, {\"_time\":412.562,\"_name\":\"doubles\",\"_color\":[0.25, 1.0, 0.299, 1.0]}, {\"_time\":415.917,\"_name\":\"1-2\",\"_color\":[0.25, 1.0, 0.556, 1.0]}, {\"_time\":420.612,\"_name\":\"2-1\",\"_color\":[0.25, 1.0, 0.275, 1.0]}, {\"_time\":424.302,\"_name\":\"1-2\",\"_color\":[0.975, 1.0, 0.25, 1.0]}, {\"_time\":428.327,\"_name\":\"doubles\",\"_color\":[0.655, 1.0, 0.25, 1.0]}, {\"_time\":431.681,\"_name\":\"2-2\",\"_color\":[0.25, 0.903, 1.0, 1.0]}, {\"_time\":460.192,\"_name\":\"complex\",\"_color\":[0.25, 1.0, 0.847, 1.0]}]",

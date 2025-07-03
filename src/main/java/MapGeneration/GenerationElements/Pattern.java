@@ -325,10 +325,11 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
         System.out.println("[INFO]: Database has been disabled but the default metadata was still used. Using default Pattern instead...");
         Pattern p = new Pattern(DEFAULT_PATTERN_PATH);
 
+
         this.count = p.count;
         this.patterns = p.patterns;
         this.probabilities = p.probabilities;
-        this.metadata = p.metadata;
+        this.metadata = metadata;
     }
 
     /**

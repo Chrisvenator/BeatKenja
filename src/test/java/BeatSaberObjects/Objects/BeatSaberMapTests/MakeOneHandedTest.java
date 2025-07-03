@@ -14,7 +14,7 @@ public class MakeOneHandedTest {
     
     @BeforeEach
     public void setUp() {
-        map = BeatSaberMap.newMapFromJSON("src/test/resources/BeatSaberMapTests/ISeeFire.txt");
+        map = BeatSaberMap.newMapFromJSON("src/test/resources/Template--ISeeFire.txt");
     }
     
     @Test

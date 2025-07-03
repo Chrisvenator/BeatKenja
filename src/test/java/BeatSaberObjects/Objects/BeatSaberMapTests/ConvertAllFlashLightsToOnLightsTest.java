@@ -20,7 +20,7 @@ public class ConvertAllFlashLightsToOnLightsTest {
     
     @BeforeEach
     public void setUp() {
-        map = BeatSaberMap.newMapFromJSON("src/test/resources/BeatSaberMapTests/ISeeFire.txt");
+        map = BeatSaberMap.newMapFromJSON("src/test/resources/Template--ISeeFire.txt");
     }
     
     @Test
@@ -37,6 +37,8 @@ public class ConvertAllFlashLightsToOnLightsTest {
         events.add(new Events(0,6,4));
         events.add(new Events(0,1,6));
         events.add(new Events(0,2,7));
+
+        map._events = events.toArray(new Events[0]);
         
         assertThat(Arrays.stream(map._events).filter(e -> e._value == 6).toArray()).isNotEmpty();
         map._events = events.toArray(new Events[0]);
