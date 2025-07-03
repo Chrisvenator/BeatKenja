@@ -61,3 +61,6 @@ If you want to create maps from mp3 files, you can do so by providing with mp3 f
 To get to that folder, you can press the "Open Folder" button. This will open the folder where the mp3 files should be located. <br>
 Once you have placed the mp3 files in the folder, you can press the "Generate Map" button. This will create a map for each mp3 file in the folder. <br>
 _Note that the more files you have in the folder, the longer it will take to generate the maps. It is recommended to use a small number of files for testing purposes._ <br>
+
+# Open Map in browser
+When clicking this button, your default browser will open an online map previewer while exporting the map as a .zip file. You then need to drag the .zip into the previewer in the browser.
