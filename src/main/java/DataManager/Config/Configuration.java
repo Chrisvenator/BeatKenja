@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.awt.*;
-import java.io.File;
 import java.util.List;
 
 @lombok.Getter @lombok.Setter @lombok.ToString
@@ -56,17 +55,17 @@ public class Configuration
     {
         @JsonProperty("wip-folder")
 //        public String wipFolder = "C:/Program Files (x86)/Steam/steamapps/common/Beat Saber/Beat Saber_Data/CustomWIPLevels/";
-        public String wipFolder = new File("CustomWIPLevels").getAbsolutePath();
+        public String wipFolder = "./CustomWIPLevels";
         @JsonProperty("config")
         public String config = "./config.json";
         @JsonProperty("readme")
         public String readme = "./README.md";
         @JsonProperty("pattern-folder")
-        public String patternFolder = (Parameters.executedByJar ? "src/main/resources/" : "")  + "Patterns/";
+        public String patternFolder = (Parameters.executedByJar ? "./src/main/resources/" : "")  + "Patterns/";
         @JsonProperty("default-pattern")
-        public String defaultPattern = (Parameters.executedByJar ? "src/main/resources/" : "") + "Patterns/Normal_Pattern_ISeeFire.txt";
+        public String defaultPattern = (Parameters.executedByJar ? "./src/main/resources/" : "") + "Patterns/Normal_Pattern_ISeeFire.txt";
         @JsonProperty("easy-default-pattern")
-        public String defaultEasyPattern = (Parameters.executedByJar ? "src/main/resources/" : "") + "Patterns/Easy_Pattern_AllGroupedV1.pat";
+        public String defaultEasyPattern = (Parameters.executedByJar ? "./src/main/resources/" : "") + "Patterns/Easy_Pattern_AllGroupedV1.pat";
     }
 
     @lombok.Getter @lombok.Setter @lombok.ToString
