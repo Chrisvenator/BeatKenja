@@ -96,9 +96,9 @@ public class Parameters {
 
     // Common
     public static final JFileChooser FILE_CHOOSER = new JFileChooser(new File(DEFAULT_PATH.trim()));
-    public static final List<String> MAP_TAGS = List.of("NULL", "Accuracy","Balanced","Challenge","Dance","Fitness","Speed","Tech");
-    public static final List<String> MUSIC_GENRES = List.of("NULL", "Alternative", "Ambient", "Anime", "Classical & Orchestral", "Comedy & Meme", "Dance", "Drum and Bass", "Dubstep", "Electronic", "Folk & Acoustic", "Funk & Disco", "Hardcore", "Hip Hop & Rap", "Holiday", "House", "Indie", "Instrumental", "J-Pop", "J-Rock", "Jazz", "K-Pop", "Kids & Family", "Metal", "Nightcore", "Pop", "Punk", "R&B", "Rock", "Soul", "Speedcore", "Swing", "TV & Film", "Techno", "Trance", "Video Game", "Vocaloid");
-    public static final List<String> DIFFICULTIES = List.of("NULL", "Easy", "Normal", "Hard", "Expert", "ExpertPlus", "EasyStandard", "NormalStandard", "HardStandard", "ExpertStandard", "ExpertPlusStandard", "EasyOneSaber", "NormalOneSaber", "HardOneSaber", "ExpertOneSaber", "ExpertPlusOneSaber", "EasyNoArrows", "NormalNoArrows", "HardNoArrows", "ExpertNoArrows", "ExpertPlusNoArrows");
+    public static final List<String> MAP_TAGS = DEFAULT_PAT_METADATA.tags;
+    public static final List<String> MUSIC_GENRES = DEFAULT_PAT_METADATA.genres;
+    public static final List<String> DIFFICULTIES = DEFAULT_PAT_METADATA.difficulties;
     public static final DifficultyFileNameExtensionFilter MAP_FILE_FORMAT = new DifficultyFileNameExtensionFilter("BeatSaber Maps (*.dat) or Pattern files (*.pat)", new String[]{"dat", "pat"}, new String[]{"info.dat", "BPMInfo.dat"});
     public static final Map<String, List<Pair<Float, ParityErrorEnum>>> PARITY_ERRORS_LIST = new HashMap<>();
 

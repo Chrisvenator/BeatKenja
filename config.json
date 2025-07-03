@@ -33,29 +33,13 @@
     "beatsaver-maps-path" : "./BeatSaberMaps/Maps/",
     "extract-from-jar-path" : "./"
   },
-  "database" : {
-    "settings" : {
-      "connection" : {
-        "driver_class" : "com.mysql.cj.jdbc.Driver"
-      },
-      "dialect" : "org.hibernate.dialect.MySQLDialect",
-      "hibernate" : {
-        "db-connection" : {
-          "url" : "jdbc:mysql://localhost:3306/beatKenja",
-          "username" : "root",
-          "password" : "root"
-        }
-      }
-    },
-    "use-database" : false,
-    "default-pat-metadata" : {
-      "name" : "ISeeFire",
-      "bpm" : 170,
-      "nps" : 5.91,
-      "difficulties" : [ "Easy", "Normal", "Hard", "Expert", "ExpertPlus", "EasyStandard", "StandardEasy", "NormalStandard", "StandardNormal", "HardStandard", "StandardHard", "ExpertStandard", "StandardExpert", "ExpertPlusStandard", "StandardExpertPlus" ],
-      "tags" : [ "Accuracy", "Balanced", "Challenge", "Dance", "Fitness", "Speed", "Tech", "NULL" ],
-      "genres" : [ "Alternative", "Ambient", "Anime", "Classical & Orchestral", "Comedy & Meme", "Dance", "Drum and Bass", "Dubstep", "Electronic", "Folk & Acoustic", "Funk & Disco", "Hardcore", "Hip Hop & Rap", "Holiday", "House", "Indie", "Instrumental", "J-Pop", "J-Rock", "Jazz", "K-Pop", "Kids & Family", "Metal", "Nightcore", "Pop", "Punk", "R&B", "Rock", "Soul", "Speedcore", "Swing", "TV & Film", "Techno", "Trance", "Video Game", "Vocaloid", "NULL" ]
-    }
+  "default-pat-metadata" : {
+    "name" : "ISeeFire",
+    "bpm" : 170,
+    "nps" : 5.91,
+    "difficulties" : [ "NULL", "Easy", "Normal", "Hard", "Expert", "ExpertPlus", "EasyStandard", "StandardEasy", "NormalStandard", "StandardNormal", "HardStandard", "StandardHard", "ExpertStandard", "StandardExpert", "ExpertPlusStandard", "StandardExpertPlus" ],
+    "tags" : [ "Accuracy", "Balanced", "Challenge", "Dance", "Fitness", "Speed", "Tech", "NULL" ],
+    "genres" : [ "Alternative", "Ambient", "Anime", "Classical & Orchestral", "Comedy & Meme", "Dance", "Drum and Bass", "Dubstep", "Electronic", "Folk & Acoustic", "Funk & Disco", "Hardcore", "Hip Hop & Rap", "Holiday", "House", "Indie", "Instrumental", "J-Pop", "J-Rock", "Jazz", "K-Pop", "Kids & Family", "Metal", "Nightcore", "Pop", "Punk", "R&B", "Rock", "Soul", "Speedcore", "Swing", "TV & Film", "Techno", "Trance", "Video Game", "Vocaloid", "NULL" ]
   },
   "map-generator" : {
     "default-bpm" : 120,
@@ -69,7 +53,6 @@
     "delete-wav-after-conversion": false
   },
   "development" : {
-    "export-database" : false,
     "autoload-default-map-for-testing" : false,
     "default-path-for-autoload-map" : "src/main/resources/Beat Saber_Data/CustomWIPLevels/3df62/ExpertPlusStandard.dat"
   }

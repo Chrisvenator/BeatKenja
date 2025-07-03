@@ -7,8 +7,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.awt.*;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @lombok.Getter @lombok.Setter @lombok.ToString
@@ -118,9 +116,9 @@ public class Configuration
         public String name = "ISeeFire";
         public int bpm = 170;
         public double nps = 5.91;
-        public List<String> difficulties = Collections.singletonList("NULL");
-        public List<String> tags = new ArrayList<>();
-        public List<String> genres = new ArrayList<>();
+        public List<String> difficulties = List.of("Easy", "Normal", "Hard", "Expert", "ExpertPlus", "EasyStandard", "StandardEasy", "NormalStandard", "StandardNormal", "HardStandard", "StandardHard", "ExpertStandard", "StandardExpert", "ExpertPlusStandard", "StandardExpertPlus");
+        public List<String> tags = List.of("Accuracy", "Balanced", "Challenge", "Dance", "Fitness", "Speed", "Tech", "NULL");
+        public List<String> genres = List.of("Alternative", "Ambient", "Anime", "Classical & Orchestral", "Comedy & Meme", "Dance", "Drum and Bass", "Dubstep", "Electronic", "Folk & Acoustic", "Funk & Disco", "Hardcore", "Hip Hop & Rap", "Holiday", "House", "Indie", "Instrumental", "J-Pop", "J-Rock", "Jazz", "K-Pop", "Kids & Family", "Metal", "Nightcore", "Pop", "Punk", "R&B", "Rock", "Soul", "Speedcore", "Swing", "TV & Film", "Techno", "Trance", "Video Game", "Vocaloid", "NULL");
     }
 
 
