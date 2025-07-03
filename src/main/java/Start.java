@@ -28,6 +28,9 @@ public class Start {
 
     /*
      *********** Planned Features ***********
+     * Speed map creation (basic & repeating patterns)
+     * Patterns von allen Maps machen.
+     * Sequences.
      * bei schnellen Sektionen gleiche Abstände <-- Parity Breaks & Note inside Note Ursachen finden
      * bei ganz schnellen sektionen dann predictable patterns <-- Testen & implementieren
      * bei > 10 nps keine inlines mehr
