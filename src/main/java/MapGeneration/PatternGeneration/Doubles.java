@@ -20,8 +20,8 @@ public class Doubles extends MapGenerator {
         //make red note blue, so that it can be handled
         if (prevRed != null) prevRed.invertNote();
 
-        placeInitialNoteBasedOnPrevNote(notes, prevBlue, timings.get(0)._time);
-        placeInitialNoteBasedOnPrevNote(notes, prevRed, timings.get(0)._time);
+        placeInitialNoteBasedOnPrevNote(notes, prevBlue, timings.getFirst()._time);
+        placeInitialNoteBasedOnPrevNote(notes, prevRed, timings.getFirst()._time);
 
         //revert former red note back into a red note
         if (prevRed != null) prevRed.invertNote();
