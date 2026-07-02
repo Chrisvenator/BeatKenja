@@ -92,6 +92,11 @@ public class Start {
             // No CLI arguments provided, start GUI mode
             logger.info("Starting GUI mode...");
 
+            // Warm up the JavaFX runtime in the background so the first WebView-based
+            // window (e.g. the Readme viewer) opens instantly instead of cold-starting.
+            javafx.application.Platform.setImplicitExit(false);
+            javafx.application.Platform.startup(() -> {});
+
             ui = new UserInterface();
             ui.setVisible(true);
 
