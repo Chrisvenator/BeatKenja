@@ -249,7 +249,7 @@ Result: Review step = internal parity table (instant, inline) + NPS chart + heat
 
 ## 5. Implementation stages (for later; NOT part of this task)
 
-1. **Decouple** — extract `AppController` + `MapSession`/`DiffSession` model from `UserInterface` statics; define observable state + events. Remove dead DB code paths (genre/tag dropdown sources). Core logic untouched otherwise. (Enables everything else; also benefits CLI.)
+1. ✅ **Decouple** (done 2026-07-02 11:24) — new `AppLogic` package: `AppController` (load/generate-accept/parity/save operations + state listeners), `MapSession`/`DiffSession` (with live legacy `List<BeatSaberMap>` view for old buttons), `GenerationContext` (ex-`UserInterface` statics `currentDiff`/`patternVariance`/`easyPattern`, now UI-free), `AppState` enum. Polling thread replaced by listener. `BeatSaverOperations` (dead DB code) deleted; `ZipCreationException`/`DifficultyFileNameExtensionFilter` moved out of UI package → `MapGeneration`+`BeatSaberObjects` no longer import UI. Bonus fix: CLI complex mode NPE (`PARITY_ERRORS_LIST.get(null)`) via `GenerationContext.currentParityErrors()`. 693 tests green; CLI + GUI smoke passed.
 2. **Shell** — JavaFX `AppShell` with sidebar, status bar, log drawer, AtlantaFX theming, settings view reading/writing `config.json`.
 3. **Critical path** — Load → per-diff tabs → Timing → Generate (cards + parameter panel + "Apply to all diffs") → Export (batch table, backup-by-default). At this point the old Swing window can be deleted.
 4. **Review + Preview** — embedded NPS chart, heatmap, parity table with bookmark export; `ArcViewerManager` (auto-download desktop release + launch, §4.4 phase 1); "External checks" tab with MapCheck + bs-parity in WebView (§4.5).

@@ -1,5 +1,6 @@
 package UserInterface.Elements.Buttons.ButtonTypes.MapCreator.Button;
 
+import AppLogic.GenerationContext;
 import BeatSaberObjects.Objects.BeatSaberMap;
 import MapGeneration.GenerationElements.Pattern;
 import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.Exceptions.MapDidntComputeException;
@@ -25,14 +26,14 @@ public class CreateMapButton extends MapCreatorSubButton {
         List<BeatSaberMap> maps = new ArrayList<>();
         ui.manageMap();
         for (BeatSaberMap uiMap : ui.map) {
-            UserInterface.currentDiff = uiMap.difficultyFileName;
+            GenerationContext.currentDiff = uiMap.difficultyFileName;
             uiMap.toBlueLeftBottomRowDotTimings();
             logger.info("Map management and initial processing done.");
 
             try {
                 logger.trace("Original map: {}", uiMap.exportAsMap());
 
-                BeatSaberMap map = createMap(uiMap, Pattern.adjustVariance(ui.pattern), false, false);
+                BeatSaberMap map = createMap(uiMap, Pattern.adjustVariance(ui.controller.getPattern()), false, false);
 
                 if (uiMap.exportAsMap().split("\"_cutDirection\":8").length >= 20)
                     logger.warn("There are a lot of errors in the map. It is recommended to try again.");

@@ -1,9 +1,9 @@
 package BeatSaberObjects.Objects;
 
+import AppLogic.GenerationContext;
 import BeatSaberObjects.BeatsaberObject;
 import BeatSaberObjects.Objects.Enums.ParityErrorEnum;
 import DataManager.Parameters;
-import UserInterface.UserInterface;
 import javafx.util.Pair;
 
 import java.io.Serializable;
@@ -152,9 +152,9 @@ public class Note extends BeatsaberObject implements Comparable<Note>, Serializa
         List<Note> stack = tryCreatingStackedNote();
         
         if (SAVE_DID_NOT_PLACE_STACK_AS_BOOKMARK && (stack == null || stack.isEmpty())
-                && Parameters.PARITY_ERRORS_LIST.get(UserInterface.currentDiff) != null //For Unit tests
+                && GenerationContext.currentParityErrors() != null //For Unit tests
         ) {
-            Parameters.PARITY_ERRORS_LIST.get(UserInterface.currentDiff).add(new Pair<>(this._time, ParityErrorEnum.DID_NOT_PLACE_STACK));
+            GenerationContext.currentParityErrors().add(new Pair<>(this._time, ParityErrorEnum.DID_NOT_PLACE_STACK));
         }
         
         if (stack == null || stack.isEmpty()) return notes.toArray(new Note[0]);

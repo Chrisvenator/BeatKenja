@@ -1,5 +1,6 @@
 package UserInterface.Elements.Buttons.ButtonTypes.MapCreator.Button;
 
+import AppLogic.GenerationContext;
 import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Events;
 import BeatSaberObjects.Objects.Note;
@@ -28,20 +29,20 @@ public class CreateComplexMap extends MapCreatorSubButton {
         List<BeatSaberMap> maps = new ArrayList<>();
         ui.manageMap();
         for (BeatSaberMap uiMap : ui.map) {
-            UserInterface.currentDiff = uiMap.difficultyFileName;
+            GenerationContext.currentDiff = uiMap.difficultyFileName;
             List <Note> notes = new ArrayList<>();
             List <Note> timings = new ArrayList<>(Parameters.FIX_INCONSISTENT_TIMINGS
                     ? FixSwingTimings.fixFastMapTimings(List.of(uiMap._notes))
                     : List.of(uiMap._notes));
 
-            Pattern pattern = Pattern.adjustVariance(ui.pattern);
+            Pattern pattern = Pattern.adjustVariance(ui.controller.getPattern());
 
             if ((double) Arrays.stream(uiMap._notes).filter(note -> note._cutDirection == 8).count() / uiMap._notes.length >= 0.8) {
                 logger.info("Timing Map found. Creating complex map from Pattern...");
                 System.out.println("Timing Map found. Creating complex map from Pattern...");
 
                 uiMap.toBlueLeftBottomRowDotTimings();
-                notes.addAll(complexPattern(timings, pattern, UserInterface.easyPattern, true, false, false, false, null, null));
+                notes.addAll(complexPattern(timings, pattern, GenerationContext.easyPattern, true, false, false, false, null, null));
                 logger.debug("First note time in original map: {}", uiMap._notes[0]._time);
                 logger.debug("First note time in complex pattern: {}", notes.get(0)._time);
             } else {
@@ -49,13 +50,13 @@ public class CreateComplexMap extends MapCreatorSubButton {
                 logger.info("Map Template found. Creating new map with the position of red & blue notes...");
 
                 //Blue notes:
-                notes.addAll(complexPattern(timings.stream().filter(note -> note._type == 1).toList(), pattern, UserInterface.easyPattern, true, true, false, false, null, null));
+                notes.addAll(complexPattern(timings.stream().filter(note -> note._type == 1).toList(), pattern, GenerationContext.easyPattern, true, true, false, false, null, null));
                 logger.debug("Notes: {}. notes created from blue notes: {}", uiMap._notes.length, Arrays.stream(uiMap._notes).filter(note -> note._type == 0).toList().size());
                 System.out.println("Notes: " + uiMap._notes.length + ". notes created from blue notes: " + Arrays.stream(uiMap._notes).filter(note -> note._type == 0).toList().size());
 
                 // Red notes are just inverted blue notes
                 notes.addAll(complexPattern(
-                        timings.stream().filter(note -> note._type == 0).toList(), pattern, UserInterface.easyPattern, true, true, false, false, null, null
+                        timings.stream().filter(note -> note._type == 0).toList(), pattern, GenerationContext.easyPattern, true, true, false, false, null, null
                 ).stream().peek(Note::invertNote).toList());
                 logger.debug("Notes: {}. notes created from red notes: {}", uiMap._notes.length, Arrays.stream(uiMap._notes).filter(note -> note._type == 1).toList().size());
                 System.out.println("Notes: " + uiMap._notes.length + ". notes created from red notes: " + Arrays.stream(uiMap._notes).filter(note -> note._type == 1).toList().size());

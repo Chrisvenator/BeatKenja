@@ -9,7 +9,6 @@ import MapGeneration.GenerationElements.PatternCache;
 import MapGeneration.PatternGeneration.CommonMethods.FixErrorsInPatterns;
 import MapGeneration.GenerationElements.Pattern;
 import MapGeneration.GenerationElements.PatternProbability;
-import UserInterface.UserInterface;
 
 import java.util.*;
 import java.util.stream.IntStream;

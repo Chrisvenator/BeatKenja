@@ -1,5 +1,6 @@
 package UserInterface.Elements.Frames;
 
+import AppLogic.GenerationContext;
 import MapGeneration.GenerationElements.Pattern;
 import UserInterface.UserInterface;
 
@@ -23,8 +24,8 @@ public class ShowPatternsFrame extends JFrame {
         panel.setLayout(new FlowLayout());
 
         String openingString = "Pattern visualized as a ";
-        String varianceString = (UserInterface.patternVariance != 0 ? (" with a variance of " + (UserInterface.patternVariance / 10)) : "");
-        Pattern p = Pattern.adjustVariance(ui.pattern);
+        String varianceString = (GenerationContext.patternVariance != 0 ? (" with a variance of " + (GenerationContext.patternVariance / 10)) : "");
+        Pattern p = Pattern.adjustVariance(ui.controller.getPattern());
 
         Map<String, BiConsumer<Pattern, String>> map = new HashMap<>();
         map.put("Heatmap", Pattern::visualizeAsHeatmap);

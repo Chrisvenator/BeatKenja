@@ -1,4 +1,4 @@
-package UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Exceptions;
+package DataManager.Exceptions;
 
 import lombok.experimental.StandardException;
 

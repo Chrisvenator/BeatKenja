@@ -1,5 +1,6 @@
 package MapGeneration;
 
+import AppLogic.GenerationContext;
 import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Bookmark;
 import BeatSaberObjects.Objects.Note;
@@ -7,7 +8,6 @@ import BeatSaberObjects.Objects.Enums.ParityErrorEnum;
 import DataManager.Parameters;
 import MapGeneration.PatternGeneration.CommonMethods.FixErrorsInPatterns;
 import MapGeneration.GenerationElements.Pattern;
-import UserInterface.UserInterface;
 import javafx.util.Pair;
 
 import java.util.*;
@@ -59,7 +59,7 @@ public class CreateMap extends MapGenerator {
 
         //If the map is one-handed or there are no bookmarks, then there is not that much to do
         if (oneHanded)
-            return new BeatSaberMap(complexPattern(List.of(map._notes), p, UserInterface.easyPattern, true, true, stacks, false,null, null), map.originalJSON);
+            return new BeatSaberMap(complexPattern(List.of(map._notes), p, GenerationContext.easyPattern, true, true, stacks, false,null, null), map.originalJSON);
         if (bookmarks.isEmpty()) {
             Random random = new Random(Parameters.SEED);
             int min = 10;
@@ -93,7 +93,7 @@ public class CreateMap extends MapGenerator {
             try {
                 switch (bookmarks.get(i)._name.toLowerCase()) {
                     case "l", "linear" -> notes.addAll(linearSlowPattern(currentNotes, false, prevBlue, prevRed));
-                    case "c", "complex" -> notes.addAll(complexPattern(currentNotes, p, UserInterface.easyPattern, true, false, stacks, false,prevBlue, prevRed));
+                    case "c", "complex" -> notes.addAll(complexPattern(currentNotes, p, GenerationContext.easyPattern, true, false, stacks, false,prevBlue, prevRed));
                     case "1-2" -> notes.addAll(twoRightOneLeft(currentNotes, p, prevBlue, prevRed, stacks));
                     case "2-1" -> notes.addAll(twoRightOneLeft(currentNotes, p, prevRed, prevBlue, stacks).stream().map(Note::invertNote).toList());
                     case "2-2" -> notes.addAll(twoLeftTwoRight(currentNotes, prevBlue, prevRed));
@@ -107,7 +107,7 @@ public class CreateMap extends MapGenerator {
                         logger.warn("Supported types: " + Arrays.toString(supportedTypes));
                         System.err.println("There is no such flag as: \"" + bookmarks.get(i)._name + "\" with " + currentNotes.size() + " notes. Please have a look at the supported ones in the README");
                         System.err.println("Supported types: " + Arrays.toString(supportedTypes));
-                        notes.addAll(complexPattern(currentNotes, p, UserInterface.easyPattern, true, false, stacks, false,prevBlue, prevRed));
+                        notes.addAll(complexPattern(currentNotes, p, GenerationContext.easyPattern, true, false, stacks, false,prevBlue, prevRed));
 
                     }
                 }
@@ -168,7 +168,7 @@ public class CreateMap extends MapGenerator {
             if (!found) {
                 logger.warn("Note at " + timing._time + " was not placed!");
                 System.err.println( "Note at " + timing._time + " was not placed!");
-                Parameters.PARITY_ERRORS_LIST.get(UserInterface.currentDiff).add(new Pair<>(timing._time, ParityErrorEnum.DID_NOT_PLACE_NOTE));
+                GenerationContext.currentParityErrors().add(new Pair<>(timing._time, ParityErrorEnum.DID_NOT_PLACE_NOTE));
             }
         }
     }

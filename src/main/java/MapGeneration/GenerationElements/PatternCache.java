@@ -1,10 +1,10 @@
 package MapGeneration.GenerationElements;
 
+import AppLogic.GenerationContext;
 import BeatSaberObjects.BeatsaberObject;
 import BeatSaberObjects.Objects.Note;
 import DataManager.Parameters;
 import MapGeneration.ComplexPattern;
-import UserInterface.UserInterface;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -46,7 +46,7 @@ public class PatternCache extends BeatsaberObject {
                     complexPattern(
                             timings.subList(0, LENGTH_OF_PATTERN - 1),
                             p,
-                            UserInterface.easyPattern,
+                            GenerationContext.easyPattern,
                             true,
                             true,
                             false,

@@ -1,5 +1,6 @@
 package UserInterface.Elements.JSlider.GlobalJSlider;
 
+import AppLogic.GenerationContext;
 import UserInterface.Elements.ElementTypes;
 import UserInterface.Elements.JSlider.MyGlobalJSlider;
 import UserInterface.UserInterface;
@@ -38,8 +39,8 @@ public class GlobalPatternVarianceJSlider extends MyGlobalJSlider {
     @Override
     public void onClick() {
         int value = ((JSlider) eventObject.getSource()).getValue();
-        UserInterface.patternVariance = value * 10;
-        // ui.pattern = Pattern.adjustVariance(patternWithoutVariance, value);
+        GenerationContext.patternVariance = value * 10;
+        // ui.controller.getPattern() = Pattern.adjustVariance(patternWithoutVariance, value);
 
         logger.info("Pattern Variance set to: {}", value);
         System.out.println("Slider value: " + (float) value);

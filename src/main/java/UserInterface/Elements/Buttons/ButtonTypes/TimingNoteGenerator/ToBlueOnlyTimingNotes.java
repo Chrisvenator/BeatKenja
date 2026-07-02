@@ -1,5 +1,6 @@
 package UserInterface.Elements.Buttons.ButtonTypes.TimingNoteGenerator;
 
+import AppLogic.GenerationContext;
 import BeatSaberObjects.Objects.BeatSaberMap;
 import UserInterface.Elements.Buttons.MyButton;
 import UserInterface.Elements.Buttons.MySubButton;
@@ -26,7 +27,7 @@ public class ToBlueOnlyTimingNotes extends MySubButton {
     public void onClick() {
         ui.manageMap();
         for (BeatSaberMap uiMap : ui.map) {
-            UserInterface.currentDiff = uiMap.difficultyFileName;
+            GenerationContext.currentDiff = uiMap.difficultyFileName;
             uiMap.toBlueLeftBottomRowDotTimings();
 
             //Check, if there are only timing notes:

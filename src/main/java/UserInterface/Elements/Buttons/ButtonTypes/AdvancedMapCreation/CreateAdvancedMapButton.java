@@ -1,5 +1,6 @@
 package UserInterface.Elements.Buttons.ButtonTypes.AdvancedMapCreation;
 
+import AppLogic.GenerationContext;
 import BeatSaberObjects.Objects.BeatSaberMap;
 import DataManager.Records.PatMetadata;
 import MapGeneration.GenerationElements.Pattern;
@@ -61,12 +62,12 @@ public class CreateAdvancedMapButton extends MapCreatorSubButton {
         List<BeatSaberMap> maps = new ArrayList<>();
         ui.manageMap();
         for (BeatSaberMap uiMap : ui.map) {
-            UserInterface.currentDiff = uiMap.difficultyFileName;
+            GenerationContext.currentDiff = uiMap.difficultyFileName;
             Arrays.stream(uiMap._notes).forEach(note -> note._cutDirection = 8);
-            //            ui.pattern.visualizeAsHeatmap();
-            //            ui.pattern.visualizeAsHeatmapNormalized("");
-            //            ui.pattern.visualizeAsHeatmapNormalizedLogarithmically();
-            //            ui.pattern.visualizeAsHeatmapTruncated();
+            //            ui.controller.getPattern().visualizeAsHeatmap();
+            //            ui.controller.getPattern().visualizeAsHeatmapNormalized("");
+            //            ui.controller.getPattern().visualizeAsHeatmapNormalizedLogarithmically();
+            //            ui.controller.getPattern().visualizeAsHeatmapTruncated();
 
             try {
                 int nps = Objects.equals(npsField.getText(), "nps") ? 4 : Integer.parseInt(npsField.getText());
@@ -80,7 +81,7 @@ public class CreateAdvancedMapButton extends MapCreatorSubButton {
                 BeatSaberMap map = new BeatSaberMap(
                         createAdvancedComplexPattern(
                                 Arrays.stream(uiMap._notes).toList(),
-                                Pattern.adjustVariance(ui.pattern),
+                                Pattern.adjustVariance(ui.controller.getPattern()),
                                 false,
                                 true,
                                 null,

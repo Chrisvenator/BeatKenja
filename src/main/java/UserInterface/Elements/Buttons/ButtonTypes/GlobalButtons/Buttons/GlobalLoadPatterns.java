@@ -1,5 +1,6 @@
 package UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons;
 
+import AppLogic.GenerationContext;
 import BeatSaberObjects.Objects.BeatSaberMap;
 import DataManager.Parameters;
 import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
@@ -19,22 +20,22 @@ public class GlobalLoadPatterns extends GlobalButton {
         super(ElementTypes.GLOBAL_LOAD_PATTERNS_BUTTON, ui);
         if (Parameters.AUTOLOAD_DEFAULT_PATTERNS) {
             try {
-                ui.pattern = new Pattern(DEFAULT_PATTERN_PATH);
+                ui.controller.setPattern(new Pattern(DEFAULT_PATTERN_PATH));
                 setBackground(Color.GREEN);
             } catch (NoteNotValidException e) {
                 setBackground(Color.RED);
                 logger.error("Could not load default pattern. Please do it manually!");
             }
             try {
-                UserInterface.easyPattern = new Pattern(String.valueOf(DEFAULT_EASY_PATTERN_PATH));
+                GenerationContext.easyPattern = new Pattern(String.valueOf(DEFAULT_EASY_PATTERN_PATH));
             } catch (NoteNotValidException e) {
                 logger.error("Could not load default easy pattern. Skipping");
-                UserInterface.easyPattern = null;
+                GenerationContext.easyPattern = null;
             }
 
         }
 
-        if (ui.pattern == null || (!new File(Parameters.DEFAULT_PATTERN_PATH).exists())) {
+        if (ui.controller.getPattern() == null || (!new File(Parameters.DEFAULT_PATTERN_PATH).exists())) {
             setBackground(Color.RED);
             logger.warn("Pattern is null or the default pattern path does not exist, and the database is not in use. Pattern has to be loaded manually: {}", new File(Parameters.DEFAULT_PATTERN_PATH).getAbsolutePath());
         }
@@ -55,7 +56,7 @@ public class GlobalLoadPatterns extends GlobalButton {
         try {
             File selectedFile = FILE_CHOOSER.getSelectedFile();
             if (selectedFile.getName().endsWith(".pat")) {
-                ui.pattern = new Pattern(selectedFile.getAbsolutePath());
+                ui.controller.setPattern(new Pattern(selectedFile.getAbsolutePath()));
                 logger.info("Pattern loaded from .pat file: {}", selectedFile.getAbsolutePath());
             } else {
                 if (!selectedFile.isFile() || (!selectedFile.getName().endsWith(".json") && !selectedFile.getName().endsWith(".dat"))) {
@@ -64,9 +65,9 @@ public class GlobalLoadPatterns extends GlobalButton {
                 }
 
                 BeatSaberMap beatSaberMap = BeatSaberMap.newMapFromJSON(selectedFile.getAbsolutePath());
-                ui.pattern = new Pattern(beatSaberMap._notes, 1);
+                ui.controller.setPattern(new Pattern(beatSaberMap._notes, 1));
                 logger.info("Pattern loaded from map file: {}", selectedFile.getAbsolutePath());
-                System.out.println("[INFO]:Pattern loaded: " + ui.pattern.exportInPatFormat());
+                System.out.println("[INFO]:Pattern loaded: " + ui.controller.getPattern().exportInPatFormat());
             }
 
             String successMessage = "Successfully loaded Patterns";
@@ -79,7 +80,7 @@ public class GlobalLoadPatterns extends GlobalButton {
         }
 
         if (verbose) {
-            logger.debug("Pattern: {}", ui.pattern);
+            logger.debug("Pattern: {}", ui.controller.getPattern());
         }
     }
 }

@@ -1,10 +1,10 @@
 package MapGeneration.PatternGeneration;
 
+import AppLogic.GenerationContext;
 import BeatSaberObjects.Objects.Note;
 import MapGeneration.GenerationElements.Pattern;
 import MapGeneration.MapGenerator;
 import MapGeneration.PatternGeneration.CommonMethods.FixErrorsInPatterns;
-import UserInterface.UserInterface;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,8 +27,8 @@ public class RandomV2FromTemplate extends MapGenerator {
         splitNotesByType(randomNotes, blueNotes, redNotes);
 
         // Create complex notes from the random placements
-        List<Note> complexBlue = complexPattern(blueNotes, p, UserInterface.easyPattern, true, true, false, false, prevBlue, null);
-        List<Note> complexRed = complexPattern(redNotes, p, UserInterface.easyPattern, true, true, false, false, prevRed, null);
+        List<Note> complexBlue = complexPattern(blueNotes, p, GenerationContext.easyPattern, true, true, false, false, prevBlue, null);
+        List<Note> complexRed = complexPattern(redNotes, p, GenerationContext.easyPattern, true, true, false, false, prevRed, null);
         complexRed.forEach(Note::invertNote);
 
         // Copy the lineIndex and the lineLayer from the randomly generated map and copy them into the complex-generated map

@@ -1,5 +1,6 @@
 package UserInterface.Elements.Buttons.ButtonTypes.MapCreator.Button;
 
+import AppLogic.GenerationContext;
 import BeatSaberObjects.Objects.BeatSaberMap;
 import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.MapCreatorSubButton;
 import UserInterface.Elements.Buttons.MyButton;
@@ -21,7 +22,7 @@ public class CreateRandomMap extends MapCreatorSubButton {
         List<BeatSaberMap> maps = new ArrayList<>();
         ui.manageMap();
         for (BeatSaberMap uiMap : ui.map) {
-            UserInterface.currentDiff = uiMap.difficultyFileName;
+            GenerationContext.currentDiff = uiMap.difficultyFileName;
             uiMap.toBlueLeftBottomRowDotTimings();
 
             try {

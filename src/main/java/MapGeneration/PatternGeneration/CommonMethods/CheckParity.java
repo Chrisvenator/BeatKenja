@@ -1,9 +1,9 @@
 package MapGeneration.PatternGeneration.CommonMethods;
 
+import AppLogic.GenerationContext;
 import BeatSaberObjects.Objects.Enums.ParityErrorEnum;
 import BeatSaberObjects.Objects.Note;
 import DataManager.Parameters;
-import UserInterface.UserInterface;
 import javafx.util.Pair;
 
 import java.util.Collections;
@@ -59,7 +59,7 @@ public class CheckParity extends MapGeneratorCommons {
             }
 
             if (n._lineIndex < 0 || n._lineIndex >= 4 || n._lineLayer < 0 || n._lineLayer >= 3) {
-                Parameters.PARITY_ERRORS_LIST.get(UserInterface.currentDiff).add(new Pair<>(n._time, ParityErrorEnum.NOTE_OUTSIDE_OF_GRID));
+                GenerationContext.currentParityErrors().add(new Pair<>(n._time, ParityErrorEnum.NOTE_OUTSIDE_OF_GRID));
                 if (!quiet)System.err.println("WARNING at beat: " + n._time + " note outside the grid!");
             }
 
@@ -68,7 +68,7 @@ public class CheckParity extends MapGeneratorCommons {
         //Checking, if some notes inside other notes were missed:
         for (int i = 0; i < allNotes.size() - 1; i++) {
             if (allNotes.get(i)._time == allNotes.get(i + 1)._time && allNotes.get(i).equalNotePlacement(allNotes.get(i + 1))) {
-                Parameters.PARITY_ERRORS_LIST.get(UserInterface.currentDiff).add(new Pair<>(allNotes.get(i)._time, ParityErrorEnum.NOTE_INSIDE_ANOTHER_NOTE));
+                GenerationContext.currentParityErrors().add(new Pair<>(allNotes.get(i)._time, ParityErrorEnum.NOTE_INSIDE_ANOTHER_NOTE));
                 if (!quiet) {
                     String message = "at beat:   " + allNotes.get(i)._time + ": note inside another Note!";
                     logger.warn(message);
@@ -121,11 +121,11 @@ public class CheckParity extends MapGeneratorCommons {
             Note prev = n._type == 0 ? red : blue;
 
             if (isSharpAngle(prev, n)){
-                Parameters.PARITY_ERRORS_LIST.get(UserInterface.currentDiff).add(new Pair<>(n._time, SHARP_ANGLE));
+                GenerationContext.currentParityErrors().add(new Pair<>(n._time, SHARP_ANGLE));
                 if (!quiet) logger.info("[NOTICE] at beat: {}: Sharp angle! prev: {}-{}, current: {}-{}", n._time, prev._time, prev.exportInPatFormat(), n._time, n.exportInPatFormat());
                 if (!quiet) System.err.println("[WARN] at beat:    " + n._time + ": Sharp angle!  prev: " + prev._time + "-" + prev.exportInPatFormat() + ", current: " + n._time + "-" + n.exportInPatFormat());
             } else if (isParityBreak(prev, n)) {
-                Parameters.PARITY_ERRORS_LIST.get(UserInterface.currentDiff).add(new Pair<>(n._time, PARITY_BREAK));
+                GenerationContext.currentParityErrors().add(new Pair<>(n._time, PARITY_BREAK));
                 if (!quiet) logger.warn("at beat:   {}: Parity break! prev: {}-{}, current: {}-{}", n._time, prev._time, prev.exportInPatFormat(), n._time, n.exportInPatFormat());
                 if (!quiet) System.err.println("[ERROR] at beat:   " + n._time + ": Parity break! prev: " + prev._time + "-" + prev.exportInPatFormat() + ", current: " + n._time + "-" + n.exportInPatFormat());
             }

@@ -1,5 +1,6 @@
 package UserInterface.Elements.Buttons.ButtonTypes.MapCreator.Button;
 
+import AppLogic.GenerationContext;
 import BeatSaberObjects.Objects.BeatSaberMap;
 import MapGeneration.GenerationElements.Pattern;
 import UserInterface.Elements.Buttons.ButtonTypes.MapCreator.MapCreatorSubButton;
@@ -24,11 +25,11 @@ public class CreateRandomV2Map extends MapCreatorSubButton {
         List<BeatSaberMap> maps = new ArrayList<>();
         ui.manageMap();
         for (BeatSaberMap uiMap : ui.map) {
-            UserInterface.currentDiff = uiMap.difficultyFileName;
+            GenerationContext.currentDiff = uiMap.difficultyFileName;
             uiMap.toBlueLeftBottomRowDotTimings();
 
             try {
-                maps.add(new BeatSaberMap(randomV2FromTemplate(uiMap._notes, Pattern.adjustVariance(ui.pattern), false, null, null)));
+                maps.add(new BeatSaberMap(randomV2FromTemplate(uiMap._notes, Pattern.adjustVariance(ui.controller.getPattern()), false, null, null)));
             }
             catch (IllegalArgumentException ex) {
                 printException(ex);

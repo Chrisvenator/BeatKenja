@@ -1,4 +1,4 @@
-package UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons.Common;
+package DataManager;
 
 import lombok.Getter;
 import lombok.Setter;
