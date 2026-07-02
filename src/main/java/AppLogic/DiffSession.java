@@ -18,6 +18,8 @@ import java.util.List;
 public class DiffSession {
     private final String difficultyFileName;
     private BeatSaberMap map;
+    /** Pattern variance for this diff (slider value -50..50; multiplied by 10 before generation, like the old slider). */
+    private int patternVariance = 0;
 
     public DiffSession(String difficultyFileName, BeatSaberMap map) {
         this.difficultyFileName = difficultyFileName;
@@ -39,5 +41,13 @@ public class DiffSession {
 
     public List<Pair<Float, ParityErrorEnum>> parityErrors() {
         return Parameters.PARITY_ERRORS_LIST.computeIfAbsent(difficultyFileName, k -> new ArrayList<>());
+    }
+
+    public int getPatternVariance() {
+        return patternVariance;
+    }
+
+    public void setPatternVariance(int patternVariance) {
+        this.patternVariance = patternVariance;
     }
 }

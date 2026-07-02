@@ -63,15 +63,16 @@ public class AppShell extends BorderPane {
         setBottom(buildStatusBar());
 
         wireControllerEvents();
-        selectView("1 · Load");
+        // Dev aid: -Dbk.view=<name> opens a specific view on startup (smoke screenshots)
+        selectView(System.getProperty("bk.view", "1 · Load"));
     }
 
     private void registerViews(Stage stage) {
         views.put("1 · Load", new LoadView(controller, stage, this::refreshMapHeader, this::selectView));
-        views.put("2 · Timing", new PlaceholderView("Timing notes", "Convert the loaded diff to 1-color/2-color timing notes. Coming in stage 3."));
-        views.put("3 · Generate", new PlaceholderView("Generate", "Generator cards (Linear / Complex / Sectioned / Random) + parameters. Coming in stage 3."));
+        views.put("2 · Timing", new UserInterfaceFX.Views.TimingView(controller));
+        views.put("3 · Generate", new UserInterfaceFX.Views.GenerateView(controller, stage));
         views.put("4 · Review", new PlaceholderView("Review", "NPS chart, pattern heatmap, parity warnings. Coming in stage 4."));
-        views.put("5 · Export", new PlaceholderView("Export", "Batch save table with backup-by-default. Coming in stage 3."));
+        views.put("5 · Export", new UserInterfaceFX.Views.ExportView(controller, stage));
         views.put("Utilities", new PlaceholderView("Map utilities", "No-arrow, delete note type, fix placements, lights. Coming in stage 5."));
         views.put("Batch MP3", new PlaceholderView("Batch MP3 → timings", "Onset generation for a folder of MP3s. Coming in stage 5."));
         views.put("Patterns", new PlaceholderView("Patterns", "Load and visualize .pat files. Coming in stage 5."));
@@ -192,6 +193,11 @@ public class AppShell extends BorderPane {
             public void onBpmChanged(double bpm) {
                 Platform.runLater(AppShell.this::refreshMapHeader);
             }
+
+            @Override
+            public void onActiveDiffChanged(AppLogic.DiffSession activeDiff) {
+                Platform.runLater(AppShell.this::refreshMapHeader);
+            }
         });
     }
 
@@ -208,11 +214,18 @@ public class AppShell extends BorderPane {
         songName = songName.substring(songName.lastIndexOf('/') + 1);
         mapHeaderTitle.setText(songName + "  ·  BPM " + controller.session().getBpm());
 
+        // Diff tabs: the selected one is the diff all step views operate on
         diffChips.getChildren().clear();
+        ToggleGroup chipGroup = new ToggleGroup();
         controller.session().diffs().forEach(diff -> {
-            Label chip = new Label(diff.difficultyFileName().replace(".dat", ""));
+            ToggleButton chip = new ToggleButton(diff.difficultyFileName().replace(".dat", ""));
             chip.getStyleClass().addAll(Styles.TEXT_SMALL, Styles.ACCENT);
-            chip.setPadding(new Insets(2, 8, 2, 8));
+            chip.setToggleGroup(chipGroup);
+            chip.setSelected(diff == controller.getActiveDiff());
+            chip.setOnAction(e -> {
+                chip.setSelected(true); // keep one selected
+                controller.setActiveDiff(diff);
+            });
             diffChips.getChildren().add(chip);
         });
     }

@@ -45,11 +45,14 @@ public class AppController {
         default void onStateChanged(AppState state) {}
 
         default void onBpmChanged(double bpm) {}
+
+        default void onActiveDiffChanged(DiffSession activeDiff) {}
     }
 
     private final MapSession session = new MapSession();
     private final List<Listener> listeners = new CopyOnWriteArrayList<>();
     private AppState state = AppState.EMPTY;
+    private DiffSession activeDiff;
 
     public MapSession session() {
         return session;
@@ -108,8 +111,26 @@ public class AppController {
         }
 
         extractAndPublishBpm(new File(session.getMapFolderPath()));
+        setActiveDiff(session.diffs().isEmpty() ? null : session.diffs().get(0));
         setState(AppState.LOADED);
         return loaded;
+    }
+
+    public DiffSession getActiveDiff() {
+        return activeDiff;
+    }
+
+    /** Selects the diff the step views operate on and notifies listeners (tab switching). */
+    public void setActiveDiff(DiffSession diff) {
+        this.activeDiff = diff;
+        listeners.forEach(l -> l.onActiveDiffChanged(diff));
+    }
+
+    public void setActiveDiff(String difficultyFileName) {
+        session.diffs().stream()
+                .filter(d -> d.difficultyFileName().equals(difficultyFileName))
+                .findFirst()
+                .ifPresent(this::setActiveDiff);
     }
 
     private String loadSingleDiff(File diffFile) {
@@ -152,8 +173,12 @@ public class AppController {
         PARITY_ERRORS_LIST.remove(difficultyFileName);
         logger.info("Unloaded difficulty: {}", difficultyFileName);
 
-        if (session.diffs().isEmpty()) unload();
-        else setState(state);
+        if (session.diffs().isEmpty()) {
+            unload();
+        } else {
+            if (activeDiff != null && activeDiff.difficultyFileName().equals(difficultyFileName)) setActiveDiff(session.diffs().get(0));
+            setState(state);
+        }
     }
 
     /** Discards the loaded map (diffs, parity errors, folder path) and returns to EMPTY. The loaded pattern is kept. */
@@ -162,6 +187,7 @@ public class AppController {
         session.setMapFolderPath(null);
         PARITY_ERRORS_LIST.clear();
         GenerationContext.currentDiff = "NULL";
+        setActiveDiff((DiffSession) null);
         logger.info("Map unloaded");
         setState(AppState.EMPTY);
     }
@@ -186,34 +212,154 @@ public class AppController {
      * (Formerly MySubButton.loadNewlyCreatedMaps.)
      */
     public void acceptGeneratedMaps(List<BeatSaberMap> newMaps) {
-        List<BeatSaberMap> maps = session.maps();
         for (int i = 0; i < newMaps.size(); i++) {
-            BeatSaberMap generated = newMaps.get(i);
-
-            if (maps.get(i).equals(generated) || new HashSet<>(Arrays.stream(maps.get(i)._notes).toList()).containsAll(Arrays.stream(generated._notes).toList())) {
-                logger.error("Map couldn't be loaded!");
-                System.err.println("Map couldn't be loaded!");
-            }
-
-            logger.info("Checking map: {}", maps.get(i).difficultyFileName);
-
-            String ogJson = maps.get(i).originalJSON;
-            String diffName = maps.get(i).difficultyFileName;
-            maps.set(i, generated);
-            maps.get(i).originalJSON = ogJson;
-            maps.get(i).bookmarks = maps.get(i).calculateBookmarks();
-            maps.get(i).difficultyFileName = diffName;
-            checkMap(maps.get(i));
-
-            if (Parameters.SAVE_PARITY_ERRORS_AS_BOOKMARKS) {
-                maps.get(i).bookmarks.addAll(parityErrorsAsBookmarks(diffName));
-            }
-
-            logger.info("Newly created map loaded!\n\n");
+            acceptGeneratedMap(session.diffs().get(i), newMaps.get(i));
         }
 
         GenerationContext.currentDiff = "NULL";
         if (!newMaps.isEmpty()) setState(AppState.GENERATED);
+    }
+
+    /** Single-diff version of {@link #acceptGeneratedMaps(List)}: swaps the map inside the DiffSession and checks parity. */
+    private void acceptGeneratedMap(DiffSession diff, BeatSaberMap generated) {
+        BeatSaberMap old = diff.map();
+        if (old.equals(generated) || new HashSet<>(Arrays.stream(old._notes).toList()).containsAll(Arrays.stream(generated._notes).toList())) {
+            logger.error("Map couldn't be loaded!");
+            System.err.println("Map couldn't be loaded!");
+        }
+
+        logger.info("Checking map: {}", diff.difficultyFileName());
+
+        generated.originalJSON = old.originalJSON;
+        generated.difficultyFileName = diff.difficultyFileName();
+        generated.bookmarks = generated.calculateBookmarks();
+        diff.setMap(generated);
+        checkMap(generated);
+
+        if (Parameters.SAVE_PARITY_ERRORS_AS_BOOKMARKS) {
+            generated.bookmarks.addAll(parityErrorsAsBookmarks(diff.difficultyFileName()));
+        }
+
+        logger.info("Newly created map loaded!\n\n");
+    }
+
+    /**
+     * Runs a generator for the given diffs (per-diff tabs: active diff or all).
+     * Applies each diff's own pattern variance, feeds parity bookkeeping per diff, and
+     * fires GENERATED once when at least one diff succeeded.
+     *
+     * Synchronous — UI callers should run it in a background task and marshal updates.
+     *
+     * @return per-diff error messages (empty when everything worked)
+     */
+    public List<String> generateFor(GeneratorType type, boolean oneHanded, List<DiffSession> targets) {
+        prepareGeneration();
+        List<String> errors = new ArrayList<>();
+        boolean anySucceeded = false;
+
+        for (DiffSession diff : targets) {
+            GenerationContext.currentDiff = diff.difficultyFileName();
+            GenerationContext.patternVariance = diff.getPatternVariance() * 10;
+            try {
+                BeatSaberMap generated = GenerationService.generate(type, diff.map(), Pattern.adjustVariance(session.getPattern()), oneHanded);
+                acceptGeneratedMap(diff, generated);
+                anySucceeded = true;
+            } catch (Exception e) {
+                logger.error("Generation failed for {}: {}", diff.difficultyFileName(), e.getMessage());
+                errors.add(diff.difficultyFileName() + ": " + e.getMessage());
+            }
+        }
+
+        GenerationContext.currentDiff = "NULL";
+        GenerationContext.patternVariance = 0;
+        if (anySucceeded) setState(AppState.GENERATED);
+        return errors;
+    }
+
+    /**
+     * Converts the given diffs to timing notes in place.
+     *
+     * @param oneColor true = blue-only dot notes bottom-left (the format generators expect);
+     *                 false = two-color timing notes (known to be shaky, the old UI warned too)
+     */
+    public void convertToTimingNotes(boolean oneColor, List<DiffSession> targets) {
+        prepareGeneration();
+        for (DiffSession diff : targets) {
+            GenerationContext.currentDiff = diff.difficultyFileName();
+            if (oneColor) diff.map().toBlueLeftBottomRowDotTimings();
+            else diff.map().toTimingNotes();
+            logger.info("Converted {} to {} timing notes", diff.difficultyFileName(), oneColor ? "1-color" : "2-color");
+        }
+        GenerationContext.currentDiff = "NULL";
+        setState(state); // refresh views
+    }
+
+    /**
+     * Loads a generation pattern from a .pat file or from an existing difficulty (.dat/.json).
+     * (Formerly GlobalLoadPatterns.)
+     */
+    public void loadPatternFromFile(File file) throws Exception {
+        if (file.getName().endsWith(".pat")) {
+            session.setPattern(new Pattern(file.getAbsolutePath()));
+        } else if (file.getName().endsWith(".dat") || file.getName().endsWith(".json")) {
+            BeatSaberMap map = BeatSaberMap.newMapFromJSON(file.getAbsolutePath());
+            session.setPattern(new Pattern(map._notes, 1));
+        } else {
+            throw new IllegalArgumentException("Pattern must be a .pat, .dat or .json file");
+        }
+        logger.info("Pattern loaded from: {}", file.getAbsolutePath());
+    }
+
+    /**
+     * Exports the whole map as a playable zip: every file from the loaded map folder
+     * (info.dat, song, cover, …) plus the current in-memory state of the loaded diffs,
+     * which override their files on disk. Existing zips and diff backups are skipped.
+     *
+     * One session = one map = one zip; loading always replaces the session, so diffs
+     * from two different maps can never be mixed here.
+     */
+    public void exportMapAsZip(File targetZip) throws IOException {
+        String folder = session.getMapFolderPath();
+        if (folder == null || folder.isEmpty()) throw new IllegalStateException("No map folder available");
+
+        java.util.Map<String, BeatSaberMap> inMemoryDiffs = new java.util.HashMap<>();
+        session.diffs().forEach(diff -> inMemoryDiffs.put(diff.difficultyFileName(), diff.map()));
+
+        java.nio.file.Path root = new File(folder).toPath();
+        try (java.util.zip.ZipOutputStream zip = new java.util.zip.ZipOutputStream(new java.io.FileOutputStream(targetZip));
+             java.util.stream.Stream<java.nio.file.Path> files = java.nio.file.Files.walk(root)) {
+            for (java.nio.file.Path path : files.filter(java.nio.file.Files::isRegularFile).toList()) {
+                String relative = root.relativize(path).toString().replace('\\', '/');
+                if (relative.endsWith(".zip") || path.toFile().equals(targetZip)) continue;
+
+                zip.putNextEntry(new java.util.zip.ZipEntry(relative));
+                BeatSaberMap inMemory = inMemoryDiffs.get(path.getFileName().toString());
+                if (inMemory != null) {
+                    zip.write(inMemory.exportAsMap().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                } else {
+                    java.nio.file.Files.copy(path, zip);
+                }
+                zip.closeEntry();
+            }
+        }
+        logger.info("Map exported as zip: {}", targetZip.getAbsolutePath());
+    }
+
+    /**
+     * Zips the map folder and opens the configured web previewer plus the folder,
+     * so the zip can be dragged into the browser. (Formerly GlobalOpenMapInBrowser.)
+     */
+    public void openMapInBrowserPreviewer() throws Exception {
+        String folder = session.getMapFolderPath();
+        if (folder == null || folder.isEmpty()) throw new IllegalStateException("No map folder available");
+
+        String zipFileName = folder + "/output.zip";
+        FileManager.createZipFileFromDirectory(folder, zipFileName);
+        logger.info("Zip created: {}", zipFileName);
+
+        java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
+        desktop.browse(new java.net.URI(Parameters.mapViewerURL));
+        desktop.open(new File(folder));
     }
 
     /**
