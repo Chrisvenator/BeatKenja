@@ -2,6 +2,7 @@
   <configuration default="false" name="Start" type="Application" factoryName="Application" nameIsGenerated="true">
     <option name="MAIN_CLASS_NAME" value="Start" />
     <module name="BeatKenja" />
+    <option name="PROGRAM_PARAMETERS" value="--fx" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

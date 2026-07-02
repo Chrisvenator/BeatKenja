@@ -2,6 +2,7 @@ import DataManager.CreateAllNecessaryDIRsAndFiles;
 import UserInterface.UserInterface;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.logging.Level;
 
@@ -65,6 +66,13 @@ public class Start {
             CreateAllNecessaryDIRsAndFiles.createAllNecessaryDIRsAndFiles();
         } else if (!new File("./config.json").exists()) {
             CreateAllNecessaryDIRsAndFiles.createConfig();
+        }
+
+        // New JavaFX UI (stage 2 of the UI overhaul); Swing stays the default until stage 3
+        if (args.length > 0 && args[0].equals("--fx")) {
+            logger.info("Starting JavaFX UI shell...");
+            UserInterfaceFX.StartFX.main(Arrays.copyOfRange(args, 1, args.length));
+            return;
         }
 
         // Check if CLI arguments are provided

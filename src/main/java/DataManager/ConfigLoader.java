@@ -67,4 +67,15 @@ public class ConfigLoader {
     public void setConfig(Configuration mockConfiguration) {
         this.config = mockConfiguration;
     }
+
+    /**
+     * Writes the current configuration as pretty-printed JSON to the given file.
+     *
+     * @param configFilePath target path (usually ./config.json)
+     * @throws IOException if serialization or writing fails
+     */
+    public void saveConfig(String configFilePath) throws IOException {
+        java.nio.file.Files.writeString(new File(configFilePath).toPath(), exportConfig());
+        logger.info("Config saved to: {}", configFilePath);
+    }
 }

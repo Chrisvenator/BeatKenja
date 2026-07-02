@@ -144,6 +144,29 @@ public class AppController {
     }
 
     /**
+     * Removes a single difficulty from the session. Falls back to a full unload when it
+     * was the last one; otherwise re-fires the current state so views refresh.
+     */
+    public void unloadDiff(String difficultyFileName) {
+        session.diffs().removeIf(diff -> diff.difficultyFileName().equals(difficultyFileName));
+        PARITY_ERRORS_LIST.remove(difficultyFileName);
+        logger.info("Unloaded difficulty: {}", difficultyFileName);
+
+        if (session.diffs().isEmpty()) unload();
+        else setState(state);
+    }
+
+    /** Discards the loaded map (diffs, parity errors, folder path) and returns to EMPTY. The loaded pattern is kept. */
+    public void unload() {
+        session.maps().clear();
+        session.setMapFolderPath(null);
+        PARITY_ERRORS_LIST.clear();
+        GenerationContext.currentDiff = "NULL";
+        logger.info("Map unloaded");
+        setState(AppState.EMPTY);
+    }
+
+    /**
      * Prepares the session for a generation run: clears old parity errors, falls back to
      * the default pattern if none was loaded, and resets the current-diff marker.
      * (Formerly UserInterface.manageMap.)

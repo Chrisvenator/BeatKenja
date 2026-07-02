@@ -172,6 +172,13 @@
             <version>23-ea+3</version>
         </dependency>
 
+        <!-- Modern JavaFX theme (new UI shell) -->
+        <dependency>
+            <groupId>io.github.mkpaz</groupId>
+            <artifactId>atlantafx-base</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+
         <!-- Plotting of the nps graph -->
         <dependency>
             <groupId>org.jfree</groupId>
