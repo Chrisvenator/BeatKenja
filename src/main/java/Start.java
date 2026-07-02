@@ -53,7 +53,9 @@ public class Start {
     public static void main(String[] args) {
         java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
 
-        SEED = (long) (new Random().nextDouble() * 1000000000);
+        // Dev aid: -Dbk.seed=<long> makes runs reproducible (smoke checks)
+        String fixedSeed = System.getProperty("bk.seed");
+        SEED = fixedSeed != null ? Long.parseLong(fixedSeed) : (long) (new Random().nextDouble() * 1000000000);
         RANDOM = new Random(SEED);
 
         logger.info("Starting up BeatKenja...");

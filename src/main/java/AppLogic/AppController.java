@@ -237,7 +237,10 @@ public class AppController {
         checkMap(generated);
 
         if (Parameters.SAVE_PARITY_ERRORS_AS_BOOKMARKS) {
-            generated.bookmarks.addAll(parityErrorsAsBookmarks(diff.difficultyFileName()));
+            // Two statements on purpose: parityErrorsAsBookmarks may *replace* the map's
+            // bookmarks list (overwrite flag), so the addAll target must be resolved afterwards.
+            List<Bookmark> parityBookmarks = parityErrorsAsBookmarks(diff.difficultyFileName());
+            generated.bookmarks.addAll(parityBookmarks);
         }
 
         logger.info("Newly created map loaded!\n\n");
@@ -379,7 +382,8 @@ public class AppController {
             bookmarks.add(new Bookmark(err.getKey(), err.getValue().toString(), color));
         }
 
-        GenerationContext.currentParityErrors().clear();
+        // Deliberately not clearing the parity list here: the Review view still needs it,
+        // and prepareGeneration() resets all lists before the next run anyway.
         return bookmarks;
     }
 

@@ -71,7 +71,7 @@ public class AppShell extends BorderPane {
         views.put("1 · Load", new LoadView(controller, stage, this::refreshMapHeader, this::selectView));
         views.put("2 · Timing", new UserInterfaceFX.Views.TimingView(controller));
         views.put("3 · Generate", new UserInterfaceFX.Views.GenerateView(controller, stage));
-        views.put("4 · Review", new PlaceholderView("Review", "NPS chart, pattern heatmap, parity warnings. Coming in stage 4."));
+        views.put("4 · Review", new UserInterfaceFX.Views.ReviewView(controller));
         views.put("5 · Export", new UserInterfaceFX.Views.ExportView(controller, stage));
         views.put("Utilities", new PlaceholderView("Map utilities", "No-arrow, delete note type, fix placements, lights. Coming in stage 5."));
         views.put("Batch MP3", new PlaceholderView("Batch MP3 → timings", "Onset generation for a folder of MP3s. Coming in stage 5."));

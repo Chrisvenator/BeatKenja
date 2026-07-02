@@ -39,12 +39,19 @@ public class StartFX extends Application {
         takeDevScreenshotIfRequested(scene);
     }
 
-    /** Dev aid: with -Dbk.autoload=<path> the shell loads a map right after startup (smoke checks). */
+    /**
+     * Dev aid: with -Dbk.autoload=<path> the shell loads a map right after startup;
+     * -Dbk.autogen=<GeneratorType> additionally runs a generator on it (smoke checks).
+     */
     private void autoloadIfRequested(AppController controller) {
         String autoload = System.getProperty("bk.autoload");
         if (autoload == null) return;
         try {
             controller.loadMapFileOrFolder(new java.io.File(autoload));
+            String autogen = System.getProperty("bk.autogen");
+            if (autogen != null) {
+                controller.generateFor(AppLogic.GeneratorType.valueOf(autogen), false, java.util.List.copyOf(controller.session().diffs()));
+            }
         } catch (Exception e) {
             logger.error("Autoload failed: {}", e.getMessage());
         }
