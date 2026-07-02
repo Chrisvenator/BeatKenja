@@ -1,8 +1,6 @@
 import DataManager.CreateAllNecessaryDIRsAndFiles;
-import UserInterface.UserInterface;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Random;
 import java.util.logging.Level;
 
@@ -42,12 +40,6 @@ public class Start {
      */
 
     /**
-     * This variable represents the User Interface.
-     * It is used to display every button and feature
-     */
-    public static UserInterface ui;
-
-    /**
      * Default method of the whole project. main is used to start and initialize everything.
      */
     public static void main(String[] args) {
@@ -70,13 +62,6 @@ public class Start {
             CreateAllNecessaryDIRsAndFiles.createConfig();
         }
 
-        // New JavaFX UI (stage 2 of the UI overhaul); Swing stays the default until stage 3
-        if (args.length > 0 && args[0].equals("--fx")) {
-            logger.info("Starting JavaFX UI shell...");
-            UserInterfaceFX.StartFX.main(Arrays.copyOfRange(args, 1, args.length));
-            return;
-        }
-
         // Check if CLI arguments are provided
         if (args.length > 0) {
             Start_CLI.CLIConfig config = Start_CLI.parseArgs(args);
@@ -91,25 +76,13 @@ public class Start {
                 System.exit(1);
             }
 
-            // Execute CLI mode
+            // Execute CLI mode (exits the process on completion)
             Start_CLI.executeCLI(config);
-
-            ui = new UserInterface();
-            ui.setVisible(false);
-
-
         } else {
-            // No CLI arguments provided, start GUI mode
+            // No CLI arguments provided, start the JavaFX GUI.
+            // StartFX calls Application.launch(), which initializes the FX toolkit itself.
             logger.info("Starting GUI mode...");
-
-            // Warm up the JavaFX runtime in the background so the first WebView-based
-            // window (e.g. the Readme viewer) opens instantly instead of cold-starting.
-            javafx.application.Platform.setImplicitExit(false);
-            javafx.application.Platform.startup(() -> {});
-
-            ui = new UserInterface();
-            ui.setVisible(true);
-
+            UserInterfaceFX.StartFX.main(args);
         }
     }
 }

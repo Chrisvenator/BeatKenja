@@ -17,9 +17,6 @@
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] [%-5level] %logger{36} - %msg%n" />
             <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
         </File>
-        <GuiAppender name="guiAppender">
-            <PatternLayout pattern="[%-5level] %msg%n"/>
-        </GuiAppender>
     </Appenders>
 
     <Loggers>
@@ -28,7 +25,6 @@
             <AppenderRef ref="file_trace" />
             <AppenderRef ref="file_debug" />
             <AppenderRef ref="file_error" />
-            <AppenderRef ref="guiAppender" />
         </Root>
     </Loggers>
 </Configuration>

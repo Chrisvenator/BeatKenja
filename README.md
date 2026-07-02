@@ -54,8 +54,6 @@ This tool is still in its early stages and will be improved.
 
 ## How to use
 
-See explainations with screenshots in the [wiki](_wiki/JarUiTutorial.md)
-
 BeatKenja can be used in two ways: **GUI Mode** (graphical interface) or **CLI Mode** (command-line interface).
 
 ### GUI Mode (Default)
@@ -66,6 +64,18 @@ double-click the jar)
 ```bash
 java -jar BeatKenja.jar
 ```
+
+The GUI is a JavaFX app that guides you through the mapping workflow step by step:
+
+1. **Load** — open a map folder or a single difficulty (drag & drop works too)
+2. **Timing** — convert a difficulty into timing notes (1-color recommended)
+3. **Generate** — pick a generator (linear, complex, sectioned, random), tweak pattern/variance/seed, run it on the
+   active difficulty or on all loaded difficulties at once
+4. **Review** — parity warnings, NPS graph, pattern heatmap and external check tools
+5. **Export** — save single difficulties or the whole map as a .zip
+
+> **Note:** Map utilities, MP3 → timings (onset generation) and the pattern manager are not yet available in the new
+> UI. They are being ported and will return in an upcoming release.
 
 ### CLI Mode
 
@@ -162,8 +172,6 @@ If you now want to make a "real" map out of these timings, then have a look at t
 
 ## Map Generation
 
-For an explanation of the user interface, see the [UI Tutorial](./_wiki/JarUiTutorial.md).
-
 ### Prerequisites
 
 Prepare a timings and a target difficulty. A timings difficulty [(Example)](./assets/timings.gif) is a diff where every
@@ -173,27 +181,26 @@ not work.<br><br>
 If you are unsure to what a timing diff is, then convert an existing diff to a 1 color timing diff and then load it into
 your editor of your choice.
 ***It is recommended that the timing diff is a no arrows diff***<br>
-<pre>Map to timing notes --> To 1 color timing notes --> SAVE MAP</pre>
+<pre>1 · Load --> 2 · Timing --> To 1 color timing notes --> 5 · Export</pre>
 <br>The target difficulty should be the diff that you want to export the diff as. For example if you want to create an
 Expert diff with this program, then you should create an Expert diff in the editor of your choice. You will later
-overwrite
-this diff. THERE WILL BE NO BACKUPS OF THE DIFF YOU OVERWRITE!!
+overwrite this diff. When overwriting, BeatKenja creates a backup of the old file by default (can be disabled in the
+Export view).
 <br>
 
 ### Generation
 
-If the timings and target difficulties are prepared, then open BeatKenja.jar and choose the timing diff.<br>
-When you click on Map creator you will then have a few options:<br>
+If the timings and target difficulties are prepared, then open BeatKenja.jar, load the timing diff (**1 · Load**) and
+go to **3 · Generate**. You can generate the active difficulty only or apply a generator to all loaded difficulties at
+once. One-handed maps are a checkbox in the parameter panel. The generators:<br>
 
-+ **Create Linear Map [(Example)](./assets/linear.gif)**:<br>
++ **Linear Map [(Example)](./assets/linear.gif)**:<br>
   A really simple linear map. There should be no DDs or resets. It gets quite boring, quite fast. The swings will *
   *always** be alternating.
-  It is possible to make a one-handed Linear Map: Map creator --> one han... (top left option)
-+ **Create Complex Map [(Example)](./assets/complex.gif)**:<br>
++ **Complex Map [(Example)](./assets/complex.gif)**:<br>
   A map which can contain quite interesting patterns but the swings will **always** be alternating.<br>
-  It might contain DDs or resets. But it will give a warning if it detects some.<br>
-  It is possible to make a one-handed Complex Map: Map creator --> complex (top right option)
-+ **Create Map [(Example)]()**:
+  It might contain DDs or resets. But it will give a warning if it detects some.
++ **Sectioned Map [(Example)]()**:
   This is where you can have a LOT of freedom.<br>
   With bookmarks, it is possible to create different sections. The supported bookmarks at the moment:
   <pre>complex | linear | 1-2 | 2-1 | 2-2 | small, normal, big jumps | doubles | sequence (WIP)</pre>
@@ -221,14 +228,14 @@ When you click on Map creator you will then have a few options:<br>
 
 <br>
 
-Then at last, hit SAVE MAP and select the target difficulty that you created earlier and hit save.<br>
-BE AWARE! THERE WILL BE **NO BACKUPS** OF THE OVERWRITTEN DIFFICULTY!! Check twice if you overwrite the **correct**
-diff!
+Then at last, go to **5 · Export**. You can either save single difficulties (overwrite the target diff you created
+earlier) or save the whole map as a .zip. Overwritten files are backed up by default; the backup checkbox in the Export
+view controls this. Still check twice that you overwrite the **correct** diff!
 
 ### Pattern customisation
 
-It is possible to change the patterns of "Create Complex Map" and "Create Map".
-There is a button named "load patterns". just simply load a .pat file and watch the patterns change.
+It is possible to change the patterns of the complex and sectioned generators.
+Load a .pat file via the pattern loader in the **3 · Generate** parameter panel and watch the patterns change.
 Additionally, you can also load a difficulty file from a map.
 
 TODO: Explain what load patterns does<br>
@@ -244,7 +251,7 @@ It is possible to change the variance of the pattern.
 - When the variance is high, the program will generate a variety of different notes and patterns. There is a high chance
   of mapping errors and parity breaks!
 
-You can always display the Pattern under "Visualize Pattern" and then "Normalized Heatmap".
+You can always display the pattern in the **4 · Review** view under the "Pattern heatmap" tab.
 The more intense the color blue is, the higher the chance that it will get picked.
 
 _Note that the slider can only affect the notes of a patttern if notes are present. It only works for every entry for a note following another note. It does not take in account notes that it has not seen before!_
@@ -290,7 +297,8 @@ Example of very high variance:
 
 ## TODOs:
 
-- [ ] new improved UI with Spring
+- [x] new improved UI with JavaFX
+- [ ] port map utilities, onset generation and pattern manager to the new UI
 - [ ] creating new pattern types:
     - [x] doubles
     - [x] (small, normal, big) jumps
@@ -302,7 +310,6 @@ Example of very high variance:
 - [x] Better music onsets
 - [ ] Way better music onsets
 - [ ] Good music onsets
-- [x] Database Support
 - [x] Parity checking
 - [x] Ignore DDs
 - [x] proper logging

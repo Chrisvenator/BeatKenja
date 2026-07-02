@@ -5,7 +5,6 @@ import DataManager.Parameters;
 import MapGeneration.ComplexPattern;
 import MapGeneration.GenerationElements.Pattern;
 import MapGeneration.PatternGeneration.LinearSlowPattern;
-import UserInterface.UserInterface;
 
 import java.io.File;
 import java.nio.file.Files;
