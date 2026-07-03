@@ -242,19 +242,41 @@ TODO: Explain what load patterns does<br>
 
 ----
 
-### Variance Slider & Visualizing Pattern Distribution
+### Visualizing the Pattern Distribution
 
-It is possible to change the variance of the pattern.
+A pattern is a Markov transition matrix `count[][]`: rows and columns are the ~109 possible note placements (grid
+position + cut direction), and each cell counts how many times note pattern *i* was followed by note pattern *j*.
+The default pattern was built by analyzing **98,125 Beat Saber maps**. During generation, the next note is drawn at
+random, weighted by the current note's row — so the heatmap is a direct picture of what the generator will tend to do.
+
+The **4 · Review** view ("Pattern heatmap" tab) shows the currently loaded pattern normalized per row: the more
+intense the blue, the higher the chance that this transition gets picked.
+
+The **Patterns** tool in the sidebar offers the classic visualization windows on top of that:
+
+- **Raw heatmap**: blue for low transition counts (0–999), pink for much higher ones (1,000–25,000), red for the
+  extreme outliers (25,000–55,000). The first value of each column is the current note itself and always black.
+  The raw view exposes the core problem: a handful of transitions dominates 99.5 %+ of all occurrences — left
+  untouched, only those few patterns would ever get selected and generated maps would be repetitive.
+- **Min-max normalized**: each cell is rescaled per row to a value between 0 and 1. This compresses the scale, but
+  still only a few bright cells have any real chance of selection.
+- **Logarithmically normalized**: log scaling tames the outliers and makes rare transitions visible — but risks
+  giving weight to transitions that only exist due to mapping errors or parity breaks.
+
+Neither normalization is sufficient on its own, which is why BeatKenja reshapes the distribution with a
+Dirichlet-Multinomial resampling step, controlled by the variance slider.
+
+### Variance Slider
+
+The variance slider (**3 · Generate**, per difficulty) tunes how strictly the generator sticks to the dominant
+transitions:
 
 - When the variance is low, the program will always generate a similar pattern and often repeat certain notes. There is
   a low chance of parity breaks.
 - When the variance is high, the program will generate a variety of different notes and patterns. There is a high chance
   of mapping errors and parity breaks!
 
-You can always display the pattern in the **4 · Review** view under the "Pattern heatmap" tab.
-The more intense the color blue is, the higher the chance that it will get picked.
-
-_Note that the slider can only affect the notes of a patttern if notes are present. It only works for every entry for a note following another note. It does not take in account notes that it has not seen before!_
+_Note that the slider can only affect the notes of a pattern if notes are present. It only works for every entry for a note following another note. It does not take in account notes that it has not seen before!_
 
 Example of low variance:
 ![Low Variance Example](assets/variance_low_variance.png)

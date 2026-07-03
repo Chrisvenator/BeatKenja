@@ -250,27 +250,61 @@ public class ReviewView extends VBox {
         return scroll;
     }
 
-    /** Placeholder info popup — proper explanation content comes in the Optimization step. */
+    /**
+     * Explains the pattern heatmap and how the variance slider shapes it,
+     * illustrated with the three example images from assets/.
+     */
     private void showHeatmapInfo() {
         VBox content = new VBox(12,
-                muted("PLACEHOLDER — a real explanation of the heatmap and how the variance slider shapes it will land here."),
-                muted("Example: a low-variance pattern concentrates probability on few transitions (repetitive but safe):"));
-
-        File exampleImage = new File("assets/variance_low_variance.png");
-        if (exampleImage.exists()) {
-            javafx.scene.image.ImageView image = new javafx.scene.image.ImageView(new javafx.scene.image.Image(exampleImage.toURI().toString()));
-            image.setFitWidth(600);
-            image.setPreserveRatio(true);
-            content.getChildren().add(image);
-        } else {
-            content.getChildren().add(muted("(assets/variance_low_variance.png not found — image shown when running from the repo)"));
-        }
+                heading("What you see"),
+                muted("The loaded pattern is a transition model learned from reference maps (the default pattern was "
+                        + "built from ~98,000 analyzed maps): each row stands for the "
+                        + "note that was just placed (grid position + cut direction), each column for a possible next note. "
+                        + "Every row is normalized to its own maximum, so the strongest blue cell in a row marks the most "
+                        + "likely follow-up. Few strong cells per row = the pattern repeats a handful of favorite transitions."),
+                heading("How it's used"),
+                muted("During generation the map is built by walking this matrix: for every placed note, the next note is "
+                        + "drawn at random, weighted by that note's row. The heatmap therefore is a direct picture of what "
+                        + "the generator will tend to do."),
+                heading("The variance slider (3 · Generate, per diff)"),
+                muted("At 0 the pattern is used as-is. Negative values sharpen the matrix — probability concentrates even "
+                        + "more on the already-dominant transitions, giving repetitive but parity-safe output. Positive values "
+                        + "resample the transition counts with a Dirichlet-Multinomial distribution, spreading probability "
+                        + "across more transitions — more varied output, but a higher risk of parity breaks."),
+                captionedImage("assets/variance_low_variance.png",
+                        "Low variance: probability concentrated on few transitions — repetitive but safe."),
+                captionedImage("assets/variance_high_variance.png",
+                        "High variance: probability spread across more transitions — more varied output."),
+                captionedImage("assets/variance_very_high_variance.png",
+                        "Very high variance: nearly uniform — maximal variety, most parity risk."));
         content.setPadding(new Insets(16));
+
+        // Fit content to the viewport width so the labels wrap with the window size.
+        ScrollPane scroll = new ScrollPane(content);
+        scroll.setFitToWidth(true);
 
         javafx.stage.Stage popup = new javafx.stage.Stage();
         popup.setTitle("Pattern heatmap — info");
-        popup.setScene(new javafx.scene.Scene(new ScrollPane(content), 680, 520));
+        popup.setScene(new javafx.scene.Scene(scroll, 720, 640));
         popup.show();
+    }
+
+    /** Example image with a caption below it; falls back to a hint label when the asset is missing. */
+    private static VBox captionedImage(String path, String caption) {
+        File file = new File(path);
+        if (!file.exists()) {
+            return new VBox(muted("(" + path + " not found — image shown when running from the repo)"));
+        }
+        javafx.scene.image.ImageView image = new javafx.scene.image.ImageView(new javafx.scene.image.Image(file.toURI().toString()));
+        image.setFitWidth(600);
+        image.setPreserveRatio(true);
+        return new VBox(4, image, muted(caption));
+    }
+
+    private static Label heading(String text) {
+        Label label = new Label(text);
+        label.getStyleClass().add(Styles.TEXT_BOLD);
+        return label;
     }
 
     private void refreshHeatmap() {
