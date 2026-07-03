@@ -53,4 +53,44 @@ class MapZipServerTest {
                 .send(HttpRequest.newBuilder(new URI(url2)).build(), HttpResponse.BodyHandlers.ofByteArray());
         assertThat(response.body()).containsExactly(2);
     }
+
+    @Test
+    void respondsWith404WhenServedZipIsGone(@TempDir Path tempDir) throws Exception {
+        Path zip = tempDir.resolve("map.zip");
+        Files.write(zip, new byte[]{1});
+
+        String url = server.serve(zip);
+        Files.delete(zip);
+
+        HttpResponse<byte[]> response = HttpClient.newHttpClient()
+                .send(HttpRequest.newBuilder(new URI(url)).build(), HttpResponse.BodyHandlers.ofByteArray());
+        assertThat(response.statusCode()).isEqualTo(404);
+    }
+
+    @Test
+    void toolUrlsPointToLocalProxyWithZipAsQuery(@TempDir Path tempDir) throws Exception {
+        Path zip = tempDir.resolve("map.zip");
+        Files.write(zip, new byte[]{1});
+        String zipUrl = server.serve(zip);
+
+        String encodedZipUrl = java.net.URLEncoder.encode(zipUrl, java.nio.charset.StandardCharsets.UTF_8);
+        assertThat(server.mapCheckUrl())
+                .startsWith("http://127.0.0.1:")
+                .contains("/BeatSaber-MapCheck/?url=" + encodedZipUrl);
+        assertThat(server.bsParityUrl())
+                .startsWith("http://127.0.0.1:")
+                .contains("/bs-parity/?url=" + encodedZipUrl);
+    }
+
+    /**
+     * MapCheck downloads "?url=" maps through a public CORS proxy that cannot reach
+     * 127.0.0.1 — the prefix must be stripped so it fetches the zip directly.
+     */
+    @Test
+    void stripsCorsProxyPrefixFromJs() {
+        byte[] js = ("await downloadMap('https://cors.bsmg.dev/' + url);"
+                + " const corsProxy = 'http://cors.bsmg.dev/';").getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        assertThat(new String(MapZipServer.stripCorsProxy(js), java.nio.charset.StandardCharsets.UTF_8))
+                .isEqualTo("await downloadMap('' + url); const corsProxy = '';");
+    }
 }

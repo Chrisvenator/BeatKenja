@@ -74,8 +74,8 @@ The GUI is a JavaFX app that guides you through the mapping workflow step by ste
 4. **Review** — parity warnings, NPS graph, pattern heatmap and external check tools
 5. **Export** — save single difficulties or the whole map as a .zip
 
-> **Note:** Map utilities, MP3 → timings (onset generation) and the pattern manager are not yet available in the new
-> UI. They are being ported and will return in an upcoming release.
+Besides the workflow, the sidebar offers tools: **Utilities** (no-arrow, delete note color, fix placements, lights),
+**Batch MP3** (onset generation for a folder of songs) and **Patterns** (load and visualize .pat files).
 
 ### CLI Mode
 
@@ -157,8 +157,8 @@ We will only work with difficulties from this point on. </pre>
 
 1. Put all your desired Songs into the folder "./OnsetGeneration/mp3Files/". Note: All your files must be **mp3**
    files! (.wav files will probably work too).
-2. Start BeatKenja and hit Convert "MP3s to timing maps". This will analyze the song and make a timings map. The output
-   will be saved at OnsetGeneration/output/*SongName*.<br>
+2. Start BeatKenja, open **Batch MP3** in the sidebar and hit "Convert MP3s to timing maps". This will analyze the
+   songs and make a timings map per song. The output will be saved at OnsetGeneration/output/*SongName*.<br>
    The more songs that need to be converted, the longer it will take. You can always review the progress when you look
    into the OnsetGeneration/output folder.
 3. Copy all the desired Maps folders from OnsetGeneration/output/ to your WIP folder.
@@ -269,6 +269,8 @@ Example of very high variance:
 
 ## Map Utilities
 
+Found under **Utilities** in the sidebar; each works on the active diff or all loaded diffs:
+
 + **Make diff into a no arrow diff**
 + **Convert all flashing lights**<br>
   This converts all flashing light events into regular on events.
@@ -298,7 +300,7 @@ Example of very high variance:
 ## TODOs:
 
 - [x] new improved UI with JavaFX
-- [ ] port map utilities, onset generation and pattern manager to the new UI
+- [x] port map utilities, onset generation and pattern manager to the new UI
 - [ ] creating new pattern types:
     - [x] doubles
     - [x] (small, normal, big) jumps

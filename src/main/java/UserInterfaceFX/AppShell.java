@@ -3,7 +3,6 @@ package UserInterfaceFX;
 import AppLogic.AppController;
 import AppLogic.AppState;
 import UserInterfaceFX.Views.LoadView;
-import UserInterfaceFX.Views.PlaceholderView;
 import UserInterfaceFX.Views.SettingsView;
 import atlantafx.base.theme.Styles;
 import javafx.application.Platform;
@@ -73,9 +72,9 @@ public class AppShell extends BorderPane {
         views.put("3 · Generate", new UserInterfaceFX.Views.GenerateView(controller, stage));
         views.put("4 · Review", new UserInterfaceFX.Views.ReviewView(controller));
         views.put("5 · Export", new UserInterfaceFX.Views.ExportView(controller, stage));
-        views.put("Utilities", new PlaceholderView("Map utilities", "No-arrow, delete note type, fix placements, lights. Coming in stage 5."));
-        views.put("Batch MP3", new PlaceholderView("Batch MP3 → timings", "Onset generation for a folder of MP3s. Coming in stage 5."));
-        views.put("Patterns", new PlaceholderView("Patterns", "Load and visualize .pat files. Coming in stage 5."));
+        views.put("Utilities", new UserInterfaceFX.Views.UtilitiesView(controller));
+        views.put("Batch MP3", new UserInterfaceFX.Views.BatchMp3View());
+        views.put("Patterns", new UserInterfaceFX.Views.PatternsView(controller, stage));
         views.put("Settings", new SettingsView());
     }
 
@@ -243,5 +242,12 @@ public class AppShell extends BorderPane {
             return;
         }
         contentArea.getChildren().setAll(view);
+    }
+
+    /** Releases resources held by views (e.g. the local map zip server) on app shutdown. */
+    public void shutdown() {
+        views.values().forEach(view -> {
+            if (view instanceof UserInterfaceFX.Views.ReviewView reviewView) reviewView.shutdown();
+        });
     }
 }

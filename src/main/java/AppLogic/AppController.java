@@ -298,6 +298,45 @@ public class AppController {
     }
 
     /**
+     * Map utilities (formerly the Swing "Map Utilities" sub-buttons), applied in place to
+     * the given diffs. Each fires a state refresh so views can update.
+     */
+    public void makeNoArrows(List<DiffSession> targets) {
+        for (DiffSession diff : targets) {
+            diff.map().makeNoArrows();
+            logger.info("{} is now a no arrows map", diff.difficultyFileName());
+        }
+        setState(state);
+    }
+
+    /** Converts all flashing light events into regular "on" events. */
+    public void convertFlashingLights(List<DiffSession> targets) {
+        for (DiffSession diff : targets) {
+            diff.map().convertAllFlashLightsToOnLights();
+            logger.info("Removed flashing lights from {}", diff.difficultyFileName());
+        }
+        setState(state);
+    }
+
+    /** Deletes all notes of one color (red: 0, blue: 1), making the diffs one-handed. */
+    public void deleteNoteType(List<DiffSession> targets, int noteType) {
+        for (DiffSession diff : targets) {
+            diff.map().makeOneHanded(noteType);
+            logger.info("Removed all notes with type {} from {}", noteType, diff.difficultyFileName());
+        }
+        setState(state);
+    }
+
+    /** Snaps all note placements to 1/precisionDenominator of a beat (e.g. 16 → 1/16). */
+    public void fixPlacements(List<DiffSession> targets, double precisionDenominator) {
+        for (DiffSession diff : targets) {
+            diff.map().fixPlacements(1 / precisionDenominator);
+            logger.info("Fixed note placements of {} with a precision of 1/{} of a beat", diff.difficultyFileName(), precisionDenominator);
+        }
+        setState(state);
+    }
+
+    /**
      * Loads a generation pattern from a .pat file or from an existing difficulty (.dat/.json).
      * (Formerly GlobalLoadPatterns.)
      */

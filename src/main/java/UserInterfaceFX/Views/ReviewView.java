@@ -9,7 +9,6 @@ import BeatSaberObjects.Objects.Enums.ParityErrorEnum;
 import BeatSaberObjects.Objects.Note;
 import MapAnalysation.PatternVisualisation.NpsPlotters.DynamicNpsPlotter;
 import MapAnalysation.PatternVisualisation.NpsPlotters.NpsInfo;
-import MapGeneration.GenerationElements.Pattern;
 import MapGeneration.PatternGeneration.CommonMethods.NpsBpmConverter;
 import atlantafx.base.theme.Styles;
 import javafx.application.Platform;
@@ -20,7 +19,6 @@ import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
@@ -38,7 +36,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.util.Pair;
 
 import java.io.File;
@@ -76,6 +73,14 @@ public class ReviewView extends VBox {
 
     private final AppController controller;
     private final MapZipServer zipServer = new MapZipServer();
+
+    /**
+     * Stops the local map zip server on app shutdown. Its dispatcher thread is
+     * non-daemon and would otherwise keep the JVM alive after the window closes.
+     */
+    public void shutdown() {
+        zipServer.stop();
+    }
 
     private final Label activeDiffLabel = new Label();
     private final Label parityCount = new Label();
@@ -268,31 +273,8 @@ public class ReviewView extends VBox {
         popup.show();
     }
 
-    /** Draws the pattern's probability matrix, normalized per row (like the old "Normalized Heatmap"). */
     private void refreshHeatmap() {
-        GraphicsContext g = heatmapCanvas.getGraphicsContext2D();
-        g.clearRect(0, 0, heatmapCanvas.getWidth(), heatmapCanvas.getHeight());
-
-        Pattern pattern = controller.getPattern();
-        if (pattern == null) {
-            g.fillText("No pattern loaded — load one under 3 · Generate", 20, 30);
-            return;
-        }
-
-        int size = 0;
-        while (size < pattern.patterns.length && pattern.patterns[size][0] != null) size++;
-        if (size == 0) return;
-
-        double cell = Math.min(heatmapCanvas.getWidth(), heatmapCanvas.getHeight()) / size;
-        for (int row = 0; row < size; row++) {
-            float rowMax = 0;
-            for (int col = 0; col < size; col++) rowMax = Math.max(rowMax, pattern.probabilities[row][col]);
-            for (int col = 0; col < size; col++) {
-                double intensity = rowMax == 0 ? 0 : pattern.probabilities[row][col] / rowMax;
-                g.setFill(Color.color(1 - intensity, 1 - intensity, 1, 1));
-                g.fillRect(col * cell, row * cell, cell, cell);
-            }
-        }
+        UserInterfaceFX.PatternHeatmap.draw(heatmapCanvas, controller.getPattern());
     }
     //</editor-fold>
 
@@ -308,33 +290,27 @@ public class ReviewView extends VBox {
 
         Button serve = new Button("Serve current map");
         serve.setTooltip(new javafx.scene.control.Tooltip("Exports the map as zip and serves it locally so the tools can load it via URL"));
-        serve.setOnAction(e -> {
-            try {
-                File zip = new File(controller.session().getMapFolderPath(), "beatkenja-check.zip");
-                controller.exportMapAsZip(zip);
-                servedUrl.setText(zipServer.serve(zip.toPath()));
-            } catch (Exception ex) {
-                logger.error("Could not serve map: {}", ex.getMessage());
-                servedUrl.setText("Failed: " + ex.getMessage());
-            }
-        });
+        serve.setOnAction(e -> serveCurrentMap(servedUrl));
 
         Button mapCheck = new Button("MapCheck");
-        mapCheck.setOnAction(e -> web.getEngine().load("https://kivalevan.me/BeatSaber-MapCheck/"));
+        mapCheck.setOnAction(e -> {
+            if (serveCurrentMap(servedUrl)) web.getEngine().load(zipServer.mapCheckUrl());
+        });
 
         Button bsParity = new Button("bs-parity");
         bsParity.setOnAction(e -> {
-            String url = "https://galaxymaster2.github.io/bs-parity/";
-            if (zipServer.url() != null) url += "?url=" + zipServer.url();
-            web.getEngine().load(url);
+            if (serveCurrentMap(servedUrl)) web.getEngine().load(zipServer.bsParityUrl());
         });
 
         Button browser = new Button("Open in browser instead");
         browser.getStyleClass().add(Styles.FLAT);
-        browser.setTooltip(new javafx.scene.control.Tooltip("If a tool doesn't render in the embedded view, use your real browser and load the served URL"));
+        browser.setTooltip(new javafx.scene.control.Tooltip("If a tool doesn't render in the embedded view, open the same local URL in your real browser"));
         browser.setOnAction(e -> {
+            if (!serveCurrentMap(servedUrl)) return;
+            String current = web.getEngine().getLocation();
+            String target = current != null && current.startsWith("http") ? current : zipServer.mapCheckUrl();
             try {
-                java.awt.Desktop.getDesktop().browse(new java.net.URI("https://kivalevan.me/BeatSaber-MapCheck/"));
+                java.awt.Desktop.getDesktop().browse(new java.net.URI(target));
             } catch (Exception ex) {
                 logger.error("Could not open browser: {}", ex.getMessage());
             }
@@ -346,6 +322,28 @@ public class ReviewView extends VBox {
         VBox box = new VBox(8, bar, web);
         box.setPadding(new Insets(8));
         return box;
+    }
+
+    /**
+     * Exports the current map as zip and serves it via the local server, so the check
+     * tools (proxied on the same origin) can load it. Returns false if nothing is loaded
+     * or the export failed.
+     */
+    private boolean serveCurrentMap(TextField servedUrl) {
+        if (controller.session().getMapFolderPath() == null) {
+            servedUrl.setText("Load a map first");
+            return false;
+        }
+        try {
+            File zip = new File(controller.session().getMapFolderPath(), "beatkenja-check.zip");
+            controller.exportMapAsZip(zip);
+            servedUrl.setText(zipServer.serve(zip.toPath()));
+            return true;
+        } catch (Exception ex) {
+            logger.error("Could not serve map: {}", ex.getMessage());
+            servedUrl.setText("Failed: " + ex.getMessage());
+            return false;
+        }
     }
     //</editor-fold>
 

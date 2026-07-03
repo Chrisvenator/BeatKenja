@@ -15,9 +15,6 @@ import lombok.Cleanup;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -61,18 +58,15 @@ public class BatchWavToMaps {
                     
                     // Disable prints while generating the map to avoid console spam
                     try {
-                        createFolderAndMoveItems(filename, file, destinationFolderPath, verbose);
+                        createMapFolderWithInfoDat(filename, destinationFolderPath, verbose);
                         
                         //Try to execute the python script. If unsuccessful, try installing all dependencies
 //                        if (!executePythonScript(filename, file, inputPath, destinationFolderPath, pythonScript)) return false;
 //                        List<String> peaks = FileManager.readFile(destinationFolderPath + "/" + filename + ".txt");
                         
-                        double bpm;
-                        if (extractBpm(filename) == null) {
-                            bpm = BPMDetector.detectBPM(file.getAbsolutePath());
-                        } else {
-                            bpm = extractBpm(filename);
-                        }
+                        // BPM from the file name (e.g. "song128bpm.wav") wins over audio analysis
+                        Integer taggedBpm = extractBpm(filename);
+                        double bpm = taggedBpm != null ? taggedBpm : BPMDetector.detectBPM(file.getAbsolutePath());
                         
                         Double offset = TimingOffsetDetector.detectTimingOffset(file.getAbsolutePath(), bpm);
                         
@@ -96,10 +90,9 @@ public class BatchWavToMaps {
                                 i++;
                                 continue;
                             }
-                            double duration = peaks.get(i).getLast(); // Assuming the last peak time gives approximate duration
-                            double[][] spectrogram = SpectrogramCalculator.calculateSpectrogram(file.getAbsolutePath(), 1024, 512);
-                            
                             if (SHOW_SPECTOGRAM_WHEN_GENERATING_ONSETS) {
+                                double duration = peaks.get(i).getLast(); // Assuming the last peak time gives approximate duration
+                                double[][] spectrogram = SpectrogramCalculator.calculateSpectrogram(file.getAbsolutePath(), 1024, 512);
                                 final int finalI = i;
                                 SwingUtilities.invokeLater(() -> {
                                     SpectrogramDisplay frame = new SpectrogramDisplay(spectrogram, peaks.get(finalI), duration, difficulties[finalI], true); // Example uses the first difficulty level
@@ -229,32 +222,27 @@ public class BatchWavToMaps {
     }
     
     /**
-     * Creates the output folder and moves all renamed .wav files there. The files must have been renamed before calling this function.
+     * Creates the output map folder and writes its info.dat.
+     * The song audio is added later as .ogg (converted straight from the input .wav),
+     * so the .wav itself is never copied into the map folder.
      *
      * @param filename              The name of the current file.
-     * @param file                  The File object representing the file to be moved.
      * @param destinationFolderPath The destination folder where everything will be saved. It does not have to exist.
      * @throws IOException If there is an issue with input/output operations or missing folders.
      */
-    private static void createFolderAndMoveItems(String filename, File file, String destinationFolderPath, boolean verbose) throws IOException {
+    private static void createMapFolderWithInfoDat(String filename, String destinationFolderPath, boolean verbose) throws IOException {
         File outFolder = new File(destinationFolderPath);
-        
+
         if (!outFolder.exists()) {
             if (!outFolder.mkdirs()) {
                 if (verbose)
                     logger.info("Failed to create parent folder: {}", outFolder.getAbsolutePath());
             }
         }
-        
+
         FileWriter writer = new FileWriter(destinationFolderPath + "/info.dat");
         writer.write(createDatFile(filename));
         writer.close();
-        
-        Path sourceFile = Path.of(file.getAbsolutePath());
-        Path destinationFolder = Path.of(destinationFolderPath);
-        Path destinationFile = destinationFolder.resolve(sourceFile.getFileName());
-        
-        Files.copy(sourceFile, destinationFile, StandardCopyOption.REPLACE_EXISTING);
     }
     
     /**
@@ -400,13 +388,18 @@ public class BatchWavToMaps {
                 "}";
     }
     
+    /**
+     * Extracts a BPM tag like "128bpm" from a file name.
+     *
+     * @return the tagged BPM, or null when the name carries no BPM tag.
+     */
     public static Integer extractBpm(String input) {
         Pattern pattern = Pattern.compile("(\\d{2,4})bpm", Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(input);
-        
+
         if (matcher.find()) {
             return Integer.parseInt(matcher.group(1));
         }
-        return -1; // no BPM found
+        return null; // no BPM found
     }
 }

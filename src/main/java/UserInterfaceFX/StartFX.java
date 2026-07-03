@@ -18,6 +18,8 @@ import static DataManager.Parameters.logger;
  */
 public class StartFX extends Application {
 
+    private AppShell shell;
+
     @Override
     public void start(Stage stage) {
         Application.setUserAgentStylesheet(DARK_MODE
@@ -25,7 +27,7 @@ public class StartFX extends Application {
                 : new PrimerLight().getUserAgentStylesheet());
 
         AppController controller = new AppController();
-        AppShell shell = new AppShell(controller, stage);
+        shell = new AppShell(controller, stage);
 
         Scene scene = new Scene(shell, 1280, 820);
         stage.setTitle("BeatKenja");
@@ -37,6 +39,19 @@ public class StartFX extends Application {
 
         autoloadIfRequested(controller);
         takeDevScreenshotIfRequested(scene);
+    }
+
+    /**
+     * Ensures the JVM terminates when the last window is closed.
+     *
+     * Non-daemon threads (local map zip server, running background tasks, Swing
+     * spectrogram frames) would otherwise keep the process alive after pressing X.
+     */
+    @Override
+    public void stop() {
+        if (shell != null) shell.shutdown();
+        logger.info("Shutting down.");
+        System.exit(0);
     }
 
     /**
