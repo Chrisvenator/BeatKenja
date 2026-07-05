@@ -4,36 +4,49 @@ package AudioAnalysis;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 
 /**
  * This class provides methods for analyzing audio files, specifically for detecting peaks in the audio that can be used to generate beat maps for rhythm games.
- * The audio analysis is performed using improved onset detection techniques including spectral flux analysis with phase information,
- * adaptive thresholding, and tempo-aware difficulty scaling.
+ * Onset detection uses the SuperFlux algorithm ({@link SuperFluxOnsetDetector}): a log-compressed
+ * quarter-tone filterbank spectrogram differenced against a frequency-maximum-filtered earlier frame,
+ * followed by local-maximum/local-mean peak picking with per-difficulty thresholds and
+ * tempo-aware minimum note gaps.
  * The audio file to be analyzed should be in WAV format.
  * <p>
  * The main functionality includes calculating the spectrogram of the audio, detecting peaks at different difficulty levels,
  * and returning these peaks as potential beat locations.
  * <p>
- * The class makes use of Fast Fourier Transform (FFT) for spectrogram calculation and uses adaptive thresholding
- * with tempo compensation for more accurate onset detection.
- *
- * @author Improved version based on onset detection best practices
+ * Peak-picking parameters (mu, delta ladder, time shift) are tuned against the local ground-truth
+ * corpus of ranked maps; see docs/research/SYNC_RESEARCH_LOG.md and benchmark_results/.
  */
 public class AudioAnalysis {
     /** The sample rate of the audio file, typically 44100 Hz for CD quality audio. */
     private static final int SAMPLE_RATE = 44100;
-    /** The size of the Fast Fourier Transform (FFT) window used in spectrogram calculation. */
-    private static final int FFT_SIZE = 1024;
-    /** The number of samples by which consecutive FFT windows overlap. */
-    private static final int OVERLAP = 768; // 256 hop size for better time resolution
-    
+    /** FFT window size. 2048 gives the ~21.5 Hz resolution the quarter-tone filterbank needs. */
+    private static final int FFT_SIZE = 2048;
+    /** Hop size between consecutive FFT windows (~5.8 ms per frame at 44.1 kHz). */
+    private static final int HOP_SIZE = 256;
+    private static final int OVERLAP = FFT_SIZE - HOP_SIZE;
+
+    /** SuperFlux reference-frame distance in frames (corpus sweep 2026-07-05: best F@50). */
+    private static final int MU = 2;
+    /**
+     * Onset times are reported at the STFT window center, not the window start
+     * (confirmed best on the corpus sweep: +23 ms ≈ FFT_SIZE / 2 / SAMPLE_RATE).
+     */
+    private static final double TIME_SHIFT_SECONDS = FFT_SIZE / 2.0 / SAMPLE_RATE;
+
     // Difficulty-based target note spacing at 120 BPM (in seconds)
     private static final double[] BASE_GAP_SECONDS = {0.150, 0.110, 0.090, 0.075, 0.065}; // Easy to Expert+
-    
-    // Amplitude gating - keep only peaks above these percentiles
-    private static final double[] AMPLITUDE_PERCENTILES = {0.90, 0.85, 0.75, 0.65, 0.55}; // Easy to Expert+
-    
+
+    /**
+     * Per-difficulty peak-picking thresholds as multiples of the ODF's positive mean
+     * (Easy to Expert+). Higher = fewer, more salient onsets. The Expert+ value 0.60
+     * maximizes F@50ms on the corpus sweep (P .777 / R .852); easier difficulties
+     * scale up to keep maps sparser (sweep: 1.5 → R≈.61, 2.5 → R≈.42).
+     */
+    private static final double[] DELTA_RELATIVE = {2.5, 1.8, 1.3, 0.9, 0.6};
+
     /**
      * Analyzes the audio file at the given file path and detects peaks that could correspond to beats in the music.
      * The detected peaks are returned for different difficulty levels.
@@ -45,249 +58,34 @@ public class AudioAnalysis {
      */
     public static ArrayList<ArrayList<Double>> getPeaksFromAudio(String filePath, double bpm, Double offset) throws UnsupportedAudioFileException, IOException {
         double[][] spec = SpectrogramCalculator.calculateSpectrogram(filePath, FFT_SIZE, OVERLAP);
-        int len = spec.length;
-        double frameAdvance = (FFT_SIZE - OVERLAP) / (double) SAMPLE_RATE;
-        double[] times = linspace(0, frameAdvance * len, len);
-        
-        // Compute improved spectral flux with high-frequency emphasis
-        double[] flux = computeSpectralFlux(spec);
-        
+        double frameAdvance = HOP_SIZE / (double) SAMPLE_RATE;
+
+        double[] odf = SuperFluxOnsetDetector.computeODF(spec, SAMPLE_RATE, MU);
+
         // Estimate BPM for tempo-aware processing
         double estimatedBPM = bpm;
-        if (bpm < 0.0) estimatedBPM = estimateBPM(flux, frameAdvance);
-        
+        if (bpm < 0.0) estimatedBPM = estimateBPM(odf, frameAdvance);
+
         if (offset == null) offset = TimingOffsetDetector.detectTimingOffset(filePath, estimatedBPM);
         if (offset == null) offset = 0.0;
-        
-        System.out.println("Estimated BPM - BPMDetector:  " + bpm);
-        System.out.println("Estimated BPM - FrameAdvance: " + estimateBPM(flux, frameAdvance));
-        
-        // Calculate onset detection function using spectral flux difference
-        ArrayList<Double> onsetStrength = computeOnsetDetectionFunction(flux);
-        
-        // Apply adaptive thresholding
-        ArrayList<Double> thresholdedOnsets = adaptiveThreshold(onsetStrength);
-        
-        // Detect peaks for different difficulties with tempo compensation
-        ArrayList<ArrayList<Double>> peaks = detectPeaksForDifficulties(thresholdedOnsets, times, frameAdvance, estimatedBPM);
-        
-        for (ArrayList<Double> diff : peaks) {
-            for (int i = 0; i < diff.size(); i++) {
-                diff.set(i, diff.get(i) + offset);
-            }
+
+        double positiveMean = SuperFluxOnsetDetector.positiveMean(odf);
+
+        ArrayList<ArrayList<Double>> peaks = new ArrayList<>();
+        for (int difficulty = 0; difficulty < 5; difficulty++) {
+            double minGapSeconds = BASE_GAP_SECONDS[difficulty] * 120.0 / estimatedBPM;
+            double delta = DELTA_RELATIVE[difficulty] * positiveMean;
+            peaks.add(SuperFluxOnsetDetector.pickPeaks(
+                    odf, frameAdvance, TIME_SHIFT_SECONDS + offset, delta, minGapSeconds));
         }
-        
         return peaks;
     }
-    
+
     /**
-     * Computes spectral flux with emphasis on high frequencies where percussive content is more prominent.
+     * BPM estimation from the already-computed SuperFlux ODF
+     * (harmonic-comb autocorrelation, see {@link BPMDetector#estimateTempo}).
      */
-    private static double[] computeSpectralFlux(double[][] spec) {
-        int len = spec.length;
-        int freqBins = spec[0].length;
-        double[] flux = new double[len];
-        
-        // Weight higher frequencies more heavily (percussive content)
-        double[] freqWeights = new double[freqBins];
-        for (int f = 0; f < freqBins; f++) {
-            // Emphasize frequencies above 1kHz
-            double freq = f * SAMPLE_RATE / (2.0 * freqBins);
-            freqWeights[f] = freq > 1000 ? 2.0 : 1.0;
-        }
-        
-        for (int i = 0; i < len; i++) {
-            double weightedSum = 0;
-            for (int f = 0; f < freqBins; f++) {
-                weightedSum += spec[i][f] * freqWeights[f];
-            }
-            flux[i] = weightedSum;
-        }
-        
-        return flux;
-    }
-    
-    /**
-     * Simple BPM estimation based on autocorrelation of the onset detection function.
-     */
-    private static double estimateBPM(double[] flux, double frameAdvance) {
-        // Simple peak-based BPM estimation
-        // Look for periodicity in the 60-200 BPM range
-        double minBPM = 60.0;
-        double maxBPM = 200.0;
-        double defaultBPM = 120.0; // fallback
-        
-        int minLag = (int) (60.0 / (maxBPM * frameAdvance));
-        int maxLag = (int) (60.0 / (minBPM * frameAdvance));
-        
-        if (minLag >= flux.length || maxLag >= flux.length) {
-            return defaultBPM;
-        }
-        
-        double bestCorrelation = 0;
-        double bestBPM = defaultBPM;
-        
-        for (int lag = minLag; lag <= Math.min(maxLag, flux.length - 1); lag++) {
-            double correlation = 0;
-            int count = 0;
-            for (int i = 0; i < flux.length - lag; i++) {
-                correlation += flux[i] * flux[i + lag];
-                count++;
-            }
-            correlation /= count;
-            
-            if (correlation > bestCorrelation) {
-                bestCorrelation = correlation;
-                bestBPM = 60.0 / (lag * frameAdvance);
-            }
-        }
-        
-        return bestBPM;
-    }
-    
-    /**
-     * Computes the onset detection function using spectral flux difference.
-     */
-    private static ArrayList<Double> computeOnsetDetectionFunction(double[] flux) {
-        ArrayList<Double> onsetStrength = new ArrayList<>();
-        
-        for (int i = 0; i < flux.length; i++) {
-            if (i == 0) {
-                onsetStrength.add(0.0);
-            } else {
-                // Positive difference only (half-wave rectification)
-                double diff = flux[i] - flux[i - 1];
-                onsetStrength.add(Math.max(0, diff));
-            }
-        }
-        
-        return onsetStrength;
-    }
-    
-    /**
-     * Applies adaptive thresholding based on local statistics.
-     */
-    private static ArrayList<Double> adaptiveThreshold(ArrayList<Double> onsetStrength) {
-        int len = onsetStrength.size();
-        ArrayList<Double> thresholded = new ArrayList<>();
-        int windowSize = Math.min(100, len / 10); // ~1 second window at typical frame rates
-        
-        for (int i = 0; i < len; i++) {
-            int start = Math.max(0, i - windowSize);
-            int end = Math.min(len - 1, i + windowSize);
-            
-            // Calculate local mean and standard deviation
-            double threshold = getThreshold(onsetStrength, end, start);
-            double currentValue = onsetStrength.get(i);
-            
-            thresholded.add(currentValue > threshold ? currentValue : 0.0);
-        }
-        
-        return thresholded;
-    }
-    
-    private static double getThreshold(ArrayList<Double> onsetStrength, int end, int start) {
-        double sum = 0;
-        double sumSquares = 0;
-        int count = end - start + 1;
-        
-        for (int j = start; j <= end; j++) {
-            double val = onsetStrength.get(j);
-            sum += val;
-            sumSquares += val * val;
-        }
-        
-        double mean = sum / count;
-        double variance = (sumSquares / count) - (mean * mean);
-        double stdDev = Math.sqrt(Math.max(0, variance));
-        
-        // Adaptive threshold: mean + 1.5 * standard deviation
-        return mean + 1.5 * stdDev;
-    }
-    
-    /**
-     * Detects peaks for different difficulty levels with tempo-aware spacing.
-     */
-    private static ArrayList<ArrayList<Double>> detectPeaksForDifficulties(
-            ArrayList<Double> onsetStrength, double[] times, double frameAdvance, double estimatedBPM) {
-        
-        ArrayList<ArrayList<Double>> allPeaks = new ArrayList<>();
-        
-        // Calculate amplitude threshold for each difficulty
-        ArrayList<Double> nonZeroValues = new ArrayList<>();
-        for (Double val : onsetStrength) {
-            if (val > 0) nonZeroValues.add(val);
-        }
-        
-        if (nonZeroValues.isEmpty()) {
-            // Return empty lists for all difficulties
-            for (int d = 0; d < 5; d++) {
-                allPeaks.add(new ArrayList<>());
-            }
-            return allPeaks;
-        }
-        
-        Collections.sort(nonZeroValues);
-        
-        for (int difficulty = 0; difficulty < 5; difficulty++) {
-            ArrayList<Double> difficultyPeaks = new ArrayList<>();
-            
-            // Tempo-compensated minimum gap between notes
-            double minGapSeconds = BASE_GAP_SECONDS[difficulty] * 120.0 / estimatedBPM;
-            int suppressionFrames = Math.max(1, (int) Math.round(minGapSeconds / frameAdvance));
-            
-            // Amplitude threshold based on percentile
-            double amplitudeThreshold = 0;
-            if (!nonZeroValues.isEmpty()) {
-                int percentileIndex = (int) (AMPLITUDE_PERCENTILES[difficulty] * (nonZeroValues.size() - 1));
-                amplitudeThreshold = nonZeroValues.get(percentileIndex);
-            }
-            
-            double lastAcceptedTime = -1e9;
-            
-            for (int i = suppressionFrames; i < onsetStrength.size() - suppressionFrames; i++) {
-                double currentValue = onsetStrength.get(i);
-                
-                // Check if current frame is above amplitude threshold
-                if (currentValue < amplitudeThreshold) continue;
-                
-                // Check if enough time has passed since last accepted peak
-                if (times[i] - lastAcceptedTime < minGapSeconds) continue;
-                
-                // Check if this is a local maximum
-                boolean isLocalMax = true;
-                for (int j = i - suppressionFrames; j <= i + suppressionFrames; j++) {
-                    if (j != i && onsetStrength.get(j) > currentValue) {
-                        isLocalMax = false;
-                        break;
-                    }
-                }
-                
-                if (isLocalMax && currentValue > 0) {
-                    difficultyPeaks.add(times[i]);
-                    lastAcceptedTime = times[i];
-                }
-            }
-            
-            allPeaks.add(difficultyPeaks);
-        }
-        
-        return allPeaks;
-    }
-    
-    /**
-     * Generates a linearly spaced array of doubles between the start and end values.
-     */
-    private static double[] linspace(double start, double end, int num) {
-        double[] result = new double[num];
-        if (num == 1) {
-            result[0] = start;
-            return result;
-        }
-        double step = (end - start) / (num - 1);
-        for (int i = 0; i < num; i++) {
-            result[i] = start + i * step;
-        }
-        return result;
+    private static double estimateBPM(double[] odf, double frameAdvance) {
+        return BPMDetector.estimateTempo(odf, frameAdvance);
     }
 }

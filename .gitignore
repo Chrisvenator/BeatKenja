@@ -27,6 +27,9 @@ output/*
 hs_err_pid*
 replay_pid*
 
+# benchmark ground-truth corpus (audio + maps, ~1GB, never commit)
+/data/
+
 #others files
 src/convertToTimingNote.js
 src/text-generator.js
@@ -100,4 +103,7 @@ config.json
 /dependency-reduced-pom.xml
 /assets/org/
 /tools/
+/assets/org/
+/.claude/
+/.idea/
 /assets/org/
