@@ -168,6 +168,52 @@ State model: MapSession (song, BPM, paths) ─ 1..n ─► DiffSession
 ```
 One observable `AppState` (loaded maps, current diff, pattern, params, generation result) drives all view enablement — kills the polling thread, the static mutable fields, and cross-component mutation.
 
+### 3.6 NPS overview screen (specced 2026-07-03, stage-7 item)
+
+> Decisions: **full dashboard** concept, **own sidebar screen** (TOOLS group, not a Review tab). Review's "NPS" tab is removed in its favor. Custom Canvas rendering (not `javafx.scene.chart`) — needed for crosshair, density strip, bookmark lane, area fill.
+
+Design follows the dataviz method: **emphasis form** (active diff = the subject in accent color, other diffs = gray context lines), one axis, sequential single-hue density ramp, text always in text tokens (never series color), recessive gridlines.
+
+```
+┌ NPS Overview ────────────────────────────────────────┐
+│ ┌ AVG NPS ┐ ┌ PEAK NPS  ┐ ┌ NOTES ┐ ┌ LENGTH ┐      │
+│ │   5.4   │ │ 9.1 @1:43 │ │  742  │ │  3:12  │      │
+│ └─────────┘ └───────────┘ └───────┘ └────────┘      │
+│ Diffs: [●Expert+][○Expert][○Hard]   Window: [2 s ▾] │
+│      linear      complex        jumps                │
+│    ▼           ▼              ▼        ← bookmarks   │
+│ 10┤              ▄▂                                  │
+│   │        ▂▄█▄ ███▄        ▂▄▄   active diff =     │
+│  5┤╌╌╌╌▄▆██████████▆▄▄▆████████╌╌ filled area,      │
+│   │  ▂▆███████████████████████▆   avg = dashed,     │
+│  0┴──┬──────┬──────┬──────┬────   other diffs =     │
+│     0:00   1:00   2:00   3:00     thin gray lines   │
+│ [████▓▓░░░██▓▓░██████▓░░] ← density strip           │
+│ Hover: crosshair + tooltip (time, NPS per diff)     │
+└──────────────────────────────────────────────────────┘
+```
+
+**Elements:**
+- **KPI row** (active diff): Average NPS · Peak NPS + `@ mm:ss` · note count · length. Length is derived from the last note's time — no audio duration is parsed anywhere; flagged as a known gap. Stat tiles: value in `Styles.TITLE_2`, captions muted.
+- **Main chart** — reusable two-Canvas component `NpsTimelineCanvas` (base canvas = data, redrawn on data/resize; overlay canvas = crosshair, redrawn on mouse move; precedent: `UserInterfaceFX.PatternHeatmap`). Active diff as accent area fill + 2 px stroke, other visible diffs as 1.5 px gray polylines, dashed average-NPS reference line with right-edge label, bookmark lane on top (tick + truncated name from `map.bookmarks`, beats→seconds, collision-skipped labels), mm:ss x-axis, "nice"-step NPS gridlines.
+- **Density strip** below the plot: fixed 1 s bins of note counts, single-hue sequential ramp (surface→accent), normalized to the max bin.
+- **Controls row**: diff **visibility** chips + window preset selector. Chips carry a dot in the fixed Beat Saber identity colors (Easy green, Normal blue, Hard orange, Expert red, Expert+ purple — identity only, never used for series lines). The active diff is always visible; *switching* the active diff stays in the map-header chips (one gesture = one meaning). Window presets 1 s / 2 s (default) / 5 s map to `computeNps(intervalSize=0.5f, rangeIntervals=w)` — constant 0.5 s sample step, preset changes smoothing only; the global `NPS_COMPUTATION__*` defaults stay untouched.
+- **Hover**: crosshair across plot + density lanes; tooltip node with mm:ss header and per-diff dot/name/NPS rows.
+- **Theming**: Canvas gets no CSS → `NpsChartPalette` record with Primer-light/dark constant sets, selected once via `Parameters.DARK_MODE` at startup; hexes validated with a palette validator (CVD/contrast checks) before landing.
+
+**Data layer** — new UI-free `MapAnalysation.PatternVisualisation.NpsPlotters.NpsSeriesBuilder`:
+- `computeNpsSeconds(Note[] notesInBeats, double bpm, float intervalSize, int rangeIntervals)` — copies notes (copy-ctor), converts beats→seconds locally with the explicit bpm, delegates to `DynamicNpsPlotter.computeNps`. **Never** uses `NpsBpmConverter` (mutates notes in place via global `Parameters.BPM`); `computeNps` also sorts its input list in place, so copies are mandatory.
+- `computeKpis(…)` (guards: empty → zeros, last-time 0 → no div-by-zero, peak-time clamped ≥ 0) and `computeDensityBins(…)`.
+- `NpsOverviewView` keeps a per-diff cache keyed by `difficultyFileName`, invalidated when map reference / BPM / window preset changes; refreshes on `onStateChanged` / `onBpmChanged` / `onActiveDiffChanged`.
+
+**Integration:**
+- `AppShell`: register `NpsOverviewView` in `registerViews()`, add a sidebar entry at the top of the TOOLS group in `buildSidebar()`, and add it to `LOCKED_STEPS` (disabled until a map loads).
+- `ReviewView`: delete the "NPS" tab (`npsChart`, `buildNpsChart()`, `refreshNpsChart()`), replace with an "NPS overview →" link navigating to the new screen (pass a `navigate` consumer like `LoadView`). Note: `-Dbk.reviewtab` indices shift — update usages.
+
+**Known gaps flagged for later, separate fixes:** the `ignoreStacksAndSliders` parameter of `DynamicNpsPlotter.computeNps` is dead (filter hardcoded at 1.1/16 from window start) — kept as-is for numerical parity with the old chart; song length = last-note time until real audio duration is parsed.
+
+**Tests:** `NpsSeriesBuilderTest` (no input mutation, no `Parameters.BPM` touch, known-plateau fixture, KPI edge cases, density bins); full suite stays green; screenshot smoke via `-Dbk.autoload` / `-Dbk.view="NPS Overview"` / `-Dbk.screenshot`.
+
 ---
 
 ## 4. Technology recommendation: JavaFX (proper), not web split
@@ -256,7 +302,7 @@ Result: Review step = internal parity table (instant, inline) + NPS chart + heat
 5. ✅ **Secondary tools** (done 2026-07-02) — `UtilitiesView` (no-arrow, flashing lights, delete note color as red/blue toggle, fix placements 1/x; each "Active diff"/"All diffs", disabled until a map is loaded) backed by new `AppController.makeNoArrows/convertFlashingLights/deleteNoteType/fixPlacements`; `BatchMp3View` + `OnsetGenerationService` (UI-free port of GlobalConvertMP3ToMaps: ffmpeg check, mp3→wav with skip-existing, BatchWavToMaps onsets, dependency auto-install fallback; per-file progress list, open input/output folder); `PatternsView` (pattern loader, inline row-normalized heatmap via shared `PatternHeatmap` — also reused by ReviewView — plus the 5 classic visualization windows honoring the active diff's variance). `PlaceholderView` deleted. Covered by `AppControllerUtilitiesTest` (5 E2E tests). 710 tests green.
 6. **Polish** — drag & drop, recents, keyboard shortcuts, i18n if wanted.
 7. **Optimization** (feedback from first hands-on review, 2026-07-02):
-   - **NPS screen overhaul** — current LineChart is a first port; concept TBD (user will spec in the coming days).
+   - ✅ **NPS screen overhaul** (done 2026-07-03) — see §3.6: dedicated "NPS Overview" sidebar screen (`NpsOverviewView` + `NpsTimelineCanvas` + `NpsChartPalette`, data via UI-free `NpsSeriesBuilder` with per-diff cache); Review NPS tab removed, replaced by header link. Covered by `NpsSeriesBuilderTest` (7 tests); 721 tests green.
    - **Pattern heatmap info popup** — ⓘ button exists but shows a placeholder (incl. `assets/variance_low_variance.png`); write real explanation content (what rows/columns mean, how variance shapes the distribution, examples for low/high variance).
    - ✅ **External checks: map doesn't load** (fixed 2026-07-02) — root cause: both tools download `?url=` maps through the public CORS proxy `cors.bsmg.dev` (MapCheck always, bs-parity as fallback), and a public proxy can't reach `127.0.0.1` → "Error 404: Map/link does not exist". Fix: `MapZipServer` now also reverse-proxies the tool pages themselves (`/BeatSaber-MapCheck/`, `/bs-parity/`) so page + zip share one local origin (no CORS, no mixed content) and strips the hardcoded `cors.bsmg.dev` prefix from proxied JS. MapCheck/bs-parity buttons auto-serve the map and open the local tool URL with `?url=`. Verified against the live sites (proxied pages 200, bundle rewrite confirmed).
    - ✅ **Batch MP3 conversion broken** (fixed 2026-07-03) — pre-existing (also broken in Swing): `SpectrogramCalculator` was disabled at 2823bce (TarsosDSP dropped, method always threw), which killed BPM/offset/peak detection; plus `extractBpm` returned `-1` instead of `null` so `BPMDetector` was never even called ("Detected BPM: -1.0"). Fix: pure-Java spectrogram (WAV decode → mono → resample to 44.1 kHz → Hann window → radix-2 FFT, no dependency), `extractBpm` returns `null` when the name has no BPM tag, per-diff spectrogram now only computed when `show-spectogram-when-generating-onsets` is on. Covered by `SpectrogramCalculatorTest` (sine-bin, resampling, BPM smoke, extractBpm); E2E run on a real song produced 5 diffs (156–508 notes), ogg + zip, BPM 95.7. Note: maps land in the WIP folder (= `3df62` per config) because `save-maps-to-wip-folder-after-mp3-conversion` is `true` — set it to `false` for `./OnsetGeneration/output/`. 714 tests green.
@@ -274,6 +320,7 @@ Each stage ships a runnable app; stages 4–7 are independent of each other.
 | Visual section timeline / integrated editor | Later. Design keeps a slot for it (Generate step content area can host a timeline; see §7). Not in current scope. |
 | Batch vs. per-diff | Both. Per-diff tabs with individual Generate + "Apply to all diffs" per step; Export stays a batch table over all diffs. |
 | Save modes / multi-map question | Two dialogs: "Save difficulties…" (.dat only, file dialog for one / folder dialog for several) and "Save as map (.zip)…" (folder contents + in-memory diffs patched in, one zip). **Invariant: MapSession = one map** — loading always replaces the session, so mixed-map diffs can't occur. If multi-song batch is ever wanted: `List<MapSession>` with one zip per session; current model extends without rework. |
+| NPS screen | Dedicated sidebar dashboard (§3.6), full-dashboard concept; Review "NPS" tab removed, replaced by link. (2026-07-03) |
 
 ## 7. Future ideas (explicitly out of scope now)
 - **Visual section timeline editor** in Generate: horizontal beat timeline showing bookmarks/sections, drag to place `linear|complex|jumps|doubles…` sections instead of naming bookmarks in an external editor. Fits into GenerateView's content area without layout changes.

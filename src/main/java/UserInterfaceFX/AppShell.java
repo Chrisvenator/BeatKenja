@@ -49,7 +49,7 @@ public class AppShell extends BorderPane {
     private final HBox diffChips = new HBox(6);
 
     /** Workflow steps that need a loaded map before they make sense. */
-    private static final String[] LOCKED_STEPS = {"2 · Timing", "3 · Generate", "4 · Review", "5 · Export"};
+    private static final String[] LOCKED_STEPS = {"2 · Timing", "3 · Generate", "4 · Review", "5 · Export", "NPS Overview"};
 
     public AppShell(AppController controller, Stage stage) {
         this.controller = controller;
@@ -70,8 +70,9 @@ public class AppShell extends BorderPane {
         views.put("1 · Load", new LoadView(controller, stage, this::refreshMapHeader, this::selectView));
         views.put("2 · Timing", new UserInterfaceFX.Views.TimingView(controller));
         views.put("3 · Generate", new UserInterfaceFX.Views.GenerateView(controller, stage));
-        views.put("4 · Review", new UserInterfaceFX.Views.ReviewView(controller));
+        views.put("4 · Review", new UserInterfaceFX.Views.ReviewView(controller, this::selectView));
         views.put("5 · Export", new UserInterfaceFX.Views.ExportView(controller, stage));
+        views.put("NPS Overview", new UserInterfaceFX.Views.NpsOverviewView(controller));
         views.put("Utilities", new UserInterfaceFX.Views.UtilitiesView(controller));
         views.put("Batch MP3", new UserInterfaceFX.Views.BatchMp3View());
         views.put("Patterns", new UserInterfaceFX.Views.PatternsView(controller, stage));
@@ -104,7 +105,7 @@ public class AppShell extends BorderPane {
 
         box.getChildren().add(new Separator());
         box.getChildren().add(sectionLabel("TOOLS"));
-        for (String name : new String[]{"Utilities", "Batch MP3", "Patterns"}) {
+        for (String name : new String[]{"NPS Overview", "Utilities", "Batch MP3", "Patterns"}) {
             box.getChildren().add(navButton(name));
         }
 

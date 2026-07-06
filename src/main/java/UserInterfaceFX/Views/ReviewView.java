@@ -6,10 +6,6 @@ import AppLogic.ArcViewerManager;
 import AppLogic.DiffSession;
 import AppLogic.MapZipServer;
 import BeatSaberObjects.Objects.Enums.ParityErrorEnum;
-import BeatSaberObjects.Objects.Note;
-import MapAnalysation.PatternVisualisation.NpsPlotters.DynamicNpsPlotter;
-import MapAnalysation.PatternVisualisation.NpsPlotters.NpsInfo;
-import MapGeneration.PatternGeneration.CommonMethods.NpsBpmConverter;
 import atlantafx.base.theme.Styles;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
@@ -19,12 +15,10 @@ import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.chart.LineChart;
-import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
@@ -39,19 +33,16 @@ import javafx.scene.layout.VBox;
 import javafx.util.Pair;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
-import static DataManager.Parameters.NPS_COMPUTATION__IGNORE_STACKS_AND_SLIDERS;
-import static DataManager.Parameters.NPS_COMPUTATION__INTERVAL_SIZE;
-import static DataManager.Parameters.NPS_COMPUTATION__RANGE_INTERVALS;
 import static DataManager.Parameters.logger;
 
 /**
  * Step 4: inspect the generated map before saving.
- * Tabs: parity warnings (with bookmark export), NPS-over-time chart, pattern heatmap,
- * and external web check tools (MapCheck / bs-parity) fed by a local zip server.
+ * Tabs: parity warnings (with bookmark export), pattern heatmap, and external web
+ * check tools (MapCheck / bs-parity) fed by a local zip server. The NPS chart lives
+ * in the dedicated "NPS Overview" screen, linked from the header.
  * "Preview in ArcViewer" downloads the desktop previewer on first use and launches it.
  */
 public class ReviewView extends VBox {
@@ -85,16 +76,18 @@ public class ReviewView extends VBox {
     private final Label activeDiffLabel = new Label();
     private final Label parityCount = new Label();
     private final ObservableList<ParityRow> parityRows = FXCollections.observableArrayList();
-    private final LineChart<Number, Number> npsChart = buildNpsChart();
     private final Canvas heatmapCanvas = new Canvas(760, 560);
     private final Label result = new Label();
 
-    public ReviewView(AppController controller) {
+    public ReviewView(AppController controller, Consumer<String> navigate) {
         super(12);
         this.controller = controller;
         setPadding(new Insets(16));
 
         activeDiffLabel.getStyleClass().add(Styles.TEXT_MUTED);
+
+        Hyperlink npsOverview = new Hyperlink("NPS overview →");
+        npsOverview.setOnAction(e -> navigate.accept("NPS Overview"));
 
         Button arcViewer = new Button("Preview in ArcViewer");
         arcViewer.getStyleClass().add(Styles.ACCENT);
@@ -103,19 +96,19 @@ public class ReviewView extends VBox {
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        HBox top = new HBox(12, activeDiffLabel, spacer, arcViewer);
+        HBox top = new HBox(12, activeDiffLabel, npsOverview, spacer, arcViewer);
         top.setAlignment(Pos.CENTER_LEFT);
 
         TabPane tabs = new TabPane();
         tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         tabs.getTabs().addAll(
                 new Tab("Parity warnings", buildParityTab()),
-                new Tab("NPS", npsChart),
                 new Tab("Pattern heatmap", buildHeatmapTab()),
                 new Tab("External checks", buildExternalTab()));
         VBox.setVgrow(tabs, Priority.ALWAYS);
 
-        // Dev aid: -Dbk.reviewtab=<index> preselects a review tab (smoke screenshots)
+        // Dev aid: -Dbk.reviewtab=<index> preselects a review tab (smoke screenshots).
+        // Indices: 0 parity, 1 heatmap, 2 external checks (NPS moved to its own screen).
         String devTab = System.getProperty("bk.reviewtab");
         if (devTab != null) tabs.getSelectionModel().select(Integer.parseInt(devTab));
 
@@ -196,38 +189,6 @@ public class ReviewView extends VBox {
         VBox box = new VBox(8, bar, table);
         box.setPadding(new Insets(8));
         return box;
-    }
-    //</editor-fold>
-
-    //<editor-fold desc="NPS tab">
-    private static LineChart<Number, Number> buildNpsChart() {
-        NumberAxis x = new NumberAxis();
-        x.setLabel("Time (s)");
-        NumberAxis y = new NumberAxis();
-        y.setLabel("NPS");
-        LineChart<Number, Number> chart = new LineChart<>(x, y);
-        chart.setCreateSymbols(false);
-        chart.setAnimated(false);
-        return chart;
-    }
-
-    /** Computes NPS on a seconds-converted copy of the notes (the map itself stays in beats). */
-    private void refreshNpsChart() {
-        npsChart.getData().clear();
-        DiffSession active = controller.getActiveDiff();
-        if (active == null || active.map()._notes == null || active.map()._notes.length == 0) return;
-
-        List<Note> notes = new ArrayList<>(Arrays.asList(active.map()._notes));
-        NpsBpmConverter.convertBeatsToSeconds(notes);
-        try {
-            List<NpsInfo> npsInfos = DynamicNpsPlotter.computeNps(notes, NPS_COMPUTATION__INTERVAL_SIZE, NPS_COMPUTATION__RANGE_INTERVALS, NPS_COMPUTATION__IGNORE_STACKS_AND_SLIDERS);
-            XYChart.Series<Number, Number> series = new XYChart.Series<>();
-            series.setName(active.difficultyFileName());
-            for (NpsInfo info : npsInfos) series.getData().add(new XYChart.Data<>((info.fromTime() + info.toTime()) / 2, info.nps()));
-            npsChart.getData().add(series);
-        } finally {
-            NpsBpmConverter.convertSecondsToBeats(notes);
-        }
     }
     //</editor-fold>
 
@@ -430,7 +391,6 @@ public class ReviewView extends VBox {
             parityCount.setText("");
         }
 
-        refreshNpsChart();
         refreshHeatmap();
     }
 
