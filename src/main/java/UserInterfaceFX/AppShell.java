@@ -245,10 +245,11 @@ public class AppShell extends BorderPane {
         contentArea.getChildren().setAll(view);
     }
 
-    /** Releases resources held by views (e.g. the local map zip server) on app shutdown. */
+    /** Releases resources held by views (e.g. the local map zip server, audio lines) on app shutdown. */
     public void shutdown() {
         views.values().forEach(view -> {
             if (view instanceof UserInterfaceFX.Views.ReviewView reviewView) reviewView.shutdown();
+            if (view instanceof UserInterfaceFX.Views.TimingView timingView) timingView.shutdown();
         });
     }
 }
