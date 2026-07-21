@@ -74,10 +74,15 @@ public class OnsetGenerationService {
             }
         }
 
-        List<File> wavFiles = new ArrayList<>(Arrays.stream(allFiles).toList());
-        wavFiles.removeIf(f -> !f.getName().endsWith(".wav"));
-        if (wavFiles.isEmpty() && listConvertibleFiles().stream().noneMatch(f -> f.getName().endsWith(".wav"))) {
-            throw new IllegalStateException("Found 0 MP3 Files! Please put your mp3 Files into the folder: \"" + ONSET_GENERATION_FOLDER_PATH_INPUT + "\"");
+        File[] refreshed = inputFolder.listFiles();
+        if (refreshed == null) throw new IllegalStateException("Input folder not found: " + ONSET_GENERATION_FOLDER_PATH_INPUT);
+
+        boolean hasMp3 = Arrays.stream(refreshed).anyMatch(f -> f.isFile() && f.getName().endsWith(".mp3"));
+        List<File> wavFiles = Arrays.stream(refreshed).filter(f -> f.isFile() && f.getName().endsWith(".wav")).toList();
+        if (wavFiles.isEmpty()) {
+            throw new IllegalStateException(hasMp3
+                    ? "No .wav files were produced from the input .mp3 files (conversion failed?). Check the log."
+                    : "Found no .mp3 or .wav files in: " + ONSET_GENERATION_FOLDER_PATH_INPUT);
         }
 
         progress.accept("", "Generating onsets… (this can take a while)");
