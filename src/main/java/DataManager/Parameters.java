@@ -3,7 +3,7 @@ package DataManager;
 import BeatSaberObjects.Objects.Enums.ParityErrorEnum;
 import DataManager.Config.Configuration;
 import DataManager.Records.PatMetadata;
-import UserInterface.Elements.Buttons.ButtonTypes.GlobalButtons.Buttons.Common.DifficultyFileNameExtensionFilter;
+import DataManager.DifficultyFileNameExtensionFilter;
 import javafx.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

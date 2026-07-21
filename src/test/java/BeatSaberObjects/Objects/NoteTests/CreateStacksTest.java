@@ -1,7 +1,7 @@
 package BeatSaberObjects.Objects.NoteTests;
 
+import AppLogic.GenerationContext;
 import BeatSaberObjects.Objects.Note;
-import UserInterface.UserInterface;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -43,8 +43,7 @@ class CreateStacksTest {
     void testCreateStackedNoteWithOneStacks() {
         Note note = new Note(10.5f, 2, 1, 0, 4);
         note.amountOfStackedNotes = 1;
-        UserInterface ui = new UserInterface();
-        UserInterface.currentDiff = "Hard";
+        GenerationContext.currentDiff = "Hard";
         
         Note[] result = note.createStacks();
         assertNotNull(result, "createStackedNote should never return null.");

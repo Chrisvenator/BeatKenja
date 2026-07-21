@@ -2,46 +2,56 @@ package AudioAnalysis;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 
 /**
- * This class provides methods for automatic BPM (Beats Per Minute) detection from audio files.
- * It uses multiple analysis techniques including autocorrelation, spectral flux analysis,
- * and peak detection to accurately determine the tempo of music tracks.
- * The audio file to be analyzed should be in WAV format.
+ * Automatic BPM (tempo) detection from audio files.
  * <p>
- * The detection process involves:
- * 1. Computing spectral flux to identify onset events
- * 2. Using autocorrelation to find periodic patterns
- * 3. Analyzing beat intervals for tempo estimation
- * 4. Applying multiple validation techniques for accuracy
- *
- * @author BPM Detection System
+ * The detector autocorrelates the SuperFlux onset detection function ({@link SuperFluxOnsetDetector})
+ * and scores every tempo candidate on a log-spaced grid with a harmonic comb (the autocorrelation at
+ * 1x, 2x, 3x and 4x the candidate's beat period) weighted by a log-normal prior over mapper tempos.
+ * The comb resolves metrical-level confusion (e.g. 300 BPM vs the 180 BPM "3/5 fold" the old
+ * 60-200 BPM cap produced), the prior picks the octave mappers actually use.
+ * <p>
+ * The search range (50-420 BPM) and prior parameters are tuned against the local ground-truth corpus
+ * (BPM 105-388, 33/46 maps above the old 200 BPM cap); see docs/research/SYNC_RESEARCH_LOG.md and
+ * benchmark_results/. The audio file to be analyzed should be in WAV format.
  */
 public class BPMDetector {
     /** The sample rate of the audio file, typically 44100 Hz for CD quality audio. */
     private static final int SAMPLE_RATE = 44100;
-    /** The size of the Fast Fourier Transform (FFT) window used in spectrogram calculation. */
-    private static final int FFT_SIZE = 1024;
-    /** The number of samples by which consecutive FFT windows overlap. */
-    private static final int OVERLAP = 768; // 256 hop size for better time resolution
-    
-    /** Minimum BPM to consider valid */
-    private static final double MIN_BPM = 60.0;
-    /** Maximum BPM to consider valid */
-    private static final double MAX_BPM = 200.0;
-    /** Default BPM fallback value */
+    /** FFT window size, matching {@link AudioAnalysis} so the SuperFlux ODF is identical. */
+    private static final int FFT_SIZE = 2048;
+    /** Hop size between consecutive FFT windows (~5.8 ms per frame at 44.1 kHz). */
+    private static final int HOP_SIZE = 256;
+    private static final int OVERLAP = FFT_SIZE - HOP_SIZE;
+    /** SuperFlux reference-frame distance in frames (same value AudioAnalysis uses). */
+    private static final int MU = 2;
+
+    /** Minimum BPM to consider valid. Corpus low end is 105; margin for slow songs. */
+    private static final double MIN_BPM = 50.0;
+    /** Maximum BPM to consider valid. Corpus high end is 388 (speedcore). */
+    private static final double MAX_BPM = 420.0;
+    /** Default BPM fallback value for silent or too-short audio. */
     private static final double DEFAULT_BPM = 120.0;
-    
-    /** Common BPM values for validation */
-    private static final double[] COMMON_BPMS = {
-            60, 70, 80, 90, 100, 110, 120, 128, 130, 140, 150, 160, 170, 180, 200, 300, 400, 500, 600, 650, 666, 700, 800, 900, 1000, 2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027
-    };
-    
+
+    /** Number of beat-period harmonics summed in the comb score, weighted 1/k. */
+    private static final int COMB_HARMONICS = 4;
+    /** Multiplicative step of the tempo search grid (~0.5%, well inside the ±4% Accuracy1 window). */
+    private static final double GRID_STEP = 1.005;
+
     /**
-     * Detects the BPM of an audio file using multiple analysis techniques.
+     * Center of the log-normal prior over mapper tempos. Corpus-tuned
+     * (sweep 2026-07-05, BPMSweepTest: Acc1 35/46); corpus median is ~250 BPM.
+     */
+    private static final double PRIOR_CENTER_BPM = 260.0;
+    /**
+     * Width (sigma) of the tempo prior in octaves (log2 units). The broadest value among the
+     * sweep's tied winners — keeps the prior weak so the comb decides on unfamiliar material.
+     */
+    private static final double PRIOR_LOG2_SIGMA = 1.2;
+
+    /**
+     * Detects the BPM of an audio file.
      *
      * @param filePath The path to the audio file to analyze
      * @return The detected BPM as a double value
@@ -49,286 +59,154 @@ public class BPMDetector {
      * @throws IOException                   if an I/O error occurs while reading the audio file
      */
     public static double detectBPM(String filePath) throws UnsupportedAudioFileException, IOException {
-        // Calculate spectrogram
         double[][] spectrogram = SpectrogramCalculator.calculateSpectrogram(filePath, FFT_SIZE, OVERLAP);
-        double frameAdvance = (FFT_SIZE - OVERLAP) / (double) SAMPLE_RATE;
-        
-        // Compute onset detection function
-        double[] onsetStrength = computeOnsetDetectionFunction(spectrogram);
-        
-        // Apply multiple BPM detection methods and combine results
-        double bpmAutocorr = detectBPMAutocorrelation(onsetStrength, frameAdvance);
-        double bpmIntervals = detectBPMIntervalAnalysis(onsetStrength, frameAdvance);
-        double bpmSpectral = detectBPMSpectralAnalysis(spectrogram, frameAdvance);
-        
-        // Combine and validate results
-        double finalBPM = combineBPMEstimates(bpmAutocorr, bpmIntervals, bpmSpectral);
-        
-        return validateAndRefineBPM(finalBPM);
+        double frameAdvance = HOP_SIZE / (double) SAMPLE_RATE;
+        double[] odf = SuperFluxOnsetDetector.computeODF(spectrogram, SAMPLE_RATE, MU);
+        return estimateTempo(odf, frameAdvance);
     }
-    
+
     /**
-     * Computes the onset detection function from the spectrogram using spectral flux.
+     * Estimates the tempo of an onset detection function using the corpus-tuned prior.
+     *
+     * @param odf          onset detection function (one value per frame, e.g. from SuperFlux)
+     * @param frameAdvance seconds between consecutive ODF frames
+     * @return estimated BPM, rounded to one decimal place
      */
-    private static double[] computeOnsetDetectionFunction(double[][] spectrogram) {
-        int timeFrames = spectrogram.length;
-        int freqBins = spectrogram[0].length;
-        double[] onsetStrength = new double[timeFrames];
-        
-        // Weight frequencies - emphasize mid and high frequencies where beats are prominent
-        double[] freqWeights = new double[freqBins];
-        for (int f = 0; f < freqBins; f++) {
-            double freq = f * SAMPLE_RATE / (2.0 * freqBins);
-            if (freq < 200) {
-                freqWeights[f] = 0.5; // De-emphasize very low frequencies
-            } else if (freq < 2000) {
-                freqWeights[f] = 1.0; // Normal weight for mid frequencies
-            } else if (freq < 8000) {
-                freqWeights[f] = 1.5; // Emphasize higher frequencies
-            } else {
-                freqWeights[f] = 0.8; // Slightly reduce very high frequencies
-            }
-        }
-        
-        // Compute spectral flux with frequency weighting
-        for (int t = 1; t < timeFrames; t++) {
-            double flux = 0;
-            for (int f = 0; f < freqBins; f++) {
-                double diff = spectrogram[t][f] - spectrogram[t - 1][f];
-                // Half-wave rectification - only consider increases in energy
-                if (diff > 0) {
-                    flux += diff * freqWeights[f];
-                }
-            }
-            onsetStrength[t] = flux;
-        }
-        
-        // Smooth the onset detection function
-        return smoothSignal(onsetStrength, 3);
+    public static double estimateTempo(double[] odf, double frameAdvance) {
+        return estimateTempo(odf, frameAdvance, PRIOR_CENTER_BPM, PRIOR_LOG2_SIGMA);
     }
-    
+
     /**
-     * Detects BPM using autocorrelation analysis.
+     * Estimates the tempo of an onset detection function with an explicit tempo prior
+     * (exposed for the benchmark parameter sweep).
+     *
+     * @param odf            onset detection function
+     * @param frameAdvance   seconds between consecutive ODF frames
+     * @param priorCenterBpm center of the log-normal tempo prior
+     * @param priorLog2Sigma prior width in octaves
+     * @return estimated BPM, rounded to one decimal place
      */
-    private static double detectBPMAutocorrelation(double[] onsetStrength, double frameAdvance) {
-        int minLag = (int) Math.ceil(60.0 / (MAX_BPM * frameAdvance));
-        int maxLag = (int) Math.floor(60.0 / (MIN_BPM * frameAdvance));
-        
-        if (maxLag >= onsetStrength.length) {
-            maxLag = onsetStrength.length - 1;
-        }
-        if (minLag >= maxLag) {
-            return DEFAULT_BPM;
-        }
-        
-        double[] autocorr = new double[maxLag - minLag + 1];
-        
-        // Compute autocorrelation
-        for (int lag = minLag; lag <= maxLag; lag++) {
-            double correlation = 0;
-            int count = 0;
-            for (int i = 0; i < onsetStrength.length - lag; i++) {
-                correlation += onsetStrength[i] * onsetStrength[i + lag];
-                count++;
-            }
-            if (count > 0) {
-                autocorr[lag - minLag] = correlation / count;
-            }
-        }
-        
-        // Find the lag with maximum correlation
-        int bestLagIndex = 0;
-        double maxCorrelation = autocorr[0];
-        for (int i = 1; i < autocorr.length; i++) {
-            if (autocorr[i] > maxCorrelation) {
-                maxCorrelation = autocorr[i];
-                bestLagIndex = i;
-            }
-        }
-        
-        int bestLag = bestLagIndex + minLag;
-        return 60.0 / (bestLag * frameAdvance);
+    public static double estimateTempo(double[] odf, double frameAdvance,
+                                       double priorCenterBpm, double priorLog2Sigma) {
+        int maxLag = maxCombLag(frameAdvance);
+        if (odf.length < minimumFrames(frameAdvance)) return DEFAULT_BPM;
+        double[] autocorr = computeAutocorrelation(odf, Math.min(maxLag, odf.length - 1));
+        return pickTempo(autocorr, frameAdvance, priorCenterBpm, priorLog2Sigma);
     }
-    
+
     /**
-     * Detects BPM by analyzing intervals between onset peaks.
+     * Normalized autocorrelation of a zero-meaned signal, half-wave rectified.
+     * Index = lag in frames; values in [0, 1] with lag 0 mapped to 1.
+     *
+     * @param signal input signal (e.g. an ODF)
+     * @param maxLag largest lag (in frames) to compute
+     * @return autocorrelation array of length maxLag + 1, all zeros for a flat signal
      */
-    private static double detectBPMIntervalAnalysis(double[] onsetStrength, double frameAdvance) {
-        // Find peaks in onset strength
-        ArrayList<Integer> peakIndices = findPeaks(onsetStrength, 0.3); // Threshold at 30% of max
-        
-        if (peakIndices.size() < 2) {
-            return DEFAULT_BPM;
-        }
-        
-        // Calculate intervals between consecutive peaks
-        ArrayList<Double> intervals = new ArrayList<>();
-        for (int i = 1; i < peakIndices.size(); i++) {
-            double interval = (peakIndices.get(i) - peakIndices.get(i - 1)) * frameAdvance;
-            intervals.add(interval);
-        }
-        
-        // Find the most common interval (mode)
-        Collections.sort(intervals);
-        double mostCommonInterval = findMostCommonInterval(intervals);
-        
-        return 60.0 / mostCommonInterval;
-    }
-    
-    /**
-     * Detects BPM using spectral analysis in the tempo domain.
-     */
-    private static double detectBPMSpectralAnalysis(double[][] spectrogram, double frameAdvance) {
-        // Focus on lower frequency bands where bass and kick drums are prominent
-        int lowFreqBins = spectrogram[0].length / 4; // Roughly up to 5.5kHz
-        double[] bassOnsets = new double[spectrogram.length];
-        
-        for (int t = 1; t < spectrogram.length; t++) {
-            double flux = 0;
-            for (int f = 0; f < lowFreqBins; f++) {
-                double diff = spectrogram[t][f] - spectrogram[t - 1][f];
-                if (diff > 0) {
-                    flux += diff;
-                }
-            }
-            bassOnsets[t] = flux;
-        }
-        
-        // Apply autocorrelation to bass-focused onset function
-        return detectBPMAutocorrelation(bassOnsets, frameAdvance);
-    }
-    
-    /**
-     * Combines multiple BPM estimates using weighted averaging and validation.
-     */
-    private static double combineBPMEstimates(double bpm1, double bpm2, double bpm3) {
-        double[] bpms = {bpm1, bpm2, bpm3};
-        double[] weights = {0.4, 0.35, 0.25}; // Autocorr gets highest weight
-        
-        // Check for harmonic relationships and adjust
-        for (int i = 0; i < bpms.length; i++) {
-            for (int j = i + 1; j < bpms.length; j++) {
-                double ratio = bpms[i] / bpms[j];
-                // Check if one is half or double the other
-                if (Math.abs(ratio - 2.0) < 0.1) {
-                    bpms[j] = bpms[i]; // Use the consistent value
-                } else if (Math.abs(ratio - 0.5) < 0.1) {
-                    bpms[i] = bpms[j]; // Use the consistent value
-                }
-            }
-        }
-        
-        // Weighted average
-        double weightedSum = 0;
-        double totalWeight = 0;
-        for (int i = 0; i < bpms.length; i++) {
-            if (bpms[i] >= MIN_BPM && bpms[i] <= MAX_BPM) {
-                weightedSum += bpms[i] * weights[i];
-                totalWeight += weights[i];
-            }
-        }
-        
-        return totalWeight > 0 ? weightedSum / totalWeight : DEFAULT_BPM;
-    }
-    
-    /**
-     * Validates and refines the BPM estimate by checking against common values.
-     */
-    private static double validateAndRefineBPM(double estimatedBPM) {
-        if (estimatedBPM < MIN_BPM || estimatedBPM > MAX_BPM) {
-            return DEFAULT_BPM;
-        }
-        
-        // Check if the estimate is close to common BPM values
-        double closestCommon = COMMON_BPMS[0];
-        double minDistance = Math.abs(estimatedBPM - closestCommon);
-        
-        for (double commonBPM : COMMON_BPMS) {
-            double distance = Math.abs(estimatedBPM - commonBPM);
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestCommon = commonBPM;
-            }
-        }
-        
-        // If very close to a common BPM (within 3 BPM), snap to it
-        if (minDistance <= 3.0) {
-            return closestCommon;
-        }
-        
-        return Math.round(estimatedBPM * 10.0) / 10.0; // Round to 1 decimal place
-    }
-    
-    /**
-     * Finds peaks in a signal above a relative threshold.
-     */
-    private static ArrayList<Integer> findPeaks(double[] signal, double relativeThreshold) {
-        ArrayList<Integer> peaks = new ArrayList<>();
-        
-        // Find maximum value for threshold calculation
-        double maxValue = Arrays.stream(signal).max().orElse(1.0);
-        double threshold = maxValue * relativeThreshold;
-        
-        // Find local maxima above threshold
-        for (int i = 1; i < signal.length - 1; i++) {
-            if (signal[i] > threshold &&
-                    signal[i] > signal[i - 1] &&
-                    signal[i] > signal[i + 1]) {
-                peaks.add(i);
-            }
-        }
-        
-        return peaks;
-    }
-    
-    /**
-     * Finds the most common interval in a list of intervals.
-     */
-    private static double findMostCommonInterval(ArrayList<Double> intervals) {
-        if (intervals.isEmpty()) {
-            return 0.5; // Default to 120 BPM equivalent interval
-        }
-        
-        // Group intervals into bins
-        final double binSize = 0.02; // 20ms bins
-        java.util.Map<Integer, Integer> histogram = new java.util.HashMap<>();
-        
-        for (double interval : intervals) {
-            int bin = (int) Math.round(interval / binSize);
-            histogram.put(bin, histogram.getOrDefault(bin, 0) + 1);
-        }
-        
-        // Find the bin with the most occurrences
-        int mostCommonBin = Collections.max(histogram.entrySet(),
-                java.util.Map.Entry.comparingByValue()).getKey();
-        
-        return mostCommonBin * binSize;
-    }
-    
-    /**
-     * Smooths a signal using a simple moving average filter.
-     */
-    private static double[] smoothSignal(double[] signal, int windowSize) {
-        double[] smoothed = new double[signal.length];
-        int halfWindow = windowSize / 2;
-        
-        for (int i = 0; i < signal.length; i++) {
-            int start = Math.max(0, i - halfWindow);
-            int end = Math.min(signal.length - 1, i + halfWindow);
-            
+    public static double[] computeAutocorrelation(double[] signal, int maxLag) {
+        int n = signal.length;
+        double mean = 0;
+        for (double v : signal) mean += v;
+        mean /= n;
+
+        double[] centered = new double[n];
+        for (int i = 0; i < n; i++) centered[i] = signal[i] - mean;
+
+        double energy = 0;
+        for (double v : centered) energy += v * v;
+        double[] autocorr = new double[maxLag + 1];
+        if (energy == 0) return autocorr;
+
+        for (int lag = 0; lag <= maxLag; lag++) {
             double sum = 0;
-            int count = 0;
-            for (int j = start; j <= end; j++) {
-                sum += signal[j];
-                count++;
+            for (int i = 0; i + lag < n; i++) {
+                sum += centered[i] * centered[i + lag];
             }
-            
-            smoothed[i] = sum / count;
+            // Per-lag normalization compensates the shrinking overlap; rectify: only
+            // positive correlation is evidence of periodicity.
+            double value = sum / (n - lag) / (energy / n);
+            autocorr[lag] = Math.max(0, value);
         }
-        
-        return smoothed;
+        return autocorr;
     }
-    
+
+    /**
+     * Picks the best tempo from an ODF autocorrelation: scans a log-spaced BPM grid,
+     * scoring each candidate with a harmonic comb times a log-normal tempo prior,
+     * then refines the winning grid point by parabolic interpolation in log-tempo space.
+     *
+     * @param autocorr       output of {@link #computeAutocorrelation}
+     * @param frameAdvance   seconds between consecutive ODF frames
+     * @param priorCenterBpm center of the log-normal tempo prior
+     * @param priorLog2Sigma prior width in octaves
+     * @return estimated BPM, rounded to one decimal place
+     */
+    public static double pickTempo(double[] autocorr, double frameAdvance,
+                                   double priorCenterBpm, double priorLog2Sigma) {
+        int gridSize = (int) Math.ceil(Math.log(MAX_BPM / MIN_BPM) / Math.log(GRID_STEP)) + 1;
+        double[] gridBpm = new double[gridSize];
+        double[] gridScore = new double[gridSize];
+
+        int best = -1;
+        for (int g = 0; g < gridSize; g++) {
+            double bpm = MIN_BPM * Math.pow(GRID_STEP, g);
+            if (bpm > MAX_BPM) bpm = MAX_BPM;
+            gridBpm[g] = bpm;
+            gridScore[g] = combScore(autocorr, frameAdvance, bpm) * prior(bpm, priorCenterBpm, priorLog2Sigma);
+            if (best < 0 || gridScore[g] > gridScore[best]) best = g;
+        }
+        if (best < 0 || gridScore[best] <= 0) return DEFAULT_BPM;
+
+        // Parabolic refinement over log-tempo (grid is log-spaced, so offsets are symmetric).
+        double bpm = gridBpm[best];
+        if (best > 0 && best < gridSize - 1) {
+            double left = gridScore[best - 1], center = gridScore[best], right = gridScore[best + 1];
+            double denominator = left - 2 * center + right;
+            if (denominator < 0) {
+                double shift = 0.5 * (left - right) / denominator;
+                bpm = gridBpm[best] * Math.pow(GRID_STEP, shift);
+            }
+        }
+        return Math.round(Math.min(MAX_BPM, Math.max(MIN_BPM, bpm)) * 10.0) / 10.0;
+    }
+
+    /**
+     * Harmonic comb: autocorrelation sampled at 1x..4x the candidate beat period, weighted 1/k.
+     * High only when the signal is periodic at the candidate period AND its multiples, which
+     * suppresses non-octave metrical folds (3/5, 2/3) that match a single lag by accident.
+     */
+    private static double combScore(double[] autocorr, double frameAdvance, double bpm) {
+        double periodFrames = 60.0 / (bpm * frameAdvance);
+        double score = 0;
+        for (int k = 1; k <= COMB_HARMONICS; k++) {
+            score += autocorrAt(autocorr, k * periodFrames) / k;
+        }
+        return score;
+    }
+
+    /** Log-normal tempo prior: how likely mappers are to use this BPM, in octave distance. */
+    private static double prior(double bpm, double centerBpm, double log2Sigma) {
+        double octaves = Math.log(bpm / centerBpm) / Math.log(2);
+        return Math.exp(-(octaves * octaves) / (2 * log2Sigma * log2Sigma));
+    }
+
+    /** Linear interpolation of the autocorrelation at a fractional lag; 0 beyond the array. */
+    private static double autocorrAt(double[] autocorr, double lag) {
+        int lower = (int) Math.floor(lag);
+        if (lower < 0 || lower + 1 >= autocorr.length) return 0;
+        double fraction = lag - lower;
+        return autocorr[lower] * (1 - fraction) + autocorr[lower + 1] * fraction;
+    }
+
+    /** Largest lag the comb can request: 4x the beat period of the slowest tempo. */
+    private static int maxCombLag(double frameAdvance) {
+        return (int) Math.ceil(COMB_HARMONICS * 60.0 / (MIN_BPM * frameAdvance)) + 1;
+    }
+
+    /** Frames needed to see at least two periods of the slowest tempo. */
+    private static int minimumFrames(double frameAdvance) {
+        return (int) Math.ceil(2 * 60.0 / (MIN_BPM * frameAdvance));
+    }
+
     /**
      * Convenience method that returns BPM as integer for cases where precision isn't critical.
      */

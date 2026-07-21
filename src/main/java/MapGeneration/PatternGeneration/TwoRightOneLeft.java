@@ -1,9 +1,9 @@
 package MapGeneration.PatternGeneration;
 
+import AppLogic.GenerationContext;
 import BeatSaberObjects.Objects.Note;
 import MapGeneration.GenerationElements.Pattern;
 import MapGeneration.MapGenerator;
-import UserInterface.UserInterface;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,7 +33,7 @@ public class TwoRightOneLeft extends MapGenerator {
         List<Note> redNotes = new ArrayList<>();
 
         // Right-hand swings:
-        List<Note> complexPattern = complexPattern(timings, p, UserInterface.easyPattern, true, true, stacks, false,prevBlue, null);
+        List<Note> complexPattern = complexPattern(timings, p, GenerationContext.easyPattern, true, true, stacks, false,prevBlue, null);
 
         // Define the previous note that came before this function was called
         if (prevRed == null) firstNotePlacement(timings.get(0)._time);

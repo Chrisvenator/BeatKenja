@@ -1,0 +1,478 @@
+package AppLogic;
+
+import BeatSaberObjects.Objects.BeatSaberMap;
+import BeatSaberObjects.Objects.Bookmark;
+import BeatSaberObjects.Objects.Enums.ParityErrorEnum;
+import BeatSaberObjects.Objects.Note;
+import DataManager.FileManager;
+import DataManager.Parameters;
+import MapGeneration.GenerationElements.Pattern;
+import MapGeneration.PatternGeneration.CommonMethods.CheckParity;
+import MapGeneration.PatternGeneration.CommonMethods.Parser;
+import javafx.util.Pair;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import static DataManager.Parameters.DEFAULT_PATTERN_METADATA;
+import static DataManager.Parameters.MAP_FILE_FORMAT;
+import static DataManager.Parameters.PARITY_ERRORS_COLORS_MAP;
+import static DataManager.Parameters.PARITY_ERRORS_LIST;
+import static DataManager.Parameters.SAVE_PARITY_ERRORS_AS_BOOKMARKS_WILL_OVERWRITE_BOOKMARKS;
+import static DataManager.Parameters.logger;
+
+/**
+ * UI-independent application service: owns the loaded map session and implements the
+ * operations that were previously buried in Swing button classes (load, accept generated
+ * maps, parity bookkeeping, save with backup).
+ *
+ * State changes are published to listeners instead of being polled, so any frontend
+ * (Swing today, JavaFX later, CLI) can react without knowing about the others.
+ * Listeners are called on the thread that triggered the change; UI implementations
+ * must marshal to their own UI thread themselves.
+ */
+public class AppController {
+
+    public interface Listener {
+        default void onStateChanged(AppState state) {}
+
+        default void onBpmChanged(double bpm) {}
+
+        default void onActiveDiffChanged(DiffSession activeDiff) {}
+    }
+
+    private final MapSession session = new MapSession();
+    private final List<Listener> listeners = new CopyOnWriteArrayList<>();
+    private AppState state = AppState.EMPTY;
+    private DiffSession activeDiff;
+
+    public MapSession session() {
+        return session;
+    }
+
+    public AppState state() {
+        return state;
+    }
+
+    public List<BeatSaberMap> maps() {
+        return session.maps();
+    }
+
+    public Pattern getPattern() {
+        return session.getPattern();
+    }
+
+    public void setPattern(Pattern pattern) {
+        session.setPattern(pattern);
+    }
+
+    public void addListener(Listener listener) {
+        listeners.add(listener);
+    }
+
+    private void setState(AppState newState) {
+        state = newState;
+        listeners.forEach(l -> l.onStateChanged(newState));
+    }
+
+    /**
+     * Loads one difficulty file or every difficulty in a folder into a fresh session.
+     * Also extracts the global BPM from the map's info.dat if present.
+     *
+     * @param path a .dat/.json difficulty file or a map folder
+     * @return the names of the loaded difficulty files
+     * @throws IOException if the path yields no valid difficulty
+     */
+    public List<String> loadMapFileOrFolder(File path) throws IOException {
+        session.maps().clear();
+        PARITY_ERRORS_LIST.clear();
+        setState(AppState.EMPTY);
+
+        List<String> loaded = new ArrayList<>();
+        if (path.isDirectory()) {
+            File[] files = path.listFiles(MAP_FILE_FORMAT);
+            if (files == null || files.length == 0) throw new IOException("Could not find valid difficulty files in folder: " + path.getAbsolutePath());
+
+            session.setMapFolderPath(path.getAbsolutePath());
+            for (File f : files) loaded.add(loadSingleDiff(f));
+        } else {
+            if (path.getName().equalsIgnoreCase("info.dat") || !path.getName().contains(".dat")) throw new IOException("Wrong file type: " + path.getName());
+
+            session.setMapFolderPath(path.getParent());
+            loaded.add(loadSingleDiff(path));
+        }
+
+        extractAndPublishBpm(new File(session.getMapFolderPath()));
+        setActiveDiff(session.diffs().isEmpty() ? null : session.diffs().get(0));
+        setState(AppState.LOADED);
+        return loaded;
+    }
+
+    public DiffSession getActiveDiff() {
+        return activeDiff;
+    }
+
+    /** Selects the diff the step views operate on and notifies listeners (tab switching). */
+    public void setActiveDiff(DiffSession diff) {
+        this.activeDiff = diff;
+        listeners.forEach(l -> l.onActiveDiffChanged(diff));
+    }
+
+    public void setActiveDiff(String difficultyFileName) {
+        session.diffs().stream()
+                .filter(d -> d.difficultyFileName().equals(difficultyFileName))
+                .findFirst()
+                .ifPresent(this::setActiveDiff);
+    }
+
+    private String loadSingleDiff(File diffFile) {
+        BeatSaberMap map = BeatSaberMap.newMapFromJSON(diffFile.getAbsolutePath());
+        session.maps().add(map);
+        PARITY_ERRORS_LIST.put(diffFile.getName(), new ArrayList<>());
+        logger.info("Successfully loaded: {}/{}", diffFile.getParent(), diffFile.getName());
+        return diffFile.getName();
+    }
+
+    /**
+     * Reads "_beatsPerMinute" from the info.dat inside the map folder and publishes it.
+     * Missing info.dat is fine — the previously known BPM stays.
+     */
+    private void extractAndPublishBpm(File mapFolder) {
+        File info = new File(mapFolder, "info.dat");
+        if (!info.exists() || !info.isFile() || !info.canRead()) return;
+
+        String searchString = "\"_beatsPerMinute\": ";
+        for (String line : FileManager.readFile(info.getAbsolutePath())) {
+            if (line.contains(searchString)) {
+                double bpm = Parser.parseValue(
+                        line.substring(line.indexOf(searchString) + searchString.length(), line.lastIndexOf(",")),
+                        "bpm according to info.dat",
+                        Double::parseDouble,
+                        Parameters.BPM
+                );
+                session.setBpm(bpm);
+                listeners.forEach(l -> l.onBpmChanged(bpm));
+            }
+        }
+    }
+
+    /**
+     * Removes a single difficulty from the session. Falls back to a full unload when it
+     * was the last one; otherwise re-fires the current state so views refresh.
+     */
+    public void unloadDiff(String difficultyFileName) {
+        session.diffs().removeIf(diff -> diff.difficultyFileName().equals(difficultyFileName));
+        PARITY_ERRORS_LIST.remove(difficultyFileName);
+        logger.info("Unloaded difficulty: {}", difficultyFileName);
+
+        if (session.diffs().isEmpty()) {
+            unload();
+        } else {
+            if (activeDiff != null && activeDiff.difficultyFileName().equals(difficultyFileName)) setActiveDiff(session.diffs().get(0));
+            setState(state);
+        }
+    }
+
+    /** Discards the loaded map (diffs, parity errors, folder path) and returns to EMPTY. The loaded pattern is kept. */
+    public void unload() {
+        session.maps().clear();
+        session.setMapFolderPath(null);
+        PARITY_ERRORS_LIST.clear();
+        GenerationContext.currentDiff = "NULL";
+        setActiveDiff((DiffSession) null);
+        logger.info("Map unloaded");
+        setState(AppState.EMPTY);
+    }
+
+    /**
+     * Prepares the session for a generation run: clears old parity errors, falls back to
+     * the default pattern if none was loaded, and resets the current-diff marker.
+     * (Formerly UserInterface.manageMap.)
+     */
+    public void prepareGeneration() {
+        PARITY_ERRORS_LIST.keySet().forEach(k -> PARITY_ERRORS_LIST.get(k).clear());
+        if (session.getPattern() == null) {
+            logger.info("Patterns have not been specified. Proceeding with default patterns");
+            session.setPattern(new Pattern(DEFAULT_PATTERN_METADATA));
+        }
+        GenerationContext.currentDiff = "NULL";
+    }
+
+    /**
+     * Replaces the session's maps with freshly generated ones, preserving the original
+     * JSON and difficulty file names, then runs the parity check per diff.
+     * (Formerly MySubButton.loadNewlyCreatedMaps.)
+     */
+    public void acceptGeneratedMaps(List<BeatSaberMap> newMaps) {
+        for (int i = 0; i < newMaps.size(); i++) {
+            acceptGeneratedMap(session.diffs().get(i), newMaps.get(i));
+        }
+
+        GenerationContext.currentDiff = "NULL";
+        if (!newMaps.isEmpty()) setState(AppState.GENERATED);
+    }
+
+    /** Single-diff version of {@link #acceptGeneratedMaps(List)}: swaps the map inside the DiffSession and checks parity. */
+    private void acceptGeneratedMap(DiffSession diff, BeatSaberMap generated) {
+        BeatSaberMap old = diff.map();
+        if (old.equals(generated) || new HashSet<>(Arrays.stream(old._notes).toList()).containsAll(Arrays.stream(generated._notes).toList())) {
+            logger.error("Map couldn't be loaded!");
+            System.err.println("Map couldn't be loaded!");
+        }
+
+        logger.info("Checking map: {}", diff.difficultyFileName());
+
+        generated.originalJSON = old.originalJSON;
+        generated.difficultyFileName = diff.difficultyFileName();
+        generated.bookmarks = generated.calculateBookmarks();
+        diff.setMap(generated);
+        checkMap(generated);
+
+        if (Parameters.SAVE_PARITY_ERRORS_AS_BOOKMARKS) {
+            // Two statements on purpose: parityErrorsAsBookmarks may *replace* the map's
+            // bookmarks list (overwrite flag), so the addAll target must be resolved afterwards.
+            List<Bookmark> parityBookmarks = parityErrorsAsBookmarks(diff.difficultyFileName());
+            generated.bookmarks.addAll(parityBookmarks);
+        }
+
+        logger.info("Newly created map loaded!\n\n");
+    }
+
+    /**
+     * Runs a generator for the given diffs (per-diff tabs: active diff or all).
+     * Applies each diff's own pattern variance, feeds parity bookkeeping per diff, and
+     * fires GENERATED once when at least one diff succeeded.
+     *
+     * Synchronous — UI callers should run it in a background task and marshal updates.
+     *
+     * @return per-diff error messages (empty when everything worked)
+     */
+    public List<String> generateFor(GeneratorType type, boolean oneHanded, List<DiffSession> targets) {
+        prepareGeneration();
+        List<String> errors = new ArrayList<>();
+        boolean anySucceeded = false;
+
+        for (DiffSession diff : targets) {
+            GenerationContext.currentDiff = diff.difficultyFileName();
+            GenerationContext.patternVariance = diff.getPatternVariance() * 10;
+            try {
+                BeatSaberMap generated = GenerationService.generate(type, diff.map(), Pattern.adjustVariance(session.getPattern()), oneHanded);
+                acceptGeneratedMap(diff, generated);
+                anySucceeded = true;
+            } catch (Exception e) {
+                logger.error("Generation failed for {}: {}", diff.difficultyFileName(), e.getMessage());
+                errors.add(diff.difficultyFileName() + ": " + e.getMessage());
+            }
+        }
+
+        GenerationContext.currentDiff = "NULL";
+        GenerationContext.patternVariance = 0;
+        if (anySucceeded) setState(AppState.GENERATED);
+        return errors;
+    }
+
+    /**
+     * Converts the given diffs to timing notes in place.
+     *
+     * @param oneColor true = blue-only dot notes bottom-left (the format generators expect);
+     *                 false = two-color timing notes (known to be shaky, the old UI warned too)
+     */
+    public void convertToTimingNotes(boolean oneColor, List<DiffSession> targets) {
+        prepareGeneration();
+        for (DiffSession diff : targets) {
+            GenerationContext.currentDiff = diff.difficultyFileName();
+            if (oneColor) diff.map().toBlueLeftBottomRowDotTimings();
+            else diff.map().toTimingNotes();
+            logger.info("Converted {} to {} timing notes", diff.difficultyFileName(), oneColor ? "1-color" : "2-color");
+        }
+        GenerationContext.currentDiff = "NULL";
+        setState(state); // refresh views
+    }
+
+    /**
+     * Map utilities (formerly the Swing "Map Utilities" sub-buttons), applied in place to
+     * the given diffs. Each fires a state refresh so views can update.
+     */
+    public void makeNoArrows(List<DiffSession> targets) {
+        for (DiffSession diff : targets) {
+            diff.map().makeNoArrows();
+            logger.info("{} is now a no arrows map", diff.difficultyFileName());
+        }
+        setState(state);
+    }
+
+    /** Converts all flashing light events into regular "on" events. */
+    public void convertFlashingLights(List<DiffSession> targets) {
+        for (DiffSession diff : targets) {
+            diff.map().convertAllFlashLightsToOnLights();
+            logger.info("Removed flashing lights from {}", diff.difficultyFileName());
+        }
+        setState(state);
+    }
+
+    /** Deletes all notes of one color (red: 0, blue: 1), making the diffs one-handed. */
+    public void deleteNoteType(List<DiffSession> targets, int noteType) {
+        for (DiffSession diff : targets) {
+            diff.map().makeOneHanded(noteType);
+            logger.info("Removed all notes with type {} from {}", noteType, diff.difficultyFileName());
+        }
+        setState(state);
+    }
+
+    /** Snaps all note placements to 1/precisionDenominator of a beat (e.g. 16 → 1/16). */
+    public void fixPlacements(List<DiffSession> targets, double precisionDenominator) {
+        for (DiffSession diff : targets) {
+            diff.map().fixPlacements(1 / precisionDenominator);
+            logger.info("Fixed note placements of {} with a precision of 1/{} of a beat", diff.difficultyFileName(), precisionDenominator);
+        }
+        setState(state);
+    }
+
+    /**
+     * Loads a generation pattern from a .pat file or from an existing difficulty (.dat/.json).
+     * (Formerly GlobalLoadPatterns.)
+     */
+    public void loadPatternFromFile(File file) throws Exception {
+        if (file.getName().endsWith(".pat")) {
+            session.setPattern(new Pattern(file.getAbsolutePath()));
+        } else if (file.getName().endsWith(".dat") || file.getName().endsWith(".json")) {
+            BeatSaberMap map = BeatSaberMap.newMapFromJSON(file.getAbsolutePath());
+            session.setPattern(new Pattern(map._notes, 1));
+        } else {
+            throw new IllegalArgumentException("Pattern must be a .pat, .dat or .json file");
+        }
+        logger.info("Pattern loaded from: {}", file.getAbsolutePath());
+    }
+
+    /**
+     * Exports the whole map as a playable zip: every file from the loaded map folder
+     * (info.dat, song, cover, …) plus the current in-memory state of the loaded diffs,
+     * which override their files on disk. Existing zips and diff backups are skipped.
+     *
+     * One session = one map = one zip; loading always replaces the session, so diffs
+     * from two different maps can never be mixed here.
+     */
+    public void exportMapAsZip(File targetZip) throws IOException {
+        String folder = session.getMapFolderPath();
+        if (folder == null || folder.isEmpty()) throw new IllegalStateException("No map folder available");
+
+        java.util.Map<String, BeatSaberMap> inMemoryDiffs = new java.util.HashMap<>();
+        session.diffs().forEach(diff -> inMemoryDiffs.put(diff.difficultyFileName(), diff.map()));
+
+        java.nio.file.Path root = new File(folder).toPath();
+        try (java.util.zip.ZipOutputStream zip = new java.util.zip.ZipOutputStream(new java.io.FileOutputStream(targetZip));
+             java.util.stream.Stream<java.nio.file.Path> files = java.nio.file.Files.walk(root)) {
+            for (java.nio.file.Path path : files.filter(java.nio.file.Files::isRegularFile).toList()) {
+                String relative = root.relativize(path).toString().replace('\\', '/');
+                if (relative.endsWith(".zip") || path.toFile().equals(targetZip)) continue;
+
+                zip.putNextEntry(new java.util.zip.ZipEntry(relative));
+                BeatSaberMap inMemory = inMemoryDiffs.get(path.getFileName().toString());
+                if (inMemory != null) {
+                    zip.write(inMemory.exportAsMap().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                } else {
+                    java.nio.file.Files.copy(path, zip);
+                }
+                zip.closeEntry();
+            }
+        }
+        logger.info("Map exported as zip: {}", targetZip.getAbsolutePath());
+    }
+
+    /**
+     * Zips the map folder and opens the configured web previewer plus the folder,
+     * so the zip can be dragged into the browser. (Formerly GlobalOpenMapInBrowser.)
+     */
+    public void openMapInBrowserPreviewer() throws Exception {
+        String folder = session.getMapFolderPath();
+        if (folder == null || folder.isEmpty()) throw new IllegalStateException("No map folder available");
+
+        String zipFileName = folder + "/output.zip";
+        FileManager.createZipFileFromDirectory(folder, zipFileName);
+        logger.info("Zip created: {}", zipFileName);
+
+        java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
+        desktop.browse(new java.net.URI(Parameters.mapViewerURL));
+        desktop.open(new File(folder));
+    }
+
+    /**
+     * Converts the parity errors recorded for a difficulty into editor bookmarks.
+     * (Formerly UserInterface.parityErrorsAsBookmarks.)
+     */
+    public List<Bookmark> parityErrorsAsBookmarks(String diffName) {
+        if (SAVE_PARITY_ERRORS_AS_BOOKMARKS_WILL_OVERWRITE_BOOKMARKS) session.maps().forEach(b -> b.bookmarks = new ArrayList<>());
+
+        List<Bookmark> bookmarks = new ArrayList<>();
+        for (Pair<Float, ParityErrorEnum> err : PARITY_ERRORS_LIST.get(diffName)) {
+            float[] color = new float[3];
+            color[0] = PARITY_ERRORS_COLORS_MAP.get(err.getValue()).getRed();
+            color[1] = PARITY_ERRORS_COLORS_MAP.get(err.getValue()).getGreen();
+            color[2] = PARITY_ERRORS_COLORS_MAP.get(err.getValue()).getBlue();
+
+            bookmarks.add(new Bookmark(err.getKey(), err.getValue().toString(), color));
+        }
+
+        // Deliberately not clearing the parity list here: the Review view still needs it,
+        // and prepareGeneration() resets all lists before the next run anyway.
+        return bookmarks;
+    }
+
+    /** Runs the basic parity/mapping-error check on a map. (Formerly UserInterface.checkMap.) */
+    public void checkMap(BeatSaberMap map) {
+        List<Note> notes = new ArrayList<>();
+        Collections.addAll(notes, map._notes);
+
+        CheckParity.checkAndFixBasicMappingErrors(notes, false);
+        logger.warn("There have been {} mapping errors", GenerationContext.currentParityErrors().size());
+    }
+
+    /**
+     * Writes one map to the given path, optionally renaming an existing file to a
+     * numbered backup first. (Formerly GlobalSaveMapAs internals.)
+     *
+     * @return true if the write succeeded
+     */
+    public boolean saveMap(BeatSaberMap map, String targetPath, boolean backup) {
+        if (backup && !backupExisting(targetPath)) {
+            logger.error("Could not create backup for: {}", targetPath);
+            return false;
+        }
+
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(targetPath))) {
+            bw.write(map.exportAsMap());
+            logger.info("Map saved successfully at: {}", targetPath);
+            return true;
+        } catch (IOException e) {
+            logger.error("There was an error while saving the map at {}: {}", targetPath, e.getMessage());
+            return false;
+        }
+    }
+
+    /** Marks the current generation result as saved (fired after a successful save run). */
+    public void markSaved() {
+        setState(AppState.SAVED);
+    }
+
+    /** Renames an existing file at path to the first free "path&lt;n&gt;" name. No-op if the file doesn't exist. */
+    private boolean backupExisting(String path) {
+        File f = new File(path);
+        if (!f.exists()) return true;
+
+        int i = 1;
+        File backup = new File(path + i);
+        while (backup.exists()) {
+            i++;
+            backup = new File(path + i);
+        }
+        return f.renameTo(backup);
+    }
+}

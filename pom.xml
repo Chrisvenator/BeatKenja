@@ -18,6 +18,8 @@
         <maven.compiler.source>21</maven.compiler.source>
         <junit.version>5.9.2</junit.version>
         <kotlin.version>2.0.10</kotlin.version>
+        <!-- benchmark tests excluded by default; override with -Dsurefire.excludedGroups=none -->
+        <surefire.excludedGroups>benchmark</surefire.excludedGroups>
     </properties>
 
     <repositories>
@@ -170,6 +172,13 @@
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
             <version>23-ea+3</version>
+        </dependency>
+
+        <!-- Modern JavaFX theme (new UI shell) -->
+        <dependency>
+            <groupId>io.github.mkpaz</groupId>
+            <artifactId>atlantafx-base</artifactId>
+            <version>2.0.1</version>
         </dependency>
 
         <!-- Plotting of the nps graph -->
@@ -335,6 +344,17 @@
                 <configuration>
                     <source>21</source>
                     <target>21</target>
+                </configuration>
+            </plugin>
+
+            <!-- Surefire: exclude slow benchmark tests from default runs.
+                 Run them explicitly with: mvn test -Dtest=BaselineBenchmarkTest -Dsurefire.excludedGroups=none -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <excludedGroups>${surefire.excludedGroups}</excludedGroups>
                 </configuration>
             </plugin>
 

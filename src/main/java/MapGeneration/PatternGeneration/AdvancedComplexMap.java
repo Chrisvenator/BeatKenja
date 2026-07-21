@@ -1,11 +1,11 @@
 package MapGeneration.PatternGeneration;
 
+import AppLogic.GenerationContext;
 import BeatSaberObjects.Objects.Note;
 import DataManager.Records.PatMetadata;
 import MapGeneration.MapGenerator;
 import MapGeneration.PatternGeneration.CommonMethods.FixErrorsInPatterns;
 import MapGeneration.GenerationElements.Pattern;
-import UserInterface.UserInterface;
 
 import java.util.*;
 
@@ -64,7 +64,7 @@ public class AdvancedComplexMap extends MapGenerator {
                     notes.addAll(complexPattern(
                             timings.subList(i, timings.size()),
                             fallbackPattern,
-                            UserInterface.easyPattern, true, oneHanded,
+                            GenerationContext.easyPattern, true, oneHanded,
                             stacks,
                             false,
                             prevBlue,
@@ -82,7 +82,7 @@ public class AdvancedComplexMap extends MapGenerator {
             notes.addAll(complexPattern(
                     timings.subList(i, i + 4),
                     p,
-                    UserInterface.easyPattern, true, oneHanded,
+                    GenerationContext.easyPattern, true, oneHanded,
                     stacks,
                     false,
                     prevBlue,

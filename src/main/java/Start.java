@@ -1,5 +1,4 @@
 import DataManager.CreateAllNecessaryDIRsAndFiles;
-import UserInterface.UserInterface;
 
 import java.io.File;
 import java.util.Random;
@@ -41,18 +40,14 @@ public class Start {
      */
 
     /**
-     * This variable represents the User Interface.
-     * It is used to display every button and feature
-     */
-    public static UserInterface ui;
-
-    /**
      * Default method of the whole project. main is used to start and initialize everything.
      */
     public static void main(String[] args) {
         java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.WARNING);
 
-        SEED = (long) (new Random().nextDouble() * 1000000000);
+        // Dev aid: -Dbk.seed=<long> makes runs reproducible (smoke checks)
+        String fixedSeed = System.getProperty("bk.seed");
+        SEED = fixedSeed != null ? Long.parseLong(fixedSeed) : (long) (new Random().nextDouble() * 1000000000);
         RANDOM = new Random(SEED);
 
         logger.info("Starting up BeatKenja...");
@@ -81,25 +76,13 @@ public class Start {
                 System.exit(1);
             }
 
-            // Execute CLI mode
+            // Execute CLI mode (exits the process on completion)
             Start_CLI.executeCLI(config);
-
-            ui = new UserInterface();
-            ui.setVisible(false);
-
-
         } else {
-            // No CLI arguments provided, start GUI mode
+            // No CLI arguments provided, start the JavaFX GUI.
+            // StartFX calls Application.launch(), which initializes the FX toolkit itself.
             logger.info("Starting GUI mode...");
-
-            // Warm up the JavaFX runtime in the background so the first WebView-based
-            // window (e.g. the Readme viewer) opens instantly instead of cold-starting.
-            javafx.application.Platform.setImplicitExit(false);
-            javafx.application.Platform.startup(() -> {});
-
-            ui = new UserInterface();
-            ui.setVisible(true);
-
+            UserInterfaceFX.StartFX.main(args);
         }
     }
 }

@@ -1,5 +1,6 @@
 package MapGeneration.GenerationElements;
 
+import AppLogic.GenerationContext;
 import BeatSaberObjects.BeatsaberObject;
 import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Note;
@@ -11,7 +12,6 @@ import MapAnalysation.PatternVisualisation.DirichletMultinomialDistributionVisua
 import MapAnalysation.PatternVisualisation.PatternVisualisationHeatMap;
 import MapGeneration.GenerationElements.Exceptions.MalformedFileException;
 import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
-import UserInterface.UserInterface;
 import com.google.gson.Gson;
 import lombok.Cleanup;
 
@@ -950,18 +950,18 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
 
     // AKA Dirichlet Multinomial Distribution application
     public static Pattern adjustVariance(Pattern pattern) {
-        if (UserInterface.patternVariance == 0) {
+        if (GenerationContext.patternVariance == 0) {
             return pattern;
         }
         Pattern p = pattern.deepCopy();
 
-        if (UserInterface.patternVariance < 0) {
-            logger.info("Variance: {}", UserInterface.patternVariance);
-            System.out.println("Variance: " + UserInterface.patternVariance);
-            Pattern.inverseNormalizeCountArray(p.count, true, (UserInterface.patternVariance * -1));
+        if (GenerationContext.patternVariance < 0) {
+            logger.info("Variance: {}", GenerationContext.patternVariance);
+            System.out.println("Variance: " + GenerationContext.patternVariance);
+            Pattern.inverseNormalizeCountArray(p.count, true, (GenerationContext.patternVariance * -1));
             Pattern.normalizeCountArray(p.count, true);
         } else {
-            p.applyDirichletMultinomial(UserInterface.patternVariance);
+            p.applyDirichletMultinomial(GenerationContext.patternVariance);
 //            p.normalizeAsContinuousCategoricalDistribution();
             Pattern.normalizeCountArray(p.count, true);
         }
@@ -993,7 +993,7 @@ public class Pattern extends BeatsaberObject implements Iterable<PatternProbabil
      */
     public void visualizeDirichletMultinomialDistribution(String name) {
         EventQueue.invokeLater(() -> {
-            DirichletMultinomialDistributionVisualizer ex = new DirichletMultinomialDistributionVisualizer(this, UserInterface.patternVariance);
+            DirichletMultinomialDistributionVisualizer ex = new DirichletMultinomialDistributionVisualizer(this, GenerationContext.patternVariance);
             ex.setVisible(true);
         });
     }
