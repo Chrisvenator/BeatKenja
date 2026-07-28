@@ -1,6 +1,7 @@
 package AppLogic;
 
 import BeatSaberObjects.Objects.BeatSaberMap;
+import BeatSaberObjects.Objects.Enums.BeatmapCharacteristic;
 import BeatSaberObjects.Objects.Enums.ParityErrorEnum;
 import DataManager.Parameters;
 import javafx.util.Pair;
@@ -20,6 +21,8 @@ public class DiffSession {
     private BeatSaberMap map;
     /** Pattern variance for this diff (slider value -50..50; multiplied by 10 before generation, like the old slider). */
     private int patternVariance = 0;
+    /** Beatmap characteristic (game mode). Null / STANDARD for diffs loaded from disk; set explicitly for in-session created characteristic diffs. */
+    private BeatmapCharacteristic characteristic = BeatmapCharacteristic.STANDARD;
 
     public DiffSession(String difficultyFileName, BeatSaberMap map) {
         this.difficultyFileName = difficultyFileName;
@@ -49,5 +52,13 @@ public class DiffSession {
 
     public void setPatternVariance(int patternVariance) {
         this.patternVariance = patternVariance;
+    }
+
+    public BeatmapCharacteristic characteristic() {
+        return characteristic;
+    }
+
+    public void setCharacteristic(BeatmapCharacteristic characteristic) {
+        this.characteristic = characteristic;
     }
 }
