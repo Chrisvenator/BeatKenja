@@ -24,8 +24,8 @@ import javafx.scene.layout.VBox;
  * characteristic (OneSaber, NoArrows, 90Degree, …) from the active diff, or apply
  * the same transform in place.
  *
- * Implemented characteristics (OneSaber, NoArrows) show an Apply button that opens a
- * confirmation popup with "New difficulty" / "Apply to active diff" / Cancel.
+ * Implemented characteristics (OneSaber, NoArrows, 90Degree, 360Degree, Lightshow) show an
+ * Apply button that opens a confirmation popup with "New difficulty" / "Apply to active diff" / Cancel.
  * Not-yet-implemented characteristics show a disabled "Not implemented yet" button.
  */
 public class CharacteristicsView extends javafx.scene.control.ScrollPane {
@@ -72,8 +72,10 @@ public class CharacteristicsView extends javafx.scene.control.ScrollPane {
                 null,
                 () -> applyWithConfirm(BeatmapCharacteristic.NO_ARROWS, -1));
 
-        VBox deg90Row    = characteristicRow(BeatmapCharacteristic.DEGREE_90,  "90° rotation maps (rotation events not yet generated).", null, null);
-        VBox deg360Row   = characteristicRow(BeatmapCharacteristic.DEGREE_360, "360° rotation maps (rotation events not yet generated).", null, null);
+        VBox deg90Row    = characteristicRow(BeatmapCharacteristic.DEGREE_90,  "Adds 90° lane-rotation events synced to sections, beats and note position.", null,
+                () -> applyWithConfirm(BeatmapCharacteristic.DEGREE_90, -1));
+        VBox deg360Row   = characteristicRow(BeatmapCharacteristic.DEGREE_360, "Adds 360° lane-rotation events synced to sections, beats and note position.", null,
+                () -> applyWithConfirm(BeatmapCharacteristic.DEGREE_360, -1));
         VBox lightRow    = characteristicRow(BeatmapCharacteristic.LIGHTSHOW,  "Lightshow-only map. Strips all notes and obstacles; keeps all light events.", null,
                 () -> applyWithConfirm(BeatmapCharacteristic.LIGHTSHOW, -1));
         VBox lawlessRow  = characteristicRow(BeatmapCharacteristic.LAWLESS,    "No rule constraints (transform not yet implemented).", null, null);
@@ -143,6 +145,10 @@ public class CharacteristicsView extends javafx.scene.control.ScrollPane {
                     case LIGHTSHOW -> {
                         active.map().makeLightshow();
                         result.setText("✓ Applied Lightshow to " + active.difficultyFileName() + " (in place)");
+                    }
+                    case DEGREE_360, DEGREE_90 -> {
+                        controller.applyCharacteristicInPlace(java.util.List.of(active), characteristic, -1);
+                        result.setText("✓ Applied " + characteristic.infoName + " to " + active.difficultyFileName() + " (in place)");
                     }
                     default -> result.setText("In-place transform not available for " + characteristic.infoName);
                 }

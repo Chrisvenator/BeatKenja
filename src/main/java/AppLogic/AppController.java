@@ -330,6 +330,46 @@ public class AppController {
         setState(state);
     }
 
+    /**
+     * Applies the characteristic-specific transform to {@code map} in place.
+     * Single source of truth used by both {@code createCharacteristicDiff} and
+     * {@code applyCharacteristicInPlace}.
+     *
+     * @param map        the map to transform (must already be a clone if non-destructive use)
+     * @param ch         the target characteristic
+     * @param removeType note type to remove for ONE_SABER (0=red, 1=blue); ignored otherwise
+     */
+    private void applyCharacteristicTransform(BeatSaberMap map, BeatmapCharacteristic ch, int removeType) {
+        switch (ch) {
+            case NO_ARROWS -> map.makeNoArrows();
+            case ONE_SABER -> map.makeOneHanded(removeType);
+            case LIGHTSHOW -> map.makeLightshow();
+            case DEGREE_360 -> MapGeneration.CharacteristicGeneration.RotationEventGenerator
+                    .generate(map, MapGeneration.CharacteristicGeneration.RotationEventGenerator.RotationMode.THREE_SIXTY);
+            case DEGREE_90 -> MapGeneration.CharacteristicGeneration.RotationEventGenerator
+                    .generate(map, MapGeneration.CharacteristicGeneration.RotationEventGenerator.RotationMode.NINETY);
+            case LAWLESS -> logger.info("Created Lawless diff — notes copied as-is, no rule constraints applied.");
+            case LEGACY -> logger.info("Created Legacy diff as stub — notes copied as-is, old-format specifics not yet implemented.");
+            default -> { /* STANDARD or unknown: no transform */ }
+        }
+    }
+
+    /**
+     * Applies the characteristic transform in place to each diff in {@code targets}.
+     * Mirrors the {@code makeNoArrows(List)} pattern: loops, transforms, logs, refreshes state.
+     *
+     * @param targets    diffs to transform
+     * @param ch         the target characteristic
+     * @param removeType note type to remove for ONE_SABER; -1 for all others
+     */
+    public void applyCharacteristicInPlace(List<DiffSession> targets, BeatmapCharacteristic ch, int removeType) {
+        for (DiffSession diff : targets) {
+            applyCharacteristicTransform(diff.map(), ch, removeType);
+            logger.info("Applied {} transform to {} (in place)", ch.infoName, diff.difficultyFileName());
+        }
+        setState(state);
+    }
+
     /** Creates a new characteristic diff WITH the note transform applied (Characteristics tab). */
     public DiffSession createCharacteristicDiff(DiffSession source, BeatmapCharacteristic characteristic, int removeType, boolean overwrite) {
         return createCharacteristicDiff(source, characteristic, removeType, overwrite, true);
@@ -376,21 +416,7 @@ public class AppController {
         clone.difficultyFileName = newFileName;
 
         if (applyTransform) {
-            switch (characteristic) {
-                case NO_ARROWS -> clone.makeNoArrows();
-                case ONE_SABER -> clone.makeOneHanded(removeType);
-                case LIGHTSHOW -> clone.makeLightshow();
-                case DEGREE_90, DEGREE_360 -> {
-                    // TODO: generate rotation events for 90/360 characteristics
-                    logger.info("Created {} diff as stub — notes copied as-is, rotation events not yet generated.", characteristic.infoName);
-                }
-                case LAWLESS -> logger.info("Created Lawless diff — notes copied as-is, no rule constraints applied.");
-                case LEGACY -> {
-                    // TODO: handle old-format _version specifics for Legacy characteristic
-                    logger.info("Created Legacy diff as stub — notes copied as-is, old-format specifics not yet implemented.");
-                }
-                default -> { /* STANDARD: no transform */ }
-            }
+            applyCharacteristicTransform(clone, characteristic, removeType);
         }
 
         session.maps().add(clone);

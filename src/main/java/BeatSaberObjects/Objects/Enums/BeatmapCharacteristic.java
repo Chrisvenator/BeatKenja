@@ -9,8 +9,8 @@ public enum BeatmapCharacteristic {
     STANDARD("Standard",   "Standard",  false),
     ONE_SABER("OneSaber",  "OneSaber",  true),
     NO_ARROWS("NoArrows",  "NoArrows",  true),
-    DEGREE_90("90Degree",  "90Degree",  false),
-    DEGREE_360("360Degree","360Degree", false),
+    DEGREE_90("90Degree",  "90Degree",  true),
+    DEGREE_360("360Degree","360Degree", true),
     LIGHTSHOW("Lightshow", "Lightshow", true),
     LAWLESS("Lawless",     "Lawless",   false),
     LEGACY("Legacy",       "Legacy",    false);
