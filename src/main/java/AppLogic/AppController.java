@@ -330,17 +330,34 @@ public class AppController {
         setState(state);
     }
 
+    /** Creates a new characteristic diff WITH the note transform applied (Characteristics tab). */
+    public DiffSession createCharacteristicDiff(DiffSession source, BeatmapCharacteristic characteristic, int removeType, boolean overwrite) {
+        return createCharacteristicDiff(source, characteristic, removeType, overwrite, true);
+    }
+
+    /**
+     * Clones {@code source} into a new in-session diff tagged under {@code characteristic} with NO
+     * transform — notes, obstacles and events are copied verbatim. Backs the Utilities relabel tool.
+     *
+     * @return the new DiffSession, or null on filename collision when overwrite is false
+     */
+    public DiffSession changeCharacteristic(DiffSession source, BeatmapCharacteristic characteristic, boolean overwrite) {
+        return createCharacteristicDiff(source, characteristic, -1, overwrite, false);
+    }
+
     /**
      * Creates a new in-session difficulty as a clone of {@code source} under the given
-     * {@code characteristic}. The clone is transformed according to the characteristic.
+     * {@code characteristic}.
      *
      * @param source         the diff to clone
      * @param characteristic the target beatmap characteristic
      * @param removeType     note type to remove for ONE_SABER (0 = red, 1 = blue); ignored otherwise
      * @param overwrite      if true and a diff with the same filename exists, replace it
+     * @param applyTransform if true, applies the characteristic-specific note transform (e.g. NO_ARROWS → dots);
+     *                       if false, notes are copied verbatim regardless of characteristic
      * @return the new DiffSession, or null if a collision exists and overwrite is false
      */
-    public DiffSession createCharacteristicDiff(DiffSession source, BeatmapCharacteristic characteristic, int removeType, boolean overwrite) {
+    private DiffSession createCharacteristicDiff(DiffSession source, BeatmapCharacteristic characteristic, int removeType, boolean overwrite, boolean applyTransform) {
         String base = BeatmapCharacteristic.baseDifficulty(source.difficultyFileName());
         String newFileName = base + characteristic.filenameSuffix + ".dat";
 
@@ -358,20 +375,22 @@ public class AppController {
         BeatSaberMap clone = cloneMap(source.map());
         clone.difficultyFileName = newFileName;
 
-        switch (characteristic) {
-            case NO_ARROWS -> clone.makeNoArrows();
-            case ONE_SABER -> clone.makeOneHanded(removeType);
-            case LIGHTSHOW -> clone.makeLightshow();
-            case DEGREE_90, DEGREE_360 -> {
-                // TODO: generate rotation events for 90/360 characteristics
-                logger.info("Created {} diff as stub — notes copied as-is, rotation events not yet generated.", characteristic.infoName);
+        if (applyTransform) {
+            switch (characteristic) {
+                case NO_ARROWS -> clone.makeNoArrows();
+                case ONE_SABER -> clone.makeOneHanded(removeType);
+                case LIGHTSHOW -> clone.makeLightshow();
+                case DEGREE_90, DEGREE_360 -> {
+                    // TODO: generate rotation events for 90/360 characteristics
+                    logger.info("Created {} diff as stub — notes copied as-is, rotation events not yet generated.", characteristic.infoName);
+                }
+                case LAWLESS -> logger.info("Created Lawless diff — notes copied as-is, no rule constraints applied.");
+                case LEGACY -> {
+                    // TODO: handle old-format _version specifics for Legacy characteristic
+                    logger.info("Created Legacy diff as stub — notes copied as-is, old-format specifics not yet implemented.");
+                }
+                default -> { /* STANDARD: no transform */ }
             }
-            case LAWLESS -> logger.info("Created Lawless diff — notes copied as-is, no rule constraints applied.");
-            case LEGACY -> {
-                // TODO: handle old-format _version specifics for Legacy characteristic
-                logger.info("Created Legacy diff as stub — notes copied as-is, old-format specifics not yet implemented.");
-            }
-            default -> { /* STANDARD: no transform */ }
         }
 
         session.maps().add(clone);

@@ -1,5 +1,6 @@
 package AppLogic;
 
+import BeatSaberObjects.Objects.Enums.BeatmapCharacteristic;
 import BeatSaberObjects.Objects.Note;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -77,5 +78,26 @@ class AppControllerUtilitiesTest {
 
         assertThat(controller.state()).isEqualTo(AppState.LOADED);
         assertThat(controller.getActiveDiff()).isSameAs(active);
+    }
+
+    @Test
+    void changeCharacteristic_createsNoArrowsDiffWithoutTransform() {
+        DiffSession source = controller.getActiveDiff();
+        int[] originalCutDirs = Arrays.stream(source.map()._notes).mapToInt(n -> n._cutDirection).toArray();
+        int originalCount = source.map()._notes.length;
+
+        DiffSession created = controller.changeCharacteristic(source, BeatmapCharacteristic.NO_ARROWS, false);
+
+        assertThat(created).isNotNull();
+        assertThat(created.difficultyFileName()).endsWith("NoArrows.dat");
+        assertThat(created.characteristic()).isEqualTo(BeatmapCharacteristic.NO_ARROWS);
+        // notes copied verbatim — count and cut directions unchanged (NOT converted to dots)
+        assertThat(created.map()._notes).hasSize(originalCount);
+        int[] createdCutDirs = Arrays.stream(created.map()._notes).mapToInt(n -> n._cutDirection).toArray();
+        assertThat(createdCutDirs).isEqualTo(originalCutDirs);
+        // source diff untouched
+        assertThat(source.map()._notes).hasSize(originalCount);
+        assertThat(Arrays.stream(source.map()._notes).mapToInt(n -> n._cutDirection).toArray())
+                .isEqualTo(originalCutDirs);
     }
 }

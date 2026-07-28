@@ -3,18 +3,25 @@ package UserInterfaceFX.Views;
 import AppLogic.AppController;
 import AppLogic.AppState;
 import AppLogic.DiffSession;
+import BeatSaberObjects.Objects.Enums.BeatmapCharacteristic;
 import atlantafx.base.theme.Styles;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.util.StringConverter;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -69,10 +76,54 @@ public class UtilitiesView extends javafx.scene.control.ScrollPane {
                     }
                 });
 
+        Label charTitle = new Label("Change characteristic");
+        charTitle.getStyleClass().add(Styles.TITLE_4);
+
+        Label charDesc = new Label("Clones the active diff into a new difficulty under the selected characteristic, without changing any notes. The original diff is kept.");
+        charDesc.getStyleClass().add(Styles.TEXT_MUTED);
+        charDesc.setWrapText(true);
+        charDesc.setMinHeight(Region.USE_PREF_SIZE);
+
+        ComboBox<BeatmapCharacteristic> selector = new ComboBox<>();
+        selector.getItems().addAll(
+                BeatmapCharacteristic.ONE_SABER, BeatmapCharacteristic.NO_ARROWS,
+                BeatmapCharacteristic.DEGREE_360, BeatmapCharacteristic.DEGREE_90,
+                BeatmapCharacteristic.LAWLESS, BeatmapCharacteristic.LIGHTSHOW,
+                BeatmapCharacteristic.LEGACY);
+        selector.setConverter(new StringConverter<>() {
+            private final Map<BeatmapCharacteristic, String> LABELS = Map.of(
+                    BeatmapCharacteristic.ONE_SABER, "One Saber",
+                    BeatmapCharacteristic.NO_ARROWS, "No Arrows",
+                    BeatmapCharacteristic.DEGREE_360, "360 Degree",
+                    BeatmapCharacteristic.DEGREE_90, "90 Degree",
+                    BeatmapCharacteristic.LAWLESS, "Lawless",
+                    BeatmapCharacteristic.LIGHTSHOW, "Lightshow",
+                    BeatmapCharacteristic.LEGACY, "Legacy");
+
+            @Override
+            public String toString(BeatmapCharacteristic c) {
+                return c == null ? "" : LABELS.getOrDefault(c, c.infoName);
+            }
+
+            @Override
+            public BeatmapCharacteristic fromString(String s) { return null; }
+        });
+        selector.getSelectionModel().selectFirst();
+
+        Button changeCharBtn = new Button("Change characteristic");
+        changeCharBtn.setOnAction(e -> onChangeCharacteristic(selector.getValue()));
+
+        HBox charControls = new HBox(8, selector, changeCharBtn);
+        charControls.setAlignment(Pos.CENTER_LEFT);
+
+        VBox characteristicCard = new VBox(8, charTitle, charDesc, charControls);
+        characteristicCard.setPadding(new Insets(12));
+        characteristicCard.setStyle("-fx-border-color: -color-border-default; -fx-border-width: 1; -fx-border-radius: 8;");
+
         result.setWrapText(true);
         result.setMinHeight(Region.USE_PREF_SIZE);
 
-        content.getChildren().addAll(title, activeDiffLabel, lights, placements, result);
+        content.getChildren().addAll(title, activeDiffLabel, lights, placements, characteristicCard, result);
         refresh();
 
         controller.addListener(new AppController.Listener() {
@@ -86,6 +137,33 @@ public class UtilitiesView extends javafx.scene.control.ScrollPane {
                 Platform.runLater(UtilitiesView.this::refresh);
             }
         });
+    }
+
+    /** Clones the active diff under {@code characteristic} with no transform; asks before overwriting on collision. */
+    private void onChangeCharacteristic(BeatmapCharacteristic characteristic) {
+        DiffSession active = controller.getActiveDiff();
+        if (active == null) { result.setText("No active diff selected."); return; }
+        if (characteristic == null) { result.setText("Select a characteristic first."); return; }
+        DiffSession created = controller.changeCharacteristic(active, characteristic, false);
+        if (created == null) { // collision — confirm overwrite
+            String existingName = BeatmapCharacteristic.baseDifficulty(active.difficultyFileName())
+                    + characteristic.filenameSuffix + ".dat";
+            Alert confirm = new Alert(Alert.AlertType.WARNING);
+            confirm.setTitle("Diff already exists");
+            confirm.setHeaderText("\"" + existingName + "\" already exists in this session.");
+            confirm.setContentText("Overwrite it with a new " + characteristic.infoName
+                    + " diff from \"" + active.difficultyFileName() + "\"?");
+            ButtonType overwrite = new ButtonType("Overwrite", ButtonBar.ButtonData.OK_DONE);
+            ButtonType cancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+            confirm.getButtonTypes().setAll(overwrite, cancel);
+            if (confirm.showAndWait().filter(b -> b == overwrite).isEmpty()) {
+                result.setText("Cancelled — existing diff kept.");
+                return;
+            }
+            created = controller.changeCharacteristic(active, characteristic, true);
+        }
+        if (created != null)
+            result.setText("✓ Created " + created.difficultyFileName() + " (" + characteristic.infoName + ")");
     }
 
     /** One bordered utility row: title, description, optional parameter controls, run buttons. */
