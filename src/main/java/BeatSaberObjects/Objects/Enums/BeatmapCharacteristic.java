@@ -12,7 +12,7 @@ public enum BeatmapCharacteristic {
     DEGREE_90("90Degree",  "90Degree",  true),
     DEGREE_360("360Degree","360Degree", true),
     LIGHTSHOW("Lightshow", "Lightshow", true),
-    LAWLESS("Lawless",     "Lawless",   false),
+    LAWLESS("Lawless",     "Lawless",   true),
     LEGACY("Legacy",       "Legacy",    false);
 
     /** Value used for _beatmapCharacteristicName in info.dat. */

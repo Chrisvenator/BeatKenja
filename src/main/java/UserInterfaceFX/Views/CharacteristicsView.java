@@ -24,7 +24,7 @@ import javafx.scene.layout.VBox;
  * characteristic (OneSaber, NoArrows, 90Degree, …) from the active diff, or apply
  * the same transform in place.
  *
- * Implemented characteristics (OneSaber, NoArrows, 90Degree, 360Degree, Lightshow) show an
+ * Implemented characteristics (OneSaber, NoArrows, 90Degree, 360Degree, Lightshow, Lawless) show an
  * Apply button that opens a confirmation popup with "New difficulty" / "Apply to active diff" / Cancel.
  * Not-yet-implemented characteristics show a disabled "Not implemented yet" button.
  */
@@ -78,7 +78,8 @@ public class CharacteristicsView extends javafx.scene.control.ScrollPane {
                 () -> applyWithConfirm(BeatmapCharacteristic.DEGREE_360, -1));
         VBox lightRow    = characteristicRow(BeatmapCharacteristic.LIGHTSHOW,  "Lightshow-only map. Strips all notes and obstacles; keeps all light events.", null,
                 () -> applyWithConfirm(BeatmapCharacteristic.LIGHTSHOW, -1));
-        VBox lawlessRow  = characteristicRow(BeatmapCharacteristic.LAWLESS,    "No rule constraints (transform not yet implemented).", null, null);
+        VBox lawlessRow  = characteristicRow(BeatmapCharacteristic.LAWLESS,    "Adds intensity-scaled chaos: stacks, ghost notes and walls — parity rules intentionally ignored.", null,
+                () -> applyWithConfirm(BeatmapCharacteristic.LAWLESS, -1));
         VBox legacyRow   = characteristicRow(BeatmapCharacteristic.LEGACY,     "Legacy map format (transform not yet implemented).", null, null);
 
         result.setWrapText(true);
@@ -146,7 +147,7 @@ public class CharacteristicsView extends javafx.scene.control.ScrollPane {
                         active.map().makeLightshow();
                         result.setText("✓ Applied Lightshow to " + active.difficultyFileName() + " (in place)");
                     }
-                    case DEGREE_360, DEGREE_90 -> {
+                    case DEGREE_360, DEGREE_90, LAWLESS -> {
                         controller.applyCharacteristicInPlace(java.util.List.of(active), characteristic, -1);
                         result.setText("✓ Applied " + characteristic.infoName + " to " + active.difficultyFileName() + " (in place)");
                     }

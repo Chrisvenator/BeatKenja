@@ -9,6 +9,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import DataManager.FileManager;
 import DataManager.Parameters;
+import MapGeneration.CharacteristicGeneration.LawlessGenerator;
+import MapGeneration.CharacteristicGeneration.RotationEventGenerator;
 import MapGeneration.GenerationElements.Pattern;
 import MapGeneration.PatternGeneration.CommonMethods.CheckParity;
 import MapGeneration.PatternGeneration.CommonMethods.Parser;
@@ -344,11 +346,9 @@ public class AppController {
             case NO_ARROWS -> map.makeNoArrows();
             case ONE_SABER -> map.makeOneHanded(removeType);
             case LIGHTSHOW -> map.makeLightshow();
-            case DEGREE_360 -> MapGeneration.CharacteristicGeneration.RotationEventGenerator
-                    .generate(map, MapGeneration.CharacteristicGeneration.RotationEventGenerator.RotationMode.THREE_SIXTY);
-            case DEGREE_90 -> MapGeneration.CharacteristicGeneration.RotationEventGenerator
-                    .generate(map, MapGeneration.CharacteristicGeneration.RotationEventGenerator.RotationMode.NINETY);
-            case LAWLESS -> logger.info("Created Lawless diff — notes copied as-is, no rule constraints applied.");
+            case DEGREE_360 -> RotationEventGenerator.generate(map, RotationEventGenerator.RotationMode.THREE_SIXTY);
+            case DEGREE_90 -> RotationEventGenerator.generate(map, RotationEventGenerator.RotationMode.NINETY);
+            case LAWLESS -> LawlessGenerator.generate(map);
             case LEGACY -> logger.info("Created Legacy diff as stub — notes copied as-is, old-format specifics not yet implemented.");
             default -> { /* STANDARD or unknown: no transform */ }
         }
