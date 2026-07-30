@@ -231,6 +231,7 @@ public class AppShell extends BorderPane {
             Button deleteBtn = new Button("✕");
             deleteBtn.getStyleClass().addAll(Styles.FLAT, Styles.DANGER, Styles.SMALL);
             deleteBtn.setTooltip(new javafx.scene.control.Tooltip("Remove this diff from the session (does not delete the file)"));
+            deleteBtn.setAccessibleText("Remove " + diff.difficultyFileName() + " from session");
             deleteBtn.setOnAction(e -> controller.unloadDiff(diff.difficultyFileName()));
 
             // Merge chip label and delete button visually into one pill

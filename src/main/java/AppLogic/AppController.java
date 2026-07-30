@@ -533,10 +533,12 @@ public class AppController {
         java.util.Map<String, BeatSaberMap> inMemoryDiffs = new java.util.HashMap<>();
         session.diffs().forEach(diff -> inMemoryDiffs.put(diff.difficultyFileName(), diff.map()));
 
-        // Collect filenames present on disk to detect in-session-only diffs later
+        // Collect filenames present at the root of the map folder to detect in-session-only diffs later.
+        // Use Files.list (non-recursive) — map folders are flat, and a recursive walk would collect names
+        // from subdirectories that could shadow a diff filename and cause it to be silently skipped.
         java.util.Set<String> onDiskFileNames = new java.util.HashSet<>();
         java.nio.file.Path root = new File(folder).toPath();
-        try (java.util.stream.Stream<java.nio.file.Path> stream = java.nio.file.Files.walk(root)) {
+        try (java.util.stream.Stream<java.nio.file.Path> stream = java.nio.file.Files.list(root)) {
             stream.filter(java.nio.file.Files::isRegularFile).forEach(p -> onDiskFileNames.add(p.getFileName().toString()));
         }
 
@@ -633,7 +635,8 @@ public class AppController {
                     }
                 }
                 if (!alreadyPresent) {
-                    beatmaps.put(buildDifficultyBeatmapEntry(base, diff.difficultyFileName()));
+                    JSONObject template = findStandardTemplate(sets, base);
+                    beatmaps.put(buildDifficultyBeatmapEntry(base, diff.difficultyFileName(), template));
                 }
             }
 
@@ -645,19 +648,52 @@ public class AppController {
     }
 
     /**
-     * Builds a _difficultyBeatmaps entry object with defaults matching BatchWavToMaps.createDatFile:
-     * NJS 16, beat offset 0, color scheme idx 0, env idx 0.
+     * Builds a _difficultyBeatmaps entry object.
+     * NJS and beat offset are copied from the Standard set's entry for the same base difficulty when
+     * present, so the new characteristic plays at the same speed as the source diff. Falls back to
+     * NJS 16 / offset 0 when no Standard template entry is found.
      */
     private JSONObject buildDifficultyBeatmapEntry(String baseDifficulty, String beatmapFilename) {
+        return buildDifficultyBeatmapEntry(baseDifficulty, beatmapFilename, null);
+    }
+
+    /**
+     * Builds a _difficultyBeatmaps entry, optionally inheriting NJS/offset from a Standard template entry.
+     *
+     * @param templateEntry a _difficultyBeatmaps JSONObject from the Standard set for the same difficulty, or null
+     */
+    private JSONObject buildDifficultyBeatmapEntry(String baseDifficulty, String beatmapFilename, JSONObject templateEntry) {
+        int njs    = templateEntry != null ? templateEntry.optInt("_noteJumpMovementSpeed", 16) : 16;
+        double off = templateEntry != null ? templateEntry.optDouble("_noteJumpStartBeatOffset", 0.0) : 0.0;
+
         JSONObject entry = new JSONObject();
         entry.put("_difficulty", baseDifficulty);
         entry.put("_difficultyRank", BeatmapCharacteristic.difficultyRank(baseDifficulty));
         entry.put("_beatmapFilename", beatmapFilename);
-        entry.put("_noteJumpMovementSpeed", 16);
-        entry.put("_noteJumpStartBeatOffset", 0);
+        entry.put("_noteJumpMovementSpeed", njs);
+        entry.put("_noteJumpStartBeatOffset", off);
         entry.put("_beatmapColorSchemeIdx", 0);
         entry.put("_environmentNameIdx", 0);
         return entry;
+    }
+
+    /**
+     * Finds the _difficultyBeatmaps entry in the Standard set that matches {@code baseDifficulty}.
+     * Returns null if the Standard set or a matching entry does not exist.
+     */
+    private JSONObject findStandardTemplate(JSONArray sets, String baseDifficulty) {
+        for (int i = 0; i < sets.length(); i++) {
+            JSONObject set = sets.getJSONObject(i);
+            if ("Standard".equals(set.optString("_beatmapCharacteristicName"))) {
+                JSONArray beatmaps = set.optJSONArray("_difficultyBeatmaps");
+                if (beatmaps == null) return null;
+                for (int j = 0; j < beatmaps.length(); j++) {
+                    JSONObject bm = beatmaps.getJSONObject(j);
+                    if (baseDifficulty.equals(bm.optString("_difficulty"))) return bm;
+                }
+            }
+        }
+        return null;
     }
 
     /**

@@ -14,7 +14,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Generates musically-aware lane-rotation events (type 14/15) for Beat Saber 360° and 90° maps.
+ * Generates musically-aware lane-rotation events (type 15 – late rotation) for Beat Saber 360° and 90° maps.
  *
  * <p>Rotation candidates are derived from section boundaries (bookmarks) and subdivided by
  * intensity tier. Direction is chosen by looking ahead at note {@code _lineIndex}: notes

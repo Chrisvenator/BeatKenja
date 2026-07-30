@@ -218,6 +218,14 @@ public class LoadView extends VBox {
                     && !target.getName().equalsIgnoreCase("info.dat");
 
             if (isSingleDiff && !controller.maps().isEmpty()) {
+                // Reject additive loads from a different folder — mixing map folders corrupts session state
+                // (export path, BPM extraction, etc. all assume one folder per session).
+                String sessionFolder = controller.session().getMapFolderPath();
+                if (sessionFolder != null && !target.getParentFile().getAbsolutePath().equals(new java.io.File(sessionFolder).getAbsolutePath())) {
+                    errorLabel.setText("Cannot mix diffs from different folders. Drop the folder to replace the session.");
+                    return;
+                }
+
                 // Additive path: try to add without overwrite first
                 boolean added = controller.addDiffToSession(target, false);
                 if (!added) {

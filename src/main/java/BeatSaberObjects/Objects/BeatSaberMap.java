@@ -281,7 +281,7 @@ public class BeatSaberMap extends BeatsaberObject {
         }
     }
 
-    /** Strips all notes and obstacles, keeping only light events. */
+    /** Strips all notes and obstacles; events (including any rotation events) are preserved as-is. */
     public void makeLightshow() {
         _notes = new Note[0];
         _obstacles = new Obstacle[0];
