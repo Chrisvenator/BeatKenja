@@ -281,6 +281,12 @@ public class BeatSaberMap extends BeatsaberObject {
         }
     }
 
+    /** Strips all notes and obstacles; events (including any rotation events) are preserved as-is. */
+    public void makeLightshow() {
+        _notes = new Note[0];
+        _obstacles = new Obstacle[0];
+    }
+
     //This function is only here to make the List in a List into a one-dimensional array, so that it is compatible with
     //the other functions
     public void toTimingNotes() {

@@ -2,10 +2,15 @@ package AppLogic;
 
 import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Bookmark;
+import BeatSaberObjects.Objects.Enums.BeatmapCharacteristic;
 import BeatSaberObjects.Objects.Enums.ParityErrorEnum;
 import BeatSaberObjects.Objects.Note;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import DataManager.FileManager;
 import DataManager.Parameters;
+import MapGeneration.CharacteristicGeneration.LawlessGenerator;
+import MapGeneration.CharacteristicGeneration.RotationEventGenerator;
 import MapGeneration.GenerationElements.Pattern;
 import MapGeneration.PatternGeneration.CommonMethods.CheckParity;
 import MapGeneration.PatternGeneration.CommonMethods.Parser;
@@ -139,6 +144,32 @@ public class AppController {
         PARITY_ERRORS_LIST.put(diffFile.getName(), new ArrayList<>());
         logger.info("Successfully loaded: {}/{}", diffFile.getParent(), diffFile.getName());
         return diffFile.getName();
+    }
+
+    /**
+     * Adds a single difficulty file to the current session without clearing existing diffs.
+     * If a diff with the same filename is already loaded, it is replaced only when
+     * {@code overwrite} is true; otherwise the method returns without changing state.
+     *
+     * @return true if the diff was added/replaced, false if collision and overwrite=false
+     */
+    public boolean addDiffToSession(File diffFile, boolean overwrite) throws java.io.IOException {
+        String name = diffFile.getName();
+        boolean collision = session.diffs().stream().anyMatch(d -> d.difficultyFileName().equals(name));
+        if (collision) {
+            if (!overwrite) return false;
+            session.diffs().removeIf(d -> d.difficultyFileName().equals(name));
+            PARITY_ERRORS_LIST.remove(name);
+        }
+        session.setMapFolderPath(diffFile.getParent());
+        loadSingleDiff(diffFile);
+        extractAndPublishBpm(new File(session.getMapFolderPath()));
+        DiffSession added = session.diffs().stream()
+                .filter(d -> d.difficultyFileName().equals(name))
+                .findFirst().orElseThrow();
+        setActiveDiff(added);
+        setState(AppState.LOADED);
+        return true;
     }
 
     /**
@@ -327,6 +358,141 @@ public class AppController {
         setState(state);
     }
 
+    /**
+     * Applies the characteristic-specific transform to {@code map} in place.
+     * Single source of truth used by both {@code createCharacteristicDiff} and
+     * {@code applyCharacteristicInPlace}.
+     *
+     * @param map        the map to transform (must already be a clone if non-destructive use)
+     * @param ch         the target characteristic
+     * @param removeType note type to remove for ONE_SABER (0=red, 1=blue); ignored otherwise
+     */
+    private void applyCharacteristicTransform(BeatSaberMap map, BeatmapCharacteristic ch, int removeType) {
+        switch (ch) {
+            case NO_ARROWS -> map.makeNoArrows();
+            case ONE_SABER -> map.makeOneHanded(removeType);
+            case LIGHTSHOW -> map.makeLightshow();
+            case DEGREE_360 -> RotationEventGenerator.generate(map, RotationEventGenerator.RotationMode.THREE_SIXTY);
+            case DEGREE_90 -> RotationEventGenerator.generate(map, RotationEventGenerator.RotationMode.NINETY);
+            case LAWLESS -> LawlessGenerator.generate(map);
+            case LEGACY -> logger.info("Created Legacy diff as stub — notes copied as-is, old-format specifics not yet implemented.");
+            default -> { /* STANDARD or unknown: no transform */ }
+        }
+    }
+
+    /**
+     * Applies the characteristic transform in place to each diff in {@code targets}.
+     * Mirrors the {@code makeNoArrows(List)} pattern: loops, transforms, logs, refreshes state.
+     *
+     * @param targets    diffs to transform
+     * @param ch         the target characteristic
+     * @param removeType note type to remove for ONE_SABER; -1 for all others
+     */
+    public void applyCharacteristicInPlace(List<DiffSession> targets, BeatmapCharacteristic ch, int removeType) {
+        for (DiffSession diff : targets) {
+            applyCharacteristicTransform(diff.map(), ch, removeType);
+            logger.info("Applied {} transform to {} (in place)", ch.infoName, diff.difficultyFileName());
+        }
+        setState(state);
+    }
+
+    /** Creates a new characteristic diff WITH the note transform applied (Characteristics tab). */
+    public DiffSession createCharacteristicDiff(DiffSession source, BeatmapCharacteristic characteristic, int removeType, boolean overwrite) {
+        return createCharacteristicDiff(source, characteristic, removeType, overwrite, true);
+    }
+
+    /**
+     * Clones {@code source} into a new in-session diff tagged under {@code characteristic} with NO
+     * transform — notes, obstacles and events are copied verbatim. Backs the Utilities relabel tool.
+     *
+     * @return the new DiffSession, or null on filename collision when overwrite is false
+     */
+    public DiffSession changeCharacteristic(DiffSession source, BeatmapCharacteristic characteristic, boolean overwrite) {
+        return createCharacteristicDiff(source, characteristic, -1, overwrite, false);
+    }
+
+    /**
+     * Moves {@code source} to a new characteristic: clones it under the new characteristic
+     * (notes verbatim, overwriting any existing diff with the target filename) then removes
+     * the source diff from the session.
+     *
+     * @return the new DiffSession, or null if the clone step failed unexpectedly
+     */
+    public DiffSession renameCharacteristic(DiffSession source, BeatmapCharacteristic characteristic) {
+        String sourceFileName = source.difficultyFileName();
+        DiffSession created = createCharacteristicDiff(source, characteristic, -1, true, false);
+        if (created != null) {
+            // unloadDiff fires state listeners so the header refreshes correctly
+            unloadDiff(sourceFileName);
+        }
+        return created;
+    }
+
+    /**
+     * Creates a new in-session difficulty as a clone of {@code source} under the given
+     * {@code characteristic}.
+     *
+     * @param source         the diff to clone
+     * @param characteristic the target beatmap characteristic
+     * @param removeType     note type to remove for ONE_SABER (0 = red, 1 = blue); ignored otherwise
+     * @param overwrite      if true and a diff with the same filename exists, replace it
+     * @param applyTransform if true, applies the characteristic-specific note transform (e.g. NO_ARROWS → dots);
+     *                       if false, notes are copied verbatim regardless of characteristic
+     * @return the new DiffSession, or null if a collision exists and overwrite is false
+     */
+    private DiffSession createCharacteristicDiff(DiffSession source, BeatmapCharacteristic characteristic, int removeType, boolean overwrite, boolean applyTransform) {
+        String base = BeatmapCharacteristic.baseDifficulty(source.difficultyFileName());
+        String newFileName = base + characteristic.filenameSuffix + ".dat";
+
+        boolean collision = session.diffs().stream().anyMatch(d -> d.difficultyFileName().equals(newFileName));
+        if (collision) {
+            if (!overwrite) {
+                logger.warn("Characteristic diff {} already exists in session", newFileName);
+                return null;
+            }
+            session.diffs().removeIf(d -> d.difficultyFileName().equals(newFileName));
+            PARITY_ERRORS_LIST.remove(newFileName);
+            logger.info("Overwriting existing diff {}", newFileName);
+        }
+
+        BeatSaberMap clone = cloneMap(source.map());
+        clone.difficultyFileName = newFileName;
+
+        if (applyTransform) {
+            applyCharacteristicTransform(clone, characteristic, removeType);
+        }
+
+        session.maps().add(clone);
+        DiffSession newDiff = session.diffs().stream()
+                .filter(d -> d.difficultyFileName().equals(newFileName))
+                .findFirst().orElseThrow();
+        newDiff.setCharacteristic(characteristic);
+
+        setActiveDiff(newDiff);
+        setState(AppState.LOADED);
+        logger.info("Created characteristic diff {} ({})", newFileName, characteristic.infoName);
+        return newDiff;
+    }
+
+    /**
+     * Deep-clones a BeatSaberMap: notes are copied via the Note copy constructor so that
+     * transforms on the clone cannot affect the original. Events and obstacles are
+     * shallow-copied (they are not mutated by the available transforms).
+     */
+    private BeatSaberMap cloneMap(BeatSaberMap src) {
+        Note[] clonedNotes = new Note[src._notes != null ? src._notes.length : 0];
+        if (src._notes != null) {
+            for (int i = 0; i < src._notes.length; i++) clonedNotes[i] = new Note(src._notes[i]);
+        }
+        BeatSaberMap clone = new BeatSaberMap(clonedNotes);
+        clone._version = src._version;
+        clone._events = src._events != null ? Arrays.copyOf(src._events, src._events.length) : new BeatSaberObjects.Objects.Events[0];
+        clone._obstacles = src._obstacles != null ? Arrays.copyOf(src._obstacles, src._obstacles.length) : new BeatSaberObjects.Objects.Obstacle[0];
+        clone.bookmarks = src.bookmarks != null ? new ArrayList<>(src.bookmarks) : new ArrayList<>();
+        clone.difficultyFileName = src.difficultyFileName;
+        return clone;
+    }
+
     /** Snaps all note placements to 1/precisionDenominator of a beat (e.g. 16 → 1/16). */
     public void fixPlacements(List<DiffSession> targets, double precisionDenominator) {
         for (DiffSession diff : targets) {
@@ -367,24 +533,167 @@ public class AppController {
         java.util.Map<String, BeatSaberMap> inMemoryDiffs = new java.util.HashMap<>();
         session.diffs().forEach(diff -> inMemoryDiffs.put(diff.difficultyFileName(), diff.map()));
 
+        // Collect filenames present at the root of the map folder to detect in-session-only diffs later.
+        // Use Files.list (non-recursive) — map folders are flat, and a recursive walk would collect names
+        // from subdirectories that could shadow a diff filename and cause it to be silently skipped.
+        java.util.Set<String> onDiskFileNames = new java.util.HashSet<>();
         java.nio.file.Path root = new File(folder).toPath();
+        try (java.util.stream.Stream<java.nio.file.Path> stream = java.nio.file.Files.list(root)) {
+            stream.filter(java.nio.file.Files::isRegularFile).forEach(p -> onDiskFileNames.add(p.getFileName().toString()));
+        }
+
+        // Read and patch info.dat with any new characteristic sets
+        String infoDatContent = null;
+        java.nio.file.Path infoDatPath = root.resolve("info.dat");
+        if (java.nio.file.Files.exists(infoDatPath)) {
+            infoDatContent = java.nio.file.Files.readString(infoDatPath, java.nio.charset.StandardCharsets.UTF_8);
+            infoDatContent = mergeCharacteristicSets(infoDatContent);
+        }
+
         try (java.util.zip.ZipOutputStream zip = new java.util.zip.ZipOutputStream(new java.io.FileOutputStream(targetZip));
              java.util.stream.Stream<java.nio.file.Path> files = java.nio.file.Files.walk(root)) {
+
+            final String patchedInfoDat = infoDatContent;
             for (java.nio.file.Path path : files.filter(java.nio.file.Files::isRegularFile).toList()) {
                 String relative = root.relativize(path).toString().replace('\\', '/');
                 if (relative.endsWith(".zip") || path.toFile().equals(targetZip)) continue;
 
                 zip.putNextEntry(new java.util.zip.ZipEntry(relative));
-                BeatSaberMap inMemory = inMemoryDiffs.get(path.getFileName().toString());
-                if (inMemory != null) {
-                    zip.write(inMemory.exportAsMap().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                String fileName = path.getFileName().toString();
+                if (fileName.equalsIgnoreCase("info.dat") && patchedInfoDat != null) {
+                    zip.write(patchedInfoDat.getBytes(java.nio.charset.StandardCharsets.UTF_8));
                 } else {
-                    java.nio.file.Files.copy(path, zip);
+                    BeatSaberMap inMemory = inMemoryDiffs.get(fileName);
+                    if (inMemory != null) {
+                        zip.write(inMemory.exportAsMap().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                    } else {
+                        java.nio.file.Files.copy(path, zip);
+                    }
                 }
                 zip.closeEntry();
             }
+
+            // Emit in-session diffs that have no backing file on disk (newly created characteristic diffs)
+            for (DiffSession diff : session.diffs()) {
+                if (!onDiskFileNames.contains(diff.difficultyFileName())) {
+                    zip.putNextEntry(new java.util.zip.ZipEntry(diff.difficultyFileName()));
+                    zip.write(diff.map().exportAsMap().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                    zip.closeEntry();
+                    logger.info("Emitted in-session-only diff: {}", diff.difficultyFileName());
+                }
+            }
         }
         logger.info("Map exported as zip: {}", targetZip.getAbsolutePath());
+    }
+
+    /**
+     * Reads the existing info.dat JSON and injects _difficultyBeatmapSets entries for any
+     * in-session diffs whose characteristic is not STANDARD (i.e. diffs created this session).
+     * Existing sets are not removed; new sets are added and existing ones extended as needed.
+     */
+    private String mergeCharacteristicSets(String infoDatJson) {
+        List<DiffSession> newDiffs = session.diffs().stream()
+                .filter(d -> d.characteristic() != null && d.characteristic() != BeatmapCharacteristic.STANDARD)
+                .toList();
+        if (newDiffs.isEmpty()) return infoDatJson;
+
+        try {
+            JSONObject info = new JSONObject(infoDatJson);
+            JSONArray sets = info.optJSONArray("_difficultyBeatmapSets");
+            if (sets == null) {
+                sets = new JSONArray();
+                info.put("_difficultyBeatmapSets", sets);
+            }
+
+            for (DiffSession diff : newDiffs) {
+                BeatmapCharacteristic ch = diff.characteristic();
+                String base = BeatmapCharacteristic.baseDifficulty(diff.difficultyFileName());
+
+                // Find or create the set for this characteristic
+                JSONObject targetSet = null;
+                for (int i = 0; i < sets.length(); i++) {
+                    JSONObject s = sets.getJSONObject(i);
+                    if (ch.infoName.equals(s.optString("_beatmapCharacteristicName"))) {
+                        targetSet = s;
+                        break;
+                    }
+                }
+                if (targetSet == null) {
+                    targetSet = new JSONObject();
+                    targetSet.put("_beatmapCharacteristicName", ch.infoName);
+                    targetSet.put("_difficultyBeatmaps", new JSONArray());
+                    sets.put(targetSet);
+                }
+
+                JSONArray beatmaps = targetSet.getJSONArray("_difficultyBeatmaps");
+                // Avoid duplicate entries for the same file
+                boolean alreadyPresent = false;
+                for (int i = 0; i < beatmaps.length(); i++) {
+                    if (diff.difficultyFileName().equals(beatmaps.getJSONObject(i).optString("_beatmapFilename"))) {
+                        alreadyPresent = true;
+                        break;
+                    }
+                }
+                if (!alreadyPresent) {
+                    JSONObject template = findStandardTemplate(sets, base);
+                    beatmaps.put(buildDifficultyBeatmapEntry(base, diff.difficultyFileName(), template));
+                }
+            }
+
+            return info.toString(2);
+        } catch (Exception e) {
+            logger.error("Failed to merge characteristic sets into info.dat: {}", e.getMessage());
+            return infoDatJson;
+        }
+    }
+
+    /**
+     * Builds a _difficultyBeatmaps entry object.
+     * NJS and beat offset are copied from the Standard set's entry for the same base difficulty when
+     * present, so the new characteristic plays at the same speed as the source diff. Falls back to
+     * NJS 16 / offset 0 when no Standard template entry is found.
+     */
+    private JSONObject buildDifficultyBeatmapEntry(String baseDifficulty, String beatmapFilename) {
+        return buildDifficultyBeatmapEntry(baseDifficulty, beatmapFilename, null);
+    }
+
+    /**
+     * Builds a _difficultyBeatmaps entry, optionally inheriting NJS/offset from a Standard template entry.
+     *
+     * @param templateEntry a _difficultyBeatmaps JSONObject from the Standard set for the same difficulty, or null
+     */
+    private JSONObject buildDifficultyBeatmapEntry(String baseDifficulty, String beatmapFilename, JSONObject templateEntry) {
+        int njs    = templateEntry != null ? templateEntry.optInt("_noteJumpMovementSpeed", 16) : 16;
+        double off = templateEntry != null ? templateEntry.optDouble("_noteJumpStartBeatOffset", 0.0) : 0.0;
+
+        JSONObject entry = new JSONObject();
+        entry.put("_difficulty", baseDifficulty);
+        entry.put("_difficultyRank", BeatmapCharacteristic.difficultyRank(baseDifficulty));
+        entry.put("_beatmapFilename", beatmapFilename);
+        entry.put("_noteJumpMovementSpeed", njs);
+        entry.put("_noteJumpStartBeatOffset", off);
+        entry.put("_beatmapColorSchemeIdx", 0);
+        entry.put("_environmentNameIdx", 0);
+        return entry;
+    }
+
+    /**
+     * Finds the _difficultyBeatmaps entry in the Standard set that matches {@code baseDifficulty}.
+     * Returns null if the Standard set or a matching entry does not exist.
+     */
+    private JSONObject findStandardTemplate(JSONArray sets, String baseDifficulty) {
+        for (int i = 0; i < sets.length(); i++) {
+            JSONObject set = sets.getJSONObject(i);
+            if ("Standard".equals(set.optString("_beatmapCharacteristicName"))) {
+                JSONArray beatmaps = set.optJSONArray("_difficultyBeatmaps");
+                if (beatmaps == null) return null;
+                for (int j = 0; j < beatmaps.length(); j++) {
+                    JSONObject bm = beatmaps.getJSONObject(j);
+                    if (baseDifficulty.equals(bm.optString("_difficulty"))) return bm;
+                }
+            }
+        }
+        return null;
     }
 
     /**
