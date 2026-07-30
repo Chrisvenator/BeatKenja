@@ -147,6 +147,32 @@ public class AppController {
     }
 
     /**
+     * Adds a single difficulty file to the current session without clearing existing diffs.
+     * If a diff with the same filename is already loaded, it is replaced only when
+     * {@code overwrite} is true; otherwise the method returns without changing state.
+     *
+     * @return true if the diff was added/replaced, false if collision and overwrite=false
+     */
+    public boolean addDiffToSession(File diffFile, boolean overwrite) throws java.io.IOException {
+        String name = diffFile.getName();
+        boolean collision = session.diffs().stream().anyMatch(d -> d.difficultyFileName().equals(name));
+        if (collision) {
+            if (!overwrite) return false;
+            session.diffs().removeIf(d -> d.difficultyFileName().equals(name));
+            PARITY_ERRORS_LIST.remove(name);
+        }
+        session.setMapFolderPath(diffFile.getParent());
+        loadSingleDiff(diffFile);
+        extractAndPublishBpm(new File(session.getMapFolderPath()));
+        DiffSession added = session.diffs().stream()
+                .filter(d -> d.difficultyFileName().equals(name))
+                .findFirst().orElseThrow();
+        setActiveDiff(added);
+        setState(AppState.LOADED);
+        return true;
+    }
+
+    /**
      * Reads "_beatsPerMinute" from the info.dat inside the map folder and publishes it.
      * Missing info.dat is fine — the previously known BPM stays.
      */
@@ -383,6 +409,23 @@ public class AppController {
      */
     public DiffSession changeCharacteristic(DiffSession source, BeatmapCharacteristic characteristic, boolean overwrite) {
         return createCharacteristicDiff(source, characteristic, -1, overwrite, false);
+    }
+
+    /**
+     * Moves {@code source} to a new characteristic: clones it under the new characteristic
+     * (notes verbatim, overwriting any existing diff with the target filename) then removes
+     * the source diff from the session.
+     *
+     * @return the new DiffSession, or null if the clone step failed unexpectedly
+     */
+    public DiffSession renameCharacteristic(DiffSession source, BeatmapCharacteristic characteristic) {
+        String sourceFileName = source.difficultyFileName();
+        DiffSession created = createCharacteristicDiff(source, characteristic, -1, true, false);
+        if (created != null) {
+            // unloadDiff fires state listeners so the header refreshes correctly
+            unloadDiff(sourceFileName);
+        }
+        return created;
     }
 
     /**

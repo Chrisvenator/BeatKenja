@@ -227,7 +227,17 @@ public class AppShell extends BorderPane {
                 chip.setSelected(true); // keep one selected
                 controller.setActiveDiff(diff);
             });
-            diffChips.getChildren().add(chip);
+
+            Button deleteBtn = new Button("✕");
+            deleteBtn.getStyleClass().addAll(Styles.FLAT, Styles.DANGER, Styles.SMALL);
+            deleteBtn.setTooltip(new javafx.scene.control.Tooltip("Remove this diff from the session (does not delete the file)"));
+            deleteBtn.setOnAction(e -> controller.unloadDiff(diff.difficultyFileName()));
+
+            // Merge chip label and delete button visually into one pill
+            HBox chipRow = new HBox(0, chip, deleteBtn);
+            chipRow.setAlignment(Pos.CENTER_LEFT);
+            chipRow.setStyle("-fx-border-color: -color-accent-emphasis; -fx-border-radius: 4; -fx-background-radius: 4;");
+            diffChips.getChildren().add(chipRow);
         });
     }
 

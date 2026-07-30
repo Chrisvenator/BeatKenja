@@ -22,7 +22,11 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.util.Optional;
 import java.util.function.Consumer;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 
 import static DataManager.Parameters.logger;
 
@@ -190,7 +194,7 @@ public class LoadView extends VBox {
 
         if (loaded) {
             loadedList.getItems().setAll(controller.session().diffs().stream().map(DiffSession::difficultyFileName).toList());
-            dropLabel.setText("✓ " + loadedList.getItems().size() + " difficulty file(s) loaded — drop another map to replace");
+            dropLabel.setText("✓ " + loadedList.getItems().size() + " difficulty file(s) loaded — drop a .dat to add, drop a folder to replace all");
         } else {
             loadedList.getItems().clear();
             dropLabel.setText("Drop a .dat difficulty or a map folder here");
@@ -202,10 +206,39 @@ public class LoadView extends VBox {
         e.consume();
     }
 
+    /**
+     * Loads a file or folder. Single .dat files are added to the existing session
+     * additively; a collision (same filename already loaded) prompts the user to
+     * replace or cancel. Folder loads always replace the full session.
+     */
     private void load(File target) {
         errorLabel.setText("");
         try {
-            controller.loadMapFileOrFolder(target);
+            boolean isSingleDiff = target.isFile() && target.getName().toLowerCase().endsWith(".dat")
+                    && !target.getName().equalsIgnoreCase("info.dat");
+
+            if (isSingleDiff && !controller.maps().isEmpty()) {
+                // Additive path: try to add without overwrite first
+                boolean added = controller.addDiffToSession(target, false);
+                if (!added) {
+                    // Collision — ask user
+                    ButtonType replaceBtn = new ButtonType("Replace", ButtonBar.ButtonData.OK_DONE);
+                    ButtonType cancelBtn  = new ButtonType("Cancel",  ButtonBar.ButtonData.CANCEL_CLOSE);
+                    Alert confirm = new Alert(Alert.AlertType.WARNING);
+                    confirm.setTitle("Diff already loaded");
+                    confirm.setHeaderText("\"" + target.getName() + "\" is already loaded.");
+                    confirm.setContentText("Replace the loaded diff with the file on disk, or cancel?");
+                    confirm.getButtonTypes().setAll(replaceBtn, cancelBtn);
+                    Optional<ButtonType> choice = confirm.showAndWait();
+                    if (choice.isEmpty() || choice.get() == cancelBtn) {
+                        errorLabel.setText("Cancelled — existing diff kept.");
+                        return;
+                    }
+                    controller.addDiffToSession(target, true);
+                }
+            } else {
+                controller.loadMapFileOrFolder(target);
+            }
             Parameters.filePath = controller.session().getMapFolderPath();
             onLoaded.run();
         } catch (Exception ex) {

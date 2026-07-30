@@ -100,4 +100,20 @@ class AppControllerUtilitiesTest {
         assertThat(Arrays.stream(source.map()._notes).mapToInt(n -> n._cutDirection).toArray())
                 .isEqualTo(originalCutDirs);
     }
+
+    @Test
+    void renameCharacteristic_replacesSourceDiff() {
+        DiffSession source = controller.getActiveDiff();
+        String originalFileName = source.difficultyFileName();
+
+        DiffSession renamed = controller.renameCharacteristic(source, BeatmapCharacteristic.NO_ARROWS);
+
+        assertThat(renamed).isNotNull();
+        assertThat(renamed.characteristic()).isEqualTo(BeatmapCharacteristic.NO_ARROWS);
+        // source diff removed
+        assertThat(controller.session().diffs().stream()
+                .anyMatch(d -> d.difficultyFileName().equals(originalFileName))).isFalse();
+        // new diff present
+        assertThat(controller.session().diffs()).contains(renamed);
+    }
 }

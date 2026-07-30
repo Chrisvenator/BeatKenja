@@ -5,6 +5,7 @@ import AppLogic.AppState;
 import AppLogic.DiffSession;
 import BeatSaberObjects.Objects.Enums.BeatmapCharacteristic;
 import atlantafx.base.theme.Styles;
+import java.util.Optional;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -79,7 +80,7 @@ public class UtilitiesView extends javafx.scene.control.ScrollPane {
         Label charTitle = new Label("Change characteristic");
         charTitle.getStyleClass().add(Styles.TITLE_4);
 
-        Label charDesc = new Label("Clones the active diff into a new difficulty under the selected characteristic, without changing any notes. The original diff is kept.");
+        Label charDesc = new Label("Changes the characteristic of the active diff. Copy keeps the original and creates a new diff; Rename replaces the original (notes unchanged in both cases).");
         charDesc.getStyleClass().add(Styles.TEXT_MUTED);
         charDesc.setWrapText(true);
         charDesc.setMinHeight(Region.USE_PREF_SIZE);
@@ -139,13 +140,47 @@ public class UtilitiesView extends javafx.scene.control.ScrollPane {
         });
     }
 
-    /** Clones the active diff under {@code characteristic} with no transform; asks before overwriting on collision. */
+    /**
+     * Asks the user whether to copy or rename the active diff to the given characteristic,
+     * then dispatches to the appropriate controller method.
+     *
+     * Copy — creates a new diff with the new characteristic, keeps the original.
+     * Rename — replaces the original diff with a new characteristic diff (same notes).
+     */
     private void onChangeCharacteristic(BeatmapCharacteristic characteristic) {
         DiffSession active = controller.getActiveDiff();
         if (active == null) { result.setText("No active diff selected."); return; }
         if (characteristic == null) { result.setText("Select a characteristic first."); return; }
+
+        ButtonType copyBtn   = new ButtonType("Copy",   ButtonBar.ButtonData.YES);
+        ButtonType renameBtn = new ButtonType("Rename", ButtonBar.ButtonData.NO);
+        ButtonType cancelBtn = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+        Alert choiceDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        choiceDialog.setTitle("Change characteristic");
+        choiceDialog.setHeaderText("Change characteristic to " + characteristic.infoName);
+        choiceDialog.setContentText(
+                "Copy — keep the original diff and create a new " + characteristic.infoName + " diff.\n" +
+                "Rename — replace the original diff with a " + characteristic.infoName + " diff (same notes)."
+        );
+        choiceDialog.getButtonTypes().setAll(copyBtn, renameBtn, cancelBtn);
+
+        Optional<ButtonType> choice = choiceDialog.showAndWait();
+        if (choice.isEmpty() || choice.get() == cancelBtn) {
+            result.setText("Cancelled.");
+            return;
+        }
+
+        if (choice.get() == renameBtn) {
+            DiffSession created = controller.renameCharacteristic(active, characteristic);
+            if (created != null)
+                result.setText("✓ Renamed to " + created.difficultyFileName() + " (" + characteristic.infoName + ")");
+            return;
+        }
+
+        // Copy path — keep existing collision-check logic
         DiffSession created = controller.changeCharacteristic(active, characteristic, false);
-        if (created == null) { // collision — confirm overwrite
+        if (created == null) {
             String existingName = BeatmapCharacteristic.baseDifficulty(active.difficultyFileName())
                     + characteristic.filenameSuffix + ".dat";
             Alert confirm = new Alert(Alert.AlertType.WARNING);
@@ -154,7 +189,7 @@ public class UtilitiesView extends javafx.scene.control.ScrollPane {
             confirm.setContentText("Overwrite it with a new " + characteristic.infoName
                     + " diff from \"" + active.difficultyFileName() + "\"?");
             ButtonType overwrite = new ButtonType("Overwrite", ButtonBar.ButtonData.OK_DONE);
-            ButtonType cancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+            ButtonType cancel    = new ButtonType("Cancel",    ButtonBar.ButtonData.CANCEL_CLOSE);
             confirm.getButtonTypes().setAll(overwrite, cancel);
             if (confirm.showAndWait().filter(b -> b == overwrite).isEmpty()) {
                 result.setText("Cancelled — existing diff kept.");
