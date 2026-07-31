@@ -2,6 +2,7 @@ package AppLogic;
 
 import BeatSaberObjects.Objects.Enums.ParityErrorEnum;
 import DataManager.Parameters;
+import MapGeneration.GenerationElements.HigherOrderPattern;
 import MapGeneration.GenerationElements.Pattern;
 import javafx.util.Pair;
 
@@ -25,6 +26,13 @@ public class GenerationContext {
 
     /** Fallback pattern for fast sections. May be null if no easy pattern could be loaded. */
     public static Pattern easyPattern;
+
+    /**
+     * 2nd-order Markov tables trained from the corpus.
+     * Null = higher-order engine not loaded; generation falls back to original 1st-order path.
+     */
+    public static HigherOrderPattern higherOrderBlue = null;
+    public static HigherOrderPattern higherOrderRed  = null;
 
     /**
      * Parity error list for the diff currently being generated. Creates the list on first
