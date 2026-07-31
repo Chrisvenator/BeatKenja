@@ -49,7 +49,7 @@ public class AppShell extends BorderPane {
     private final HBox diffChips = new HBox(6);
 
     /** Workflow steps that need a loaded map before they make sense. */
-    private static final String[] LOCKED_STEPS = {"2 · Timing", "3 · Generate", "4 · Review", "5 · Export", "NPS Overview", "Characteristics"};
+    private static final String[] LOCKED_STEPS = {"2 · Timing", "3 · Generate", "4 · Review", "5 · Export", "Viewer", "NPS Overview", "Characteristics"};
 
     public AppShell(AppController controller, Stage stage) {
         this.controller = controller;
@@ -72,6 +72,7 @@ public class AppShell extends BorderPane {
         views.put("3 · Generate", new UserInterfaceFX.Views.GenerateView(controller, stage));
         views.put("4 · Review", new UserInterfaceFX.Views.ReviewView(controller, this::selectView));
         views.put("5 · Export", new UserInterfaceFX.Views.ExportView(controller, stage));
+        views.put("Viewer", new UserInterfaceFX.Views.ViewerView(controller));
         views.put("NPS Overview", new UserInterfaceFX.Views.NpsOverviewView(controller));
         views.put("Utilities", new UserInterfaceFX.Views.UtilitiesView(controller));
         views.put("Characteristics", new UserInterfaceFX.Views.CharacteristicsView(controller));
@@ -106,7 +107,7 @@ public class AppShell extends BorderPane {
 
         box.getChildren().add(new Separator());
         box.getChildren().add(sectionLabel("TOOLS"));
-        for (String name : new String[]{"NPS Overview", "Utilities", "Characteristics", "Batch MP3", "Patterns"}) {
+        for (String name : new String[]{"Viewer", "NPS Overview", "Utilities", "Characteristics", "Batch MP3", "Patterns"}) {
             box.getChildren().add(navButton(name));
         }
 
@@ -262,6 +263,7 @@ public class AppShell extends BorderPane {
         views.values().forEach(view -> {
             if (view instanceof UserInterfaceFX.Views.ReviewView reviewView) reviewView.shutdown();
             if (view instanceof UserInterfaceFX.Views.TimingView timingView) timingView.shutdown();
+            if (view instanceof UserInterfaceFX.Views.ViewerView viewerView) viewerView.shutdown();
         });
     }
 }
