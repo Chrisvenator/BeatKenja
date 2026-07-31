@@ -11,6 +11,7 @@ import MapGeneration.GenerationElements.PatternCache;
 import MapGeneration.PatternGeneration.CommonMethods.FixErrorsInPatterns;
 import MapGeneration.GenerationElements.Pattern;
 import MapGeneration.GenerationElements.PatternProbability;
+import MapGeneration.StyleSpace.StyleSpace;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -210,6 +211,9 @@ public class ComplexPattern extends MapGenerator {
 
             //invert wrist position
             palmDirection[i % j] = !palmDirection[i % j];
+
+            // Trigger style-space drift at section boundaries (Variant D)
+            GenerationContext.applyStyleDriftIfNeeded(notes.get(i)._time);
         }
 
         // make every second note red:
@@ -406,17 +410,31 @@ public class ComplexPattern extends MapGenerator {
     public static Note getComplexNote(Pattern p, Note previous, Note prevPrev, float beatGap, int invalidPlacesInARow, float timing) {
         Note next;
 
-        // Use 2nd-order engine if loaded and not in retry-forced-linear mode
+        // Use style-space engine (highest priority) if loaded and not in forced-linear mode
         if (invalidPlacesInARow < 100) {
-            HigherOrderPattern ho = (previous != null && previous._type == 1)
-                    ? GenerationContext.higherOrderBlue
-                    : GenerationContext.higherOrderRed;
-
-            if (ho != null) {
-                PatternProbability probs = ho.getProbability(prevPrev, previous, beatGap, p, timing);
+            StyleSpace ss = GenerationContext.styleSpace;
+            if (ss != null && previous != null) {
+                boolean isBlue = previous._type == 1;
+                HigherOrderPattern ho = isBlue ? GenerationContext.higherOrderBlue
+                                               : GenerationContext.higherOrderRed;
+                PatternProbability probs = ss.getProbability(prevPrev, previous, beatGap, p, timing, isBlue);
                 if (probs != null) {
                     next = predictNextNote(probs, timing);
                     if (next != null) return next;
+                }
+            }
+
+            // Fall through to bare higher-order if style space absent
+            if (ss == null) {
+                HigherOrderPattern ho = (previous != null && previous._type == 1)
+                        ? GenerationContext.higherOrderBlue
+                        : GenerationContext.higherOrderRed;
+                if (ho != null) {
+                    PatternProbability probs = ho.getProbability(prevPrev, previous, beatGap, p, timing);
+                    if (probs != null) {
+                        next = predictNextNote(probs, timing);
+                        if (next != null) return next;
+                    }
                 }
             }
         }
