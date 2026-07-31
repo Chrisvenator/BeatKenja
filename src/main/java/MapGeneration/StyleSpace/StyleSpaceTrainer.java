@@ -63,6 +63,10 @@ public class StyleSpaceTrainer {
             logger.warn("Fewer entries ({}) than k ({}); reducing k", entries.size(), k);
             k = Math.max(1, entries.size());
         }
+        if (entries.isEmpty()) {
+            logger.error("No valid entries found in {}; aborting training", trainRoot);
+            return Collections.emptyList();
+        }
 
         // ---- 2. K-Means over StyleVectors ----
         int[] assignments = kMeans(entries, k, kMeansIter);
