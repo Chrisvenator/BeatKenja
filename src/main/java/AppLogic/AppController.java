@@ -1,5 +1,6 @@
 package AppLogic;
 
+import AppLogic.SectionAnalysisService;
 import BeatSaberObjects.Objects.BeatSaberMap;
 import BeatSaberObjects.Objects.Bookmark;
 import BeatSaberObjects.Objects.Enums.BeatmapCharacteristic;
@@ -10,6 +11,7 @@ import org.json.JSONObject;
 import DataManager.FileManager;
 import DataManager.Parameters;
 import MapGeneration.CharacteristicGeneration.LawlessGenerator;
+import MapGeneration.StyleSpace.StyleSpace;
 import MapGeneration.CharacteristicGeneration.RotationEventGenerator;
 import MapGeneration.GenerationElements.Pattern;
 import MapGeneration.PatternGeneration.CommonMethods.CheckParity;
@@ -290,6 +292,21 @@ public class AppController {
         prepareGeneration();
         List<String> errors = new ArrayList<>();
         boolean anySucceeded = false;
+
+        // Inject section boundaries for style drift if analysis is available
+        SectionAnalysisService.SectionAnalysis analysis = session.getSectionAnalysis();
+        if (analysis != null && analysis.boundaries() != null && analysis.tiers() != null && Parameters.BPM > 0) {
+            double bpm = Parameters.BPM;
+            float[] boundaryBeats = new float[analysis.boundaries().size()];
+            for (int b = 0; b < analysis.boundaries().size(); b++) {
+                boundaryBeats[b] = (float)(analysis.boundaries().get(b) * bpm / 60.0);
+            }
+            GenerationContext.sectionBoundaryBeats = boundaryBeats;
+            GenerationContext.sectionTiers = analysis.tiers();
+        } else {
+            GenerationContext.sectionBoundaryBeats = null;
+            GenerationContext.sectionTiers = null;
+        }
 
         for (DiffSession diff : targets) {
             GenerationContext.currentDiff = diff.difficultyFileName();

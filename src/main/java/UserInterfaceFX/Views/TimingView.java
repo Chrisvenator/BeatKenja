@@ -248,6 +248,7 @@ public class TimingView extends VBox {
         };
         task.setOnSucceeded(e -> {
             analysis = task.getValue();
+            controller.session().setSectionAnalysis(analysis);
             songMapStatus.setText(analysisSummary());
             applyBookmarksButton.setDisable(false);
             if (player.isLoaded()) {

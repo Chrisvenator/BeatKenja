@@ -2,6 +2,7 @@ package DataManager.Corpus;
 
 import DataManager.Records.QualityTier;
 import MapGeneration.GenerationElements.Exceptions.NoteNotValidException;
+import MapGeneration.GenerationElements.HigherOrderPattern;
 import MapGeneration.GenerationElements.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,6 +31,8 @@ public class CorpusLoader {
     public record LoadResult(
         Pattern patternRed,
         Pattern patternBlue,
+        HigherOrderPattern higherOrderBlue,
+        HigherOrderPattern higherOrderRed,
         int mapsLoaded,
         int diffsLoaded,
         int mapsSkipped
@@ -47,10 +50,12 @@ public class CorpusLoader {
 
         Pattern bluePattern = new Pattern();
         Pattern redPattern  = new Pattern();
+        HigherOrderPattern hoBlue = new HigherOrderPattern();
+        HigherOrderPattern hoRed  = new HigherOrderPattern();
         int mapsLoaded = 0, diffsLoaded = 0, mapsSkipped = 0;
 
         File[] tierFolders = root.listFiles(File::isDirectory);
-        if (tierFolders == null) return new LoadResult(redPattern, bluePattern, 0, 0, 0);
+        if (tierFolders == null) return new LoadResult(redPattern, bluePattern, hoBlue, hoRed, 0, 0, 0);
 
         for (File tierFolder : tierFolders) {
             QualityTier tier = QualityTier.fromFolderName(tierFolder.getName());
@@ -85,6 +90,8 @@ public class CorpusLoader {
                             bluePattern.merge(blue);
                             redPattern.merge(red);
                         }
+                        hoBlue.trainFrom(diff.map()._notes, 1, tier.weight);
+                        hoRed.trainFrom(diff.map()._notes, 0, tier.weight);
                         diffsLoaded++;
                     }
                     mapsLoaded++;
@@ -97,7 +104,7 @@ public class CorpusLoader {
         }
 
         logger.info("Corpus loaded: {} maps ({} diffs, {} skipped)", mapsLoaded, diffsLoaded, mapsSkipped);
-        return new LoadResult(redPattern, bluePattern, mapsLoaded, diffsLoaded, mapsSkipped);
+        return new LoadResult(redPattern, bluePattern, hoBlue, hoRed, mapsLoaded, diffsLoaded, mapsSkipped);
     }
 
     /**

@@ -1,6 +1,7 @@
 package DataManager.Corpus;
 
 import DataManager.Records.QualityTier;
+import MapGeneration.GenerationElements.HigherOrderPattern;
 import MapGeneration.GenerationElements.Pattern;
 import org.junit.jupiter.api.Test;
 
@@ -49,6 +50,15 @@ class CorpusLoaderTest {
         System.out.println("Maps loaded: " + result.mapsLoaded()
                 + "  diffs: " + result.diffsLoaded()
                 + "  skipped: " + result.mapsSkipped());
+    }
+
+    @Test
+    void loadAll_buildsHigherOrderPattern() {
+        CorpusLoader.LoadResult result = CorpusLoader.loadAll(TRAIN_PATH);
+        HigherOrderPattern ho = result.higherOrderBlue();
+        assertNotNull(ho, "higherOrderBlue must not be null");
+        assertTrue(ho.getTotalObservations() > 0, "Expected higher-order observations from corpus");
+        assertTrue(ho.getSecondOrderStateCount() > 0, "Expected at least one 2nd-order state");
     }
 
     @Test

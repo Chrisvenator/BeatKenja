@@ -1,5 +1,6 @@
 package AppLogic;
 
+import AppLogic.SectionAnalysisService;
 import BeatSaberObjects.Objects.BeatSaberMap;
 import DataManager.Parameters;
 import MapGeneration.GenerationElements.Pattern;
@@ -22,6 +23,7 @@ public class MapSession {
     private final List<BeatSaberMap> legacyView = new LegacyMapListView();
     private Pattern pattern;
     private String mapFolderPath;
+    private SectionAnalysisService.SectionAnalysis sectionAnalysis;
 
     public List<DiffSession> diffs() {
         return diffs;
@@ -46,6 +48,9 @@ public class MapSession {
     public void setMapFolderPath(String mapFolderPath) {
         this.mapFolderPath = mapFolderPath;
     }
+
+    public SectionAnalysisService.SectionAnalysis getSectionAnalysis() { return sectionAnalysis; }
+    public void setSectionAnalysis(SectionAnalysisService.SectionAnalysis a) { this.sectionAnalysis = a; }
 
     /** BPM is still shared with the generation core via Parameters.BPM; the session only delegates. */
     public double getBpm() {
