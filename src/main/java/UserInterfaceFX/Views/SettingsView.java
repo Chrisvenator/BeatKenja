@@ -44,6 +44,7 @@ public class SettingsView extends ScrollPane {
     private final TextField defaultBpm = new TextField();
     private final CheckBox plotNps = new CheckBox("Plot NPS distribution on load");
     private final CheckBox fixInconsistentTimings = new CheckBox("Fix inconsistent timings in fast sections");
+    private final TextField styleDriftMagnitude = new TextField();
 
     public SettingsView() {
         setFitToWidth(true);
@@ -73,6 +74,7 @@ public class SettingsView extends ScrollPane {
         row = field(grid, row, "Default BPM", defaultBpm);
         grid.add(plotNps, 0, row++, 2, 1);
         grid.add(fixInconsistentTimings, 0, row++, 2, 1);
+        row = field(grid, row, "Style drift per section (0=consistent, 0.2=adventurous)", styleDriftMagnitude);
 
         Button save = new Button("Save settings");
         save.getStyleClass().add(Styles.ACCENT);
@@ -120,6 +122,7 @@ public class SettingsView extends ScrollPane {
         defaultBpm.setText(String.valueOf(config.mapGenerator.defaultBpm));
         plotNps.setSelected(config.mapGenerator.plotNpsDistribution);
         fixInconsistentTimings.setSelected(config.mapGenerator.fixInconsistentTimings);
+        styleDriftMagnitude.setText(String.valueOf(config.mapGenerator.styleDriftMagnitude));
     }
 
     private void save() {
@@ -140,11 +143,13 @@ public class SettingsView extends ScrollPane {
             config.mapGenerator.defaultBpm = Integer.parseInt(defaultBpm.getText().trim());
             config.mapGenerator.plotNpsDistribution = plotNps.isSelected();
             config.mapGenerator.fixInconsistentTimings = fixInconsistentTimings.isSelected();
+            config.mapGenerator.styleDriftMagnitude = Float.parseFloat(styleDriftMagnitude.getText().trim());
+            AppLogic.GenerationContext.styleDriftMagnitude = config.mapGenerator.styleDriftMagnitude;
 
             Parameters.configLoader.saveConfig(Parameters.CONFIG_FILE_LOCATION);
             saveResult.setText("Saved. Most settings take effect after a restart.");
         } catch (NumberFormatException ex) {
-            saveResult.setText("Default BPM must be a number.");
+            saveResult.setText("Default BPM and Style drift must be numbers.");
         } catch (Exception ex) {
             logger.error("Could not save config: {}", ex.getMessage());
             saveResult.setText("Save failed: " + ex.getMessage());

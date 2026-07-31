@@ -1,14 +1,17 @@
 package MapGeneration;
 
+import AppLogic.GenerationContext;
 import BeatSaberObjects.Objects.Note;
 import BeatSaberObjects.Objects.TimingNote;
 import DataManager.Parameters;
 import MapAnalysation.PatternVisualisation.NpsPlotters.DynamicNpsPlotter;
 import MapAnalysation.PatternVisualisation.NpsPlotters.NpsInfo;
+import MapGeneration.GenerationElements.HigherOrderPattern;
 import MapGeneration.GenerationElements.PatternCache;
 import MapGeneration.PatternGeneration.CommonMethods.FixErrorsInPatterns;
 import MapGeneration.GenerationElements.Pattern;
 import MapGeneration.GenerationElements.PatternProbability;
+import MapGeneration.StyleSpace.StyleSpace;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -122,11 +125,13 @@ public class ComplexPattern extends MapGenerator {
             }
 
             Note previous = notes.get(i - j);
+            Note prevPrev = (i >= 2 * j) ? notes.get(i - 2 * j) : null;
+            float beatGap = (previous != null) ? timings.get(i)._time - previous._time : 0.5f;
             Note next;
             if (usePatternCache) {// alle false noch einmal evaluieren
                 next = patternCache.getNext(previous, invalidPlacesInARow, timings.get(i)._time);
             } else
-                next = getComplexNote(p, previous, invalidPlacesInARow, timings.get(i)._time);
+                next = getComplexNote(p, previous, prevPrev, beatGap, invalidPlacesInARow, timings.get(i)._time);
             notes.set(i, next);
 
 
@@ -206,6 +211,9 @@ public class ComplexPattern extends MapGenerator {
 
             //invert wrist position
             palmDirection[i % j] = !palmDirection[i % j];
+
+            // Trigger style-space drift at section boundaries (Variant D)
+            GenerationContext.applyStyleDriftIfNeeded(notes.get(i)._time);
         }
 
         // make every second note red:
@@ -386,11 +394,53 @@ public class ComplexPattern extends MapGenerator {
      */
 
     public static Note getComplexNote(Pattern p, Note previous, int invalidPlacesInARow, float timing) {
-        Note next;
-        PatternProbability probabilities = p.getProbabilityOf(previous);
+        return getComplexNote(p, previous, null, 0.5f, invalidPlacesInARow, timing);
+    }
 
-        // Generate a note according to the template
-        // If there is an infinite loop, then try to place a linear note
+    /**
+     * Selects the next note using the higher-order engine when available, with backoff.
+     *
+     * @param p                   1st-order baseline Pattern
+     * @param previous            note one step back (same color)
+     * @param prevPrev            note two steps back (same color); may be null
+     * @param beatGap             beat gap from previous to now
+     * @param invalidPlacesInARow retry counter; at ≥100 forces linear fallback
+     * @param timing              beat time for the new note
+     */
+    public static Note getComplexNote(Pattern p, Note previous, Note prevPrev, float beatGap, int invalidPlacesInARow, float timing) {
+        Note next;
+
+        // Use style-space engine (highest priority) if loaded and not in forced-linear mode
+        if (invalidPlacesInARow < 100) {
+            StyleSpace ss = GenerationContext.styleSpace;
+            if (ss != null && previous != null) {
+                boolean isBlue = previous._type == 1;
+                HigherOrderPattern ho = isBlue ? GenerationContext.higherOrderBlue
+                                               : GenerationContext.higherOrderRed;
+                PatternProbability probs = ss.getProbability(prevPrev, previous, beatGap, p, timing, isBlue);
+                if (probs != null) {
+                    next = predictNextNote(probs, timing);
+                    if (next != null) return next;
+                }
+            }
+
+            // Fall through to bare higher-order if style space absent
+            if (ss == null) {
+                HigherOrderPattern ho = (previous != null && previous._type == 1)
+                        ? GenerationContext.higherOrderBlue
+                        : GenerationContext.higherOrderRed;
+                if (ho != null) {
+                    PatternProbability probs = ho.getProbability(prevPrev, previous, beatGap, p, timing);
+                    if (probs != null) {
+                        next = predictNextNote(probs, timing);
+                        if (next != null) return next;
+                    }
+                }
+            }
+        }
+
+        // 1st-order fallback (original path)
+        PatternProbability probabilities = p.getProbabilityOf(previous);
         if (probabilities == null || invalidPlacesInARow >= 100) next = nextLinearNote(previous, timing);
         else {
             next = predictNextNote(probabilities, timing);

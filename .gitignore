@@ -107,3 +107,4 @@ config.json
 /.claude/
 /.idea/
 /assets/org/
+/train/

@@ -38,6 +38,39 @@ public class StartFX extends Application {
         logger.info("JavaFX shell started (dark mode: {})", DARK_MODE);
 
         autoloadIfRequested(controller);
+
+        // Seed runtime drift magnitude from config (user-editable in SettingsView)
+        AppLogic.GenerationContext.styleDriftMagnitude =
+            DataManager.Parameters.configLoader.getConfig().mapGenerator.styleDriftMagnitude;
+
+        // Load corpus and style space on a background thread — must not block the UI
+        Thread engineLoader = new Thread(() -> {
+            try {
+                if (!new java.io.File("train").isDirectory()) {
+                    DataManager.Parameters.logger.info("train/ folder not found — corpus not loaded");
+                    AppLogic.GenerationContext.styleSpace = MapGeneration.StyleSpace.StyleSpaceLoader.load();
+                    return;
+                }
+                DataManager.Corpus.CorpusLoader.LoadResult corpus =
+                    DataManager.Corpus.CorpusLoader.loadAll("train");
+                AppLogic.GenerationContext.higherOrderBlue = corpus.higherOrderBlue();
+                AppLogic.GenerationContext.higherOrderRed  = corpus.higherOrderRed();
+                MapGeneration.StyleSpace.StyleSpace ss =
+                    MapGeneration.StyleSpace.StyleSpaceLoader.load();
+                if (!ss.getArchetypes().isEmpty()) {
+                    // Pick a random start coordinate
+                    ss.setCoordinate(ss.randomCoordinateNear(0, 0.2f, DataManager.Parameters.RANDOM));
+                }
+                AppLogic.GenerationContext.styleSpace = ss;
+                DataManager.Parameters.logger.info("Engine loaded: {} HO-blue obs, {} archetypes",
+                    corpus.higherOrderBlue().getTotalObservations(), ss.getArchetypes().size());
+            } catch (Exception e) {
+                DataManager.Parameters.logger.warn("Engine load failed (non-fatal): {}", e.getMessage());
+            }
+        }, "engine-loader");
+        engineLoader.setDaemon(true);
+        engineLoader.start();
+
         takeDevScreenshotIfRequested(scene);
     }
 
