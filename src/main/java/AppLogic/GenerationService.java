@@ -28,7 +28,6 @@ import static MapGeneration.PatternGeneration.RandomV2FromTemplate.randomV2FromT
 /**
  * Maps GeneratorType to the actual generation-core calls. UI-independent; the logic is
  * lifted 1:1 from the old Swing creator buttons so results stay identical.
- *
  * Callers must set GenerationContext.currentDiff and patternVariance before calling
  * (the AppController's generate orchestration does this per diff).
  */
@@ -66,6 +65,18 @@ public final class GenerationService {
                 BeatSaberMap map = createMap(source, pattern, false, false);
                 if (map.equals(source)) throw new IllegalStateException("Map didn't compute — result is identical to the input");
                 yield map;
+            }
+
+            case STYLE_AWARE -> {
+                MapGeneration.StyleSpace.StyleSpace ss = GenerationContext.styleSpace;
+                if (ss == null || ss.getArchetypes().isEmpty()) {
+                    throw new IllegalStateException("Style model not loaded — run StyleSpaceTrainer first to produce style_archetypes.ser");
+                }
+                // Pick a fresh random start coordinate so each generation run has its own identity
+                ss.setCoordinate(ss.randomCoordinateNear(
+                        Parameters.RANDOM.nextInt(ss.getArchetypes().size()),
+                        0.15f, Parameters.RANDOM));
+                yield generateComplex(source, pattern);
             }
 
             case RANDOM -> {

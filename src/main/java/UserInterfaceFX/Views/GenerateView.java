@@ -2,9 +2,12 @@ package UserInterfaceFX.Views;
 
 import AppLogic.AppController;
 import AppLogic.DiffSession;
+import AppLogic.GenerationContext;
 import AppLogic.GeneratorType;
 import DataManager.Parameters;
 import atlantafx.base.theme.Styles;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
@@ -22,6 +25,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.File;
 import java.util.List;
@@ -50,6 +54,11 @@ public class GenerateView extends VBox {
     private final Label result = new Label();
     private final VBox cardsBox = new VBox(12);
 
+    // Held separately so the model-readiness poller can enable/disable them
+    private Button styleAwareActive;
+    private Button styleAwareAll;
+    private Label styleAwareStatus;
+
     public GenerateView(AppController controller, Stage stage) {
         super(12);
         this.controller = controller;
@@ -58,7 +67,15 @@ public class GenerateView extends VBox {
 
         activeDiffLabel.getStyleClass().add(Styles.TEXT_MUTED);
 
-        for (GeneratorType type : GeneratorType.values()) cardsBox.getChildren().add(card(type));
+        for (GeneratorType type : GeneratorType.values()) {
+            if (type == GeneratorType.STYLE_AWARE) {
+                cardsBox.getChildren().add(buildStyleAwareCard());
+                continue; // custom card added below
+            }
+            cardsBox.getChildren().add(card(type));
+        }
+
+        startModelReadinessPoller();
 
         javafx.scene.control.ScrollPane cardsScroll = new javafx.scene.control.ScrollPane(cardsBox);
         cardsScroll.setFitToWidth(true);
@@ -172,7 +189,7 @@ public class GenerateView extends VBox {
 
     /** Runs the generator in a background task; the seed field is applied to the global RNG first. */
     private void run(GeneratorType type, List<DiffSession> targets) {
-        if (targets.isEmpty() || targets.get(0) == null) return;
+        if (targets.isEmpty() || targets.getFirst() == null) return;
         applySeed();
 
         setDisable(true);
@@ -216,6 +233,62 @@ public class GenerateView extends VBox {
             seedField.setText(String.valueOf(Parameters.SEED));
         }
         Parameters.RANDOM = new Random(Parameters.SEED);
+    }
+
+    private VBox buildStyleAwareCard() {
+        Label title = new Label(GeneratorType.STYLE_AWARE.label);
+        title.getStyleClass().add(Styles.TITLE_4);
+
+        Label description = new Label(GeneratorType.STYLE_AWARE.description);
+        description.getStyleClass().add(Styles.TEXT_MUTED);
+        description.setWrapText(true);
+        description.setMinHeight(Region.USE_PREF_SIZE);
+
+        styleAwareStatus = new Label("Loading style model…");
+        styleAwareStatus.getStyleClass().add(Styles.TEXT_MUTED);
+
+        styleAwareActive = new Button("Generate (active diff)");
+        styleAwareActive.getStyleClass().add(Styles.ACCENT);
+        styleAwareActive.setDisable(true);
+        styleAwareActive.setOnAction(e -> run(GeneratorType.STYLE_AWARE, List.of(controller.getActiveDiff())));
+
+        styleAwareAll = new Button("Apply to all diffs");
+        styleAwareAll.getStyleClass().add(Styles.FLAT);
+        styleAwareAll.setDisable(true);
+        styleAwareAll.setOnAction(e -> run(GeneratorType.STYLE_AWARE, List.copyOf(controller.session().diffs())));
+
+        VBox box = new VBox(8, title, description, styleAwareStatus,
+                new HBox(8, styleAwareActive, styleAwareAll));
+        box.setPadding(new Insets(14));
+        box.setStyle("-fx-border-color: -color-border-default; -fx-border-width: 1; -fx-border-radius: 8;");
+        return box;
+    }
+
+    /**
+     * Polls GenerationContext.styleSpace every 2 s until the engine-loader thread finishes.
+     * Enables/disables the Style-Aware buttons and updates the status label accordingly.
+     */
+    private void startModelReadinessPoller() {
+        Timeline[] holder = new Timeline[1];
+        holder[0] = new Timeline(new KeyFrame(Duration.seconds(2), e -> {
+            MapGeneration.StyleSpace.StyleSpace ss = GenerationContext.styleSpace;
+            boolean ready = ss != null && !ss.getArchetypes().isEmpty();
+            styleAwareActive.setDisable(!ready);
+            styleAwareAll.setDisable(!ready);
+            if (ready) {
+                styleAwareStatus.setText("Model ready — " + ss.getArchetypes().size() + " style archetypes loaded.");
+                styleAwareStatus.getStyleClass().remove(Styles.DANGER);
+                holder[0].stop();
+            } else if (ss != null) {
+                // styleSpace set but no archetypes — model file missing or empty
+                styleAwareStatus.setText("Model loaded but empty — run StyleSpaceTrainer to generate archetypes.");
+                styleAwareStatus.getStyleClass().add(Styles.DANGER);
+                holder[0].stop();
+            }
+            // ss==null → engine-loader still running; keep polling
+        }));
+        holder[0].setCycleCount(Timeline.INDEFINITE);
+        holder[0].play();
     }
 
     private void refreshActiveDiff() {

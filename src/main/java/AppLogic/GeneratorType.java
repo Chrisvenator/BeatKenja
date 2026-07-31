@@ -5,6 +5,7 @@ public enum GeneratorType {
     LINEAR("Linear", "Simple alternating swings. No DDs, no resets — gets boring fast, but always safe."),
     COMPLEX("Complex", "Varied patterns based on the loaded .pat file. May contain DDs/resets (you get warned)."),
     SECTIONED("Sectioned (bookmarks)", "Uses bookmarks in the map to switch styles per section: linear | complex | 1-2 | 2-2 | jumps | doubles …"),
+    STYLE_AWARE("Style-Aware", "Picks a unique style identity from the trained model and generates consistent patterns throughout. \nSection-aware drift if audio was analyzed. Requires style_archetypes.ser."),
     RANDOM("Random", "Chaos. Notes everywhere. Mostly useful for stress-testing."),
     RANDOM_V2("Random V2", "Random placement guided by the loaded pattern template.");
 
