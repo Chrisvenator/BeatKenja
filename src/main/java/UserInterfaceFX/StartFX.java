@@ -39,6 +39,10 @@ public class StartFX extends Application {
 
         autoloadIfRequested(controller);
 
+        // Seed runtime drift magnitude from config (user-editable in SettingsView)
+        AppLogic.GenerationContext.styleDriftMagnitude =
+            DataManager.Parameters.configLoader.getConfig().mapGenerator.styleDriftMagnitude;
+
         // Load corpus and style space on a background thread — must not block the UI
         Thread engineLoader = new Thread(() -> {
             try {

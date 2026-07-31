@@ -121,10 +121,11 @@ public class StyleSpaceTrainer {
 
         // Init centroids: pick k random entries
         StyleVector[] centroids = new StyleVector[k];
-        List<Integer> chosen = new ArrayList<>();
-        while (chosen.size() < k) {
+        Set<Integer> chosen = new HashSet<>();
+        int centroidCount = 0;
+        while (centroidCount < k) {
             int idx = rng.nextInt(n);
-            if (!chosen.contains(idx)) { chosen.add(idx); centroids[chosen.size() - 1] = entries.get(idx).styleVector(); }
+            if (chosen.add(idx)) { centroids[centroidCount++] = entries.get(idx).styleVector(); }
         }
 
         int[] assignments = new int[n];

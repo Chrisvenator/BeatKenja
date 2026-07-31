@@ -142,6 +142,9 @@ public class Configuration
         public boolean plotNpsDistribution = true;
         @JsonProperty("delete-wav-after-conversion")
         public boolean deleteWavAfterConversion = true;
+        /** Style drift magnitude per section boundary (0=perfectly consistent, higher=more adventurous). */
+        @JsonProperty("style-drift-magnitude")
+        public float styleDriftMagnitude = 0.08f;
     }
 
     @lombok.Getter @lombok.Setter @lombok.ToString

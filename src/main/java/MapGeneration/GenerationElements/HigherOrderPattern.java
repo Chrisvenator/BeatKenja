@@ -5,6 +5,7 @@ import DataManager.Corpus.GapBucket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +24,7 @@ import java.util.Map;
  * <p>Training: call {@link #trainFrom} per map difficulty. The {@code weight} parameter
  * implements quality weighting (Ranked=10, Curated=5, Verified=3, Normal=1).
  */
-public class HigherOrderPattern {
+public class HigherOrderPattern implements Serializable {
 
     private static final Logger logger = LogManager.getLogger(HigherOrderPattern.class);
 
@@ -33,7 +34,7 @@ public class HigherOrderPattern {
     /** Canonical note state indices: lineIndex*27 + lineLayer*9 + cutDirection → 0..107. */
     private static final int STATE_COUNT = 108;
 
-    private record StateKey(int ppIdx, int pIdx, GapBucket gap) {}
+    private record StateKey(int ppIdx, int pIdx, GapBucket gap) implements Serializable {}
 
     /** 2nd-order: state → successor counts. */
     private final Map<StateKey, int[]>  secondOrderCounts = new HashMap<>();
