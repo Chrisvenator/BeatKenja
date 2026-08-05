@@ -6,8 +6,11 @@ import BeatSaberObjects.Objects.Bookmark;
 import BeatSaberObjects.Objects.Enums.BeatmapCharacteristic;
 import BeatSaberObjects.Objects.Enums.ParityErrorEnum;
 import BeatSaberObjects.Objects.Note;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import DataManager.FileManager;
 import DataManager.Parameters;
 import MapGeneration.CharacteristicGeneration.LawlessGenerator;
@@ -615,11 +618,16 @@ public class AppController {
         if (newDiffs.isEmpty()) return infoDatJson;
 
         try {
-            JSONObject info = new JSONObject(infoDatJson);
-            JSONArray sets = info.optJSONArray("_difficultyBeatmapSets");
-            if (sets == null) {
-                sets = new JSONArray();
-                info.put("_difficultyBeatmapSets", sets);
+            // Gson (not org.json) so the original key order is preserved: ArcViewer detects the
+            // schema version from the FIRST "version" token in the file, and reordering would push
+            // a nested _customData._editors "version" ahead of the top-level _version, breaking load.
+            JsonObject info = JsonParser.parseString(infoDatJson).getAsJsonObject();
+            JsonArray sets;
+            if (info.has("_difficultyBeatmapSets") && info.get("_difficultyBeatmapSets").isJsonArray()) {
+                sets = info.getAsJsonArray("_difficultyBeatmapSets");
+            } else {
+                sets = new JsonArray();
+                info.add("_difficultyBeatmapSets", sets);
             }
 
             for (DiffSession diff : newDiffs) {
@@ -627,41 +635,46 @@ public class AppController {
                 String base = BeatmapCharacteristic.baseDifficulty(diff.difficultyFileName());
 
                 // Find or create the set for this characteristic
-                JSONObject targetSet = null;
-                for (int i = 0; i < sets.length(); i++) {
-                    JSONObject s = sets.getJSONObject(i);
-                    if (ch.infoName.equals(s.optString("_beatmapCharacteristicName"))) {
+                JsonObject targetSet = null;
+                for (int i = 0; i < sets.size(); i++) {
+                    JsonObject s = sets.get(i).getAsJsonObject();
+                    if (ch.infoName.equals(optString(s, "_beatmapCharacteristicName"))) {
                         targetSet = s;
                         break;
                     }
                 }
                 if (targetSet == null) {
-                    targetSet = new JSONObject();
-                    targetSet.put("_beatmapCharacteristicName", ch.infoName);
-                    targetSet.put("_difficultyBeatmaps", new JSONArray());
-                    sets.put(targetSet);
+                    targetSet = new JsonObject();
+                    targetSet.addProperty("_beatmapCharacteristicName", ch.infoName);
+                    targetSet.add("_difficultyBeatmaps", new JsonArray());
+                    sets.add(targetSet);
                 }
 
-                JSONArray beatmaps = targetSet.getJSONArray("_difficultyBeatmaps");
+                JsonArray beatmaps = targetSet.getAsJsonArray("_difficultyBeatmaps");
                 // Avoid duplicate entries for the same file
                 boolean alreadyPresent = false;
-                for (int i = 0; i < beatmaps.length(); i++) {
-                    if (diff.difficultyFileName().equals(beatmaps.getJSONObject(i).optString("_beatmapFilename"))) {
+                for (int i = 0; i < beatmaps.size(); i++) {
+                    if (diff.difficultyFileName().equals(optString(beatmaps.get(i).getAsJsonObject(), "_beatmapFilename"))) {
                         alreadyPresent = true;
                         break;
                     }
                 }
                 if (!alreadyPresent) {
-                    JSONObject template = findStandardTemplate(sets, base);
-                    beatmaps.put(buildDifficultyBeatmapEntry(base, diff.difficultyFileName(), template));
+                    JsonObject template = findStandardTemplate(sets, base);
+                    beatmaps.add(buildDifficultyBeatmapEntry(base, diff.difficultyFileName(), template));
                 }
             }
 
-            return info.toString(2);
+            return new GsonBuilder().setPrettyPrinting().create().toJson(info);
         } catch (Exception e) {
             logger.error("Failed to merge characteristic sets into info.dat: {}", e.getMessage());
             return infoDatJson;
         }
+    }
+
+    /** Reads a string member, or null if absent/not a string. (Gson has no org.json-style optString.) */
+    private static String optString(JsonObject obj, String key) {
+        return obj.has(key) && obj.get(key).isJsonPrimitive() ? obj.get(key).getAsString() : null;
     }
 
     /**
@@ -670,27 +683,27 @@ public class AppController {
      * present, so the new characteristic plays at the same speed as the source diff. Falls back to
      * NJS 16 / offset 0 when no Standard template entry is found.
      */
-    private JSONObject buildDifficultyBeatmapEntry(String baseDifficulty, String beatmapFilename) {
+    private JsonObject buildDifficultyBeatmapEntry(String baseDifficulty, String beatmapFilename) {
         return buildDifficultyBeatmapEntry(baseDifficulty, beatmapFilename, null);
     }
 
     /**
      * Builds a _difficultyBeatmaps entry, optionally inheriting NJS/offset from a Standard template entry.
      *
-     * @param templateEntry a _difficultyBeatmaps JSONObject from the Standard set for the same difficulty, or null
+     * @param templateEntry a _difficultyBeatmaps JsonObject from the Standard set for the same difficulty, or null
      */
-    private JSONObject buildDifficultyBeatmapEntry(String baseDifficulty, String beatmapFilename, JSONObject templateEntry) {
-        int njs    = templateEntry != null ? templateEntry.optInt("_noteJumpMovementSpeed", 16) : 16;
-        double off = templateEntry != null ? templateEntry.optDouble("_noteJumpStartBeatOffset", 0.0) : 0.0;
+    private JsonObject buildDifficultyBeatmapEntry(String baseDifficulty, String beatmapFilename, JsonObject templateEntry) {
+        int njs    = templateEntry != null && templateEntry.has("_noteJumpMovementSpeed")   ? templateEntry.get("_noteJumpMovementSpeed").getAsInt()      : 16;
+        double off = templateEntry != null && templateEntry.has("_noteJumpStartBeatOffset") ? templateEntry.get("_noteJumpStartBeatOffset").getAsDouble() : 0.0;
 
-        JSONObject entry = new JSONObject();
-        entry.put("_difficulty", baseDifficulty);
-        entry.put("_difficultyRank", BeatmapCharacteristic.difficultyRank(baseDifficulty));
-        entry.put("_beatmapFilename", beatmapFilename);
-        entry.put("_noteJumpMovementSpeed", njs);
-        entry.put("_noteJumpStartBeatOffset", off);
-        entry.put("_beatmapColorSchemeIdx", 0);
-        entry.put("_environmentNameIdx", 0);
+        JsonObject entry = new JsonObject();
+        entry.addProperty("_difficulty", baseDifficulty);
+        entry.addProperty("_difficultyRank", BeatmapCharacteristic.difficultyRank(baseDifficulty));
+        entry.addProperty("_beatmapFilename", beatmapFilename);
+        entry.addProperty("_noteJumpMovementSpeed", njs);
+        entry.addProperty("_noteJumpStartBeatOffset", off);
+        entry.addProperty("_beatmapColorSchemeIdx", 0);
+        entry.addProperty("_environmentNameIdx", 0);
         return entry;
     }
 
@@ -698,15 +711,15 @@ public class AppController {
      * Finds the _difficultyBeatmaps entry in the Standard set that matches {@code baseDifficulty}.
      * Returns null if the Standard set or a matching entry does not exist.
      */
-    private JSONObject findStandardTemplate(JSONArray sets, String baseDifficulty) {
-        for (int i = 0; i < sets.length(); i++) {
-            JSONObject set = sets.getJSONObject(i);
-            if ("Standard".equals(set.optString("_beatmapCharacteristicName"))) {
-                JSONArray beatmaps = set.optJSONArray("_difficultyBeatmaps");
-                if (beatmaps == null) return null;
-                for (int j = 0; j < beatmaps.length(); j++) {
-                    JSONObject bm = beatmaps.getJSONObject(j);
-                    if (baseDifficulty.equals(bm.optString("_difficulty"))) return bm;
+    private JsonObject findStandardTemplate(JsonArray sets, String baseDifficulty) {
+        for (int i = 0; i < sets.size(); i++) {
+            JsonObject set = sets.get(i).getAsJsonObject();
+            if ("Standard".equals(optString(set, "_beatmapCharacteristicName"))) {
+                if (!set.has("_difficultyBeatmaps") || !set.get("_difficultyBeatmaps").isJsonArray()) return null;
+                JsonArray beatmaps = set.getAsJsonArray("_difficultyBeatmaps");
+                for (int j = 0; j < beatmaps.size(); j++) {
+                    JsonObject bm = beatmaps.get(j).getAsJsonObject();
+                    if (baseDifficulty.equals(optString(bm, "_difficulty"))) return bm;
                 }
             }
         }
