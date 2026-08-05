@@ -4,10 +4,17 @@ import BeatSaberObjects.Objects.Enums.BeatmapCharacteristic;
 import BeatSaberObjects.Objects.Note;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -99,6 +106,44 @@ class AppControllerUtilitiesTest {
         assertThat(source.map()._notes).hasSize(originalCount);
         assertThat(Arrays.stream(source.map()._notes).mapToInt(n -> n._cutDirection).toArray())
                 .isEqualTo(originalCutDirs);
+    }
+
+    /**
+     * Regression for issue #35: exporting a map that has a non-Standard characteristic diff
+     * used to re-serialize info.dat via org.json, whose unordered HashMap could push a nested
+     * _customData._editors "version" ahead of the top-level _version. ArcViewer reads the
+     * FIRST "version" token to detect the schema, so it saw an editor version and failed to load.
+     * The exported info.dat must keep _version as the first "version"-keyed token.
+     */
+    @Test
+    void exportKeepsMapVersionFirstInInfoDat(@TempDir Path tmp) throws Exception {
+        // A non-Standard diff triggers the info.dat merge (Standard-only exports skip it entirely).
+        DiffSession source = controller.getActiveDiff();
+        controller.changeCharacteristic(source, BeatmapCharacteristic.LAWLESS, true);
+
+        File zip = tmp.resolve("export.zip").toFile();
+        controller.exportMapAsZip(zip);
+
+        String infoDat = readZipEntry(zip, "Info.dat");
+        assertThat(infoDat).isNotNull();
+
+        // ArcViewer's version regex grabs the first version token; it must be the map's _version.
+        Matcher m = Pattern.compile("version\"\\s*:\\s*\"([0-9.]+)").matcher(infoDat);
+        assertThat(m.find()).isTrue();
+        assertThat(m.group(1)).isEqualTo("2.1.0");
+        // and the Lawless set was actually injected
+        assertThat(infoDat).contains("Lawless");
+    }
+
+    /** Reads a zip entry's text by case-insensitive name; returns null if absent. */
+    private static String readZipEntry(File zip, String name) throws Exception {
+        try (ZipFile zf = new ZipFile(zip)) {
+            ZipEntry entry = zf.stream()
+                    .filter(e -> e.getName().equalsIgnoreCase(name))
+                    .findFirst().orElse(null);
+            if (entry == null) return null;
+            return new String(zf.getInputStream(entry).readAllBytes(), StandardCharsets.UTF_8);
+        }
     }
 
     @Test

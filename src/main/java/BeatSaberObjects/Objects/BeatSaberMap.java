@@ -589,11 +589,10 @@ public class BeatSaberMap extends BeatsaberObject {
 
         json.append("}");
 
-        json = new StringBuilder(json.toString().replaceAll(" ", "")
+        json = new StringBuilder(stripWhitespaceOutsideStrings(json.toString())
                 .replaceAll("\\.0,", ",")
                 .replaceAll("\\.0]", "]")
-                .replaceAll("\\.0}", "}")
-                .replace("\n", ""));
+                .replaceAll("\\.0}", "}"));
 
 
         return json.toString();
@@ -614,13 +613,43 @@ public class BeatSaberMap extends BeatsaberObject {
         }
         json += "}";
 
-        json = json.replaceAll(" ", "")
+        json = stripWhitespaceOutsideStrings(json)
                 .replaceAll("\\.0,", ",")
                 .replaceAll("\\.0]", "]")
-                .replaceAll("\\.0}", "}")
-                .replace("\n", "");
+                .replaceAll("\\.0}", "}");
 
         return json;
+    }
+
+    /**
+     * Removes spaces and newlines that the object toString / Arrays.toString helpers insert
+     * between JSON tokens, without touching characters inside double-quoted strings.
+     *
+     * A blanket replaceAll(" ", "") corrupted user text (e.g. a bookmark named "Drop Section One"
+     * became "DropSectionOne"). This walks the string, tracking whether it is inside a quoted
+     * string (honoring backslash escapes), and only drops whitespace found outside quotes.
+     */
+    private static String stripWhitespaceOutsideStrings(String json) {
+        StringBuilder out = new StringBuilder(json.length());
+        boolean inString = false;
+        boolean escaped = false;
+        for (int i = 0; i < json.length(); i++) {
+            char c = json.charAt(i);
+            if (inString) {
+                out.append(c);
+                if (escaped) escaped = false;
+                else if (c == '\\') escaped = true;
+                else if (c == '"') inString = false;
+            } else if (c == '"') {
+                inString = true;
+                out.append(c);
+            } else if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
+                // formatting whitespace outside strings — drop it
+            } else {
+                out.append(c);
+            }
+        }
+        return out.toString();
     }
 
     @Override
