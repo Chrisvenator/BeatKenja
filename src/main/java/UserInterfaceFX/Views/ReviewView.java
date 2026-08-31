@@ -63,6 +63,8 @@ public class ReviewView extends VBox {
     }
 
     private final AppController controller;
+    /** Navigation callback into other views — used to jump to the Viewer on a parity double-click. */
+    private final Consumer<String> navigate;
     private final MapZipServer zipServer = new MapZipServer();
 
     /**
@@ -82,11 +84,13 @@ public class ReviewView extends VBox {
     public ReviewView(AppController controller, Consumer<String> navigate) {
         super(12);
         this.controller = controller;
+        this.navigate = navigate;
         setPadding(new Insets(16));
 
         activeDiffLabel.getStyleClass().add(Styles.TEXT_MUTED);
 
         Hyperlink npsOverview = new Hyperlink("NPS overview →");
+        npsOverview.setTooltip(new javafx.scene.control.Tooltip("Open the NPS overview — notes-per-second chart across the loaded diffs."));
         npsOverview.setOnAction(e -> navigate.accept("NPS Overview"));
 
         Button arcViewer = new Button("Preview in ArcViewer");
@@ -153,21 +157,27 @@ public class ReviewView extends VBox {
         table.getColumns().setAll(List.of(okCol, beatCol, errorCol));
         VBox.setVgrow(table, Priority.ALWAYS);
 
-        // Completed rows: gray out, drop the matching bookmark, sink to the bottom
-        table.setRowFactory(t -> new javafx.scene.control.TableRow<>() {
-            @Override
-            protected void updateItem(ParityRow item, boolean empty) {
-                super.updateItem(item, empty);
-                styleProperty().unbind();
-                if (item == null || empty) {
-                    setStyle("");
-                } else {
-                    styleProperty().bind(javafx.beans.binding.Bindings
-                            .when(item.completed)
-                            .then("-fx-opacity: 0.45;")
-                            .otherwise(""));
+        // Completed rows gray out and sink; double-click jumps to the warning in the Viewer.
+        table.setRowFactory(t -> {
+            javafx.scene.control.TableRow<ParityRow> row = new javafx.scene.control.TableRow<>() {
+                @Override
+                protected void updateItem(ParityRow item, boolean empty) {
+                    super.updateItem(item, empty);
+                    styleProperty().unbind();
+                    if (item == null || empty) {
+                        setStyle("");
+                    } else {
+                        styleProperty().bind(javafx.beans.binding.Bindings
+                                .when(item.completed)
+                                .then("-fx-opacity: 0.45;")
+                                .otherwise(""));
+                    }
                 }
-            }
+            };
+            row.setOnMouseClicked(e -> {
+                if (e.getClickCount() == 2 && !row.isEmpty()) jumpToWarning(row.getItem());
+            });
+            return row;
         });
 
         Button toBookmarks = new Button("Save as bookmarks in the diff");
@@ -183,12 +193,28 @@ public class ReviewView extends VBox {
             result.setText("✓ Bookmarks added — export the diff under 5 · Export to persist them");
         });
 
-        HBox bar = new HBox(12, parityCount, new Region(), toBookmarks);
+        Region barSpacer = new Region();
+        HBox.setHgrow(barSpacer, Priority.ALWAYS);
+        HBox bar = new HBox(12, parityCount, barSpacer, toBookmarks);
         bar.setAlignment(Pos.CENTER_LEFT);
 
-        VBox box = new VBox(8, bar, table);
+        Label hint = muted("Double-click a warning to jump to it in the Viewer.");
+
+        VBox box = new VBox(8, bar, hint, table);
         box.setPadding(new Insets(8));
         return box;
+    }
+
+    /**
+     * Jumps to a parity warning: navigates to the Viewer and asks every loaded audio view to seek
+     * to the warning's beat (converted to seconds via the map BPM). No-op without a known BPM.
+     */
+    private void jumpToWarning(ParityRow row) {
+        double bpm = controller.session().getBpm();
+        if (bpm <= 0) return;
+        double seconds = row.beatValue / bpm * 60.0;
+        navigate.accept("Viewer");
+        controller.requestSeek(seconds);
     }
     //</editor-fold>
 
@@ -288,11 +314,13 @@ public class ReviewView extends VBox {
         serve.setOnAction(e -> serveCurrentMap(servedUrl));
 
         Button mapCheck = new Button("MapCheck");
+        mapCheck.setTooltip(new javafx.scene.control.Tooltip("Loads the map into MapCheck — a web QA tool that flags resets, hitbox and vision-block issues"));
         mapCheck.setOnAction(e -> {
             if (serveCurrentMap(servedUrl)) web.getEngine().load(zipServer.mapCheckUrl());
         });
 
         Button bsParity = new Button("bs-parity");
+        bsParity.setTooltip(new javafx.scene.control.Tooltip("Loads the map into bs-parity — a web tool that checks swing parity (good/bad hand resets)"));
         bsParity.setOnAction(e -> {
             if (serveCurrentMap(servedUrl)) web.getEngine().load(zipServer.bsParityUrl());
         });

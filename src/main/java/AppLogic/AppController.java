@@ -57,10 +57,21 @@ public class AppController {
         default void onBpmChanged(double bpm) {}
 
         default void onActiveDiffChanged(DiffSession activeDiff) {}
+
+        /** Fired when a view stores a new section analysis on the session (drives the global timeline). */
+        default void onAnalysisChanged() {}
+
+        /** Fired when the shared audio player loads or unloads a song (views re-sync their transports). */
+        default void onAudioChanged() {}
+
+        /** Fired when a view (or the global timeline) requests all loaded players to seek to a position. */
+        default void onSeekRequested(double seconds) {}
     }
 
     private final MapSession session = new MapSession();
     private final List<Listener> listeners = new CopyOnWriteArrayList<>();
+    /** One preview player shared by every view, so playback position and seeking are global. */
+    private final AudioPreviewPlayer audioPlayer = new AudioPreviewPlayer();
     private AppState state = AppState.EMPTY;
     private DiffSession activeDiff;
 
@@ -88,6 +99,26 @@ public class AppController {
         listeners.add(listener);
     }
 
+    /** The single audio preview player shared by every view, so playback/seek is global (session-owned). */
+    public AudioPreviewPlayer audioPlayer() {
+        return audioPlayer;
+    }
+
+    /** Publishes that the shared player loaded/unloaded a song, so views re-sync their transports. */
+    public void notifyAudioChanged() {
+        listeners.forEach(l -> l.onAudioChanged());
+    }
+
+    /** Publishes that a fresh section analysis was stored on the session. */
+    public void notifyAnalysisChanged() {
+        listeners.forEach(l -> l.onAnalysisChanged());
+    }
+
+    /** Asks every loaded audio view to seek to the given position (from the global timeline / Review jump). */
+    public void requestSeek(double seconds) {
+        listeners.forEach(l -> l.onSeekRequested(seconds));
+    }
+
     private void setState(AppState newState) {
         state = newState;
         listeners.forEach(l -> l.onStateChanged(newState));
@@ -104,6 +135,8 @@ public class AppController {
     public List<String> loadMapFileOrFolder(File path) throws IOException {
         session.maps().clear();
         PARITY_ERRORS_LIST.clear();
+        audioPlayer.close();
+        notifyAudioChanged();
         setState(AppState.EMPTY);
 
         List<String> loaded = new ArrayList<>();
@@ -224,6 +257,8 @@ public class AppController {
         PARITY_ERRORS_LIST.clear();
         GenerationContext.currentDiff = "NULL";
         setActiveDiff((DiffSession) null);
+        audioPlayer.close();
+        notifyAudioChanged();
         logger.info("Map unloaded");
         setState(AppState.EMPTY);
     }
@@ -334,7 +369,7 @@ public class AppController {
      * Converts the given diffs to timing notes in place.
      *
      * @param oneColor true = blue-only dot notes bottom-left (the format generators expect);
-     *                 false = two-color timing notes (known to be shaky, the old UI warned too)
+     *                 false = two-color timing notes (known to be shaky)
      */
     public void convertToTimingNotes(boolean oneColor, List<DiffSession> targets) {
         prepareGeneration();

@@ -54,11 +54,16 @@ public class BatchMp3View extends VBox {
         description.setMinHeight(Region.USE_PREF_SIZE);
 
         Button openInput = new Button("Open input folder");
+        openInput.setTooltip(new javafx.scene.control.Tooltip(
+                "Open the input folder in the file explorer — drop your .mp3 files here."));
         openInput.setOnAction(e -> openFolder(ONSET_GENERATION_FOLDER_PATH_INPUT));
         Button openOutput = new Button("Open output folder");
+        openOutput.setTooltip(new javafx.scene.control.Tooltip(
+                "Open the output folder in the file explorer — the generated timing maps land here."));
         openOutput.setOnAction(e -> openFolder(ONSET_GENERATION_FOLDER_PATH_OUTPUT));
         Button refresh = new Button("↻ Refresh");
         refresh.getStyleClass().add(Styles.FLAT);
+        refresh.setTooltip(new javafx.scene.control.Tooltip("Rescan the input folder for MP3 files"));
         refresh.setOnAction(e -> refreshFileList());
 
         HBox folderBar = new HBox(8,
@@ -70,6 +75,8 @@ public class BatchMp3View extends VBox {
         VBox.setVgrow(files, Priority.ALWAYS);
 
         convert.getStyleClass().add(Styles.ACCENT);
+        convert.setTooltip(new javafx.scene.control.Tooltip(
+                "Analyze every MP3 in the input folder and write a 5-diff no-arrow timing map per song. Needs ffmpeg on PATH."));
         convert.setOnAction(e -> runConversion());
 
         progress.setVisible(false);

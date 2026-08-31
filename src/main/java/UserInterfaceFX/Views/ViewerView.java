@@ -7,11 +7,12 @@ import AppLogic.ClickTrackRenderer;
 import AppLogic.DiffSession;
 import AppLogic.SectionAnalysisService;
 import AppLogic.SectionAnalysisService.SectionAnalysis;
+import BeatSaberObjects.Objects.Enums.ParityErrorEnum;
 import BeatSaberObjects.Objects.Note;
+import UserInterfaceFX.Components.TimelineStrip;
+import UserInterfaceFX.Components.TransportBar;
 import UserInterfaceFX.Viewer.NoteField3D;
-import UserInterfaceFX.Viewer.SectionTimelineStrip;
 import atlantafx.base.theme.Styles;
-import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
@@ -27,9 +28,12 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.util.Pair;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import static DataManager.Parameters.logger;
 
@@ -41,12 +45,13 @@ import static DataManager.Parameters.logger;
  * Analysis results are stored on the session so the Timing tab benefits too.
  * Read-only — no note editing in v1.
  */
-public class ViewerView extends VBox {
+public class ViewerView extends VBox implements UserInterfaceFX.AudioView {
 
     private final AppController controller;
 
-    // Audio
-    private final AudioPreviewPlayer player = new AudioPreviewPlayer();
+    // Audio — one session-owned player, shared with the Timing view and driven by the global spine.
+    private final AudioPreviewPlayer player;
+    private final TransportBar transport;
     private SectionAnalysis analysis;
 
     // Click-track mode: "notes" renders clicks at note beat positions; "onsets" uses detected onsets
@@ -58,32 +63,29 @@ public class ViewerView extends VBox {
 
     // 3D field + timeline
     private final NoteField3D noteField = new NoteField3D();
-    private final SectionTimelineStrip timeline = new SectionTimelineStrip();
+    private final TimelineStrip timeline = new TimelineStrip(48);
 
     // NJS / NJO controls
     private static final double NJS_DEFAULT = 30.0;
     private static final double NJO_DEFAULT = 0.0;
+    /** Seconds seeked per mouse-wheel notch when scrubbing the 3D lane. */
+    private static final double SCROLL_STEP_SECONDS = 0.5;
     private double currentNjs = NJS_DEFAULT;
     private double currentNjoBeat = NJO_DEFAULT;
     private Note[] currentNotes;
     private double currentBpm;
 
     // Playback controls
-    private final Button playButton    = new Button("▶");
-    private final Slider positionSlider = new Slider(0, 1, 0);
-    private final Label  timeLabel      = new Label("0:00 / 0:00");
     private final CheckBox clickCheckbox = new CheckBox("Clicks");
     private double playheadSeconds = -1;
 
     private final Label statusLabel = new Label("Load audio to preview the generated map in 3D.");
 
-    private final AnimationTimer playheadTimer = new AnimationTimer() {
-        @Override public void handle(long now) { updatePlayhead(); }
-    };
-
     public ViewerView(AppController controller) {
         super(10);
         this.controller = controller;
+        this.player = controller.audioPlayer();
+        this.transport = new TransportBar(player);
         setPadding(new Insets(16));
 
         statusLabel.getStyleClass().add(Styles.TEXT_MUTED);
@@ -91,6 +93,7 @@ public class ViewerView extends VBox {
 
         VBox.setVgrow(noteField, Priority.ALWAYS);
         getChildren().addAll(buildToolbar(), buildNjsNjoRow(), noteField, timeline, buildPlaybackRow(), statusLabel);
+        installScrollSeek();
 
         controller.addListener(new AppController.Listener() {
             @Override public void onActiveDiffChanged(DiffSession activeDiff) {
@@ -105,6 +108,10 @@ public class ViewerView extends VBox {
                 noteClickDiff = null;
                 Platform.runLater(() -> rebuildField(controller.getActiveDiff()));
             }
+            @Override public void onSeekRequested(double seconds) {
+                // Global spine (or a parity-marker jump) asked us to move the playhead
+                Platform.runLater(() -> { if (player.isLoaded()) transport.seek(seconds); });
+            }
         });
 
         currentBpm = controller.session().getBpm();
@@ -116,6 +123,8 @@ public class ViewerView extends VBox {
     private HBox buildToolbar() {
         Button analyzeBtn = new Button("Load & analyze audio…");
         analyzeBtn.getStyleClass().add(Styles.ACCENT);
+        analyzeBtn.setTooltip(new javafx.scene.control.Tooltip(
+                "Pick the song file and analyze it (sections + onsets) to preview the map flying in 3D. Reuses the Timing tab's analysis if you already ran it."));
         analyzeBtn.setOnAction(e -> chooseAndAnalyze());
 
         Region spacer = new Region();
@@ -140,6 +149,8 @@ public class ViewerView extends VBox {
         njsLabel.setMinWidth(60);
         njsLabel.getStyleClass().add(Styles.TEXT_MUTED);
         Slider njsSlider = new Slider(1, 60, NJS_DEFAULT);
+        njsSlider.setTooltip(new javafx.scene.control.Tooltip(
+                "Note Jump Speed — how fast notes fly toward the camera; higher = faster, notes appear earlier."));
         njsSlider.setMajorTickUnit(5);
         njsSlider.setMinorTickCount(4);
         njsSlider.setShowTickMarks(true);
@@ -156,6 +167,8 @@ public class ViewerView extends VBox {
         njoLabel.setMinWidth(100);
         njoLabel.getStyleClass().add(Styles.TEXT_MUTED);
         Slider njoSlider = new Slider(-2, 4, NJO_DEFAULT);
+        njoSlider.setTooltip(new javafx.scene.control.Tooltip(
+                "Note Jump Offset — shifts how far ahead notes first spawn, in beats (positive = farther ahead, negative = closer)."));
         njoSlider.setMajorTickUnit(1);
         njoSlider.setMinorTickCount(3);
         njoSlider.setShowTickMarks(true);
@@ -171,6 +184,7 @@ public class ViewerView extends VBox {
 
         Button resetBtn = new Button("Reset");
         resetBtn.getStyleClass().add(Styles.FLAT);
+        resetBtn.setTooltip(new javafx.scene.control.Tooltip("Reset NJS and NJO to their defaults (30 / 0)"));
         resetBtn.setOnAction(e -> {
             njsSlider.setValue(NJS_DEFAULT);
             njoSlider.setValue(NJO_DEFAULT);
@@ -184,25 +198,11 @@ public class ViewerView extends VBox {
     // --- Playback row ---
 
     private HBox buildPlaybackRow() {
-        playButton.setDisable(true);
-        playButton.setOnAction(e -> togglePlayback());
-
-        positionSlider.setDisable(true);
-        positionSlider.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(positionSlider, Priority.ALWAYS);
-        positionSlider.valueProperty().addListener((obs, old, v) -> {
-            if (positionSlider.isValueChanging()) scrubPreview(v.doubleValue());
+        transport.setOnPlayhead(seconds -> {
+            playheadSeconds = seconds;
+            noteField.setPlayheadSeconds(seconds);
+            timeline.setPlayheadSeconds(seconds);
         });
-        positionSlider.setOnMouseReleased(e -> seekTo(positionSlider.getValue()));
-
-        timeLabel.getStyleClass().add(Styles.TEXT_MUTED);
-
-        Label volumeIcon = new Label("🔊");
-        volumeIcon.getStyleClass().add(Styles.TEXT_MUTED);
-        Slider volumeSlider = new Slider(0, 1, 1);
-        volumeSlider.setPrefWidth(90);
-        volumeSlider.setMinWidth(60);
-        volumeSlider.valueProperty().addListener((obs, old, v) -> player.setVolume(v.doubleValue()));
 
         // Click-track source: notes vs onsets
         ToggleGroup clickGroup = new ToggleGroup();
@@ -215,9 +215,12 @@ public class ViewerView extends VBox {
         rbOnsets.setDisable(true);
         rbNotes.getStyleClass().add(Styles.TEXT_SMALL);
         rbOnsets.getStyleClass().add(Styles.TEXT_SMALL);
+        rbNotes.setTooltip(new javafx.scene.control.Tooltip("Play a click on every note's beat position"));
+        rbOnsets.setTooltip(new javafx.scene.control.Tooltip("Play a click on the detected audio onsets instead of the notes"));
 
         clickCheckbox.setDisable(true);
         clickCheckbox.getStyleClass().add(Styles.TEXT_SMALL);
+        clickCheckbox.setTooltip(new javafx.scene.control.Tooltip("Overlay a click sound on playback to check timing against the audio"));
         clickCheckbox.setOnAction(e -> applyClickTrack());
 
         clickGroup.selectedToggleProperty().addListener((obs, old, sel) -> {
@@ -236,20 +239,14 @@ public class ViewerView extends VBox {
             rbOnsets.setDisable(false);
         });
 
-        // Store refs so we can enable/disable them when audio loads
-        rbNotes.setUserData("rbNotes");
-        rbOnsets.setUserData("rbOnsets");
-
         // Keep radio buttons enabled state in sync with clickCheckbox
         clickCheckbox.disableProperty().addListener((obs, old, disabled) -> {
             rbNotes.setDisable(disabled);
             rbOnsets.setDisable(disabled);
         });
 
-        HBox row = new HBox(8, playButton, positionSlider, timeLabel,
-                volumeIcon, volumeSlider, clickCheckbox, rbNotes, rbOnsets);
-        row.setAlignment(Pos.CENTER_LEFT);
-        return row;
+        transport.setTrailing(clickCheckbox, rbNotes, rbOnsets);
+        return transport;
     }
 
     // --- Audio analysis ---
@@ -287,6 +284,8 @@ public class ViewerView extends VBox {
         task.setOnSucceeded(e -> {
             applyAnalysis(task.getValue());
             controller.session().setSectionAnalysis(task.getValue());
+            controller.notifyAnalysisChanged(); // refresh the global spine's heat-ribbon
+            controller.notifyAudioChanged(); // shared player has a new song; re-sync other views
             setStatus(analysisSummary());
         });
         task.setOnFailed(e -> setStatus("✗ " + task.getException().getMessage()));
@@ -301,13 +300,11 @@ public class ViewerView extends VBox {
             catch (Exception ex) { logger.warn("Audio load failed: {}", ex.getMessage()); }
         }
         timeline.setAnalysis(result);
-        timeline.setOnSeek(() -> seekTo(timeline.lastClickedSeconds()));
+        timeline.setShowDensity(true); // note-density ribbon over the heat-bands
+        timeline.setOnSeek(transport::seek);
+        refreshTimelineBookmarks();
         if (player.isLoaded()) {
-            playButton.setDisable(false);
-            positionSlider.setDisable(false);
-            positionSlider.setMax(player.durationSeconds());
-            positionSlider.setValue(0);
-            timeLabel.setText("0:00 / " + formatTime(player.durationSeconds()));
+            transport.onLoaded();
             clickCheckbox.setDisable(false);
         }
         // Invalidate note-click wav whenever we get new audio
@@ -411,47 +408,6 @@ public class ViewerView extends VBox {
         new Thread(task, "viewer-onset-clicks").start();
     }
 
-    // --- Playback ---
-
-    private void togglePlayback() {
-        if (!player.isLoaded()) return;
-        if (player.isPlaying()) {
-            player.pause();
-            playheadTimer.stop();
-            playButton.setText("▶");
-            updatePlayhead();
-        } else {
-            player.play();
-            playButton.setText("⏸");
-            playheadTimer.start();
-        }
-    }
-
-    private void scrubPreview(double seconds) {
-        playheadSeconds = seconds;
-        timeLabel.setText(formatTime(seconds) + " / " + formatTime(player.durationSeconds()));
-        noteField.setPlayheadSeconds(seconds);
-        timeline.setPlayheadSeconds(seconds);
-    }
-
-    private void seekTo(double seconds) {
-        if (!player.isLoaded()) return;
-        player.seekSeconds(seconds);
-        updatePlayhead();
-    }
-
-    private void updatePlayhead() {
-        playheadSeconds = player.positionSeconds();
-        if (!positionSlider.isValueChanging()) positionSlider.setValue(playheadSeconds);
-        timeLabel.setText(formatTime(playheadSeconds) + " / " + formatTime(player.durationSeconds()));
-        noteField.setPlayheadSeconds(playheadSeconds);
-        timeline.setPlayheadSeconds(playheadSeconds);
-        if (!player.isPlaying()) {
-            playheadTimer.stop();
-            playButton.setText("▶");
-        }
-    }
-
     // --- Field rebuild ---
 
     private void rebuildField(DiffSession diff) {
@@ -467,30 +423,77 @@ public class ViewerView extends VBox {
         double offsetSec = currentBpm > 0 ? currentNjoBeat / currentBpm * 60.0 : 0;
         noteField.setNjoOffsetSeconds(offsetSec);
         noteField.setPlayheadSeconds(Math.max(0, playheadSeconds));
+        refreshFlaggedNotes(diff);
         // Invalidate note-click wav if the diff changed
         if (diff != noteClickDiff) {
             noteClickWav = null;
             noteClickDiff = null;
         }
+        refreshTimelineBookmarks();
+    }
+
+    /** Shows the active diff's bookmarks as inline markers on the timeline (cleared if none / no BPM). */
+    private void refreshTimelineBookmarks() {
+        DiffSession active = controller.getActiveDiff();
+        double bpm = controller.session().getBpm();
+        boolean hasBookmarks = active != null && active.map() != null && bpm > 0
+                && active.map().bookmarks != null && !active.map().bookmarks.isEmpty();
+        timeline.setBookmarks(hasBookmarks ? active.map().bookmarks : java.util.List.of(), bpm);
+        Note[] notes = (active != null && active.map() != null && bpm > 0) ? active.map()._notes : null;
+        timeline.setNotes(notes, bpm);
+    }
+
+    /** Highlights the notes flagged by parity errors — the incorrect notes that get bookmarked. */
+    private void refreshFlaggedNotes(DiffSession diff) {
+        Set<Float> beats = new HashSet<>();
+        if (diff != null) {
+            for (Pair<Float, ParityErrorEnum> err : diff.parityErrors()) beats.add(err.getKey());
+        }
+        noteField.setFlaggedBeats(beats);
+    }
+
+    /** Mouse-wheel over the 3D lane scrubs the playhead (wheel up = forward, down = back). */
+    private void installScrollSeek() {
+        noteField.setOnScroll(e -> {
+            if (!player.isLoaded()) return;
+            double base = playheadSeconds < 0 ? 0 : playheadSeconds;
+            double target = base + e.getDeltaY() / 40.0 * SCROLL_STEP_SECONDS;
+            transport.seek(Math.max(0, Math.min(player.durationSeconds(), target)));
+            e.consume();
+        });
     }
 
     // --- Lifecycle ---
 
-    /** Stops audio and releases the audio line on app shutdown. */
+    /** Stops this view's transport timer on app shutdown; the shared player is closed by the controller. */
     public void shutdown() {
-        playheadTimer.stop();
-        player.close();
+        transport.stopTimer();
+    }
+
+    @Override
+    public void onShown() {
+        // Catch up to the shared player (Timing may have loaded/scrubbed it) and resume ticking.
+        transport.syncFromPlayer();
+        player.setClickTrackEnabled(clickCheckbox.isSelected());
+    }
+
+    @Override
+    public void onHidden() {
+        // Playback keeps running (the global spine still tracks it); just stop this bar's own timer.
+        transport.stopTimer();
+    }
+
+    @Override
+    public void togglePlay() {
+        transport.togglePlay();
     }
 
     // --- Helpers ---
 
     private void disablePlayback() {
-        playheadTimer.stop();
+        transport.reset();
         player.close();
         playheadSeconds = -1;
-        playButton.setText("▶");
-        playButton.setDisable(true);
-        positionSlider.setDisable(true);
         clickCheckbox.setSelected(false);
         clickCheckbox.setDisable(true);
         noteClickWav = null;
@@ -505,10 +508,5 @@ public class ViewerView extends VBox {
 
     private void setStatus(String text) {
         statusLabel.setText(text);
-    }
-
-    private static String formatTime(double seconds) {
-        int s = (int) Math.max(0, seconds);
-        return String.format("%d:%02d", s / 60, s % 60);
     }
 }

@@ -1,3 +1,46 @@
+/* ── Theme accent — retint AtlantaFX Primer accent to the Beat Saber "blue saber" hue ──
+   The whole accent ramp derives from one source colour (-bk-saber-blue), applied per theme
+   via a bk-theme-* class set on the scene root (see AppShell + SettingsView). Deriving per
+   theme keeps readable contrast: emphasis darkens on light backgrounds, foreground lightens
+   on dark ones. -bk-saber-blue is the shared brand colour reused by domain visuals (blue
+   notes / right saber / diff accents) as the redesign rolls out. */
+.root {
+    -bk-saber-blue: #3b6de2;
+}
+.bk-theme-dark {
+    -color-accent-emphasis: -bk-saber-blue;
+    -color-accent-fg:       derive(-bk-saber-blue, 25%);
+    -color-accent-muted:    derive(-bk-saber-blue, -40%);
+    -color-accent-subtle:   derive(-bk-saber-blue, -78%);
+}
+.bk-theme-light {
+    -color-accent-emphasis: derive(-bk-saber-blue, -20%);
+    -color-accent-fg:       derive(-bk-saber-blue, -28%);
+    -color-accent-muted:    derive(-bk-saber-blue, 40%);
+    -color-accent-subtle:   derive(-bk-saber-blue, 88%);
+}
+
+/* ── Icon system — theme-aware colour + default size for all Ikonli FontIcons ── */
+.ikonli-font-icon {
+    -fx-icon-color: -color-fg-default;
+    -fx-icon-size: 16;
+}
+
+/* ── Numeric readout — tabular monospace for data values (BPM, NPS, time, seed) ── */
+.bk-numeric {
+    -fx-font-family: "JetBrains Mono", "Cascadia Mono", "Consolas", "Menlo", monospace;
+}
+
+/* ── Unsaved indicator — amber dot by the map title while a generated map is not yet exported ── */
+.bk-dirty-dot {
+    -fx-min-width: 8;
+    -fx-max-width: 8;
+    -fx-min-height: 8;
+    -fx-max-height: 8;
+    -fx-background-radius: 4;
+    -fx-background-color: -color-warning-emphasis;
+}
+
 /* ── Card — generic bordered card used across all views ─────────── */
 .bk-card {
     -fx-border-color: -color-border-default;

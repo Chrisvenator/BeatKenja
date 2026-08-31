@@ -74,6 +74,7 @@ public class ExportView extends VBox {
         VBox.setVgrow(table, Priority.ALWAYS);
 
         backup.setSelected(true);
+        backup.setTooltip(new Tooltip("Before overwriting a difficulty file, rename the old one to a numbered .bak backup."));
 
         Button saveDiffs = new Button("Save difficulties…");
         saveDiffs.getStyleClass().add(Styles.ACCENT);

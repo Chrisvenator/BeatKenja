@@ -2,7 +2,10 @@ package UserInterfaceFX.Views;
 
 import DataManager.Config.Configuration;
 import DataManager.Parameters;
+import atlantafx.base.theme.PrimerDark;
+import atlantafx.base.theme.PrimerLight;
 import atlantafx.base.theme.Styles;
+import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -49,6 +52,39 @@ public class SettingsView extends ScrollPane {
     public SettingsView() {
         setFitToWidth(true);
 
+        ignoreDds.setTooltip(new javafx.scene.control.Tooltip(
+                "DD = double-directional: back-to-back notes needing the same swing direction.\n"
+                        + "When on, generation allows them instead of avoiding them."));
+        parityBookmarksOverwrite.setTooltip(new javafx.scene.control.Tooltip(
+                "When saving parity errors as bookmarks, replace the diff's existing bookmarks instead of adding to them."));
+        fixInconsistentTimings.setTooltip(new javafx.scene.control.Tooltip(
+                "In fast bursts (above ~8 NPS, 4+ notes), snap notes to even spacing so a slightly-off onset doesn't make the stream stutter."));
+
+        darkMode.setTooltip(new javafx.scene.control.Tooltip(
+                "Switch between the dark and light theme (applies immediately)."));
+        verbose.setTooltip(new javafx.scene.control.Tooltip(
+                "Log extra detail for debugging."));
+        autoloadPattern.setTooltip(new javafx.scene.control.Tooltip(
+                "Load the default pattern automatically on startup."));
+        parityBookmarks.setTooltip(new javafx.scene.control.Tooltip(
+                "After a parity check, save each error as a colored bookmark in the diff (parity = good/bad hand swing resets)."));
+        plotNps.setTooltip(new javafx.scene.control.Tooltip(
+                "Show the notes-per-second chart automatically when a map loads."));
+        previewerUrl.setTooltip(new javafx.scene.control.Tooltip(
+                "URL of the web map previewer opened from the Review and Export tabs."));
+        secondaryPreviewerUrl.setTooltip(new javafx.scene.control.Tooltip(
+                "URL of an alternate map previewer."));
+        wipFolder.setTooltip(new javafx.scene.control.Tooltip(
+                "Folder scanned for work-in-progress maps."));
+        patternFolder.setTooltip(new javafx.scene.control.Tooltip(
+                "Folder holding your saved pattern (.pat) files."));
+        defaultPattern.setTooltip(new javafx.scene.control.Tooltip(
+                "Pattern file the generators fall back to when none is loaded."));
+        defaultBpm.setTooltip(new javafx.scene.control.Tooltip(
+                "BPM assumed for a map when its own BPM is unknown."));
+        styleDriftMagnitude.setTooltip(new javafx.scene.control.Tooltip(
+                "How far the generation style may wander per section (0 = stay consistent, 0.2 = adventurous)."));
+
         GridPane grid = new GridPane();
         grid.setHgap(12);
         grid.setVgap(8);
@@ -78,6 +114,8 @@ public class SettingsView extends ScrollPane {
 
         Button save = new Button("Save settings");
         save.getStyleClass().add(Styles.ACCENT);
+        save.setTooltip(new javafx.scene.control.Tooltip(
+                "Write these settings to config.json (most take effect after a restart)."));
         save.setOnAction(e -> save());
 
         saveResult.getStyleClass().add(Styles.TEXT_MUTED);
@@ -86,7 +124,32 @@ public class SettingsView extends ScrollPane {
         grid.add(footer, 0, row, 2, 1);
 
         loadCurrentValues();
+
+        // Live theme switch (no restart) + monospace numeric fields
+        darkMode.setOnAction(e -> applyThemeLive(darkMode.isSelected()));
+        defaultBpm.getStyleClass().add("bk-numeric");
+        styleDriftMagnitude.getStyleClass().add("bk-numeric");
+
         setContent(grid);
+    }
+
+    /**
+     * Applies the light/dark theme immediately, without a restart.
+     *
+     * Swaps the global AtlantaFX user-agent stylesheet, updates the runtime DARK_MODE flag
+     * (so canvas palettes redraw in the matching theme), and re-keys the saber-blue accent
+     * style class on the scene root. app.css stays applied via the scene's own stylesheets.
+     */
+    private void applyThemeLive(boolean dark) {
+        Application.setUserAgentStylesheet(dark
+                ? new PrimerDark().getUserAgentStylesheet()
+                : new PrimerLight().getUserAgentStylesheet());
+        Parameters.DARK_MODE = dark;
+        if (getScene() != null && getScene().getRoot() != null) {
+            var root = getScene().getRoot();
+            root.getStyleClass().removeAll("bk-theme-dark", "bk-theme-light");
+            root.getStyleClass().add(dark ? "bk-theme-dark" : "bk-theme-light");
+        }
     }
 
     private int section(GridPane grid, int row, String title) {
@@ -147,7 +210,7 @@ public class SettingsView extends ScrollPane {
             AppLogic.GenerationContext.styleDriftMagnitude = config.mapGenerator.styleDriftMagnitude;
 
             Parameters.configLoader.saveConfig(Parameters.CONFIG_FILE_LOCATION);
-            saveResult.setText("Saved. Most settings take effect after a restart.");
+            saveResult.setText("Saved. Theme applies immediately; other settings take effect after a restart.");
         } catch (NumberFormatException ex) {
             saveResult.setText("Default BPM and Style drift must be numbers.");
         } catch (Exception ex) {

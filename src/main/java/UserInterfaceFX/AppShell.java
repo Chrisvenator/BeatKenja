@@ -2,20 +2,31 @@ package UserInterfaceFX;
 
 import AppLogic.AppController;
 import AppLogic.AppState;
+import AppLogic.AudioPreviewPlayer;
+import AppLogic.DiffSession;
+import AppLogic.SectionAnalysisService.SectionAnalysis;
+import BeatSaberObjects.Objects.Note;
+import UserInterfaceFX.Components.TimelineStrip;
 import UserInterfaceFX.Views.LoadView;
 import UserInterfaceFX.Views.SettingsView;
 import atlantafx.base.theme.Styles;
+import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBase;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Separator;
+import javafx.scene.control.Slider;
+import javafx.scene.control.TextInputControl;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.ToolBar;
+import javafx.scene.control.Tooltip;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -24,7 +35,11 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import org.kordamp.ikonli.feather.Feather;
+import org.kordamp.ikonli.javafx.FontIcon;
+
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static DataManager.Parameters.logger;
@@ -46,7 +61,35 @@ public class AppShell extends BorderPane {
 
     private final Label statusLabel = new Label("No map loaded — start with 1 · Load");
     private final Label mapHeaderTitle = new Label("No map loaded");
+    private final Label bpmLabel = new Label();
+    private final Region dirtyDot = new Region();
     private final HBox diffChips = new HBox(6);
+
+    /** Persistent song timeline shown under the header on every view; hidden until a song is analyzed. */
+    private final TimelineStrip globalTimeline = new TimelineStrip(56);
+    /** Last analysis put on the spine — lets us skip re-setAnalysis (which resets the playhead) on unrelated refreshes. */
+    private SectionAnalysis lastSpineAnalysis;
+
+    /** The currently displayed view, tracked so we can notify AudioViews as they are shown/hidden. */
+    private Node currentView;
+    /** Last playhead second pushed to the spine — guards the per-frame clock from redundant redraws. */
+    private double lastSpinePlayhead = -1;
+
+    /**
+     * Drives the global spine's playhead straight from the session's shared player, so the spine
+     * tracks playback (and scrubbing) regardless of which view is visible — even one with no audio.
+     */
+    private final AnimationTimer spineClock = new AnimationTimer() {
+        @Override public void handle(long now) {
+            AudioPreviewPlayer player = controller.audioPlayer();
+            if (!player.isLoaded()) return;
+            double pos = player.positionSeconds();
+            if (pos != lastSpinePlayhead) {
+                lastSpinePlayhead = pos;
+                globalTimeline.setPlayheadSeconds(pos);
+            }
+        }
+    };
 
     /** Workflow steps that need a loaded map before they make sense. */
     private static final String[] LOCKED_STEPS = {"2 · Timing", "3 · Generate", "4 · Review", "5 · Export", "Viewer", "NPS Overview", "Characteristics"};
@@ -54,6 +97,8 @@ public class AppShell extends BorderPane {
     public AppShell(AppController controller, Stage stage) {
         this.controller = controller;
         FxLog.install();
+        // Theme-aware accent: keys the saber-blue accent ramp in app.css to the active Primer theme
+        getStyleClass().add(DataManager.Parameters.DARK_MODE ? "bk-theme-dark" : "bk-theme-light");
 
         registerViews(stage);
         setTop(buildToolBar());
@@ -62,6 +107,11 @@ public class AppShell extends BorderPane {
         setBottom(buildStatusBar());
 
         wireControllerEvents();
+        spineClock.start(); // spine tracks the shared player from now on
+        // Global transport shortcuts (Space / arrows / Home) attach once the scene exists.
+        sceneProperty().addListener((obs, old, scene) -> {
+            if (scene != null) scene.addEventFilter(KeyEvent.KEY_PRESSED, this::handleTransportKey);
+        });
         // Dev aid: -Dbk.view=<name> opens a specific view on startup (smoke screenshots)
         selectView(System.getProperty("bk.view", "1 · Load"));
     }
@@ -88,8 +138,9 @@ public class AppShell extends BorderPane {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Button settings = new Button("⚙ Settings");
+        Button settings = new Button("Settings", new FontIcon(Feather.SETTINGS));
         settings.getStyleClass().add(Styles.BUTTON_OUTLINED);
+        settings.setTooltip(new Tooltip("Open application settings"));
         settings.setOnAction(e -> selectView("Settings"));
 
         return new ToolBar(title, spacer, settings);
@@ -105,13 +156,21 @@ public class AppShell extends BorderPane {
             box.getChildren().add(navButton(name));
         }
 
+        // Inspection views — need a loaded map (locked until then, see LOCKED_STEPS)
         box.getChildren().add(new Separator());
-        box.getChildren().add(sectionLabel("TOOLS"));
-        for (String name : new String[]{"Viewer", "NPS Overview", "Utilities", "Characteristics", "Batch MP3", "Patterns"}) {
+        box.getChildren().add(sectionLabel("ANALYZE"));
+        for (String name : new String[]{"Viewer", "NPS Overview", "Characteristics"}) {
             box.getChildren().add(navButton(name));
         }
 
-        // Steps 2-5 unlock once a map is loaded
+        // Standalone tools — usable without a loaded map
+        box.getChildren().add(new Separator());
+        box.getChildren().add(sectionLabel("TOOLS"));
+        for (String name : new String[]{"Utilities", "Batch MP3", "Patterns"}) {
+            box.getChildren().add(navButton(name));
+        }
+
+        // Workflow steps 2-5 and the analyze views unlock once a map is loaded
         for (String step : LOCKED_STEPS) navButtons.get(step).setDisable(true);
         return box;
     }
@@ -129,6 +188,7 @@ public class AppShell extends BorderPane {
         button.setAlignment(Pos.CENTER_LEFT);
         button.getStyleClass().add(Styles.FLAT);
         button.setToggleGroup(navGroup);
+        button.setTooltip(new Tooltip(navDescription(name)));
         button.setOnAction(e -> {
             if (!button.isSelected()) button.setSelected(true); // keep one selected
             showView(name);
@@ -137,16 +197,51 @@ public class AppShell extends BorderPane {
         return button;
     }
 
+    /** Short "what this step does" blurb shown as a hover tooltip on each sidebar nav button. */
+    private static String navDescription(String name) {
+        return switch (name) {
+            case "1 · Load"        -> "Load a map folder or a single difficulty file";
+            case "2 · Timing"      -> "Convert notes to timing dot-notes and analyze the song";
+            case "3 · Generate"    -> "Place note patterns via the Markov model";
+            case "4 · Review"      -> "Parity, NPS and pattern-heatmap checks plus external QA";
+            case "5 · Export"      -> "Save the diffs or zip the whole map";
+            case "Viewer"          -> "3D note preview synced to the audio";
+            case "NPS Overview"    -> "Notes-per-second charts across the map";
+            case "Characteristics" -> "Create No-Arrows / One-Saber / 360 / Lightshow diffs";
+            case "Utilities"       -> "Map fixes: lights, note placements, relabel characteristic";
+            case "Batch MP3"       -> "Bulk-convert MP3s into timing maps";
+            case "Patterns"        -> "Load and inspect the generation pattern files";
+            case "Settings"        -> "Application settings and paths";
+            default                -> name;
+        };
+    }
+
     private VBox buildCenter() {
         mapHeaderTitle.getStyleClass().add(Styles.TITLE_4);
+        bpmLabel.getStyleClass().addAll("bk-numeric", Styles.TEXT_MUTED);
 
-        HBox header = new HBox(16, mapHeaderTitle, diffChips);
+        dirtyDot.getStyleClass().add("bk-dirty-dot");
+        dirtyDot.setVisible(false);
+        dirtyDot.setManaged(false);
+        Tooltip.install(dirtyDot, new Tooltip("Unsaved — generated map not yet exported (5 · Export)"));
+
+        HBox titleBox = new HBox(8, dirtyDot, mapHeaderTitle);
+        titleBox.setAlignment(Pos.CENTER_LEFT);
+
+        HBox header = new HBox(16, titleBox, bpmLabel, diffChips);
         header.setAlignment(Pos.CENTER_LEFT);
         header.setPadding(new Insets(12, 16, 12, 16));
 
+        // Persistent song spine: clicking it seeks every loaded audio view (Timing / Viewer).
+        globalTimeline.setOnSeek(controller::requestSeek);
+        globalTimeline.setShowDensity(true); // note-density ribbon over the heat-bands
+        globalTimeline.setVisible(false);
+        globalTimeline.setManaged(false);
+        VBox.setMargin(globalTimeline, new Insets(0, 16, 8, 16));
+
         contentArea.setPadding(new Insets(0, 16, 16, 16));
         VBox.setVgrow(contentArea, Priority.ALWAYS);
-        return new VBox(header, new Separator(), contentArea);
+        return new VBox(header, globalTimeline, new Separator(), contentArea);
     }
 
     private VBox buildStatusBar() {
@@ -155,13 +250,15 @@ public class AppShell extends BorderPane {
         logView.setVisible(false);
         logView.setManaged(false);
 
-        ToggleButton logToggle = new ToggleButton("Log ▴");
+        FontIcon logIcon = new FontIcon(Feather.CHEVRON_UP);
+        ToggleButton logToggle = new ToggleButton("Log", logIcon);
         logToggle.getStyleClass().add(Styles.FLAT);
+        logToggle.setTooltip(new Tooltip("Show / hide the application log drawer"));
         logToggle.setOnAction(e -> {
             boolean show = logToggle.isSelected();
             logView.setVisible(show);
             logView.setManaged(show);
-            logToggle.setText(show ? "Log ▾" : "Log ▴");
+            logIcon.setIconCode(show ? Feather.CHEVRON_DOWN : Feather.CHEVRON_UP);
         });
 
         Region spacer = new Region();
@@ -187,20 +284,74 @@ public class AppShell extends BorderPane {
                         case GENERATED -> "Map generated — review, then export (not saved yet!)";
                         case SAVED -> "Saved ✓";
                     });
+                    // Dirty = generated but not yet exported to disk
+                    boolean dirty = state == AppState.GENERATED;
+                    dirtyDot.setVisible(dirty);
+                    dirtyDot.setManaged(dirty);
                     refreshMapHeader();
+                    refreshGlobalTimeline();
                 });
             }
 
             @Override
             public void onBpmChanged(double bpm) {
-                Platform.runLater(AppShell.this::refreshMapHeader);
+                Platform.runLater(() -> {
+                    refreshMapHeader();
+                    refreshGlobalTimeline();
+                });
             }
 
             @Override
-            public void onActiveDiffChanged(AppLogic.DiffSession activeDiff) {
-                Platform.runLater(AppShell.this::refreshMapHeader);
+            public void onActiveDiffChanged(DiffSession activeDiff) {
+                Platform.runLater(() -> {
+                    refreshMapHeader();
+                    refreshGlobalTimeline();
+                });
+            }
+
+            @Override
+            public void onAnalysisChanged() {
+                Platform.runLater(AppShell.this::refreshGlobalTimeline);
+            }
+
+            @Override
+            public void onAudioChanged() {
+                // Shared player loaded/unloaded a song: re-sync the visible view's transport + spine.
+                Platform.runLater(() -> {
+                    if (currentView instanceof AudioView av) av.onShown();
+                    lastSpinePlayhead = -1;
+                    refreshGlobalTimeline();
+                });
             }
         });
+    }
+
+    /**
+     * Syncs the persistent song spine with the session: shows it once an analysis exists, draws the
+     * heat-ribbon and the active diff's bookmark markers. Only re-sets the analysis when it actually
+     * changed, so routine refreshes (BPM, diff switch) don't reset the live playhead.
+     */
+    private void refreshGlobalTimeline() {
+        SectionAnalysis analysis = controller.session().getSectionAnalysis();
+        boolean show = analysis != null;
+        globalTimeline.setVisible(show);
+        globalTimeline.setManaged(show);
+        if (!show) {
+            globalTimeline.clear();
+            lastSpineAnalysis = null;
+            return;
+        }
+        if (analysis != lastSpineAnalysis) {
+            globalTimeline.setAnalysis(analysis);
+            lastSpineAnalysis = analysis;
+        }
+        DiffSession active = controller.getActiveDiff();
+        double bpm = controller.session().getBpm();
+        boolean hasBookmarks = active != null && active.map() != null && bpm > 0
+                && active.map().bookmarks != null && !active.map().bookmarks.isEmpty();
+        globalTimeline.setBookmarks(hasBookmarks ? active.map().bookmarks : List.of(), bpm);
+        Note[] notes = (active != null && active.map() != null && bpm > 0) ? active.map()._notes : null;
+        globalTimeline.setNotes(notes, bpm);
     }
 
     /** Updates the map header (folder name + diff chips) from the controller session. */
@@ -208,13 +359,15 @@ public class AppShell extends BorderPane {
         String folder = controller.session().getMapFolderPath();
         if (folder == null || controller.maps().isEmpty()) {
             mapHeaderTitle.setText("No map loaded");
+            bpmLabel.setText("");
             diffChips.getChildren().clear();
             return;
         }
 
         String songName = folder.replace('\\', '/');
         songName = songName.substring(songName.lastIndexOf('/') + 1);
-        mapHeaderTitle.setText(songName + "  ·  BPM " + controller.session().getBpm());
+        mapHeaderTitle.setText(songName);
+        bpmLabel.setText("BPM " + controller.session().getBpm());
 
         // Diff tabs: the selected one is the diff all step views operate on
         diffChips.getChildren().clear();
@@ -224,12 +377,13 @@ public class AppShell extends BorderPane {
             chip.getStyleClass().addAll(Styles.TEXT_SMALL, Styles.ACCENT);
             chip.setToggleGroup(chipGroup);
             chip.setSelected(diff == controller.getActiveDiff());
+            chip.setTooltip(new Tooltip("Switch to this difficulty"));
             chip.setOnAction(e -> {
                 chip.setSelected(true); // keep one selected
                 controller.setActiveDiff(diff);
             });
 
-            Button deleteBtn = new Button("✕");
+            Button deleteBtn = new Button(null, new FontIcon(Feather.X));
             deleteBtn.getStyleClass().addAll(Styles.FLAT, Styles.DANGER, Styles.SMALL);
             deleteBtn.setTooltip(new javafx.scene.control.Tooltip("Remove this diff from the session (does not delete the file)"));
             deleteBtn.setAccessibleText("Remove " + diff.difficultyFileName() + " from session");
@@ -255,15 +409,76 @@ public class AppShell extends BorderPane {
             logger.warn("Unknown view: {}", name);
             return;
         }
+        // Only the visible view's transport ticks and owns the play/pause visuals over the shared player.
+        if (currentView instanceof AudioView hidden) hidden.onHidden();
         contentArea.getChildren().setAll(view);
+        currentView = view;
+        if (view instanceof AudioView shown) shown.onShown();
+        refreshGlobalTimeline();
+    }
+
+    /**
+     * Global transport keyboard shortcuts over the session's shared player: Space toggles play/pause,
+     * ←/→ seek ∓1s (Shift for ∓5s), Home jumps to the start.
+     *
+     * <p>Only fires while a song is loaded, and yields the key to the focused control when it needs it
+     * (text fields keep Space/Home for editing; sliders keep the arrows/Home for nudging) so the
+     * shortcuts never fight normal input. Seeks go through {@link AppController#requestSeek} so every
+     * view's transport (and the spine) stays in sync; play/pause targets the visible view so its
+     * transport icon and timer track the change.
+     */
+    private void handleTransportKey(KeyEvent e) {
+        if (!controller.audioPlayer().isLoaded()) return;
+        Node focus = getScene().getFocusOwner();
+        boolean typing = focus instanceof TextInputControl;
+        switch (e.getCode()) {
+            case SPACE -> {
+                if (typing || focus instanceof ButtonBase) return; // let Space type / click the focused control
+                if (currentView instanceof AudioView av) av.togglePlay();
+                else togglePlayerDirect(); // no audio view visible — still toggle the shared player
+                e.consume();
+            }
+            case LEFT -> {
+                if (typing || focus instanceof Slider) return;
+                seekBy(e.isShiftDown() ? -5 : -1);
+                e.consume();
+            }
+            case RIGHT -> {
+                if (typing || focus instanceof Slider) return;
+                seekBy(e.isShiftDown() ? 5 : 1);
+                e.consume();
+            }
+            case HOME -> {
+                if (typing || focus instanceof Slider) return;
+                controller.requestSeek(0);
+                e.consume();
+            }
+            default -> { /* not a transport key */ }
+        }
+    }
+
+    /** Seeks the shared player by {@code delta} seconds, clamped to the song, via the controller so all views sync. */
+    private void seekBy(double delta) {
+        AudioPreviewPlayer player = controller.audioPlayer();
+        double target = Math.max(0, Math.min(player.durationSeconds(), player.positionSeconds() + delta));
+        controller.requestSeek(target);
+    }
+
+    /** Toggles the shared player directly (used when no audio view is visible to own the play/pause visuals). */
+    private void togglePlayerDirect() {
+        AudioPreviewPlayer player = controller.audioPlayer();
+        if (player.isPlaying()) player.pause();
+        else player.play();
     }
 
     /** Releases resources held by views (e.g. the local map zip server, audio lines) on app shutdown. */
     public void shutdown() {
+        spineClock.stop();
         views.values().forEach(view -> {
             if (view instanceof UserInterfaceFX.Views.ReviewView reviewView) reviewView.shutdown();
             if (view instanceof UserInterfaceFX.Views.TimingView timingView) timingView.shutdown();
             if (view instanceof UserInterfaceFX.Views.ViewerView viewerView) viewerView.shutdown();
         });
+        controller.audioPlayer().close(); // the session owns the shared player, so the shell closes it
     }
 }

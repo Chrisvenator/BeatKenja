@@ -18,6 +18,8 @@ import javafx.scene.transform.Rotate;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.PointLight;
 
+import java.util.Set;
+
 /**
  * First-person 3D note lane for the Viewer tab.
  * <p>
@@ -61,6 +63,8 @@ public final class NoteField3D extends Region {
     private static final PhongMaterial MAT_BLUE;
     private static final PhongMaterial MAT_BOMB;
     private static final PhongMaterial MAT_ARROW;
+    /** Highlight material for notes flagged by a parity error (see {@link #setFlaggedBeats}). */
+    private static final PhongMaterial MAT_ERROR;
     private static final TriangleMesh  ARROW_MESH;
 
     static {
@@ -80,6 +84,10 @@ public final class NoteField3D extends Region {
         MAT_ARROW.setSpecularColor(Color.WHITE);
         MAT_ARROW.setSpecularPower(5);
 
+        MAT_ERROR = new PhongMaterial(Color.web("#ff8c1a"));
+        MAT_ERROR.setSpecularColor(Color.web("#ffd27f"));
+        MAT_ERROR.setSpecularPower(20);
+
         // Triangle pointing up (-Y). Vertices at world-space coords relative to note center.
         ARROW_MESH = new TriangleMesh();
         ARROW_MESH.getPoints().addAll(
@@ -92,6 +100,12 @@ public final class NoteField3D extends Region {
 
     private final Group notesGroup = new Group();
     private final SubScene subScene;
+
+    // Notes flagged by parity errors — rendered in MAT_ERROR. Retained notes/bpm let a
+    // flag change re-materialize the field without the caller re-supplying them.
+    private Set<Float> flaggedBeats = Set.of();
+    private Note[] lastNotes;
+    private double lastBpm;
 
     public NoteField3D() {
         Group world = new Group();
@@ -168,12 +182,26 @@ public final class NoteField3D extends Region {
      * @param bpm   the map's BPM for beat→second conversion
      */
     public void setNotes(Note[] notes, double bpm) {
+        this.lastNotes = notes;
+        this.lastBpm = bpm;
         notesGroup.getChildren().clear();
         if (notes == null || bpm <= 0) return;
         for (Note note : notes) {
             Group node = buildNoteNode(note, bpm);
             if (node != null) notesGroup.getChildren().add(node);
         }
+    }
+
+    /**
+     * Marks notes at the given beat times as parity errors, drawing them in the warning color.
+     * Beats come straight from the diff's parity-error list, so they match the note's
+     * {@code _time} exactly. Re-materializes the field in place using the retained notes.
+     *
+     * @param beats note beat times to flag (empty clears all highlights)
+     */
+    public void setFlaggedBeats(Set<Float> beats) {
+        this.flaggedBeats = beats == null ? Set.of() : beats;
+        if (lastNotes != null) setNotes(lastNotes, lastBpm);
     }
 
     /**
@@ -189,6 +217,7 @@ public final class NoteField3D extends Region {
 
     public void clear() {
         notesGroup.getChildren().clear();
+        lastNotes    = null;
         lastPlayhead = 0;
         njoOffsetZ   = 0;
         applyGroupTranslate();
@@ -209,6 +238,8 @@ public final class NoteField3D extends Region {
         double y   = -note._lineLayer  * CELL;  // +Y down → higher layer = smaller y
         double z   =  sec * zPerSecond;
 
+        boolean flagged = flaggedBeats.contains(note._time);
+
         Group group = new Group();
         group.setTranslateX(x);
         group.setTranslateY(y);
@@ -217,10 +248,10 @@ public final class NoteField3D extends Region {
         if (note._type == 3) {
             // Bomb: dark sphere, no arrow
             Sphere sphere = new Sphere(0.42);
-            sphere.setMaterial(MAT_BOMB);
+            sphere.setMaterial(flagged ? MAT_ERROR : MAT_BOMB);
             group.getChildren().add(sphere);
         } else if (note._type == 0 || note._type == 1) {
-            PhongMaterial mat = note._type == 0 ? MAT_RED : MAT_BLUE;
+            PhongMaterial mat = flagged ? MAT_ERROR : (note._type == 0 ? MAT_RED : MAT_BLUE);
             Box cube = new Box(0.75, 0.75, 0.75);
             cube.setMaterial(mat);
             group.getChildren().add(cube);
