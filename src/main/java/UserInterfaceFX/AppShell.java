@@ -113,13 +113,21 @@ public class AppShell extends BorderPane {
             box.getChildren().add(navButton(name));
         }
 
+        // Inspection views — need a loaded map (locked until then, see LOCKED_STEPS)
         box.getChildren().add(new Separator());
-        box.getChildren().add(sectionLabel("TOOLS"));
-        for (String name : new String[]{"Viewer", "NPS Overview", "Utilities", "Characteristics", "Batch MP3", "Patterns"}) {
+        box.getChildren().add(sectionLabel("ANALYZE"));
+        for (String name : new String[]{"Viewer", "NPS Overview", "Characteristics"}) {
             box.getChildren().add(navButton(name));
         }
 
-        // Steps 2-5 unlock once a map is loaded
+        // Standalone tools — usable without a loaded map
+        box.getChildren().add(new Separator());
+        box.getChildren().add(sectionLabel("TOOLS"));
+        for (String name : new String[]{"Utilities", "Batch MP3", "Patterns"}) {
+            box.getChildren().add(navButton(name));
+        }
+
+        // Workflow steps 2-5 and the analyze views unlock once a map is loaded
         for (String step : LOCKED_STEPS) navButtons.get(step).setDisable(true);
         return box;
     }

@@ -334,7 +334,7 @@ public class AppController {
      * Converts the given diffs to timing notes in place.
      *
      * @param oneColor true = blue-only dot notes bottom-left (the format generators expect);
-     *                 false = two-color timing notes (known to be shaky, the old UI warned too)
+     *                 false = two-color timing notes (known to be shaky)
      */
     public void convertToTimingNotes(boolean oneColor, List<DiffSession> targets) {
         prepareGeneration();

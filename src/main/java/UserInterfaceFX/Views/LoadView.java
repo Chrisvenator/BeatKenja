@@ -5,6 +5,8 @@ import AppLogic.AppState;
 import AppLogic.DiffSession;
 import DataManager.Parameters;
 import atlantafx.base.theme.Styles;
+import org.kordamp.ikonli.feather.Feather;
+import org.kordamp.ikonli.javafx.FontIcon;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -141,7 +143,7 @@ public class LoadView extends VBox {
         Label loadedLabel = new Label("Loaded difficulties");
         loadedLabel.getStyleClass().add(Styles.TEXT_MUTED);
 
-        Button unloadAll = new Button("🗑 Unload all");
+        Button unloadAll = new Button("Unload all", new FontIcon(Feather.TRASH_2));
         unloadAll.getStyleClass().addAll(Styles.FLAT, Styles.DANGER, Styles.SMALL);
         unloadAll.setOnAction(e -> controller.unload());
 
@@ -163,7 +165,7 @@ public class LoadView extends VBox {
         private final HBox row;
 
         DiffCell() {
-            Button trash = new Button("🗑");
+            Button trash = new Button(null, new FontIcon(Feather.TRASH_2));
             trash.getStyleClass().addAll(Styles.FLAT, Styles.DANGER, Styles.SMALL);
             trash.setTooltip(new javafx.scene.control.Tooltip("Unload this difficulty"));
             trash.setOnAction(e -> controller.unloadDiff(getItem()));

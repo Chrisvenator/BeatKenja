@@ -7,12 +7,11 @@ import AppLogic.ClickTrackRenderer;
 import AppLogic.DiffSession;
 import AppLogic.SectionAnalysisService;
 import AppLogic.SectionAnalysisService.SectionAnalysis;
+import UserInterfaceFX.Components.TransportBar;
 import atlantafx.base.theme.Styles;
-import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Alert;
@@ -20,7 +19,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.Slider;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
@@ -58,17 +56,9 @@ public class TimingView extends VBox {
     private SectionAnalysis analysis;
 
     private final AudioPreviewPlayer player = new AudioPreviewPlayer();
-    private final Button playButton = new Button("▶");
-    private final Slider positionSlider = new Slider(0, 1, 0);
-    private final Label timeLabel = new Label("0:00 / 0:00");
+    private final TransportBar transport = new TransportBar(player);
     private final CheckBox clickTrackCheckbox = new CheckBox("Click on onsets");
     private double playheadSeconds = -1;
-    private final AnimationTimer playheadTimer = new AnimationTimer() {
-        @Override
-        public void handle(long now) {
-            updatePlayhead();
-        }
-    };
 
     public TimingView(AppController controller) {
         super(16);
@@ -84,7 +74,7 @@ public class TimingView extends VBox {
 
         VBox twoColorCard = card(
                 "→ 2-color timing notes",
-                "Keeps red/blue split as dot notes. Likely broken (old UI warned as well) — use at your own risk.",
+                "Keeps red/blue split as dot notes. Likely broken. Use at your own risk!",
                 true, false);
 
         HBox cards = new HBox(16, oneColorCard, twoColorCard);
@@ -169,30 +159,13 @@ public class TimingView extends VBox {
 
         songMapStatus.getStyleClass().add(Styles.TEXT_MUTED);
 
-        playButton.setDisable(true);
-        playButton.setOnAction(e -> togglePlayback());
-        positionSlider.setDisable(true);
-        positionSlider.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(positionSlider, Priority.ALWAYS);
-        positionSlider.valueProperty().addListener((obs, old, v) -> {
-            if (positionSlider.isValueChanging()) scrubPreview(v.doubleValue());
-        });
-        positionSlider.setOnMouseReleased(e -> seekTo(positionSlider.getValue()));
-        timeLabel.getStyleClass().add(Styles.TEXT_MUTED);
-
-        Label volumeIcon = new Label("🔊");
-        volumeIcon.getStyleClass().add(Styles.TEXT_MUTED);
-        Slider volumeSlider = new Slider(0, 1, 1);
-        volumeSlider.setPrefWidth(90);
-        volumeSlider.setMinWidth(60);
-        volumeSlider.valueProperty().addListener((obs, old, v) -> player.setVolume(v.doubleValue()));
-
         clickTrackCheckbox.setDisable(true);
         clickTrackCheckbox.setOnAction(e -> toggleClickTrack());
-
-        HBox playbackRow = new HBox(8, playButton, positionSlider, timeLabel, volumeIcon, volumeSlider,
-                clickTrackCheckbox);
-        playbackRow.setAlignment(Pos.CENTER_LEFT);
+        transport.setTrailing(clickTrackCheckbox);
+        transport.setOnPlayhead(seconds -> {
+            playheadSeconds = seconds;
+            drawSongMap();
+        });
 
         // The canvas must never drive the card's size: binding it straight to the card width
         // fed the canvas width back into the card's preferred width, growing the whole view a
@@ -207,7 +180,7 @@ public class TimingView extends VBox {
         songMapCanvas.setOnMouseClicked(e -> seekFromCanvas(e.getX()));
 
         VBox box = new VBox(10, title, description, new HBox(8, analyze, applyBookmarksButton, songMapStatus),
-                playbackRow, canvasHolder);
+                transport, canvasHolder);
         box.setPadding(new Insets(16));
         box.getStyleClass().add("bk-card");
         return box;
@@ -225,12 +198,9 @@ public class TimingView extends VBox {
 
         songMapStatus.setText("Analyzing " + audio.getName() + "…");
         applyBookmarksButton.setDisable(true);
-        playheadTimer.stop();
+        transport.reset();
         player.close();
         playheadSeconds = -1;
-        playButton.setText("▶");
-        playButton.setDisable(true);
-        positionSlider.setDisable(true);
         clickTrackCheckbox.setSelected(false);
         clickTrackCheckbox.setDisable(true);
 
@@ -252,11 +222,7 @@ public class TimingView extends VBox {
             songMapStatus.setText(analysisSummary());
             applyBookmarksButton.setDisable(false);
             if (player.isLoaded()) {
-                playButton.setDisable(false);
-                positionSlider.setDisable(false);
-                positionSlider.setMax(player.durationSeconds());
-                positionSlider.setValue(0);
-                timeLabel.setText("0:00 / " + formatTime(player.durationSeconds()));
+                transport.onLoaded();
                 clickTrackCheckbox.setDisable(false);
             }
             drawSongMap();
@@ -310,59 +276,14 @@ public class TimingView extends VBox {
         new Thread(task, "click-render").start();
     }
 
-    private void togglePlayback() {
-        if (!player.isLoaded()) return;
-        if (player.isPlaying()) {
-            player.pause();
-            playheadTimer.stop();
-            playButton.setText("▶");
-            updatePlayhead();
-        } else {
-            player.play();
-            playButton.setText("⏸");
-            playheadTimer.start();
-        }
-    }
-
-    /** While the slider is dragged, only the visuals follow — the seek happens on release. */
-    private void scrubPreview(double seconds) {
-        playheadSeconds = seconds;
-        timeLabel.setText(formatTime(seconds) + " / " + formatTime(player.durationSeconds()));
-        drawSongMap();
-    }
-
-    private void seekTo(double seconds) {
-        if (!player.isLoaded()) return;
-        player.seekSeconds(seconds);
-        updatePlayhead();
-    }
-
     private void seekFromCanvas(double x) {
         if (analysis == null || !player.isLoaded() || songMapCanvas.getWidth() <= 0) return;
-        double seconds = x / songMapCanvas.getWidth() * analysis.durationSeconds();
-        positionSlider.setValue(seconds);
-        seekTo(seconds);
-    }
-
-    private void updatePlayhead() {
-        playheadSeconds = player.positionSeconds();
-        if (!positionSlider.isValueChanging()) positionSlider.setValue(playheadSeconds);
-        timeLabel.setText(formatTime(playheadSeconds) + " / " + formatTime(player.durationSeconds()));
-        if (!player.isPlaying()) {
-            playheadTimer.stop();
-            playButton.setText("▶");
-        }
-        drawSongMap();
-    }
-
-    private static String formatTime(double seconds) {
-        int s = (int) Math.max(0, seconds);
-        return String.format("%d:%02d", s / 60, s % 60);
+        transport.seek(x / songMapCanvas.getWidth() * analysis.durationSeconds());
     }
 
     /** Stops audio preview playback and releases the audio line (called on app shutdown). */
     public void shutdown() {
-        playheadTimer.stop();
+        transport.stopTimer();
         player.close();
     }
 
