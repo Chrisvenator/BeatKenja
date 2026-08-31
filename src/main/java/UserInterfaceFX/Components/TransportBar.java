@@ -119,6 +119,31 @@ public final class TransportBar extends HBox {
         playheadTimer.stop();
     }
 
+    /**
+     * Snaps this bar to the shared player's current state, used when a view becomes visible so
+     * a bar that wasn't the one driving playback catches up (position, time, play/pause, ticking).
+     * Resets to the disabled state if the shared player holds no song.
+     */
+    public void syncFromPlayer() {
+        if (!player.isLoaded()) {
+            reset();
+            return;
+        }
+        playButton.setDisable(false);
+        positionSlider.setDisable(false);
+        positionSlider.setMax(player.durationSeconds());
+        double pos = player.positionSeconds();
+        positionSlider.setValue(pos);
+        timeLabel.setText(formatTime(pos) + " / " + formatTime(player.durationSeconds()));
+        if (player.isPlaying()) {
+            setPlaying(true);
+            playheadTimer.start();
+        } else {
+            setPlaying(false);
+        }
+        onPlayhead.accept(pos);
+    }
+
     public static String formatTime(double seconds) {
         int s = (int) Math.max(0, seconds);
         return String.format("%d:%02d", s / 60, s % 60);

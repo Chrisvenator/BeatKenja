@@ -58,11 +58,11 @@ public class AppController {
 
         default void onActiveDiffChanged(DiffSession activeDiff) {}
 
-        /** Fired every frame while a view plays audio, and on each seek/scrub (position in seconds). */
-        default void onPlayheadMoved(double seconds) {}
-
         /** Fired when a view stores a new section analysis on the session (drives the global timeline). */
         default void onAnalysisChanged() {}
+
+        /** Fired when the shared audio player loads or unloads a song (views re-sync their transports). */
+        default void onAudioChanged() {}
 
         /** Fired when a view (or the global timeline) requests all loaded players to seek to a position. */
         default void onSeekRequested(double seconds) {}
@@ -70,6 +70,8 @@ public class AppController {
 
     private final MapSession session = new MapSession();
     private final List<Listener> listeners = new CopyOnWriteArrayList<>();
+    /** One preview player shared by every view, so playback position and seeking are global. */
+    private final AudioPreviewPlayer audioPlayer = new AudioPreviewPlayer();
     private AppState state = AppState.EMPTY;
     private DiffSession activeDiff;
 
@@ -97,9 +99,14 @@ public class AppController {
         listeners.add(listener);
     }
 
-    /** Publishes the current playback position (seconds) so the global timeline can track it. */
-    public void notifyPlayheadMoved(double seconds) {
-        listeners.forEach(l -> l.onPlayheadMoved(seconds));
+    /** The single audio preview player shared by every view, so playback/seek is global (session-owned). */
+    public AudioPreviewPlayer audioPlayer() {
+        return audioPlayer;
+    }
+
+    /** Publishes that the shared player loaded/unloaded a song, so views re-sync their transports. */
+    public void notifyAudioChanged() {
+        listeners.forEach(l -> l.onAudioChanged());
     }
 
     /** Publishes that a fresh section analysis was stored on the session. */
@@ -128,6 +135,8 @@ public class AppController {
     public List<String> loadMapFileOrFolder(File path) throws IOException {
         session.maps().clear();
         PARITY_ERRORS_LIST.clear();
+        audioPlayer.close();
+        notifyAudioChanged();
         setState(AppState.EMPTY);
 
         List<String> loaded = new ArrayList<>();
@@ -248,6 +257,8 @@ public class AppController {
         PARITY_ERRORS_LIST.clear();
         GenerationContext.currentDiff = "NULL";
         setActiveDiff((DiffSession) null);
+        audioPlayer.close();
+        notifyAudioChanged();
         logger.info("Map unloaded");
         setState(AppState.EMPTY);
     }

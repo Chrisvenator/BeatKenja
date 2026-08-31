@@ -2,6 +2,7 @@ package UserInterfaceFX;
 
 import AppLogic.AppController;
 import AppLogic.AppState;
+import AppLogic.AudioPreviewPlayer;
 import AppLogic.DiffSession;
 import AppLogic.SectionAnalysisService.SectionAnalysis;
 import BeatSaberObjects.Objects.Note;
@@ -9,6 +10,7 @@ import UserInterfaceFX.Components.TimelineStrip;
 import UserInterfaceFX.Views.LoadView;
 import UserInterfaceFX.Views.SettingsView;
 import atlantafx.base.theme.Styles;
+import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -64,6 +66,27 @@ public class AppShell extends BorderPane {
     /** Last analysis put on the spine — lets us skip re-setAnalysis (which resets the playhead) on unrelated refreshes. */
     private SectionAnalysis lastSpineAnalysis;
 
+    /** The currently displayed view, tracked so we can notify AudioViews as they are shown/hidden. */
+    private Node currentView;
+    /** Last playhead second pushed to the spine — guards the per-frame clock from redundant redraws. */
+    private double lastSpinePlayhead = -1;
+
+    /**
+     * Drives the global spine's playhead straight from the session's shared player, so the spine
+     * tracks playback (and scrubbing) regardless of which view is visible — even one with no audio.
+     */
+    private final AnimationTimer spineClock = new AnimationTimer() {
+        @Override public void handle(long now) {
+            AudioPreviewPlayer player = controller.audioPlayer();
+            if (!player.isLoaded()) return;
+            double pos = player.positionSeconds();
+            if (pos != lastSpinePlayhead) {
+                lastSpinePlayhead = pos;
+                globalTimeline.setPlayheadSeconds(pos);
+            }
+        }
+    };
+
     /** Workflow steps that need a loaded map before they make sense. */
     private static final String[] LOCKED_STEPS = {"2 · Timing", "3 · Generate", "4 · Review", "5 · Export", "Viewer", "NPS Overview", "Characteristics"};
 
@@ -80,6 +103,7 @@ public class AppShell extends BorderPane {
         setBottom(buildStatusBar());
 
         wireControllerEvents();
+        spineClock.start(); // spine tracks the shared player from now on
         // Dev aid: -Dbk.view=<name> opens a specific view on startup (smoke screenshots)
         selectView(System.getProperty("bk.view", "1 · Load"));
     }
@@ -261,9 +285,13 @@ public class AppShell extends BorderPane {
             }
 
             @Override
-            public void onPlayheadMoved(double seconds) {
-                // Already on the FX thread (fired from the transport); track the playing view's position.
-                globalTimeline.setPlayheadSeconds(seconds);
+            public void onAudioChanged() {
+                // Shared player loaded/unloaded a song: re-sync the visible view's transport + spine.
+                Platform.runLater(() -> {
+                    if (currentView instanceof AudioView av) av.onShown();
+                    lastSpinePlayhead = -1;
+                    refreshGlobalTimeline();
+                });
             }
         });
     }
@@ -350,16 +378,22 @@ public class AppShell extends BorderPane {
             logger.warn("Unknown view: {}", name);
             return;
         }
+        // Only the visible view's transport ticks and owns the play/pause visuals over the shared player.
+        if (currentView instanceof AudioView hidden) hidden.onHidden();
         contentArea.getChildren().setAll(view);
+        currentView = view;
+        if (view instanceof AudioView shown) shown.onShown();
         refreshGlobalTimeline();
     }
 
     /** Releases resources held by views (e.g. the local map zip server, audio lines) on app shutdown. */
     public void shutdown() {
+        spineClock.stop();
         views.values().forEach(view -> {
             if (view instanceof UserInterfaceFX.Views.ReviewView reviewView) reviewView.shutdown();
             if (view instanceof UserInterfaceFX.Views.TimingView timingView) timingView.shutdown();
             if (view instanceof UserInterfaceFX.Views.ViewerView viewerView) viewerView.shutdown();
         });
+        controller.audioPlayer().close(); // the session owns the shared player, so the shell closes it
     }
 }

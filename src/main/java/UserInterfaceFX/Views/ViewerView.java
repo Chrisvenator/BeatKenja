@@ -45,13 +45,13 @@ import static DataManager.Parameters.logger;
  * Analysis results are stored on the session so the Timing tab benefits too.
  * Read-only — no note editing in v1.
  */
-public class ViewerView extends VBox {
+public class ViewerView extends VBox implements UserInterfaceFX.AudioView {
 
     private final AppController controller;
 
-    // Audio
-    private final AudioPreviewPlayer player = new AudioPreviewPlayer();
-    private final TransportBar transport = new TransportBar(player);
+    // Audio — one session-owned player, shared with the Timing view and driven by the global spine.
+    private final AudioPreviewPlayer player;
+    private final TransportBar transport;
     private SectionAnalysis analysis;
 
     // Click-track mode: "notes" renders clicks at note beat positions; "onsets" uses detected onsets
@@ -84,6 +84,8 @@ public class ViewerView extends VBox {
     public ViewerView(AppController controller) {
         super(10);
         this.controller = controller;
+        this.player = controller.audioPlayer();
+        this.transport = new TransportBar(player);
         setPadding(new Insets(16));
 
         statusLabel.getStyleClass().add(Styles.TEXT_MUTED);
@@ -193,7 +195,6 @@ public class ViewerView extends VBox {
             playheadSeconds = seconds;
             noteField.setPlayheadSeconds(seconds);
             timeline.setPlayheadSeconds(seconds);
-            controller.notifyPlayheadMoved(seconds); // drive the global spine in AppShell
         });
 
         // Click-track source: notes vs onsets
@@ -274,6 +275,7 @@ public class ViewerView extends VBox {
             applyAnalysis(task.getValue());
             controller.session().setSectionAnalysis(task.getValue());
             controller.notifyAnalysisChanged(); // refresh the global spine's heat-ribbon
+            controller.notifyAudioChanged(); // shared player has a new song; re-sync other views
             setStatus(analysisSummary());
         });
         task.setOnFailed(e -> setStatus("✗ " + task.getException().getMessage()));
@@ -453,10 +455,22 @@ public class ViewerView extends VBox {
 
     // --- Lifecycle ---
 
-    /** Stops audio and releases the audio line on app shutdown. */
+    /** Stops this view's transport timer on app shutdown; the shared player is closed by the controller. */
     public void shutdown() {
         transport.stopTimer();
-        player.close();
+    }
+
+    @Override
+    public void onShown() {
+        // Catch up to the shared player (Timing may have loaded/scrubbed it) and resume ticking.
+        transport.syncFromPlayer();
+        player.setClickTrackEnabled(clickCheckbox.isSelected());
+    }
+
+    @Override
+    public void onHidden() {
+        // Playback keeps running (the global spine still tracks it); just stop this bar's own timer.
+        transport.stopTimer();
     }
 
     // --- Helpers ---

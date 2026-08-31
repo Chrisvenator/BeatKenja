@@ -42,7 +42,7 @@ import static DataManager.Parameters.logger;
  * ({@link AudioPreviewPlayer}) with play/pause, a scrub slider and click-to-seek on the
  * timeline lets the user listen to what each detected section actually sounds like.
  */
-public class TimingView extends VBox {
+public class TimingView extends VBox implements UserInterfaceFX.AudioView {
 
     private final AppController controller;
     private final Label activeDiffLabel = new Label();
@@ -53,13 +53,17 @@ public class TimingView extends VBox {
     private final Button applyBookmarksButton = new Button("Apply as bookmarks to active diff");
     private SectionAnalysis analysis;
 
-    private final AudioPreviewPlayer player = new AudioPreviewPlayer();
-    private final TransportBar transport = new TransportBar(player);
+    /** Shared with every view via the controller, so playback/seek is global. */
+    private final AudioPreviewPlayer player;
+    private final TransportBar transport;
     private final CheckBox clickTrackCheckbox = new CheckBox("Click on onsets");
 
     public TimingView(AppController controller) {
         super(16);
         this.controller = controller;
+        // The one session-owned player, shared with the Viewer and driven by the global spine.
+        this.player = controller.audioPlayer();
+        this.transport = new TransportBar(player);
         setPadding(new Insets(16));
 
         activeDiffLabel.getStyleClass().add(Styles.TEXT_MUTED);
@@ -165,10 +169,7 @@ public class TimingView extends VBox {
         clickTrackCheckbox.setDisable(true);
         clickTrackCheckbox.setOnAction(e -> toggleClickTrack());
         transport.setTrailing(clickTrackCheckbox);
-        transport.setOnPlayhead(seconds -> {
-            timeline.setPlayheadSeconds(seconds);
-            controller.notifyPlayheadMoved(seconds); // drive the global spine in AppShell
-        });
+        transport.setOnPlayhead(timeline::setPlayheadSeconds);
 
         timeline.setShowNovelty(true);
         timeline.setOnSeek(transport::seek);
@@ -220,6 +221,7 @@ public class TimingView extends VBox {
                 transport.onLoaded();
                 clickTrackCheckbox.setDisable(false);
             }
+            controller.notifyAudioChanged(); // shared player has a new song; re-sync other views
             timeline.setAnalysis(analysis);
             showBookmarksOnTimeline();
         });
@@ -272,10 +274,22 @@ public class TimingView extends VBox {
         new Thread(task, "click-render").start();
     }
 
-    /** Stops audio preview playback and releases the audio line (called on app shutdown). */
+    /** Stops this view's transport timer on app shutdown; the shared player is closed by the controller. */
     public void shutdown() {
         transport.stopTimer();
-        player.close();
+    }
+
+    @Override
+    public void onShown() {
+        // Catch up to the shared player (another view may have loaded/scrubbed it) and resume ticking.
+        transport.syncFromPlayer();
+        player.setClickTrackEnabled(clickTrackCheckbox.isSelected());
+    }
+
+    @Override
+    public void onHidden() {
+        // Playback keeps running (the global spine still tracks it); just stop this bar's own timer.
+        transport.stopTimer();
     }
 
     private void applyBookmarks() {
