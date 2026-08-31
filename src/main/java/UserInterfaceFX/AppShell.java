@@ -4,6 +4,7 @@ import AppLogic.AppController;
 import AppLogic.AppState;
 import AppLogic.DiffSession;
 import AppLogic.SectionAnalysisService.SectionAnalysis;
+import BeatSaberObjects.Objects.Note;
 import UserInterfaceFX.Components.TimelineStrip;
 import UserInterfaceFX.Views.LoadView;
 import UserInterfaceFX.Views.SettingsView;
@@ -180,6 +181,7 @@ public class AppShell extends BorderPane {
 
         // Persistent song spine: clicking it seeks every loaded audio view (Timing / Viewer).
         globalTimeline.setOnSeek(controller::requestSeek);
+        globalTimeline.setShowDensity(true); // note-density ribbon over the heat-bands
         globalTimeline.setVisible(false);
         globalTimeline.setManaged(false);
         VBox.setMargin(globalTimeline, new Insets(0, 16, 8, 16));
@@ -290,6 +292,8 @@ public class AppShell extends BorderPane {
         boolean hasBookmarks = active != null && active.map() != null && bpm > 0
                 && active.map().bookmarks != null && !active.map().bookmarks.isEmpty();
         globalTimeline.setBookmarks(hasBookmarks ? active.map().bookmarks : List.of(), bpm);
+        Note[] notes = (active != null && active.map() != null && bpm > 0) ? active.map()._notes : null;
+        globalTimeline.setNotes(notes, bpm);
     }
 
     /** Updates the map header (folder name + diff chips) from the controller session. */

@@ -288,6 +288,7 @@ public class ViewerView extends VBox {
             catch (Exception ex) { logger.warn("Audio load failed: {}", ex.getMessage()); }
         }
         timeline.setAnalysis(result);
+        timeline.setShowDensity(true); // note-density ribbon over the heat-bands
         timeline.setOnSeek(transport::seek);
         refreshTimelineBookmarks();
         if (player.isLoaded()) {
@@ -426,6 +427,8 @@ public class ViewerView extends VBox {
         boolean hasBookmarks = active != null && active.map() != null && bpm > 0
                 && active.map().bookmarks != null && !active.map().bookmarks.isEmpty();
         timeline.setBookmarks(hasBookmarks ? active.map().bookmarks : java.util.List.of(), bpm);
+        Note[] notes = (active != null && active.map() != null && bpm > 0) ? active.map()._notes : null;
+        timeline.setNotes(notes, bpm);
     }
 
     /** Highlights the notes flagged by parity errors — the incorrect notes that get bookmarked. */

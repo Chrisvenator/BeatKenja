@@ -3,6 +3,7 @@ package UserInterfaceFX.Components;
 import AppLogic.SectionAnalysisService;
 import AppLogic.SectionAnalysisService.SectionAnalysis;
 import BeatSaberObjects.Objects.Bookmark;
+import BeatSaberObjects.Objects.Note;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.Pane;
@@ -15,8 +16,9 @@ import java.util.function.DoubleConsumer;
 /**
  * Shared horizontal song timeline: the app's signature visual. Renders the section
  * intensity heat-ribbon (calm → peak, {@link SectionAnalysisService#TIER_COLORS}),
- * onset ticks, boundary lines, inline bookmark markers, a playhead, and an optional
- * structure-change novelty curve. Clicking the strip seeks (fires {@link #setOnSeek}).
+ * onset ticks, boundary lines, inline bookmark markers, a playhead, an optional
+ * note-density ribbon (map notes/sec), and an optional structure-change novelty curve.
+ * Clicking the strip seeks (fires {@link #setOnSeek}).
  *
  * <p>One component now backs both the Timing "Song Map" card (tall, novelty on) and the
  * 3D Viewer strip (short, novelty off); height and lanes are configured per host. Bookmark
@@ -37,6 +39,9 @@ public final class TimelineStrip extends Pane {
     private double bookmarkBpm;
     private double playheadSeconds = -1;
     private boolean showNovelty;
+    private boolean showDensity;
+    private Note[] notes;
+    private double noteBpm;
     private DoubleConsumer onSeek = seconds -> { };
 
     public TimelineStrip(double height) {
@@ -86,6 +91,19 @@ public final class TimelineStrip extends Pane {
         draw();
     }
 
+    /** Toggles the note-density ribbon (map notes/sec over time). Needs {@link #setNotes}. */
+    public void setShowDensity(boolean show) {
+        this.showDensity = show;
+        draw();
+    }
+
+    /** Sets the map notes whose density the ribbon plots; {@code bpm} converts beat times to seconds. */
+    public void setNotes(Note[] notes, double bpm) {
+        this.notes = notes;
+        this.noteBpm = bpm;
+        draw();
+    }
+
     public void setPlayheadSeconds(double seconds) {
         this.playheadSeconds = seconds;
         draw();
@@ -94,6 +112,7 @@ public final class TimelineStrip extends Pane {
     public void clear() {
         this.analysis = null;
         this.bookmarks = List.of();
+        this.notes = null;
         this.playheadSeconds = -1;
         draw();
     }
@@ -115,6 +134,46 @@ public final class TimelineStrip extends Pane {
             float[] c = tierColor(analysis.tiers()[s]);
             g.setFill(Color.color(c[0], c[1], c[2], 0.35));
             g.fillRect(start * pps, 0, (end - start) * pps, h);
+        }
+
+        // Note-density ribbon: how busy the map is over time (notes/sec, binned per ~4px, scaled to
+        // its own max). Overlaid on the heat-bands so map load reads against detected song intensity.
+        if (showDensity && notes != null && noteBpm > 0 && notes.length > 0) {
+            int bins = Math.max(1, (int) (w / 4));
+            double[] perBin = new double[bins];
+            double dur = analysis.durationSeconds();
+            for (Note n : notes) {
+                if (n._type != 0 && n._type != 1) continue; // count notes, not bombs
+                double sec = n._time / noteBpm * 60.0;
+                if (sec < 0 || sec > dur) continue;
+                int b = (int) (sec / dur * bins);
+                if (b >= bins) b = bins - 1;
+                perBin[b]++;
+            }
+            double binSeconds = dur / bins;
+            double max = 1e-9;
+            for (int i = 0; i < bins; i++) {
+                perBin[i] /= binSeconds; // → notes per second
+                max = Math.max(max, perBin[i]);
+            }
+            double span = h - h * 0.30; // peak of the ribbon reaches 30% down from the top
+            g.setFill(Color.color(0.81, 0.91, 1.0, 0.22));
+            g.beginPath();
+            g.moveTo(0, h);
+            for (int i = 0; i < bins; i++) g.lineTo((i + 0.5) / bins * w, h - perBin[i] / max * span);
+            g.lineTo(w, h);
+            g.closePath();
+            g.fill();
+            g.setStroke(Color.color(0.91, 0.96, 1.0, 0.75)); // brighter top edge for definition
+            g.setLineWidth(1.2);
+            g.beginPath();
+            for (int i = 0; i < bins; i++) {
+                double x = (i + 0.5) / bins * w;
+                double y = h - perBin[i] / max * span;
+                if (i == 0) g.moveTo(x, y);
+                else g.lineTo(x, y);
+            }
+            g.stroke();
         }
 
         // Onset ticks in the bottom strip.
