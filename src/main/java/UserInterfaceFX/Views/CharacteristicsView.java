@@ -216,7 +216,7 @@ public class CharacteristicsView extends javafx.scene.control.ScrollPane {
 
         VBox box = new VBox(8, titleLabel, descLabel, controls);
         box.setPadding(new Insets(12));
-        box.setStyle("-fx-border-color: -color-border-default; -fx-border-width: 1; -fx-border-radius: 8;");
+        box.getStyleClass().add("bk-card");
         return box;
     }
 

@@ -98,7 +98,7 @@ public class LoadView extends VBox {
         VBox dropZone = new VBox(12, dropLabel, buttons, errorLabel);
         dropZone.setAlignment(Pos.CENTER);
         dropZone.setPadding(new Insets(32));
-        dropZone.setStyle("-fx-border-color: -color-border-default; -fx-border-style: dashed; -fx-border-width: 2; -fx-border-radius: 8;");
+        dropZone.getStyleClass().add("bk-drop-zone");
         dropZone.setOnDragOver(this::acceptFiles);
         dropZone.setOnDragDropped(e -> {
             Dragboard board = e.getDragboard();
@@ -133,7 +133,7 @@ public class LoadView extends VBox {
 
         nextSteps.getChildren().setAll(whatNow, explanation, actions);
         nextSteps.setPadding(new Insets(12, 16, 12, 16));
-        nextSteps.setStyle("-fx-border-color: -color-accent-muted; -fx-border-width: 1; -fx-border-radius: 8; -fx-background-color: -color-accent-subtle; -fx-background-radius: 8;");
+        nextSteps.getStyleClass().add("bk-info-card");
         return nextSteps;
     }
 

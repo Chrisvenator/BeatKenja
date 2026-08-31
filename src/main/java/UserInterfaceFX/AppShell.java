@@ -238,7 +238,7 @@ public class AppShell extends BorderPane {
             // Merge chip label and delete button visually into one pill
             HBox chipRow = new HBox(0, chip, deleteBtn);
             chipRow.setAlignment(Pos.CENTER_LEFT);
-            chipRow.setStyle("-fx-border-color: -color-accent-emphasis; -fx-border-radius: 4; -fx-background-radius: 4;");
+            chipRow.getStyleClass().add("bk-diff-chip");
             diffChips.getChildren().add(chipRow);
         });
     }

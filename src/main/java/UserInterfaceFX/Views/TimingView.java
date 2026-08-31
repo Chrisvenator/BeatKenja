@@ -130,7 +130,7 @@ public class TimingView extends VBox {
 
         VBox box = new VBox(10, titleLabel, descriptionLabel, new HBox(8, convertActive, convertAll));
         box.setPadding(new Insets(16));
-        box.setStyle("-fx-border-color: -color-border-default; -fx-border-width: 1; -fx-border-radius: 8;");
+        box.getStyleClass().add("bk-card");
         return box;
     }
 
@@ -209,7 +209,7 @@ public class TimingView extends VBox {
         VBox box = new VBox(10, title, description, new HBox(8, analyze, applyBookmarksButton, songMapStatus),
                 playbackRow, canvasHolder);
         box.setPadding(new Insets(16));
-        box.setStyle("-fx-border-color: -color-border-default; -fx-border-width: 1; -fx-border-radius: 8;");
+        box.getStyleClass().add("bk-card");
         return box;
     }
 

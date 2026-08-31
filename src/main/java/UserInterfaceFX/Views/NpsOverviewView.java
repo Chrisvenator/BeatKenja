@@ -123,9 +123,7 @@ public class NpsOverviewView extends VBox {
         Label title = new Label(name);
         title.getStyleClass().addAll(Styles.TEXT_SMALL, Styles.TEXT_MUTED);
         VBox tile = new VBox(2, title, value, caption);
-        tile.setPadding(new Insets(10, 16, 10, 16));
-        tile.setStyle("-fx-background-color: -color-bg-subtle; -fx-background-radius: 8;"
-                + " -fx-border-color: -color-border-default; -fx-border-radius: 8;");
+        tile.getStyleClass().add("bk-kpi-tile");
         HBox.setHgrow(tile, Priority.ALWAYS);
         tile.setMaxWidth(Double.MAX_VALUE);
         return tile;

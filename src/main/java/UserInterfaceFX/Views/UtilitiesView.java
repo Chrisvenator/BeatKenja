@@ -119,7 +119,7 @@ public class UtilitiesView extends javafx.scene.control.ScrollPane {
 
         VBox characteristicCard = new VBox(8, charTitle, charDesc, charControls);
         characteristicCard.setPadding(new Insets(12));
-        characteristicCard.setStyle("-fx-border-color: -color-border-default; -fx-border-width: 1; -fx-border-radius: 8;");
+        characteristicCard.getStyleClass().add("bk-card");
 
         result.setWrapText(true);
         result.setMinHeight(Region.USE_PREF_SIZE);
@@ -232,7 +232,7 @@ public class UtilitiesView extends javafx.scene.control.ScrollPane {
 
         VBox box = new VBox(8, titleLabel, descriptionLabel, controls);
         box.setPadding(new Insets(12));
-        box.setStyle("-fx-border-color: -color-border-default; -fx-border-width: 1; -fx-border-radius: 8;");
+        box.getStyleClass().add("bk-card");
         return box;
     }
 

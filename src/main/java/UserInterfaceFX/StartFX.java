@@ -11,10 +11,10 @@ import static DataManager.Parameters.DARK_MODE;
 import static DataManager.Parameters.logger;
 
 /**
- * Entry point of the new JavaFX UI shell.
+ * Entry point of the JavaFX UI shell — the default UI.
  * Applies the AtlantaFX theme according to the configured dark mode and shows the AppShell.
  *
- * Launched via "java -jar BeatKenja.jar --fx" while the Swing UI is still the default.
+ * Launched by {@code Start.main} whenever no CLI arguments are passed.
  */
 public class StartFX extends Application {
 
@@ -30,6 +30,7 @@ public class StartFX extends Application {
         shell = new AppShell(controller, stage);
 
         Scene scene = new Scene(shell, 1280, 820);
+        scene.getStylesheets().add(getClass().getResource("/styles/app.css").toExternalForm());
         stage.setTitle("BeatKenja");
         stage.setMinWidth(960);
         stage.setMinHeight(640);

@@ -11,6 +11,7 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
@@ -18,7 +19,6 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -54,10 +54,13 @@ public class GenerateView extends VBox {
     private final Label result = new Label();
     private final VBox cardsBox = new VBox(12);
 
+    private final Label varianceValue = new Label("0");
+
     // Held separately so the model-readiness poller can enable/disable them
     private Button styleAwareActive;
     private Button styleAwareAll;
     private Label styleAwareStatus;
+    private Region statusDot;
 
     public GenerateView(AppController controller, Stage stage) {
         super(12);
@@ -121,7 +124,7 @@ public class GenerateView extends VBox {
 
         VBox box = new VBox(8, title, description, new HBox(8, generateActive, generateAll));
         box.setPadding(new Insets(14));
-        box.setStyle("-fx-border-color: -color-border-default; -fx-border-width: 1; -fx-border-radius: 8;");
+        box.getStyleClass().add("bk-card");
         return box;
     }
 
@@ -140,9 +143,19 @@ public class GenerateView extends VBox {
         varianceSlider.setShowTickLabels(true);
         varianceSlider.setMajorTickUnit(25);
         varianceSlider.valueProperty().addListener((obs, o, n) -> {
+            int v = n.intValue();
             DiffSession active = controller.getActiveDiff();
-            if (active != null) active.setPatternVariance(n.intValue());
+            if (active != null) active.setPatternVariance(v);
+            varianceValue.setText((v >= 0 ? "+" : "") + v);
+            varianceValue.getStyleClass().removeAll(Styles.SUCCESS, Styles.DANGER);
+            if (v > 0) varianceValue.getStyleClass().add(Styles.SUCCESS);
+            else if (v < 0) varianceValue.getStyleClass().add(Styles.DANGER);
         });
+
+        varianceValue.setPrefWidth(40);
+        varianceValue.setAlignment(Pos.CENTER_RIGHT);
+        HBox varianceRow = new HBox(8, varianceSlider, varianceValue);
+        HBox.setHgrow(varianceSlider, Priority.ALWAYS);
 
         Label seedLabel = new Label("Seed");
         seedField.setText(String.valueOf(Parameters.SEED));
@@ -153,17 +166,15 @@ public class GenerateView extends VBox {
         ignoreDDs.setSelected(Parameters.ignoreDDs);
         ignoreDDs.selectedProperty().addListener((obs, o, n) -> Parameters.ignoreDDs = n);
 
-        GridPane seedRow = new GridPane();
-        seedRow.setHgap(6);
-        seedRow.add(seedField, 0, 0);
-        seedRow.add(randomizeSeed, 1, 0);
+        HBox seedRow = new HBox(6, seedField, randomizeSeed);
+        HBox.setHgrow(seedField, Priority.ALWAYS);
 
-        VBox panel = new VBox(10, title, patternLabel, loadPattern, new javafx.scene.control.Separator(),
-                varianceLabel, varianceSlider, new javafx.scene.control.Separator(),
+        VBox panel = new VBox(10, title, patternLabel, loadPattern, varianceLabel, varianceRow,
+                new javafx.scene.control.Separator(),
                 seedLabel, seedRow, oneHanded, ignoreDDs);
         panel.setPadding(new Insets(14));
         panel.setPrefWidth(280);
-        panel.setStyle("-fx-border-color: -color-border-default; -fx-border-width: 1; -fx-border-radius: 8;");
+        panel.getStyleClass().add("bk-card");
         return panel;
     }
 
@@ -244,8 +255,14 @@ public class GenerateView extends VBox {
         description.setWrapText(true);
         description.setMinHeight(Region.USE_PREF_SIZE);
 
+        statusDot = new Region();
+        statusDot.getStyleClass().addAll("bk-status-dot", "bk-status-dot-loading");
+
         styleAwareStatus = new Label("Loading style model…");
         styleAwareStatus.getStyleClass().add(Styles.TEXT_MUTED);
+
+        HBox statusRow = new HBox(6, statusDot, styleAwareStatus);
+        statusRow.setAlignment(Pos.CENTER_LEFT);
 
         styleAwareActive = new Button("Generate (active diff)");
         styleAwareActive.getStyleClass().add(Styles.ACCENT);
@@ -257,10 +274,10 @@ public class GenerateView extends VBox {
         styleAwareAll.setDisable(true);
         styleAwareAll.setOnAction(e -> run(GeneratorType.STYLE_AWARE, List.copyOf(controller.session().diffs())));
 
-        VBox box = new VBox(8, title, description, styleAwareStatus,
+        VBox box = new VBox(8, title, description, statusRow,
                 new HBox(8, styleAwareActive, styleAwareAll));
         box.setPadding(new Insets(14));
-        box.setStyle("-fx-border-color: -color-border-default; -fx-border-width: 1; -fx-border-radius: 8;");
+        box.getStyleClass().add("bk-card");
         return box;
     }
 
@@ -275,15 +292,20 @@ public class GenerateView extends VBox {
             boolean ready = ss != null && !ss.getArchetypes().isEmpty();
             styleAwareActive.setDisable(!ready);
             styleAwareAll.setDisable(!ready);
+            statusDot.getStyleClass().removeAll("bk-status-dot-loading", "bk-status-dot-ready", "bk-status-dot-error");
             if (ready) {
+                statusDot.getStyleClass().add("bk-status-dot-ready");
                 styleAwareStatus.setText("Model ready — " + ss.getArchetypes().size() + " style archetypes loaded.");
                 styleAwareStatus.getStyleClass().remove(Styles.DANGER);
                 holder[0].stop();
             } else if (ss != null) {
                 // styleSpace set but no archetypes — model file missing or empty
+                statusDot.getStyleClass().add("bk-status-dot-error");
                 styleAwareStatus.setText("Model loaded but empty — run StyleSpaceTrainer to generate archetypes.");
                 styleAwareStatus.getStyleClass().add(Styles.DANGER);
                 holder[0].stop();
+            } else {
+                statusDot.getStyleClass().add("bk-status-dot-loading");
             }
             // ss==null → engine-loader still running; keep polling
         }));
@@ -297,7 +319,12 @@ public class GenerateView extends VBox {
             activeDiffLabel.setText("No diff selected.");
         } else {
             activeDiffLabel.setText("Active diff: " + active.difficultyFileName() + " (switch via the tabs above)");
-            varianceSlider.setValue(active.getPatternVariance());
+            int v = active.getPatternVariance();
+            varianceSlider.setValue(v);
+            varianceValue.setText((v >= 0 ? "+" : "") + v);
+            varianceValue.getStyleClass().removeAll(Styles.SUCCESS, Styles.DANGER);
+            if (v > 0) varianceValue.getStyleClass().add(Styles.SUCCESS);
+            else if (v < 0) varianceValue.getStyleClass().add(Styles.DANGER);
         }
     }
 }

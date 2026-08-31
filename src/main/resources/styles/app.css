@@ -1,0 +1,57 @@
+/* ── Card — generic bordered card used across all views ─────────── */
+.bk-card {
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+.bk-card:hover {
+    -fx-border-color: -color-accent-emphasis;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 8, 0, 0, 2);
+}
+
+/* ── Drop zone — dashed border file-drop target (LoadView) ───────── */
+.bk-drop-zone {
+    -fx-border-color: -color-border-default;
+    -fx-border-style: dashed;
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+/* ── Info card — accent-tinted next-steps panel (LoadView) ───────── */
+.bk-info-card {
+    -fx-border-color: -color-accent-muted;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-color: -color-accent-subtle;
+    -fx-background-radius: 8;
+}
+
+/* ── KPI tile — metric card in NPS Overview ──────────────────────── */
+.bk-kpi-tile {
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 8;
+    -fx-border-color: -color-border-default;
+    -fx-border-radius: 8;
+    -fx-padding: 10 16 10 16;
+}
+
+/* ── Diff chip — active-diff selector pill in AppShell header ─────── */
+.bk-diff-chip {
+    -fx-border-color: -color-accent-emphasis;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+}
+
+/* ── Status dot — 8px colored circle for readiness indicators ─────── */
+.bk-status-dot {
+    -fx-min-width: 8;
+    -fx-max-width: 8;
+    -fx-min-height: 8;
+    -fx-max-height: 8;
+    -fx-background-radius: 4;
+}
+.bk-status-dot-loading { -fx-background-color: derive(-color-warning-emphasis, -10%); }
+.bk-status-dot-ready   { -fx-background-color: -color-success-emphasis; }
+.bk-status-dot-error   { -fx-background-color: -color-danger-emphasis; }
