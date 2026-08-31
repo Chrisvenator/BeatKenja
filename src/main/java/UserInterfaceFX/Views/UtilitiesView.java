@@ -60,6 +60,8 @@ public class UtilitiesView extends javafx.scene.control.ScrollPane {
 
         TextField precision = new TextField("16");
         precision.setPrefWidth(70);
+        precision.setTooltip(new javafx.scene.control.Tooltip(
+                "Beat fraction to snap notes to (e.g. 16 = snap to 1/16 of a beat)."));
         VBox placements = utilityRow(
                 "Fix placements",
                 "Snaps every note to 1/x of a beat (default 1/16).",
@@ -110,8 +112,13 @@ public class UtilitiesView extends javafx.scene.control.ScrollPane {
             public BeatmapCharacteristic fromString(String s) { return null; }
         });
         selector.getSelectionModel().selectFirst();
+        selector.setTooltip(new javafx.scene.control.Tooltip(
+                "Choose which characteristic to relabel the active diff as."));
 
         Button changeCharBtn = new Button("Change characteristic");
+        changeCharBtn.setTooltip(new javafx.scene.control.Tooltip(
+                "Relabels the active diff under another characteristic as a new diff (notes copied as-is, no transform).\n"
+                        + "Use the Characteristics tab to also transform the notes."));
         changeCharBtn.setOnAction(e -> onChangeCharacteristic(selector.getValue()));
 
         HBox charControls = new HBox(8, selector, changeCharBtn);
@@ -212,12 +219,14 @@ public class UtilitiesView extends javafx.scene.control.ScrollPane {
         descriptionLabel.setMinHeight(Region.USE_PREF_SIZE);
 
         Button runActive = new Button("Apply to active diff");
+        runActive.setTooltip(new javafx.scene.control.Tooltip("Run this utility on the active difficulty only."));
         runActive.setOnAction(e -> {
             if (controller.getActiveDiff() != null) action.accept(List.of(controller.getActiveDiff()));
         });
 
         Button runAll = new Button("Apply to all diffs");
         runAll.getStyleClass().add(Styles.FLAT);
+        runAll.setTooltip(new javafx.scene.control.Tooltip("Run this utility on every loaded difficulty."));
         runAll.setOnAction(e -> {
             if (!controller.session().diffs().isEmpty()) action.accept(List.copyOf(controller.session().diffs()));
         });

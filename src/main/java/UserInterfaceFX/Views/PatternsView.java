@@ -54,6 +54,8 @@ public class PatternsView extends VBox {
 
         Button load = new Button("Load pattern…");
         load.getStyleClass().add(Styles.ACCENT);
+        load.setTooltip(new javafx.scene.control.Tooltip(
+                "Load a pattern file (.pat), or extract the note transitions from an existing difficulty (.dat / .json)."));
         load.setOnAction(e -> loadPattern(stage));
 
         patternInfo.getStyleClass().add(Styles.TEXT_MUTED);
@@ -72,6 +74,8 @@ public class PatternsView extends VBox {
         visualizationBar.setAlignment(Pos.CENTER_LEFT);
         visualizations.forEach((name, visualization) -> {
             Button button = new Button(name);
+            button.setTooltip(new javafx.scene.control.Tooltip(
+                    "Open the loaded pattern's \"" + name + "\" visualization in its own window."));
             button.setOnAction(e -> visualize(name, visualization));
             visualizationBar.getChildren().add(button);
         });

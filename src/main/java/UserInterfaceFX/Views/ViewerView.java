@@ -123,6 +123,8 @@ public class ViewerView extends VBox implements UserInterfaceFX.AudioView {
     private HBox buildToolbar() {
         Button analyzeBtn = new Button("Load & analyze audio…");
         analyzeBtn.getStyleClass().add(Styles.ACCENT);
+        analyzeBtn.setTooltip(new javafx.scene.control.Tooltip(
+                "Pick the song file and analyze it (sections + onsets) to preview the map flying in 3D. Reuses the Timing tab's analysis if you already ran it."));
         analyzeBtn.setOnAction(e -> chooseAndAnalyze());
 
         Region spacer = new Region();
@@ -147,6 +149,8 @@ public class ViewerView extends VBox implements UserInterfaceFX.AudioView {
         njsLabel.setMinWidth(60);
         njsLabel.getStyleClass().add(Styles.TEXT_MUTED);
         Slider njsSlider = new Slider(1, 60, NJS_DEFAULT);
+        njsSlider.setTooltip(new javafx.scene.control.Tooltip(
+                "Note Jump Speed — how fast notes fly toward the camera; higher = faster, notes appear earlier."));
         njsSlider.setMajorTickUnit(5);
         njsSlider.setMinorTickCount(4);
         njsSlider.setShowTickMarks(true);
@@ -163,6 +167,8 @@ public class ViewerView extends VBox implements UserInterfaceFX.AudioView {
         njoLabel.setMinWidth(100);
         njoLabel.getStyleClass().add(Styles.TEXT_MUTED);
         Slider njoSlider = new Slider(-2, 4, NJO_DEFAULT);
+        njoSlider.setTooltip(new javafx.scene.control.Tooltip(
+                "Note Jump Offset — shifts how far ahead notes first spawn, in beats (positive = farther ahead, negative = closer)."));
         njoSlider.setMajorTickUnit(1);
         njoSlider.setMinorTickCount(3);
         njoSlider.setShowTickMarks(true);
@@ -178,6 +184,7 @@ public class ViewerView extends VBox implements UserInterfaceFX.AudioView {
 
         Button resetBtn = new Button("Reset");
         resetBtn.getStyleClass().add(Styles.FLAT);
+        resetBtn.setTooltip(new javafx.scene.control.Tooltip("Reset NJS and NJO to their defaults (30 / 0)"));
         resetBtn.setOnAction(e -> {
             njsSlider.setValue(NJS_DEFAULT);
             njoSlider.setValue(NJO_DEFAULT);
@@ -208,9 +215,12 @@ public class ViewerView extends VBox implements UserInterfaceFX.AudioView {
         rbOnsets.setDisable(true);
         rbNotes.getStyleClass().add(Styles.TEXT_SMALL);
         rbOnsets.getStyleClass().add(Styles.TEXT_SMALL);
+        rbNotes.setTooltip(new javafx.scene.control.Tooltip("Play a click on every note's beat position"));
+        rbOnsets.setTooltip(new javafx.scene.control.Tooltip("Play a click on the detected audio onsets instead of the notes"));
 
         clickCheckbox.setDisable(true);
         clickCheckbox.getStyleClass().add(Styles.TEXT_SMALL);
+        clickCheckbox.setTooltip(new javafx.scene.control.Tooltip("Overlay a click sound on playback to check timing against the audio"));
         clickCheckbox.setOnAction(e -> applyClickTrack());
 
         clickGroup.selectedToggleProperty().addListener((obs, old, sel) -> {

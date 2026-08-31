@@ -76,6 +76,8 @@ public class LoadView extends VBox {
 
         Button openFile = new Button("Open difficulty…");
         openFile.getStyleClass().add(Styles.ACCENT);
+        openFile.setTooltip(new javafx.scene.control.Tooltip(
+                "Load a single .dat difficulty file. Adds to the current session if it's from the same map folder."));
         openFile.setOnAction(e -> {
             FileChooser chooser = new FileChooser();
             chooser.setTitle("Choose a difficulty file");
@@ -86,6 +88,8 @@ public class LoadView extends VBox {
         });
 
         Button openFolder = new Button("Open map folder…");
+        openFolder.setTooltip(new javafx.scene.control.Tooltip(
+                "Load every difficulty in a Beat Saber map folder. Replaces the whole current session."));
         openFolder.setOnAction(e -> {
             DirectoryChooser chooser = new DirectoryChooser();
             chooser.setTitle("Choose a map folder");
@@ -126,9 +130,13 @@ public class LoadView extends VBox {
 
         Button toGenerate = new Button("Continue → 3 · Generate");
         toGenerate.getStyleClass().add(Styles.ACCENT);
+        toGenerate.setTooltip(new javafx.scene.control.Tooltip(
+                "Jump to the Generate step. Use this if the loaded diff already holds timing notes."));
         toGenerate.setOnAction(e -> navigate.accept("3 · Generate"));
 
         Button toTiming = new Button("Convert timings first → 2 · Timing");
+        toTiming.setTooltip(new javafx.scene.control.Tooltip(
+                "Jump to the Timing step to convert a normal map into the 1-color timing notes the generator needs."));
         toTiming.setOnAction(e -> navigate.accept("2 · Timing"));
 
         HBox actions = new HBox(12, toGenerate, toTiming);
@@ -145,6 +153,7 @@ public class LoadView extends VBox {
 
         Button unloadAll = new Button("Unload all", new FontIcon(Feather.TRASH_2));
         unloadAll.getStyleClass().addAll(Styles.FLAT, Styles.DANGER, Styles.SMALL);
+        unloadAll.setTooltip(new javafx.scene.control.Tooltip("Clears every loaded difficulty from the session (does not delete files on disk)"));
         unloadAll.setOnAction(e -> controller.unload());
 
         javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();

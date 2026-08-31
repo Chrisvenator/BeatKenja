@@ -140,6 +140,7 @@ public class AppShell extends BorderPane {
 
         Button settings = new Button("Settings", new FontIcon(Feather.SETTINGS));
         settings.getStyleClass().add(Styles.BUTTON_OUTLINED);
+        settings.setTooltip(new Tooltip("Open application settings"));
         settings.setOnAction(e -> selectView("Settings"));
 
         return new ToolBar(title, spacer, settings);
@@ -187,12 +188,32 @@ public class AppShell extends BorderPane {
         button.setAlignment(Pos.CENTER_LEFT);
         button.getStyleClass().add(Styles.FLAT);
         button.setToggleGroup(navGroup);
+        button.setTooltip(new Tooltip(navDescription(name)));
         button.setOnAction(e -> {
             if (!button.isSelected()) button.setSelected(true); // keep one selected
             showView(name);
         });
         navButtons.put(name, button);
         return button;
+    }
+
+    /** Short "what this step does" blurb shown as a hover tooltip on each sidebar nav button. */
+    private static String navDescription(String name) {
+        return switch (name) {
+            case "1 · Load"        -> "Load a map folder or a single difficulty file";
+            case "2 · Timing"      -> "Convert notes to timing dot-notes and analyze the song";
+            case "3 · Generate"    -> "Place note patterns via the Markov model";
+            case "4 · Review"      -> "Parity, NPS and pattern-heatmap checks plus external QA";
+            case "5 · Export"      -> "Save the diffs or zip the whole map";
+            case "Viewer"          -> "3D note preview synced to the audio";
+            case "NPS Overview"    -> "Notes-per-second charts across the map";
+            case "Characteristics" -> "Create No-Arrows / One-Saber / 360 / Lightshow diffs";
+            case "Utilities"       -> "Map fixes: lights, note placements, relabel characteristic";
+            case "Batch MP3"       -> "Bulk-convert MP3s into timing maps";
+            case "Patterns"        -> "Load and inspect the generation pattern files";
+            case "Settings"        -> "Application settings and paths";
+            default                -> name;
+        };
     }
 
     private VBox buildCenter() {
@@ -232,6 +253,7 @@ public class AppShell extends BorderPane {
         FontIcon logIcon = new FontIcon(Feather.CHEVRON_UP);
         ToggleButton logToggle = new ToggleButton("Log", logIcon);
         logToggle.getStyleClass().add(Styles.FLAT);
+        logToggle.setTooltip(new Tooltip("Show / hide the application log drawer"));
         logToggle.setOnAction(e -> {
             boolean show = logToggle.isSelected();
             logView.setVisible(show);
@@ -355,6 +377,7 @@ public class AppShell extends BorderPane {
             chip.getStyleClass().addAll(Styles.TEXT_SMALL, Styles.ACCENT);
             chip.setToggleGroup(chipGroup);
             chip.setSelected(diff == controller.getActiveDiff());
+            chip.setTooltip(new Tooltip("Switch to this difficulty"));
             chip.setOnAction(e -> {
                 chip.setSelected(true); // keep one selected
                 controller.setActiveDiff(diff);

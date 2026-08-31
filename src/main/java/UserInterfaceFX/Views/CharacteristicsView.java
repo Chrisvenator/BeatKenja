@@ -51,8 +51,10 @@ public class CharacteristicsView extends javafx.scene.control.ScrollPane {
         ToggleGroup saberGroup = new ToggleGroup();
         ToggleButton keepBlue = new ToggleButton("Blue");
         keepBlue.setToggleGroup(saberGroup);
+        keepBlue.setTooltip(new javafx.scene.control.Tooltip("Keep blue notes, remove red (one-saber)"));
         ToggleButton keepRed = new ToggleButton("Red");
         keepRed.setToggleGroup(saberGroup);
+        keepRed.setTooltip(new javafx.scene.control.Tooltip("Keep red notes, remove blue (one-saber)"));
         keepRed.setSelected(true);
         HBox saberToggle = new HBox(4, keepBlue, keepRed);
         saberToggle.setAlignment(Pos.CENTER_LEFT);
@@ -204,6 +206,9 @@ public class CharacteristicsView extends javafx.scene.control.ScrollPane {
 
         Button applyBtn = new Button(characteristic.implemented ? "Apply…" : "Not implemented yet");
         applyBtn.setDisable(!characteristic.implemented);
+        applyBtn.setTooltip(new javafx.scene.control.Tooltip(characteristic.implemented
+                ? "Create a new " + characteristic.infoName + " difficulty from the active diff, or apply the transform in place."
+                : "This characteristic isn't implemented yet."));
         if (action != null) applyBtn.setOnAction(e -> action.run());
 
         HBox controls = new HBox(8);

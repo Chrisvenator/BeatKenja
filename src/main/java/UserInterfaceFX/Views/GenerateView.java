@@ -116,10 +116,12 @@ public class GenerateView extends VBox {
 
         Button generateActive = new Button("Generate (active diff)");
         generateActive.getStyleClass().add(Styles.ACCENT);
+        generateActive.setTooltip(new Tooltip("Place notes on the active difficulty using the " + type.label + " generator."));
         generateActive.setOnAction(e -> run(type, List.of(controller.getActiveDiff())));
 
         Button generateAll = new Button("Apply to all diffs");
         generateAll.getStyleClass().add(Styles.FLAT);
+        generateAll.setTooltip(new Tooltip("Run the " + type.label + " generator on every loaded difficulty."));
         generateAll.setOnAction(e -> run(type, List.copyOf(controller.session().diffs())));
 
         VBox box = new VBox(8, title, description, new HBox(8, generateActive, generateAll));
@@ -135,6 +137,8 @@ public class GenerateView extends VBox {
         patternLabel.setWrapText(true);
         patternLabel.setMinHeight(Region.USE_PREF_SIZE);
         Button loadPattern = new Button("Load pattern (.pat / .dat)…");
+        loadPattern.setTooltip(new Tooltip(
+                "Load a Markov pattern file (.pat), or extract the pattern from an existing map (.dat / .json)."));
         loadPattern.setOnAction(e -> loadPattern());
 
         Label varianceLabel = new Label("Pattern variance (per diff)");
@@ -159,12 +163,20 @@ public class GenerateView extends VBox {
 
         Label seedLabel = new Label("Seed");
         seedField.setText(String.valueOf(Parameters.SEED));
+        seedField.setTooltip(new Tooltip(
+                "Random seed. The same seed with the same input reproduces the exact same map."));
         Button randomizeSeed = new Button("↻");
         randomizeSeed.setTooltip(new Tooltip("New random seed"));
         randomizeSeed.setOnAction(e -> seedField.setText(String.valueOf((long) (new Random().nextDouble() * 1_000_000_000))));
 
+        ignoreDDs.setTooltip(new Tooltip(
+                "DD = double-directional: back-to-back notes that need the same swing direction.\n"
+                        + "When checked, generation allows them instead of avoiding them."));
         ignoreDDs.setSelected(Parameters.ignoreDDs);
         ignoreDDs.selectedProperty().addListener((obs, o, n) -> Parameters.ignoreDDs = n);
+
+        oneHanded.setTooltip(new Tooltip(
+                "Generate for a single saber only. Applies to the Linear and Complex generators."));
 
         HBox seedRow = new HBox(6, seedField, randomizeSeed);
         HBox.setHgrow(seedField, Priority.ALWAYS);
@@ -267,11 +279,15 @@ public class GenerateView extends VBox {
         styleAwareActive = new Button("Generate (active diff)");
         styleAwareActive.getStyleClass().add(Styles.ACCENT);
         styleAwareActive.setDisable(true);
+        styleAwareActive.setTooltip(new Tooltip(
+                "Generate the active difficulty, drifting the pattern style per detected song section (needs the style model)."));
         styleAwareActive.setOnAction(e -> run(GeneratorType.STYLE_AWARE, List.of(controller.getActiveDiff())));
 
         styleAwareAll = new Button("Apply to all diffs");
         styleAwareAll.getStyleClass().add(Styles.FLAT);
         styleAwareAll.setDisable(true);
+        styleAwareAll.setTooltip(new Tooltip(
+                "Run the style-aware generator on every loaded difficulty (needs the style model)."));
         styleAwareAll.setOnAction(e -> run(GeneratorType.STYLE_AWARE, List.copyOf(controller.session().diffs())));
 
         VBox box = new VBox(8, title, description, statusRow,

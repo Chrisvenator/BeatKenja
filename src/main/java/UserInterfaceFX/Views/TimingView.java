@@ -119,10 +119,14 @@ public class TimingView extends VBox implements UserInterfaceFX.AudioView {
 
         Button convertActive = new Button("Convert active diff");
         if (primary) convertActive.getStyleClass().add(Styles.ACCENT);
+        convertActive.setTooltip(new javafx.scene.control.Tooltip(
+                "Convert the active difficulty's notes to this timing-note format (replaces its notes in place)."));
         convertActive.setOnAction(e -> convert(oneColor, List.of(controller.getActiveDiff())));
 
         Button convertAll = new Button("Apply to all diffs");
         convertAll.getStyleClass().add(Styles.FLAT);
+        convertAll.setTooltip(new javafx.scene.control.Tooltip(
+                "Convert every loaded difficulty to this timing-note format (replaces their notes in place)."));
         convertAll.setOnAction(e -> convert(oneColor, controller.session().diffs()));
 
         VBox box = new VBox(10, titleLabel, descriptionLabel, new HBox(8, convertActive, convertAll));
@@ -159,14 +163,20 @@ public class TimingView extends VBox implements UserInterfaceFX.AudioView {
 
         Button analyze = new Button("Analyze audio…");
         analyze.getStyleClass().add(Styles.ACCENT);
+        analyze.setTooltip(new javafx.scene.control.Tooltip(
+                "Pick the song's audio file and detect its sections, onsets and BPM (runs in the background)."));
         analyze.setOnAction(e -> chooseAndAnalyze());
 
         applyBookmarksButton.setDisable(true);
+        applyBookmarksButton.setTooltip(new javafx.scene.control.Tooltip(
+                "Writes the detected sections as bookmarks the SECTIONED generator reads (asks before replacing existing bookmarks)."));
         applyBookmarksButton.setOnAction(e -> applyBookmarks());
 
         songMapStatus.getStyleClass().add(Styles.TEXT_MUTED);
 
         clickTrackCheckbox.setDisable(true);
+        clickTrackCheckbox.setTooltip(new javafx.scene.control.Tooltip(
+                "Overlay a click sound on each detected onset during preview, to check the analysis against the music."));
         clickTrackCheckbox.setOnAction(e -> toggleClickTrack());
         transport.setTrailing(clickTrackCheckbox);
         transport.setOnPlayhead(timeline::setPlayheadSeconds);

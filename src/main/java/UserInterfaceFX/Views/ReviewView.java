@@ -90,6 +90,7 @@ public class ReviewView extends VBox {
         activeDiffLabel.getStyleClass().add(Styles.TEXT_MUTED);
 
         Hyperlink npsOverview = new Hyperlink("NPS overview →");
+        npsOverview.setTooltip(new javafx.scene.control.Tooltip("Open the NPS overview — notes-per-second chart across the loaded diffs."));
         npsOverview.setOnAction(e -> navigate.accept("NPS Overview"));
 
         Button arcViewer = new Button("Preview in ArcViewer");
@@ -313,11 +314,13 @@ public class ReviewView extends VBox {
         serve.setOnAction(e -> serveCurrentMap(servedUrl));
 
         Button mapCheck = new Button("MapCheck");
+        mapCheck.setTooltip(new javafx.scene.control.Tooltip("Loads the map into MapCheck — a web QA tool that flags resets, hitbox and vision-block issues"));
         mapCheck.setOnAction(e -> {
             if (serveCurrentMap(servedUrl)) web.getEngine().load(zipServer.mapCheckUrl());
         });
 
         Button bsParity = new Button("bs-parity");
+        bsParity.setTooltip(new javafx.scene.control.Tooltip("Loads the map into bs-parity — a web tool that checks swing parity (good/bad hand resets)"));
         bsParity.setOnAction(e -> {
             if (serveCurrentMap(servedUrl)) web.getEngine().load(zipServer.bsParityUrl());
         });

@@ -74,6 +74,8 @@ public class NpsOverviewView extends VBox {
 
         windowSelector.getItems().addAll("1 s", "2 s", "5 s");
         windowSelector.getSelectionModel().select("2 s");
+        windowSelector.setTooltip(new javafx.scene.control.Tooltip(
+                "Width of the sliding window used to average NPS (notes per second) — wider smooths the curve."));
         windowSelector.setOnAction(e -> {
             cache.clear();
             refresh();
@@ -204,6 +206,9 @@ public class NpsOverviewView extends VBox {
             chip.getStyleClass().add(Styles.TEXT_SMALL);
             chip.setGraphic(new Circle(4, NpsChartPalette.identityColor(name)));
             boolean isActive = diff == active;
+            chip.setTooltip(new javafx.scene.control.Tooltip(isActive
+                    ? "The active diff is always shown in the NPS chart."
+                    : "Show or hide this difficulty in the NPS chart."));
             chip.setSelected(isActive || !hiddenDiffs.contains(name));
             chip.setDisable(isActive);
             chip.setOnAction(e -> {
