@@ -8,9 +8,9 @@ import AppLogic.DiffSession;
 import AppLogic.SectionAnalysisService;
 import AppLogic.SectionAnalysisService.SectionAnalysis;
 import BeatSaberObjects.Objects.Note;
+import UserInterfaceFX.Components.TimelineStrip;
 import UserInterfaceFX.Components.TransportBar;
 import UserInterfaceFX.Viewer.NoteField3D;
-import UserInterfaceFX.Viewer.SectionTimelineStrip;
 import atlantafx.base.theme.Styles;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -59,7 +59,7 @@ public class ViewerView extends VBox {
 
     // 3D field + timeline
     private final NoteField3D noteField = new NoteField3D();
-    private final SectionTimelineStrip timeline = new SectionTimelineStrip();
+    private final TimelineStrip timeline = new TimelineStrip(48);
 
     // NJS / NJO controls
     private static final double NJS_DEFAULT = 30.0;
@@ -275,7 +275,8 @@ public class ViewerView extends VBox {
             catch (Exception ex) { logger.warn("Audio load failed: {}", ex.getMessage()); }
         }
         timeline.setAnalysis(result);
-        timeline.setOnSeek(() -> transport.seek(timeline.lastClickedSeconds()));
+        timeline.setOnSeek(transport::seek);
+        refreshTimelineBookmarks();
         if (player.isLoaded()) {
             transport.onLoaded();
             clickCheckbox.setDisable(false);
@@ -401,6 +402,16 @@ public class ViewerView extends VBox {
             noteClickWav = null;
             noteClickDiff = null;
         }
+        refreshTimelineBookmarks();
+    }
+
+    /** Shows the active diff's bookmarks as inline markers on the timeline (cleared if none / no BPM). */
+    private void refreshTimelineBookmarks() {
+        DiffSession active = controller.getActiveDiff();
+        double bpm = controller.session().getBpm();
+        boolean hasBookmarks = active != null && active.map() != null && bpm > 0
+                && active.map().bookmarks != null && !active.map().bookmarks.isEmpty();
+        timeline.setBookmarks(hasBookmarks ? active.map().bookmarks : java.util.List.of(), bpm);
     }
 
     // --- Lifecycle ---

@@ -7,24 +7,21 @@ import AppLogic.ClickTrackRenderer;
 import AppLogic.DiffSession;
 import AppLogic.SectionAnalysisService;
 import AppLogic.SectionAnalysisService.SectionAnalysis;
+import UserInterfaceFX.Components.TimelineStrip;
 import UserInterfaceFX.Components.TransportBar;
 import atlantafx.base.theme.Styles;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 
 import java.io.File;
@@ -38,11 +35,12 @@ import static DataManager.Parameters.logger;
  * Each card converts the active diff; "Apply to all diffs" converts every loaded diff.
  * <p>
  * Below them, the Song Map card: analyze the song's audio ({@link SectionAnalysisService}),
- * draw detected sections (tier-colored), the novelty curve and onset ticks, and optionally
- * apply the sections as SECTIONED-generator bookmarks — asking first if the map already
- * has bookmarks (manual bookmarks are never silently overwritten). An audio preview player
+ * draw detected sections (tier-colored), the novelty curve, onset ticks and inline bookmark
+ * markers on a shared {@link TimelineStrip}, and optionally apply the sections as
+ * SECTIONED-generator bookmarks — asking first if the map already has bookmarks (manual
+ * bookmarks are never silently overwritten). An audio preview player
  * ({@link AudioPreviewPlayer}) with play/pause, a scrub slider and click-to-seek on the
- * canvas lets the user listen to what each detected section actually sounds like.
+ * timeline lets the user listen to what each detected section actually sounds like.
  */
 public class TimingView extends VBox {
 
@@ -50,7 +48,7 @@ public class TimingView extends VBox {
     private final Label activeDiffLabel = new Label();
     private final Label result = new Label();
 
-    private final Canvas songMapCanvas = new Canvas(0, 140);
+    private final TimelineStrip timeline = new TimelineStrip(140);
     private final Label songMapStatus = new Label("No analysis yet.");
     private final Button applyBookmarksButton = new Button("Apply as bookmarks to active diff");
     private SectionAnalysis analysis;
@@ -58,7 +56,6 @@ public class TimingView extends VBox {
     private final AudioPreviewPlayer player = new AudioPreviewPlayer();
     private final TransportBar transport = new TransportBar(player);
     private final CheckBox clickTrackCheckbox = new CheckBox("Click on onsets");
-    private double playheadSeconds = -1;
 
     public TimingView(AppController controller) {
         super(16);
@@ -162,25 +159,13 @@ public class TimingView extends VBox {
         clickTrackCheckbox.setDisable(true);
         clickTrackCheckbox.setOnAction(e -> toggleClickTrack());
         transport.setTrailing(clickTrackCheckbox);
-        transport.setOnPlayhead(seconds -> {
-            playheadSeconds = seconds;
-            drawSongMap();
-        });
+        transport.setOnPlayhead(timeline::setPlayheadSeconds);
 
-        // The canvas must never drive the card's size: binding it straight to the card width
-        // fed the canvas width back into the card's preferred width, growing the whole view a
-        // pixel per layout pass. A holder pane with explicit pref width 0 breaks that loop.
-        Pane canvasHolder = new Pane(songMapCanvas);
-        canvasHolder.setMinSize(0, 140);
-        canvasHolder.setPrefSize(0, 140);
-        canvasHolder.setMaxHeight(140);
-        songMapCanvas.widthProperty().bind(canvasHolder.widthProperty());
-        songMapCanvas.heightProperty().bind(canvasHolder.heightProperty());
-        songMapCanvas.widthProperty().addListener((obs, old, w) -> drawSongMap());
-        songMapCanvas.setOnMouseClicked(e -> seekFromCanvas(e.getX()));
+        timeline.setShowNovelty(true);
+        timeline.setOnSeek(transport::seek);
 
         VBox box = new VBox(10, title, description, new HBox(8, analyze, applyBookmarksButton, songMapStatus),
-                transport, canvasHolder);
+                transport, timeline);
         box.setPadding(new Insets(16));
         box.getStyleClass().add("bk-card");
         return box;
@@ -200,7 +185,7 @@ public class TimingView extends VBox {
         applyBookmarksButton.setDisable(true);
         transport.reset();
         player.close();
-        playheadSeconds = -1;
+        timeline.clear();
         clickTrackCheckbox.setSelected(false);
         clickTrackCheckbox.setDisable(true);
 
@@ -225,7 +210,8 @@ public class TimingView extends VBox {
                 transport.onLoaded();
                 clickTrackCheckbox.setDisable(false);
             }
-            drawSongMap();
+            timeline.setAnalysis(analysis);
+            showBookmarksOnTimeline();
         });
         task.setOnFailed(e -> songMapStatus.setText("✗ " + task.getException().getMessage()));
         new Thread(task, "section-analysis").start();
@@ -276,11 +262,6 @@ public class TimingView extends VBox {
         new Thread(task, "click-render").start();
     }
 
-    private void seekFromCanvas(double x) {
-        if (analysis == null || !player.isLoaded() || songMapCanvas.getWidth() <= 0) return;
-        transport.seek(x / songMapCanvas.getWidth() * analysis.durationSeconds());
-    }
-
     /** Stops audio preview playback and releases the audio line (called on app shutdown). */
     public void shutdown() {
         transport.stopTimer();
@@ -314,63 +295,15 @@ public class TimingView extends VBox {
         songMapStatus.setText("✓ " + active.map().bookmarks.size()
                 + " section bookmarks applied to " + active.difficultyFileName()
                 + " — the SECTIONED generator will use them.");
+        showBookmarksOnTimeline();
     }
 
-    private void drawSongMap() {
-        GraphicsContext g = songMapCanvas.getGraphicsContext2D();
-        double w = songMapCanvas.getWidth();
-        double h = songMapCanvas.getHeight();
-        g.clearRect(0, 0, w, h);
-        if (analysis == null || w <= 0 || analysis.durationSeconds() <= 0) return;
-
-        double pixelsPerSecond = w / analysis.durationSeconds();
-
-        // Section bands, colored by intensity tier.
-        for (int s = 0; s < analysis.tiers().length; s++) {
-            double start = s == 0 ? 0 : analysis.boundaries().get(s - 1);
-            double end = s == analysis.tiers().length - 1
-                    ? analysis.durationSeconds() : analysis.boundaries().get(s);
-            float[] tierColor = SectionAnalysisService.TIER_COLORS[analysis.tiers()[s]];
-            g.setFill(Color.color(tierColor[0], tierColor[1], tierColor[2], 0.35));
-            g.fillRect(start * pixelsPerSecond, 0, (end - start) * pixelsPerSecond, h);
-        }
-
-        // Onset ticks in the bottom strip.
-        g.setStroke(Color.color(1, 1, 1, 0.25));
-        g.setLineWidth(1);
-        for (double t : analysis.onsetTimesSeconds()) {
-            double x = t * pixelsPerSecond;
-            g.strokeLine(x, h * 0.85, x, h);
-        }
-
-        // Novelty curve (scaled to its own max so shape stays readable).
-        double maxNovelty = 1e-9;
-        for (double v : analysis.novelty()) maxNovelty = Math.max(maxNovelty, v);
-        g.setStroke(Color.color(1, 1, 1, 0.9));
-        g.setLineWidth(1.5);
-        g.beginPath();
-        for (int i = 0; i < analysis.novelty().length; i++) {
-            double x = analysis.noveltyTimesSeconds()[i] * pixelsPerSecond;
-            double y = h * 0.8 * (1 - analysis.novelty()[i] / maxNovelty) + h * 0.02;
-            if (i == 0) g.moveTo(x, y);
-            else g.lineTo(x, y);
-        }
-        g.stroke();
-
-        // Boundary lines.
-        g.setStroke(Color.color(0, 0, 0, 0.65));
-        g.setLineWidth(1.5);
-        for (double b : analysis.boundaries()) {
-            double x = b * pixelsPerSecond;
-            g.strokeLine(x, 0, x, h);
-        }
-
-        // Playhead.
-        if (playheadSeconds >= 0) {
-            g.setStroke(Color.color(1.0, 0.84, 0.25, 0.95));
-            g.setLineWidth(2);
-            double x = playheadSeconds * pixelsPerSecond;
-            g.strokeLine(x, 0, x, h);
-        }
+    /** Shows the active diff's bookmarks as inline markers on the timeline (cleared if none / no BPM). */
+    private void showBookmarksOnTimeline() {
+        DiffSession active = controller.getActiveDiff();
+        double bpm = controller.session().getBpm();
+        boolean hasBookmarks = active != null && bpm > 0
+                && active.map().bookmarks != null && !active.map().bookmarks.isEmpty();
+        timeline.setBookmarks(hasBookmarks ? active.map().bookmarks : List.of(), bpm);
     }
 }

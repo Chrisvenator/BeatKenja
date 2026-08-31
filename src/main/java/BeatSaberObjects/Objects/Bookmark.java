@@ -16,6 +16,11 @@ public class Bookmark extends BeatsaberObject {
         this._color = _color;
     }
 
+    /** RGB marker color (0..1 per channel), or {@code null} if the bookmark carries no color. */
+    public float[] getColor() {
+        return _color;
+    }
+
     @Override
     public String toString() {
         return "{\"_time\":" + _time + ",\"_name\":\"" + _name + "\",\"_color\":" + Arrays.toString(_color) + "}";
