@@ -16,6 +16,7 @@ import javafx.scene.control.Separator;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.ToolBar;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -23,6 +24,9 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
+import org.kordamp.ikonli.feather.Feather;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -46,6 +50,8 @@ public class AppShell extends BorderPane {
 
     private final Label statusLabel = new Label("No map loaded — start with 1 · Load");
     private final Label mapHeaderTitle = new Label("No map loaded");
+    private final Label bpmLabel = new Label();
+    private final Region dirtyDot = new Region();
     private final HBox diffChips = new HBox(6);
 
     /** Workflow steps that need a loaded map before they make sense. */
@@ -54,6 +60,8 @@ public class AppShell extends BorderPane {
     public AppShell(AppController controller, Stage stage) {
         this.controller = controller;
         FxLog.install();
+        // Theme-aware accent: keys the saber-blue accent ramp in app.css to the active Primer theme
+        getStyleClass().add(DataManager.Parameters.DARK_MODE ? "bk-theme-dark" : "bk-theme-light");
 
         registerViews(stage);
         setTop(buildToolBar());
@@ -88,7 +96,7 @@ public class AppShell extends BorderPane {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Button settings = new Button("⚙ Settings");
+        Button settings = new Button("Settings", new FontIcon(Feather.SETTINGS));
         settings.getStyleClass().add(Styles.BUTTON_OUTLINED);
         settings.setOnAction(e -> selectView("Settings"));
 
@@ -139,8 +147,17 @@ public class AppShell extends BorderPane {
 
     private VBox buildCenter() {
         mapHeaderTitle.getStyleClass().add(Styles.TITLE_4);
+        bpmLabel.getStyleClass().addAll("bk-numeric", Styles.TEXT_MUTED);
 
-        HBox header = new HBox(16, mapHeaderTitle, diffChips);
+        dirtyDot.getStyleClass().add("bk-dirty-dot");
+        dirtyDot.setVisible(false);
+        dirtyDot.setManaged(false);
+        Tooltip.install(dirtyDot, new Tooltip("Unsaved — generated map not yet exported (5 · Export)"));
+
+        HBox titleBox = new HBox(8, dirtyDot, mapHeaderTitle);
+        titleBox.setAlignment(Pos.CENTER_LEFT);
+
+        HBox header = new HBox(16, titleBox, bpmLabel, diffChips);
         header.setAlignment(Pos.CENTER_LEFT);
         header.setPadding(new Insets(12, 16, 12, 16));
 
@@ -155,13 +172,14 @@ public class AppShell extends BorderPane {
         logView.setVisible(false);
         logView.setManaged(false);
 
-        ToggleButton logToggle = new ToggleButton("Log ▴");
+        FontIcon logIcon = new FontIcon(Feather.CHEVRON_UP);
+        ToggleButton logToggle = new ToggleButton("Log", logIcon);
         logToggle.getStyleClass().add(Styles.FLAT);
         logToggle.setOnAction(e -> {
             boolean show = logToggle.isSelected();
             logView.setVisible(show);
             logView.setManaged(show);
-            logToggle.setText(show ? "Log ▾" : "Log ▴");
+            logIcon.setIconCode(show ? Feather.CHEVRON_DOWN : Feather.CHEVRON_UP);
         });
 
         Region spacer = new Region();
@@ -187,6 +205,10 @@ public class AppShell extends BorderPane {
                         case GENERATED -> "Map generated — review, then export (not saved yet!)";
                         case SAVED -> "Saved ✓";
                     });
+                    // Dirty = generated but not yet exported to disk
+                    boolean dirty = state == AppState.GENERATED;
+                    dirtyDot.setVisible(dirty);
+                    dirtyDot.setManaged(dirty);
                     refreshMapHeader();
                 });
             }
@@ -208,13 +230,15 @@ public class AppShell extends BorderPane {
         String folder = controller.session().getMapFolderPath();
         if (folder == null || controller.maps().isEmpty()) {
             mapHeaderTitle.setText("No map loaded");
+            bpmLabel.setText("");
             diffChips.getChildren().clear();
             return;
         }
 
         String songName = folder.replace('\\', '/');
         songName = songName.substring(songName.lastIndexOf('/') + 1);
-        mapHeaderTitle.setText(songName + "  ·  BPM " + controller.session().getBpm());
+        mapHeaderTitle.setText(songName);
+        bpmLabel.setText("BPM " + controller.session().getBpm());
 
         // Diff tabs: the selected one is the diff all step views operate on
         diffChips.getChildren().clear();
@@ -229,7 +253,7 @@ public class AppShell extends BorderPane {
                 controller.setActiveDiff(diff);
             });
 
-            Button deleteBtn = new Button("✕");
+            Button deleteBtn = new Button(null, new FontIcon(Feather.X));
             deleteBtn.getStyleClass().addAll(Styles.FLAT, Styles.DANGER, Styles.SMALL);
             deleteBtn.setTooltip(new javafx.scene.control.Tooltip("Remove this diff from the session (does not delete the file)"));
             deleteBtn.setAccessibleText("Remove " + diff.difficultyFileName() + " from session");

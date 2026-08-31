@@ -2,7 +2,10 @@ package UserInterfaceFX.Views;
 
 import DataManager.Config.Configuration;
 import DataManager.Parameters;
+import atlantafx.base.theme.PrimerDark;
+import atlantafx.base.theme.PrimerLight;
 import atlantafx.base.theme.Styles;
+import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -86,7 +89,32 @@ public class SettingsView extends ScrollPane {
         grid.add(footer, 0, row, 2, 1);
 
         loadCurrentValues();
+
+        // Live theme switch (no restart) + monospace numeric fields
+        darkMode.setOnAction(e -> applyThemeLive(darkMode.isSelected()));
+        defaultBpm.getStyleClass().add("bk-numeric");
+        styleDriftMagnitude.getStyleClass().add("bk-numeric");
+
         setContent(grid);
+    }
+
+    /**
+     * Applies the light/dark theme immediately, without a restart.
+     *
+     * Swaps the global AtlantaFX user-agent stylesheet, updates the runtime DARK_MODE flag
+     * (so canvas palettes redraw in the matching theme), and re-keys the saber-blue accent
+     * style class on the scene root. app.css stays applied via the scene's own stylesheets.
+     */
+    private void applyThemeLive(boolean dark) {
+        Application.setUserAgentStylesheet(dark
+                ? new PrimerDark().getUserAgentStylesheet()
+                : new PrimerLight().getUserAgentStylesheet());
+        Parameters.DARK_MODE = dark;
+        if (getScene() != null && getScene().getRoot() != null) {
+            var root = getScene().getRoot();
+            root.getStyleClass().removeAll("bk-theme-dark", "bk-theme-light");
+            root.getStyleClass().add(dark ? "bk-theme-dark" : "bk-theme-light");
+        }
     }
 
     private int section(GridPane grid, int row, String title) {
@@ -147,7 +175,7 @@ public class SettingsView extends ScrollPane {
             AppLogic.GenerationContext.styleDriftMagnitude = config.mapGenerator.styleDriftMagnitude;
 
             Parameters.configLoader.saveConfig(Parameters.CONFIG_FILE_LOCATION);
-            saveResult.setText("Saved. Most settings take effect after a restart.");
+            saveResult.setText("Saved. Theme applies immediately; other settings take effect after a restart.");
         } catch (NumberFormatException ex) {
             saveResult.setText("Default BPM and Style drift must be numbers.");
         } catch (Exception ex) {
