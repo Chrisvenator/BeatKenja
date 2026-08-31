@@ -2,6 +2,9 @@ package UserInterfaceFX;
 
 import AppLogic.AppController;
 import AppLogic.AppState;
+import AppLogic.DiffSession;
+import AppLogic.SectionAnalysisService.SectionAnalysis;
+import UserInterfaceFX.Components.TimelineStrip;
 import UserInterfaceFX.Views.LoadView;
 import UserInterfaceFX.Views.SettingsView;
 import atlantafx.base.theme.Styles;
@@ -29,6 +32,7 @@ import org.kordamp.ikonli.feather.Feather;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static DataManager.Parameters.logger;
@@ -53,6 +57,11 @@ public class AppShell extends BorderPane {
     private final Label bpmLabel = new Label();
     private final Region dirtyDot = new Region();
     private final HBox diffChips = new HBox(6);
+
+    /** Persistent song timeline shown under the header on every view; hidden until a song is analyzed. */
+    private final TimelineStrip globalTimeline = new TimelineStrip(56);
+    /** Last analysis put on the spine — lets us skip re-setAnalysis (which resets the playhead) on unrelated refreshes. */
+    private SectionAnalysis lastSpineAnalysis;
 
     /** Workflow steps that need a loaded map before they make sense. */
     private static final String[] LOCKED_STEPS = {"2 · Timing", "3 · Generate", "4 · Review", "5 · Export", "Viewer", "NPS Overview", "Characteristics"};
@@ -169,9 +178,15 @@ public class AppShell extends BorderPane {
         header.setAlignment(Pos.CENTER_LEFT);
         header.setPadding(new Insets(12, 16, 12, 16));
 
+        // Persistent song spine: clicking it seeks every loaded audio view (Timing / Viewer).
+        globalTimeline.setOnSeek(controller::requestSeek);
+        globalTimeline.setVisible(false);
+        globalTimeline.setManaged(false);
+        VBox.setMargin(globalTimeline, new Insets(0, 16, 8, 16));
+
         contentArea.setPadding(new Insets(0, 16, 16, 16));
         VBox.setVgrow(contentArea, Priority.ALWAYS);
-        return new VBox(header, new Separator(), contentArea);
+        return new VBox(header, globalTimeline, new Separator(), contentArea);
     }
 
     private VBox buildStatusBar() {
@@ -218,19 +233,63 @@ public class AppShell extends BorderPane {
                     dirtyDot.setVisible(dirty);
                     dirtyDot.setManaged(dirty);
                     refreshMapHeader();
+                    refreshGlobalTimeline();
                 });
             }
 
             @Override
             public void onBpmChanged(double bpm) {
-                Platform.runLater(AppShell.this::refreshMapHeader);
+                Platform.runLater(() -> {
+                    refreshMapHeader();
+                    refreshGlobalTimeline();
+                });
             }
 
             @Override
-            public void onActiveDiffChanged(AppLogic.DiffSession activeDiff) {
-                Platform.runLater(AppShell.this::refreshMapHeader);
+            public void onActiveDiffChanged(DiffSession activeDiff) {
+                Platform.runLater(() -> {
+                    refreshMapHeader();
+                    refreshGlobalTimeline();
+                });
+            }
+
+            @Override
+            public void onAnalysisChanged() {
+                Platform.runLater(AppShell.this::refreshGlobalTimeline);
+            }
+
+            @Override
+            public void onPlayheadMoved(double seconds) {
+                // Already on the FX thread (fired from the transport); track the playing view's position.
+                globalTimeline.setPlayheadSeconds(seconds);
             }
         });
+    }
+
+    /**
+     * Syncs the persistent song spine with the session: shows it once an analysis exists, draws the
+     * heat-ribbon and the active diff's bookmark markers. Only re-sets the analysis when it actually
+     * changed, so routine refreshes (BPM, diff switch) don't reset the live playhead.
+     */
+    private void refreshGlobalTimeline() {
+        SectionAnalysis analysis = controller.session().getSectionAnalysis();
+        boolean show = analysis != null;
+        globalTimeline.setVisible(show);
+        globalTimeline.setManaged(show);
+        if (!show) {
+            globalTimeline.clear();
+            lastSpineAnalysis = null;
+            return;
+        }
+        if (analysis != lastSpineAnalysis) {
+            globalTimeline.setAnalysis(analysis);
+            lastSpineAnalysis = analysis;
+        }
+        DiffSession active = controller.getActiveDiff();
+        double bpm = controller.session().getBpm();
+        boolean hasBookmarks = active != null && active.map() != null && bpm > 0
+                && active.map().bookmarks != null && !active.map().bookmarks.isEmpty();
+        globalTimeline.setBookmarks(hasBookmarks ? active.map().bookmarks : List.of(), bpm);
     }
 
     /** Updates the map header (folder name + diff chips) from the controller session. */
@@ -288,6 +347,7 @@ public class AppShell extends BorderPane {
             return;
         }
         contentArea.getChildren().setAll(view);
+        refreshGlobalTimeline();
     }
 
     /** Releases resources held by views (e.g. the local map zip server, audio lines) on app shutdown. */

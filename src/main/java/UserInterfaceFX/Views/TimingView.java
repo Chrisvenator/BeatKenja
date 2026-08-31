@@ -93,6 +93,12 @@ public class TimingView extends VBox {
             public void onStateChanged(AppState state) {
                 Platform.runLater(TimingView.this::refreshActiveDiff);
             }
+
+            @Override
+            public void onSeekRequested(double seconds) {
+                // Global spine (or a parity-marker jump) asked us to move the playhead
+                Platform.runLater(() -> { if (player.isLoaded()) transport.seek(seconds); });
+            }
         });
     }
 
@@ -159,7 +165,10 @@ public class TimingView extends VBox {
         clickTrackCheckbox.setDisable(true);
         clickTrackCheckbox.setOnAction(e -> toggleClickTrack());
         transport.setTrailing(clickTrackCheckbox);
-        transport.setOnPlayhead(timeline::setPlayheadSeconds);
+        transport.setOnPlayhead(seconds -> {
+            timeline.setPlayheadSeconds(seconds);
+            controller.notifyPlayheadMoved(seconds); // drive the global spine in AppShell
+        });
 
         timeline.setShowNovelty(true);
         timeline.setOnSeek(transport::seek);
@@ -204,6 +213,7 @@ public class TimingView extends VBox {
         task.setOnSucceeded(e -> {
             analysis = task.getValue();
             controller.session().setSectionAnalysis(analysis);
+            controller.notifyAnalysisChanged(); // refresh the global spine's heat-ribbon
             songMapStatus.setText(analysisSummary());
             applyBookmarksButton.setDisable(false);
             if (player.isLoaded()) {
@@ -296,6 +306,7 @@ public class TimingView extends VBox {
                 + " section bookmarks applied to " + active.difficultyFileName()
                 + " — the SECTIONED generator will use them.");
         showBookmarksOnTimeline();
+        controller.notifyAnalysisChanged(); // spine re-reads the active diff's bookmarks
     }
 
     /** Shows the active diff's bookmarks as inline markers on the timeline (cleared if none / no BPM). */

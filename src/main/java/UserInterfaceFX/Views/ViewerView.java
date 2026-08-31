@@ -7,6 +7,7 @@ import AppLogic.ClickTrackRenderer;
 import AppLogic.DiffSession;
 import AppLogic.SectionAnalysisService;
 import AppLogic.SectionAnalysisService.SectionAnalysis;
+import BeatSaberObjects.Objects.Enums.ParityErrorEnum;
 import BeatSaberObjects.Objects.Note;
 import UserInterfaceFX.Components.TimelineStrip;
 import UserInterfaceFX.Components.TransportBar;
@@ -27,9 +28,12 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.util.Pair;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import static DataManager.Parameters.logger;
 
@@ -64,6 +68,8 @@ public class ViewerView extends VBox {
     // NJS / NJO controls
     private static final double NJS_DEFAULT = 30.0;
     private static final double NJO_DEFAULT = 0.0;
+    /** Seconds seeked per mouse-wheel notch when scrubbing the 3D lane. */
+    private static final double SCROLL_STEP_SECONDS = 0.5;
     private double currentNjs = NJS_DEFAULT;
     private double currentNjoBeat = NJO_DEFAULT;
     private Note[] currentNotes;
@@ -85,6 +91,7 @@ public class ViewerView extends VBox {
 
         VBox.setVgrow(noteField, Priority.ALWAYS);
         getChildren().addAll(buildToolbar(), buildNjsNjoRow(), noteField, timeline, buildPlaybackRow(), statusLabel);
+        installScrollSeek();
 
         controller.addListener(new AppController.Listener() {
             @Override public void onActiveDiffChanged(DiffSession activeDiff) {
@@ -98,6 +105,10 @@ public class ViewerView extends VBox {
                 noteClickWav = null;
                 noteClickDiff = null;
                 Platform.runLater(() -> rebuildField(controller.getActiveDiff()));
+            }
+            @Override public void onSeekRequested(double seconds) {
+                // Global spine (or a parity-marker jump) asked us to move the playhead
+                Platform.runLater(() -> { if (player.isLoaded()) transport.seek(seconds); });
             }
         });
 
@@ -182,6 +193,7 @@ public class ViewerView extends VBox {
             playheadSeconds = seconds;
             noteField.setPlayheadSeconds(seconds);
             timeline.setPlayheadSeconds(seconds);
+            controller.notifyPlayheadMoved(seconds); // drive the global spine in AppShell
         });
 
         // Click-track source: notes vs onsets
@@ -261,6 +273,7 @@ public class ViewerView extends VBox {
         task.setOnSucceeded(e -> {
             applyAnalysis(task.getValue());
             controller.session().setSectionAnalysis(task.getValue());
+            controller.notifyAnalysisChanged(); // refresh the global spine's heat-ribbon
             setStatus(analysisSummary());
         });
         task.setOnFailed(e -> setStatus("✗ " + task.getException().getMessage()));
@@ -397,6 +410,7 @@ public class ViewerView extends VBox {
         double offsetSec = currentBpm > 0 ? currentNjoBeat / currentBpm * 60.0 : 0;
         noteField.setNjoOffsetSeconds(offsetSec);
         noteField.setPlayheadSeconds(Math.max(0, playheadSeconds));
+        refreshFlaggedNotes(diff);
         // Invalidate note-click wav if the diff changed
         if (diff != noteClickDiff) {
             noteClickWav = null;
@@ -412,6 +426,26 @@ public class ViewerView extends VBox {
         boolean hasBookmarks = active != null && active.map() != null && bpm > 0
                 && active.map().bookmarks != null && !active.map().bookmarks.isEmpty();
         timeline.setBookmarks(hasBookmarks ? active.map().bookmarks : java.util.List.of(), bpm);
+    }
+
+    /** Highlights the notes flagged by parity errors — the incorrect notes that get bookmarked. */
+    private void refreshFlaggedNotes(DiffSession diff) {
+        Set<Float> beats = new HashSet<>();
+        if (diff != null) {
+            for (Pair<Float, ParityErrorEnum> err : diff.parityErrors()) beats.add(err.getKey());
+        }
+        noteField.setFlaggedBeats(beats);
+    }
+
+    /** Mouse-wheel over the 3D lane scrubs the playhead (wheel up = forward, down = back). */
+    private void installScrollSeek() {
+        noteField.setOnScroll(e -> {
+            if (!player.isLoaded()) return;
+            double base = playheadSeconds < 0 ? 0 : playheadSeconds;
+            double target = base + e.getDeltaY() / 40.0 * SCROLL_STEP_SECONDS;
+            transport.seek(Math.max(0, Math.min(player.durationSeconds(), target)));
+            e.consume();
+        });
     }
 
     // --- Lifecycle ---

@@ -57,6 +57,15 @@ public class AppController {
         default void onBpmChanged(double bpm) {}
 
         default void onActiveDiffChanged(DiffSession activeDiff) {}
+
+        /** Fired every frame while a view plays audio, and on each seek/scrub (position in seconds). */
+        default void onPlayheadMoved(double seconds) {}
+
+        /** Fired when a view stores a new section analysis on the session (drives the global timeline). */
+        default void onAnalysisChanged() {}
+
+        /** Fired when a view (or the global timeline) requests all loaded players to seek to a position. */
+        default void onSeekRequested(double seconds) {}
     }
 
     private final MapSession session = new MapSession();
@@ -86,6 +95,21 @@ public class AppController {
 
     public void addListener(Listener listener) {
         listeners.add(listener);
+    }
+
+    /** Publishes the current playback position (seconds) so the global timeline can track it. */
+    public void notifyPlayheadMoved(double seconds) {
+        listeners.forEach(l -> l.onPlayheadMoved(seconds));
+    }
+
+    /** Publishes that a fresh section analysis was stored on the session. */
+    public void notifyAnalysisChanged() {
+        listeners.forEach(l -> l.onAnalysisChanged());
+    }
+
+    /** Asks every loaded audio view to seek to the given position (from the global timeline / Review jump). */
+    public void requestSeek(double seconds) {
+        listeners.forEach(l -> l.onSeekRequested(seconds));
     }
 
     private void setState(AppState newState) {
