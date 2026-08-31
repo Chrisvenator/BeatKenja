@@ -16,4 +16,7 @@ public interface AudioView {
 
     /** Called when the view is swapped out: stop the transport's own timer (playback itself continues). */
     void onHidden();
+
+    /** Toggles play/pause on this view's transport, driven by the global Space shortcut. */
+    default void togglePlay() {}
 }

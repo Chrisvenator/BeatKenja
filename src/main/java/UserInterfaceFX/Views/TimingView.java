@@ -292,6 +292,11 @@ public class TimingView extends VBox implements UserInterfaceFX.AudioView {
         transport.stopTimer();
     }
 
+    @Override
+    public void togglePlay() {
+        transport.togglePlay();
+    }
+
     private void applyBookmarks() {
         DiffSession active = controller.getActiveDiff();
         if (analysis == null || active == null) {

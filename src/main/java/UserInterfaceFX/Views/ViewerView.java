@@ -473,6 +473,11 @@ public class ViewerView extends VBox implements UserInterfaceFX.AudioView {
         transport.stopTimer();
     }
 
+    @Override
+    public void togglePlay() {
+        transport.togglePlay();
+    }
+
     // --- Helpers ---
 
     private void disablePlayback() {

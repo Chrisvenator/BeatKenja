@@ -48,7 +48,7 @@ public final class TransportBar extends HBox {
         setAlignment(Pos.CENTER_LEFT);
 
         playButton.getStyleClass().add(Styles.BUTTON_ICON);
-        playButton.setTooltip(new Tooltip("Play / pause"));
+        playButton.setTooltip(new Tooltip("Play / pause (Space)"));
         playButton.setDisable(true);
         playButton.setOnAction(e -> toggle());
 
@@ -112,6 +112,11 @@ public final class TransportBar extends HBox {
         player.seekSeconds(seconds);
         if (positionSlider.getValue() != seconds) positionSlider.setValue(seconds);
         tick();
+    }
+
+    /** Toggles play/pause, keeping the icon and timer in sync (used by the global Space shortcut). No-op if nothing loaded. */
+    public void togglePlay() {
+        toggle();
     }
 
     /** Stops the animation timer (call on view shutdown; the player is closed by its owner). */

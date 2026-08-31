@@ -16,13 +16,17 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBase;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Separator;
+import javafx.scene.control.Slider;
+import javafx.scene.control.TextInputControl;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -104,6 +108,10 @@ public class AppShell extends BorderPane {
 
         wireControllerEvents();
         spineClock.start(); // spine tracks the shared player from now on
+        // Global transport shortcuts (Space / arrows / Home) attach once the scene exists.
+        sceneProperty().addListener((obs, old, scene) -> {
+            if (scene != null) scene.addEventFilter(KeyEvent.KEY_PRESSED, this::handleTransportKey);
+        });
         // Dev aid: -Dbk.view=<name> opens a specific view on startup (smoke screenshots)
         selectView(System.getProperty("bk.view", "1 · Load"));
     }
@@ -384,6 +392,60 @@ public class AppShell extends BorderPane {
         currentView = view;
         if (view instanceof AudioView shown) shown.onShown();
         refreshGlobalTimeline();
+    }
+
+    /**
+     * Global transport keyboard shortcuts over the session's shared player: Space toggles play/pause,
+     * ←/→ seek ∓1s (Shift for ∓5s), Home jumps to the start.
+     *
+     * <p>Only fires while a song is loaded, and yields the key to the focused control when it needs it
+     * (text fields keep Space/Home for editing; sliders keep the arrows/Home for nudging) so the
+     * shortcuts never fight normal input. Seeks go through {@link AppController#requestSeek} so every
+     * view's transport (and the spine) stays in sync; play/pause targets the visible view so its
+     * transport icon and timer track the change.
+     */
+    private void handleTransportKey(KeyEvent e) {
+        if (!controller.audioPlayer().isLoaded()) return;
+        Node focus = getScene().getFocusOwner();
+        boolean typing = focus instanceof TextInputControl;
+        switch (e.getCode()) {
+            case SPACE -> {
+                if (typing || focus instanceof ButtonBase) return; // let Space type / click the focused control
+                if (currentView instanceof AudioView av) av.togglePlay();
+                else togglePlayerDirect(); // no audio view visible — still toggle the shared player
+                e.consume();
+            }
+            case LEFT -> {
+                if (typing || focus instanceof Slider) return;
+                seekBy(e.isShiftDown() ? -5 : -1);
+                e.consume();
+            }
+            case RIGHT -> {
+                if (typing || focus instanceof Slider) return;
+                seekBy(e.isShiftDown() ? 5 : 1);
+                e.consume();
+            }
+            case HOME -> {
+                if (typing || focus instanceof Slider) return;
+                controller.requestSeek(0);
+                e.consume();
+            }
+            default -> { /* not a transport key */ }
+        }
+    }
+
+    /** Seeks the shared player by {@code delta} seconds, clamped to the song, via the controller so all views sync. */
+    private void seekBy(double delta) {
+        AudioPreviewPlayer player = controller.audioPlayer();
+        double target = Math.max(0, Math.min(player.durationSeconds(), player.positionSeconds() + delta));
+        controller.requestSeek(target);
+    }
+
+    /** Toggles the shared player directly (used when no audio view is visible to own the play/pause visuals). */
+    private void togglePlayerDirect() {
+        AudioPreviewPlayer player = controller.audioPlayer();
+        if (player.isPlaying()) player.pause();
+        else player.play();
     }
 
     /** Releases resources held by views (e.g. the local map zip server, audio lines) on app shutdown. */
